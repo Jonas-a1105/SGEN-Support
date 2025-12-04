@@ -8,46 +8,27 @@ class Departamento extends Model
 {
     protected $table = 'departamentos';
 
-    // ==========================
-    // MÉTODOS DE CONSULTA
-    // ==========================
-
-    /**
-     * Busca un departamento por su nombre.
-     * @param string $nombre
-     * @return object|false
-     */
-
-public function findByNombre(string $nombre) {
-    $sql = "SELECT * FROM departamentos WHERE nombre = :nombre LIMIT 1";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute(['nombre' => $nombre]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-    /**
-     * Verifica si un departamento tiene equipos asociados.
-     * @param int $departamento_id
-     * @return bool
-     */
-    public function hasEquipos(int $departamento_id): bool
+    public function findByName(string $nombre)
     {
-        $sql = "SELECT COUNT(*) FROM equipos WHERE departamento_id = ?";
+        $sql = "SELECT * FROM {$this->table} WHERE nombre = ?";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$departamento_id]);
-        return $stmt->fetchColumn() > 0;
+        $stmt->execute([$nombre]);
+        return $stmt->fetch(PDO::FETCH_OBJ);
     }
-    
-    public function delete(int $id): bool
+
+    public function countAll()
     {
-        try {
-            $sql = "DELETE FROM {$this->table} WHERE id = ?";
-            $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([$id]);
-        } catch (\PDOException $e) {
-            // Error de integridad referencial
-            return false;
-        }
+        $sql = "SELECT COUNT(*) as total FROM {$this->table}";
+        $stmt = $this->pdo->query($sql);
+        $result = $stmt->fetch(PDO::FETCH_OBJ);
+        return $result ? $result->total : 0;
+    }
+
+    public function findById($id)
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_OBJ);
     }
 }
-

@@ -1,22 +1,17 @@
 <?php
-// Detecta si estás en localhost o en un servidor
-$isLocalhost = in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1']);
+// Configuración de la URL BASE Automática
+// Esto detecta si es HTTP o HTTPS y construye la URL correcta
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+$host = $_SERVER['HTTP_HOST'];
+// Detecta la carpeta del proyecto (quita /public/index.php)
+$path = str_replace('/public/index.php', '', $_SERVER['SCRIPT_NAME']); 
 
-// Define la ruta base según el entorno
-if ($isLocalhost) {
-    define('BASE_URL', '/sgen-support/public/');
-} else {
-    // Ajusta esto según el dominio real en producción
-    define('BASE_URL', '/');
-}
+// Define la constante BASE_URL automáticamente
+define('BASE_URL', $protocol . '://' . $host . $path . '/');
 
-// Ruta absoluta del sistema en el servidor
-define('ROOT_PATH', realpath(dirname(__FILE__)) . '/');
-
-// Puedes agregar otras constantes útiles aquí
-define('ASSETS_PATH', BASE_URL . 'assets/');
-define('CSS_PATH', BASE_URL . 'css/');
-define('JS_PATH', BASE_URL . 'js/');
-define('IMG_PATH', BASE_URL . 'images/');
-define('VENDOR_PATH', BASE_URL . 'vendors/');
-?>
+// Configuración de Base de Datos
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'sgen_db'); // Asegúrate que este nombre sea exacto en Linux
+define('DB_USER', 'root');
+define('DB_PASS', ''); // Cambia esto según tu servidor Linux
+define('DB_CHARSET', 'utf8mb4');

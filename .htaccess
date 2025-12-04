@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Redirigir la raíz del sitio a la carpeta public
+    RewriteRule ^$ public/ [L]
+
+    # 2. Redirigir cualquier otra petición a public/
+    #    SOLO SI la URL no contiene ya la palabra "public"
+    RewriteCond %{REQUEST_URI} !public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

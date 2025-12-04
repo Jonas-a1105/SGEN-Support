@@ -1,77 +1,66 @@
-<!-- Menú lateral izquierdo (plantilla base) -->
-<aside id="left-side-menu">
-    <ul class="collapsible collapsible-accordion">
-        <li class="no-padding">
-            <a href="RUTA_1.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 1
+<?php
+// src/Views/equipos/lista.php
+?>
+<div class="centered-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 mb-0 text-dark">Listado de Equipos</h2>
+        <?php if ($_SESSION['rol'] === 'admin'): ?>
+            <a class="btn btn-primary shadow-sm" href="<?= BASE_URL ?>equipos/crear" title="Registrar nuevo equipo">
+                <i class="bi bi-plus-circle me-1"></i>
+                Registrar Nuevo Equipo
             </a>
-        </li>
-        <li class="no-padding">
-            <a href="RUTA_2.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 2
-            </a>
-        </li>
-    </ul>
-</aside>
+        <?php endif; ?>
+    </div>
 
-<article>
-    <div class="conten-body">
-        <div class="col s12 m12 l12">
-            <div class="card-panel">
-                <!-- Título y botón -->
-                <div class="card-title">
-                    <div class="row">
-                        <div class="header-title-left col s12 m6">
-                            <h5><?php echo $titulo; ?></h5>
-                        </div>
-                        <div class="btn-action-title col s12 m6 align-right">
-                            <a class="btn" href="<?=BASE_URL?>equipos/crear" title="Registrar nuevo equipo">+ Registrar Nuevo Equipo</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabla de equipos -->
-                <div class="row row-end">
-                    <div class="col s12">
-                        <table id="equipos" class="datatable bordered highlight table-responsive">
-                            <thead>
-                                <tr>
-                                    <th data-priority="0" class="hide-on-small-only">ID</th>
-                                    <th data-priority="1">Serial</th>
-                                    <th data-priority="2" class="hide-on-small-only">Tipo</th>
-                                    <th data-priority="3" class="hide-on-small-only">Departamento</th>
-                                    <th data-priority="4" class="hide-on-small-only">Modelo</th>
-                                    <th data-priority="5" class="no-sort">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($equipos)): ?>
-                                    <tr class="odd">
-                                        <td colspan="6" class="dataTables_empty">Ningún dato disponible en esta tabla</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($equipos as $e): ?>
-                                        <tr id="<?php echo $e->id; ?>" class="row_table">
-                                            <td class="hide-on-small-only nowrap"><?php echo $e->id; ?></td>
-                                            <td class="uppercase"><?php echo htmlspecialchars($e->serial); ?></td>
-                                            <td class="hide-on-small-only"><?php echo htmlspecialchars($e->tipo); ?></td>
-                                            <td class="hide-on-small-only"><?php echo htmlspecialchars($e->departamento_nombre ?? 'N/A'); ?></td>
-                                            <td class="hide-on-small-only">
-                                                <?php echo htmlspecialchars(substr($e->modelo, 0, 50)) . (strlen($e->modelo) > 50 ? '...' : ''); ?>
-                                            </td>
-                                            <td class="adjusted-size">
-                                                <a title="Editar" href="<?=BASE_URL?>equipos/editar/<?php echo $e->id; ?>"><i class="ico-edit tiny"></i></a>
-                                                <a title="Eliminar" href="<?=BASE_URL?>equipos/eliminar/<?php echo $e->id; ?>" onclick="return confirm('¿Está seguro de eliminar el equipo con serial: <?php echo $e->serial; ?>?')"><i class="ico-delete tiny"></i></a>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                        
-                    </div>
-                </div>
-            </div> <!-- card-panel -->
-        </div> <!-- col -->
-    </div> <!-- conten-body -->
-</article>
+    <div class="table-responsive">
+        <table id="equipos" class="table table-striped table-hover table-sm" style="width:100%">
+            <thead>
+                <tr>
+                    <th data-priority="1">Código</th>
+                    <th data-priority="2">Serial</th>
+                    <th data-priority="3" class="d-none d-md-table-cell">Tipo</th>
+                    <th data-priority="4" class="d-none d-md-table-cell">Marca/Modelo</th>
+                    <th data-priority="5" class="d-none d-md-table-cell">Departamento</th>
+                    <th data-priority="6">Estado</th>
+                    <th data-priority="7" class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($equipos as $e): ?>
+                    <tr>
+                        <td class="fw-bold"><?= htmlspecialchars($e->codigo_inventario) ?></td>
+                        <td class="text-uppercase"><?= htmlspecialchars($e->numero_serie) ?></td>
+                        <td class="d-none d-md-table-cell"><?= ucfirst($e->tipo) ?></td>
+                        <td class="d-none d-md-table-cell">
+                            <?= htmlspecialchars($e->marca . ' ' . $e->modelo) ?>
+                        </td>
+                        <td class="d-none d-md-table-cell"><?= htmlspecialchars($e->departamento_nombre ?? 'Sin Asignar') ?></td>
+                        <td>
+                            <?php
+                            $badgeClass = 'bg-secondary';
+                            if ($e->estado == 'disponible') $badgeClass = 'bg-success';
+                            elseif ($e->estado == 'en_uso') $badgeClass = 'bg-primary';
+                            elseif ($e->estado == 'en_reparacion') $badgeClass = 'bg-warning text-dark';
+                            elseif ($e->estado == 'fuera_de_servicio') $badgeClass = 'bg-danger';
+                            ?>
+                            <span class="badge <?= $badgeClass ?>"><?= ucfirst(str_replace('_', ' ', $e->estado)) ?></span>
+                        </td>
+                        <td class="text-end">
+                            <a title="Ver Detalles" href="<?= BASE_URL ?>equipos/ver/<?= $e->id ?>" class="text-info me-2">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                            <?php if ($_SESSION['rol'] === 'admin'): ?>
+                                <a title="Editar" href="<?= BASE_URL ?>equipos/editar/<?= $e->id ?>" class="text-warning me-2">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a title="Eliminar" href="<?= BASE_URL ?>equipos/eliminar/<?= $e->id ?>" class="text-danger" onclick="return confirm('¿Está seguro de eliminar el equipo <?= htmlspecialchars($e->codigo_inventario) ?>?')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>

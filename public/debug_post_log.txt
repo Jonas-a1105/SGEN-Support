@@ -1,0 +1,32 @@
+POST DATA:
+Array
+(
+    [id] => 63
+    [codigo_inventario] => 12422421412414
+    [numero_serie] => 41242142142141
+    [tipo] => computadora
+    [tipo_otro] => 
+    [estado] => nuevo
+    [marca] => DELL
+    [modelo] => OPTIPLEX OFICINA SLIM
+    [procesador] => 
+    [memoria_ram] => 
+    [almacenamiento] => 
+    [sistema_operativo] => 
+    [direccion_ip] => 
+    [driver] => 
+    [toner] => 
+    [departamento_id] => 21
+    [empleado_id] => 
+    [ubicacion_fisica] => 
+    [fecha_compra] => 
+    [proveedor] => 
+    [proveedor_rif] => 
+    [garantia] => 
+    [valor_compra] => 
+)
+
+
+ESTADO: nuevo
+
+ESTADO AFTER VALIDATOR: nuevo
