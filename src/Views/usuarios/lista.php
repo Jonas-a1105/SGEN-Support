@@ -1,70 +1,62 @@
-<!-- Menú lateral izquierdo (plantilla base) -->
-<aside id="left-side-menu">
-    <ul class="collapsible collapsible-accordion">
-        <li class="no-padding">
-            <a href="RUTA_1.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 1
-            </a>
-        </li>
-        <li class="no-padding">
-            <a href="RUTA_2.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 2
-            </a>
-        </li>
-    </ul>
-</aside>
-<article>
-    <div class="conten-body">
-        <div class="col s12 m12 l12">
-            <div class="card-panel">
-                <!-- Título y botón -->
-                <div class="card-title">
-                    <div class="row">
-                        <div class="header-title-left col s12 m6">
-                            <h5><?php echo $titulo; ?></h5>
-                        </div>
-                        <div class="btn-action-title col s12 m6 align-right">
-                            <a class="btn" href="<?=BASE_URL?>usuarios/crear" title="Registrar nuevo equipo">+ Crear Nuevo Usuario</a>
-                        </div>
-                    </div>
-                </div>                
-                <!-- Tabla de equipos -->
-                <div class="row row-end">
-                    <div class="col s12">
-                        <table id="equipos" class="bordered highlight table-responsive">
-                            <thead>
-                                <tr>
-                                    <th data-priority="0" class="hide-on-small-only">ID</th>
-                                    <th data-priority="1" class="hide-on-small-only">Usuario</th>
-                                    <th data-priority="2" class="hide-on-small-only">Nivel acceso</th>
-                                    <th data-priority="3" class="no-sort">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($usuarios)): ?>
-                                    <tr class="odd">
-                                        <td colspan="4" class="dataTables_empty">Ningún dato disponible en esta tabla</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($usuarios as $u): ?>
-                                        <tr id="<?php echo $u->id; ?>" class="row_table">
-                                            <td class="hide-on-small-only nowrap"><?php echo $u->id; ?></td>
-                                            <td class="uppercase"><?php echo htmlspecialchars($u->username); ?></td>
-                                            <td class="hide-on-small-only"><?php echo htmlspecialchars(ucfirst($u->rol)); ?></td>
-                                            <td class="adjusted-size">
-                                                <a title="Editar" href="<?=BASE_URL?>usuarios/editar/<?php echo $u->id; ?>"><i class="ico-edit tiny"></i></a>
-                                                <a title="Eliminar" href="<?=BASE_URL?>usuarios/eliminar/<?php echo $u->id; ?>" onclick="return confirm('¿Está seguro de eliminar el usuario <?php echo $u->username; ?>?')"><i class="ico-delete tiny"></i></a>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div> <!-- card-panel -->
-        </div> <!-- col -->
-    </div> <!-- conten-body -->
-</article>
+<div class="centered-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 mb-0 text-dark">Listado de Usuarios</h2>
+        <a class="btn btn-primary shadow-sm" href="<?= BASE_URL ?>usuarios/crear" title="Crear Nuevo Usuario">
+            <i class="bi bi-person-plus-fill me-1"></i>
+            Crear Nuevo Usuario
+        </a>
+    </div>
 
-
+    <div class="table-responsive">
+        <table id="usuarios-table" class="table table-striped table-hover table-sm" style="width:100%">
+            <thead>
+                <tr>
+                    <th data-priority="0" class="d-none d-md-table-cell">ID</th>
+                    <th data-priority="1">Usuario (Username)</th>
+                    <th data-priority="2" class="d-none d-md-table-cell">Nivel de Acceso</th>
+                    <th data-priority="3" class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($usuarios as $u): ?>
+                    <?php
+                        // --- Lógica para Badges de Rol ---
+                        $rol_class = '';
+                        $rol_texto = ucfirst($u->rol);
+                        switch ($u->rol) {
+                            case 'admin':
+                                $rol_class = 'badge bg-primary';
+                                break;
+                            case 'tecnico':
+                                $rol_class = 'badge bg-warning text-dark';
+                                break;
+                            case 'consultor':
+                                $rol_class = 'badge bg-secondary';
+                                break;
+                        }
+                    ?>
+                    <tr>
+                        <td class="d-none d-md-table-cell"><?= $u->id ?></td>
+                        <td class="text-uppercase"><?= htmlspecialchars($u->username) ?></td>
+                        <td class="d-none d-md-table-cell">
+                            <span class="<?= $rol_class ?>"><?= $rol_texto ?></span>
+                        </td>
+                        <td class="text-end">
+                            <a title="Editar" href="<?= BASE_URL ?>usuarios/editar/<?= $u->id ?>" class="text-warning me-2">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <?php if ($u->id != 1): ?>
+                               <a title="Eliminar" 
+                                  href="<?= BASE_URL ?>usuarios/eliminar/<?= $u->id ?>" 
+                                  class="text-danger btn-delete" 
+                                  data-name="<?= htmlspecialchars($u->username) ?>">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>

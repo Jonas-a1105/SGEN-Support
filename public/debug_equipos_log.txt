@@ -1,0 +1,199 @@
+Array
+(
+    [0] => stdClass Object
+        (
+            [id] => 67
+            [codigo_inventario] => 421412
+            [numero_serie] => 124242421
+            [tipo] => computadora
+            [marca] => DELL
+            [modelo] => OPTIPLEX OFICINA SLIM
+            [procesador] => 
+            [memoria_ram] => 
+            [almacenamiento] => 
+            [sistema_operativo] => 
+            [direccion_ip] => 
+            [driver] => 
+            [toner] => 
+            [departamento_id] => 
+            [empleado_id] => 
+            [ubicacion_fisica] => 
+            [estado] => 
+            [fecha_compra] => 
+            [proveedor] => 
+            [proveedor_rif] => 
+            [garantia] => 
+            [valor_compra] => 
+            [created_at] => 2025-11-24 20:26:03
+            [updated_at] => 2025-11-24 20:26:03
+        )
+
+    [1] => stdClass Object
+        (
+            [id] => 66
+            [codigo_inventario] => 41421
+            [numero_serie] => 42142141
+            [tipo] => computadora
+            [marca] => DELL
+            [modelo] => OPTIPLEX OFICINA SLIM
+            [procesador] => 
+            [memoria_ram] => 
+            [almacenamiento] => 
+            [sistema_operativo] => 
+            [direccion_ip] => 
+            [driver] => 
+            [toner] => 
+            [departamento_id] => 
+            [empleado_id] => 
+            [ubicacion_fisica] => 
+            [estado] => 
+            [fecha_compra] => 
+            [proveedor] => 
+            [proveedor_rif] => 
+            [garantia] => 
+            [valor_compra] => 
+            [created_at] => 2025-11-24 20:10:18
+            [updated_at] => 2025-11-24 20:10:18
+        )
+
+    [2] => stdClass Object
+        (
+            [id] => 65
+            [codigo_inventario] => 42142241
+            [numero_serie] => 4124214
+            [tipo] => computadora
+            [marca] => DELL
+            [modelo] => HP  listen master 16
+            [procesador] => 
+            [memoria_ram] => 
+            [almacenamiento] => 
+            [sistema_operativo] => 
+            [direccion_ip] => 
+            [driver] => 
+            [toner] => 
+            [departamento_id] => 
+            [empleado_id] => 
+            [ubicacion_fisica] => 
+            [estado] => 
+            [fecha_compra] => 
+            [proveedor] => 
+            [proveedor_rif] => 
+            [garantia] => 
+            [valor_compra] => 
+            [created_at] => 2025-11-24 20:01:06
+            [updated_at] => 2025-11-24 20:01:06
+        )
+
+    [3] => stdClass Object
+        (
+            [id] => 64
+            [codigo_inventario] => 06
+            [numero_serie] => 142412421412412
+            [tipo] => computadora
+            [marca] => DELL
+            [modelo] => OPTIPLEX OFICINA SLIM
+            [procesador] => 
+            [memoria_ram] => 
+            [almacenamiento] => 
+            [sistema_operativo] => 
+            [direccion_ip] => 
+            [driver] => 
+            [toner] => 
+            [departamento_id] => 
+            [empleado_id] => 
+            [ubicacion_fisica] => 
+            [estado] => 
+            [fecha_compra] => 
+            [proveedor] => 
+            [proveedor_rif] => 
+            [garantia] => 
+            [valor_compra] => 
+            [created_at] => 2025-11-24 19:53:04
+            [updated_at] => 2025-11-24 19:53:04
+        )
+
+    [4] => stdClass Object
+        (
+            [id] => 61
+            [codigo_inventario] => 05
+            [numero_serie] => 12412224122
+            [tipo] => computadora
+            [marca] => DELL
+            [modelo] => OPTIPLEX OFICINA SLIM
+            [procesador] => i7-6700k
+            [memoria_ram] => 128gb
+            [almacenamiento] => 500GB SSD
+            [sistema_operativo] => WIMDOWS
+            [direccion_ip] => 192.168.0.1
+            [driver] => Realtek
+            [toner] => NADA
+            [departamento_id] => 
+            [empleado_id] => 
+            [ubicacion_fisica] => Direccion Informática, en el 1er piso a la esquina antes de cruzar.
+            [estado] => 
+            [fecha_compra] => 2025-11-26
+            [proveedor] => Computer Tecnology C.A Barquicenter
+            [proveedor_rif] => 41257212
+            [garantia] => 2026-01-26
+            [valor_compra] => 500.00
+            [created_at] => 2025-11-24 19:13:02
+            [updated_at] => 2025-11-24 19:13:02
+        )
+
+    [5] => stdClass Object
+        (
+            [id] => 60
+            [codigo_inventario] => 04
+            [numero_serie] => 14242142144
+            [tipo] => computadora
+            [marca] => DELL
+            [modelo] => OPTIPLEX OFICINA SLIM
+            [procesador] => i7-6700k
+            [memoria_ram] => 128gb
+            [almacenamiento] => 1T SSD
+            [sistema_operativo] => UBUNTU
+            [direccion_ip] => 192.168.0.1
+            [driver] => Realtek
+            [toner] => NADA
+            [departamento_id] => 
+            [empleado_id] => 
+            [ubicacion_fisica] => Direccion Informática, en el 1er piso a la esquina antes de cruzar.
+            [estado] => 
+            [fecha_compra] => 2025-11-25
+            [proveedor] => Computer Tecnology C.A Barquicenter
+            [proveedor_rif] => 41257212
+            [garantia] => 2026-01-26
+            [valor_compra] => 100.00
+            [created_at] => 2025-11-24 19:04:51
+            [updated_at] => 2025-11-24 19:04:51
+        )
+
+    [6] => stdClass Object
+        (
+            [id] => 59
+            [codigo_inventario] => 03
+            [numero_serie] => 124241241
+            [tipo] => computadora
+            [marca] => DELL
+            [modelo] => OPTIPLEX OFICINA SLIM
+            [procesador] => i7-6700k
+            [memoria_ram] => 128gb
+            [almacenamiento] => 1T SSD
+            [sistema_operativo] => UBUNTU
+            [direccion_ip] => 192.168.0.0.1
+            [driver] => Realtek
+            [toner] => NADA
+            [departamento_id] => 
+            [empleado_id] => 
+            [ubicacion_fisica] => Departamento de Informática
+            [estado] => 
+            [fecha_compra] => 2025-11-24
+            [proveedor] => Computer Tecnology C.A Barquicenter
+            [proveedor_rif] => 41257212
+            [garantia] => 2026-01-24
+            [valor_compra] => 150.00
+            [created_at] => 2025-11-24 17:24:07
+            [updated_at] => 2025-11-24 17:24:07
+        )
+
+)

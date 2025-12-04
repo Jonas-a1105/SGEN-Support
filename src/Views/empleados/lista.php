@@ -1,71 +1,65 @@
-<!-- Menú lateral izquierdo (plantilla base) -->
-<aside id="left-side-menu">
-    <ul class="collapsible collapsible-accordion">
-        <li class="no-padding">
-            <a href="RUTA_1.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 1
+<?php
+// src/Views/empleados/lista.php
+?>
+<div class="centered-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 mb-0 text-dark">Listado de Empleados</h2>
+        <?php if ($_SESSION['rol'] === 'admin'): ?>
+            <a class="btn btn-primary shadow-sm" href="<?= BASE_URL ?>empleados/crear" title="Registrar Nuevo Empleado">
+                <i class="bi bi-person-plus-fill me-1"></i>
+                Registrar Nuevo Empleado
             </a>
-        </li>
-        <li class="no-padding">
-            <a href="RUTA_2.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 2
-            </a>
-        </li>
-    </ul>
-</aside>
-<article>
-    <div class="conten-body">
-        <div class="col s12 m12 l12">
-            <div class="card-panel">
-                <!-- Título y botón -->
-                <div class="card-title">
-                    <div class="row">
-                        <div class="header-title-left col s12 m6">
-                            <h5><?php echo $titulo; ?></h5>
-                        </div>
-                        <div class="btn-action-title col s12 m6 align-right">
-                            <a class="btn" href="<?=BASE_URL?>empleados/crear" title="Registrar Nuevo Empleado">+ Registrar Nuevo Empleado</a>
-                        </div>
-                    </div>
-                </div>
+        <?php endif; ?>
+    </div>
 
-                <!-- Tabla de empleados -->
-                <div class="row row-end">
-                    <div class="col s12">
-                        <table id="empleados" class="datatable bordered highlight table-responsive">
-                            <thead>
-                                <tr>
-                                    <th data-priority="0" class="hide-on-small-only">ID</th>
-                                    <th data-priority="1">Nombre Completo</th>
-                                    <th data-priority="3" class="hide-on-small-only">Email</th>
-                                    <th data-priority="4" class="hide-on-small-only">Usuario</th>
-                                    <th data-priority="5" class="no-sort">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($empleados)): ?>
-                                    <tr>
-                                        <td colspan="5" style="text-align: center;">No hay empleados registrados.</td>
-                                    </tr>
-                                    <?php else: ?>
-                                        <?php foreach ($empleados as $e): ?>
-                                        <tr id="<?php echo $e->id; ?>" class="row_table">
-                                            <td class="hide-on-small-only nowrap"><?php echo $e->id; ?></td>
-                                            <td class="uppercase"><?php echo htmlspecialchars("{$e->nombre} {$e->apellido}"); ?></td>
-                                            <td class="hide-on-small-only"><?php echo htmlspecialchars($e->email); ?></td>
-                                            <td class="hide-on-small-only"><?php echo htmlspecialchars($e->usuario_username ?? 'NO VINCULADO'); ?></td>
-                                            <td class="adjusted-size">
-                                                <a title="Editar" href="<?=BASE_URL?>empleados/editar/<?php echo $e->id; ?>"><i class="ico-edit tiny"></i></a>
-                                                <a title="Eliminar" href="<?=BASE_URL?>empleados/eliminar/<?php echo $e->id; ?>" onclick="return confirm('¿Está seguro de eliminar a: <?php echo $e->nombre; ?>?')"><i class="ico-delete tiny"></i></a>
-                                            </td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div> <!-- card-panel -->
-        </div> <!-- col -->
-    </div> <!-- conten-body -->
-</article>
+    <div class="table-responsive">
+        <table id="empleados-table" class="table table-striped table-hover" style="width:100%">
+            <thead>
+                <tr>
+                    <th data-priority="1">Nombre Completo</th>
+                    <th data-priority="2">Cédula</th>
+                    <th data-priority="3" class="d-none d-md-table-cell">Email</th>
+                    <th data-priority="4" class="d-none d-lg-table-cell">Departamento</th>
+                    <th data-priority="5" class="d-none d-md-table-cell">Usuario Vinculado</th>
+                    <th data-priority="6" class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($empleados as $e): ?>
+                    <tr>
+                        <td class="text-uppercase"><?= htmlspecialchars("{$e->nombre} {$e->apellido}") ?></td>
+                        <td><?= htmlspecialchars($e->cedula) ?></td>
+                        <td class="d-none d-md-table-cell"><?= htmlspecialchars($e->email) ?></td>
+                        <td class="d-none d-lg-table-cell">
+                            <?php if ($e->departamento_nombre): ?>
+                                <span class="badge bg-info"><?= htmlspecialchars($e->departamento_nombre) ?></span>
+                            <?php else: ?>
+                                <span class="text-muted">Sin asignar</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                            <?php if ($e->usuario_username): ?>
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    <?= htmlspecialchars($e->usuario_username) ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary">NO VINCULADO</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-end">
+                            <?php if ($_SESSION['rol'] === 'admin'): ?>
+                                <a title="Editar" href="<?= BASE_URL ?>empleados/editar/<?= $e->id ?>" class="text-warning me-2">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a title="Eliminar" href="<?= BASE_URL ?>empleados/eliminar/<?= $e->id ?>" class="text-danger" onclick="return confirm('¿Está seguro de eliminar a: <?= htmlspecialchars($e->nombre) ?>?')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -4,98 +4,93 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\Usuario;
 use App\Models\SesionLog; 
+
 class AuthController extends Controller
 {
     private $usuarioModel;
+    private $sesionLogModel;
 
     public function __construct()
     {
-        // Nota: No llamamos a parent::__construct() si este tiene checkAuth()
-        // Este controlador debe ser la excepción para permitir acceso sin login.
         $this->usuarioModel = new Usuario();
+        $this->sesionLogModel = new SesionLog();
     }
 
-    // ==========================
-    // VISTAS
-    // ==========================
-
-    /**
-     * Muestra la vista de login.
-     * Acceso: /auth/login
-     */
     public function login()
     {
-        // Render simple: no incluye header/footer del layout principal
         $this->renderSimple('auth/login');
     }
 
-    // ==========================
-    // PROCESOS DE AUTENTICACIÓN
-    // ==========================
-
-    /**
-     * Procesa el intento de login (POST).
-     * Acceso: /auth/procesar
-     */
     public function procesar()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /sgen-support/public/auth/login');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit;
         }
 
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        // 1. Buscar al usuario por username
         $usuario = $this->usuarioModel->findByUsername($username);
 
-        // 2. Verificar si el usuario existe y la contraseña coincide
         if ($usuario && password_verify($password, $usuario->password)) {
             
-            // Éxito: iniciar sesión
-            session_regenerate_id(true); // Previene fijación de sesión
+            // 1. Antes de crear una nueva sesión, cerramos todas las
+            //    sesiones colgadas de ESE usuario.
+            $this->sesionLogModel->closeAllUserSessions($usuario->id);
 
-            // Guardar datos clave en la sesión
+            // 2. Ahora creamos la nueva sesión
+            session_regenerate_id(true); 
+
             $_SESSION['user_id']  = $usuario->id;
             $_SESSION['username'] = $usuario->username;
             $_SESSION['rol']      = $usuario->rol;
-            $sesionLogModel = new SesionLog();
-            $log_id = $sesionLogModel->createLog( // <-- NUEVO
-            $usuario->id, 
-            $usuario->username
-        );
+            $_SESSION['tema']     = $usuario->tema;
+            $_SESSION['empleado_id'] = $usuario->empleado_id ?? null;
+            
+            // 3. Obtener departamento_id
+            // Prioridad 1: Asignado directamente al usuario
+            // Prioridad 2: Heredado del empleado vinculado
+            $departamento_id = $usuario->departamento_id ?? null;
+
+            if (!$departamento_id && $usuario->empleado_id) {
+                require_once __DIR__ . '/../Models/Empleado.php';
+                $empleadoModel = new \App\Models\Empleado();
+                $empleado = $empleadoModel->findById($usuario->empleado_id);
+                if ($empleado) {
+                    $departamento_id = $empleado->departamento_id;
+                }
+            }
+            $_SESSION['departamento_id'] = $departamento_id;
+            
+            $log_id = $this->sesionLogModel->createLog(
+                $usuario->id, 
+                $usuario->username
+            );
         
-        $_SESSION['session_log_id'] = $log_id;
-            // Redirigir al dashboard (o lista de soportes)
-            header('Location: /sgen-support/public/');
+            $_SESSION['session_log_id'] = $log_id;
+            
+            header('Location: ' . BASE_URL);
             exit;
 
         } else {
-            // Falla: usuario o contraseña incorrectos
             $this->setFlashMessage('error', 'Credenciales incorrectas. Intente de nuevo.');
-            header('Location: /sgen-support/public/auth/login');
+            header('Location: '. BASE_URL . 'auth/login');
             exit;
         }
     }
 
-    /**
-     * Cierra la sesión del usuario.
-     * Acceso: /auth/logout
-     */
     public function logout()
     {
         $log_id = $_SESSION['session_log_id'] ?? null;
         if ($log_id) {
-        $sesionLogModel = new SesionLog();
-        $sesionLogModel->updateLogoutTime($log_id);
-    }
-        session_unset();   // Libera todas las variables de sesión
-        session_destroy(); // Destruye la sesión
+            $this->sesionLogModel->updateLogoutTime($log_id);
+        }
+        session_unset();   
+        session_destroy(); 
         
-        // Redirige al login
         $this->setFlashMessage('success', 'Has cerrado sesión correctamente.');
-        header('Location: /sgen-support/public/auth/login');
+        header('Location: ' . BASE_URL . 'auth/login');
         exit;
     }
 }

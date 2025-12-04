@@ -1,94 +1,48 @@
-<!-- Menú lateral izquierdo (plantilla base) -->
-<aside id="left-side-menu">
-    <ul class="collapsible collapsible-accordion">
-        <li class="no-padding">
-            <a href="RUTA_1.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 1
-            </a>
-        </li>
-        <li class="no-padding">
-            <a href="RUTA_2.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 2
-            </a>
-        </li>
-    </ul>
-</aside>
-
-<article>
-    <div class="conten-body">
-        <div class="col s12">
-            <div class="card-panel">
-                <!-- Título -->
-                <div class="card-title">
-                    <div class="row">
-                        <div class="header-title-left col s12 m6">
-                            <h5><?php echo $titulo; ?></h5>
-                        </div>
-                    </div>
+<div class="row">
+    <div class="col-lg-8 col-xl-6 mx-auto">
+        <div class="card shadow-sm">
+            
+            <div class="card-header">
+                <h5 class="mb-0">
+                    Asignar Técnico a Soporte #<?= htmlspecialchars($soporte->id) ?>
+                </h5>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <strong>Equipo:</strong> <?= htmlspecialchars($soporte->equipo_serial ?? 'N/A') ?><br>
+                    <strong>Descripción:</strong> <?= htmlspecialchars(substr($soporte->descripcion, 0, 70)) ?>...
                 </div>
 
-                <!-- Texto informativo -->
-                <div class="row">
-                    <div class="col s12">
-                        <div class="text-info">
-                            <div class="text-content">
-                                Text content
-                            </div>
-                        </div>
+                <hr>
+
+                <form action="<?= BASE_URL ?>soportes/procesar_asignacion" method="POST">
+                    
+                    <input type="hidden" name="soporte_id" value="<?= htmlspecialchars($soporte->id) ?>">
+
+                    <div class="mb-3">
+                        <label for="empleado_id" class="form-label">Seleccione un Técnico</label>
+                        <select id="empleado_id" name="empleado_id" class="form-select" required>
+                            <option value="" disabled selected>Elegir técnico...</option>
+                            <?php foreach ($tecnicos as $tecnico): ?>
+                                <option value="<?= $tecnico->empleado_id ?>">
+                                    <?= htmlspecialchars($tecnico->nombre_completo . ' (' . $tecnico->username . ')') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                </div>
 
-                <!-- Formulario de asignación -->
-                <div class="row row-end">
-                    <form action="<?=BASE_URL?>soportes/procesar_asignacion" method="POST">
-                        <input type="hidden" name="soporte_id" value="<?php echo $soporte->id; ?>">
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="<?= BASE_URL ?>soportes/ver/<?= $soporte->id ?>" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-person-check-fill me-1"></i>
+                            Asignar y Poner "En Proceso"
+                        </button>
+                    </div>
 
-                        <div class="col s12">
-                            <span id="name_member">
-                                Ticket: <b>#<?php echo $soporte->id; ?></b>
-                            </span> |
-                            Estado:
-                            <span class="estado-<?php echo $soporte->estado; ?>">
-                                <?php echo $soporte->estado; ?>
-                            </span>
-                        </div>
+                </form>
+            </div> </div> </div> </div>
 
-                        <div class="row">
-                            <div class="input-field col s12">
-                                <select id="empleado_id" name="empleado_id" required>
-                                    <option value="" disabled selected>Seleccione un Técnico</option>
-                                    <?php 
-                                    if (isset($tecnicos) && is_array($tecnicos)):
-                                        foreach ($tecnicos as $tecnico): 
-                                            $selected = ($_SESSION['user_id'] == $tecnico->usuario_id) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?php echo $tecnico->empleado_id; ?>" <?php echo $selected; ?>>
-                                            <?php echo htmlspecialchars($tecnico->username . " (" . $tecnico->nombre . " " . $tecnico->apellido . ")"); ?>
-                                        </option>
-                                    <?php 
-                                        endforeach;
-                                    endif;
-                                    ?>
-                                </select>
-
-                                <?php if (empty($tecnicos)): ?>
-                                    <p style="color: red;">¡Advertencia! No hay empleados con rol 'técnico' para asignar.</p>
-                                <?php endif; ?>
-
-                                <label class="required" for="empleado_id">Seleccionar Técnico:</label>
-                            </div>
-                        </div>
-
-                        <!-- Botones -->
-                        <div class="row row-end btn-actions">
-                            <div class="col l12">
-                                <input id="send_member" class="btn btn-first" type="submit" value=" Confirmar Asignación"/>
-                                <a href="<?=BASE_URL?>soportes/" class="btn grey" title="Regresar">Cancelar</a>
-                            </div>
-                        </div>
-                    </form>
-                </div> <!-- row-end -->
-            </div> <!-- card-panel -->
-        </div> <!-- col s12 -->
-    </div> <!-- conten-body -->
-</article>

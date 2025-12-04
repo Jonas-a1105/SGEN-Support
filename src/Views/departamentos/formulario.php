@@ -1,58 +1,46 @@
-<!-- Menú lateral izquierdo (plantilla base) -->
-<aside id="left-side-menu">
-    <ul class="collapsible collapsible-accordion">
-        <li class="no-padding">
-            <a href="RUTA_1.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 1
-            </a>
-        </li>
-        <li class="no-padding">
-            <a href="RUTA_2.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 2
-            </a>
-        </li>
-    </ul>
-</aside>
 <?php 
-$is_editing = isset($departamento) && $departamento !== null; 
-$action_title = $is_editing ? 'Editar' : 'Crear';
+$es_edicion = isset($departamento) && $departamento !== null; 
+$action_title = $es_edicion ? 'Editar' : 'Crear';
+
+// Valor para el campo
+$val_nombre = $es_edicion ? $departamento->nombre : '';
+$val_ubicacion = $es_edicion ? ($departamento->ubicacion ?? '') : '';
 ?>
-<article>
-    <div class="conten-body">
-        <div class="card-panel">
-            <!-- Título -->
-            <div class="card-title">
-                <div class="row">
-                    <div class="header-title-left col s12">
-                        <h5><?php echo $action_title; ?> Departamento</h5>
-                    </div>
-                </div>
+
+<div class="row">
+    <div class="col-lg-10 col-xl-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><?= $action_title ?> Departamento</h5>
             </div>
+            
+            <div class="card-body p-4 p-md-5">
+                <form action="<?= BASE_URL ?>departamentos/guardar" method="POST">
+                    
+                    <?php if ($es_edicion): ?>
+                        <input type="hidden" name="id" value="<?= $departamento->id ?>">
+                    <?php endif; ?>
 
-            <!-- Formulario -->
-            <form action="<?=BASE_URL?>departamentos/guardar" method="POST">
-                <?php if ($is_editing): ?>
-                    <input type="hidden" name="id" value="<?php echo $departamento->id; ?>">
-                <?php endif; ?>
-
-                <div id="pp">
-                    <!-- nombre -->
-                    <div class="row">
-                        <div class="input-field col s12">
-                            <input type="text" id="nombre" name="nombre" required value="<?php echo $is_editing ? htmlspecialchars($departamento->nombre) : ''; ?>" />
-                            <label class="required" for="nombre">Nombre del Departamento:</label>
-                        </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del Departamento" required value="<?= htmlspecialchars($val_nombre) ?>">
+                        <label for="nombre">Nombre delDepartamento</label>
                     </div>
-                <!-- Botones -->
-                <div class="row btn-actions">
-                    <div class="col l12">
-                        <button type="submit" name="action" class="btn waves-effect waves-light btn-first">
-                            <?php echo $is_editing ? 'Actualizar' : 'Registrar'; ?> Departamento
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="ubicacion" name="ubicacion" placeholder="Ubicación" value="<?= htmlspecialchars($val_ubicacion) ?>">
+                        <label for="ubicacion">Ubicación (Edificio, Piso, etc.)</label>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between">
+                        <a href="<?= BASE_URL ?>departamentos" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Regresar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            <?= $action_title ?> Departamento
                         </button>
-                        <a href="<?=BASE_URL?>departamentos" class="btn grey" title="Regresar">Regresar</a>
                     </div>
-                </div>
-            </form>
-        </div> <!-- card-panel -->
-    </div> <!-- conten-body -->
-</article>
+                </form>
+            </div> </div> </div> </div>

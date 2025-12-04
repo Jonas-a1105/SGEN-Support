@@ -1,93 +1,124 @@
-<!-- Menú lateral izquierdo (plantilla base) -->
-<aside id="left-side-menu">
-    <ul class="collapsible collapsible-accordion">
-        <li class="no-padding">
-            <a href="RUTA_1.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 1
-            </a>
-        </li>
-        <li class="no-padding">
-            <a href="RUTA_2.html" class="waves-effect waves-grey">
-                <i class="material-icons">menu</i>Nombre Sección 2
-            </a>
-        </li>
-    </ul>
-</aside>
 <?php 
-    $is_editing = isset($usuario) && $usuario !== null; 
-    $action_title = $is_editing ? 'Editar' : 'Crear';
+$es_edicion = isset($usuario) && $usuario !== null; 
+$action_title = $es_edicion ? 'Editar' : 'Crear';
+
+// Valores para los campos
+$val_id = $es_edicion ? $usuario->id : '';
+$val_username = $es_edicion ? $usuario->username : '';
+$val_rol = $es_edicion ? $usuario->rol : '';
+$val_empleado_id = $es_edicion ? ($usuario->empleado_id ?? '') : '';
+$val_departamento_id = $es_edicion ? ($usuario->departamento_id ?? '') : '';
+
+// Roles permitidos
+$roles_permitidos = $allowedRoles ?? ['admin', 'tecnico', 'consultor'];
 ?>
-<article>
-    <div class="conten-body">
-        <div class="card-panel">
-            <!-- Título -->
-            <div class="card-title">
-                <div class="row">
-                    <div class="header-title-left col s12">
-                        <h5><?php echo $action_title; ?> Usuario</h5>
-                    </div>
-                </div>
-            </div>          
-            <!-- Formulario -->
-            <form action="<?=BASE_URL?>usuarios/guardar" method="POST">
-                <?php if ($is_editing): ?>
-                    <input type="hidden" name="id" value="<?php echo $usuario->id; ?>">
-                <?php endif; ?>
-                <div id="usuario-form">
-                    <!-- Nombre de Usuario: -->
-                    <div class="row">
-                        <div class="input-field col s12">
-                            <input type="text" id="username" name="username" required value="<?php echo $is_editing ? htmlspecialchars($usuario->username) : ''; ?>" />
-                            <label class="required" for="username">Nombre de Usuario:</label>
+
+<div class="row">
+    <div class="col-lg-10 col-xl-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><?= $action_title ?> Usuario</h5>
+            </div>
+            
+            <div class="card-body p-4 p-md-5">
+                <form action="<?= BASE_URL ?>usuarios/guardar" method="POST" autocomplete="off">
+                    
+                    <?php if ($es_edicion): ?>
+                        <input type="hidden" name="id" value="<?= htmlspecialchars($val_id) ?>">
+                    <?php endif; ?>
+
+                    <div class="row g-3">
+                        <!-- Username -->
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Nombre de Usuario" required value="<?= htmlspecialchars($val_username) ?>" autocomplete="off">
+                                <label for="username">Nombre de Usuario *</label>
+                            </div>
                         </div>
-                    </div>
-                    <!-- Contraseña -->
-                    <div class="row">
-                        <div class="input-field col s12">   
-                            <input type="password" id="password" name="password" <?php echo $is_editing ? '' : 'required'; ?> />
-                            <label class="required" for="password">Contraseña<?php echo $is_editing ? ' (Dejar vacío para no cambiar)' : ' *'; ?>:</label>
+
+                        <!-- Rol -->
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="rol" name="rol" required>
+                                    <option value="" disabled <?= !$es_edicion ? 'selected' : '' ?>>Seleccionar Rol</option>
+                                    <?php foreach ($roles_permitidos as $rol): ?>
+                                        <option value="<?= $rol ?>" <?= ($val_rol === $rol) ? 'selected' : '' ?>>
+                                            <?= ucfirst($rol) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <label for="rol">Rol *</label>
+                            </div>
                         </div>
-                    </div>
-                    <!-- Departamento -->
-                    <div class="row">
-                        <div class="input-field col s12">
-                            <select id="rol" name="rol" required>
-                                <option value="" disabled selected>Seleccionar Rol</option>
-                                <?php
-                                $current_rol = $is_editing ? $usuario->rol : ''; 
-                                if (isset($allowedRoles) && is_array($allowedRoles)):
-                                    foreach ($allowedRoles as $rol):
-                                        $selected = ($current_rol === $rol) ? 'selected' : '';
-                                        ?>
-                                    <option value="<?php echo $rol; ?>" <?php echo $selected; ?>>
-                                        <?php echo ucfirst($rol); ?>
-                                    </option>
-                                    <?php
-                                    endforeach;
-                                endif;
-                                ?>
-                            </select>
-                            <?php if (empty($allowedRoles)): ?>
-                                <p style="color: red;">
-                                    ¡Advertencia! No hay Rol de Usuario. 
-                                    <a href="<?=BASE_URL?>departamentos/crear">Cree uno primero</a>.
-                                </p>
+
+                        <!-- Password -->
+                        <div class="col-md-12">
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" <?= !$es_edicion ? 'required' : '' ?> autocomplete="new-password">
+                                <label for="password">Contraseña <?= $es_edicion ? '(Dejar en blanco para mantener)' : '*' ?></label>
+                            </div>
+                            <?php if ($es_edicion): ?>
+                                <small class="text-muted">Dejar en blanco para no cambiar la contraseña actual.</small>
                             <?php endif; ?>
-                            <label class="required" for="rol">Rol de Usuario:</label>
                         </div>
-                    </div>
 
+                        <div class="col-12">
+                            <hr class="my-3">
+                            <h6 class="text-muted mb-3">Asignación (Opcional pero recomendada para Técnicos/Consultores)</h6>
+                        </div>
 
-                <!-- Botones -->
-                <div class="row btn-actions">
-                    <div class="col l12">
-                        <button type="submit" name="action" class="btn waves-effect waves-light btn-first">
-                            <?php echo $is_editing ? 'Actualizar' : 'Crear'; ?> Usuario
+                        <!-- Empleado Vinculado -->
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="empleado_id" name="empleado_id">
+                                    <option value="">-- Sin vincular --</option>
+                                    <?php if (!empty($empleados)): ?>
+                                        <?php foreach ($empleados as $emp): ?>
+                                            <option value="<?= $emp->id ?>" <?= ($val_empleado_id == $emp->id) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($emp->nombre . ' ' . $emp->apellido) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                                <label for="empleado_id">Vincular a Empleado</label>
+                                <small class="text-muted">Si se selecciona, hereda el departamento del empleado.</small>
+                            </div>
+                        </div>
+
+                        <!-- Departamento Directo -->
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="departamento_id" name="departamento_id">
+                                    <option value="">-- Sin asignar --</option>
+                                    <?php if (!empty($departamentos)): ?>
+                                        <?php foreach ($departamentos as $dep): ?>
+                                            <option value="<?= $dep->id ?>" <?= ($val_departamento_id == $dep->id) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($dep->nombre) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                                <label for="departamento_id">Asignar Departamento Directamente</label>
+                                <small class="text-muted">Tiene prioridad sobre el departamento del empleado.</small>
+                            </div>
+                        </div>
+
+                    </div> 
+
+                    <hr class="my-4">
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="<?= BASE_URL ?>usuarios" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Regresar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            <?= $action_title ?> Usuario
                         </button>
-                        <a href="<?=BASE_URL?>usuarios" class="btn grey" title="Regresar">Regresar</a>
                     </div>
-                </div>
-            </form>
-        </div> <!-- card-panel -->
-    </div> <!-- conten-body -->
-</article>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
