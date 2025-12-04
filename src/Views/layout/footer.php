@@ -27,7 +27,7 @@
 </script>
 
 <script src="<?= BASE_URL ?>js/inactivity-logout.js"></script>
-<script src="<?= BASE_URL ?>js/app.js"></script>
+<script src="<?= BASE_URL ?>js/app.js?v=<?= time() ?>"></script>
 
 <?php if (isset($_SESSION['flash_message'])): ?>
     <script>
