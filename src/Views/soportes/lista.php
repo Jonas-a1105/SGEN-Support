@@ -69,16 +69,9 @@ $categorias = $categorias ?? [];
     </div>
 </div>
 
-<!-- Barra de Búsqueda con botón -->
-<div class="row mb-3">
-    <div class="col-md-10">
-        <input type="text" class="form-control form-control-lg" id="globalSearch" placeholder="Buscar por serial, descripción, técnico...">
-    </div>
-    <div class="col-md-2">
-        <button class="btn btn-primary btn-lg w-100" type="button">
-            <i class="bi bi-search me-1"></i> Buscar
-        </button>
-    </div>
+<!-- Barra de Búsqueda automática -->
+<div class="mb-3">
+    <input type="text" class="form-control form-control-lg" id="globalSearch" placeholder="🔍 Buscar por serial, descripción, técnico...">
 </div>
 
 <!-- Filtros en una fila -->
