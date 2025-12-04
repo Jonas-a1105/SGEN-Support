@@ -26,7 +26,7 @@
     document.documentElement.setAttribute('data-theme', savedTheme);
 </script>
 
-<script src="<?= BASE_URL ?>js/inactivity-logout.js"></script>
+<script src="<?= BASE_URL ?>js/inactivity-logout.js"></script>`r`n\u003cscript src="\u003c?= BASE_URL ?\u003ejs/utils.js?v=\u003c?= time() ?\u003e"\u003e\u003c/script\u003e
 <script src="<?= BASE_URL ?>js/app.js?v=<?= time() ?>"></script>
 
 <?php if (isset($_SESSION['flash_message'])): ?>
