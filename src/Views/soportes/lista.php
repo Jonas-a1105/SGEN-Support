@@ -298,3 +298,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<style>
+/* Override DataTables pagination alignment */
+#ticketsTable_paginate {
+    float: right !important;
+    text-align: right !important;
+}
+
+#ticketsTable_info {
+    float: left !important;
+    text-align: left !important;
+}
+
+#ticketsTable_wrapper::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+</style>

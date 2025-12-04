@@ -400,3 +400,20 @@
         font-size: 1.1rem;
     }
 }
+
+/* Paginación alineada a la derecha */
+.dataTables_wrapper .dataTables_paginate {
+    float: right !important;
+    margin-top: 1rem;
+}
+
+.dataTables_wrapper .dataTables_info {
+    float: left !important;
+    padding-top: 1rem;
+}
+
+.dataTables_wrapper::after {
+    content: "";
+    display: table;
+    clear: both;
+}
