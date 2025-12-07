@@ -13,7 +13,7 @@
 
 /* Header del sistema - Azul del sistema */
 .support-header {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #8a8e96 0%, #a7b0b4 100%);
     padding: 1.25rem 1.5rem;
     border-radius: 10px;
     margin-bottom: 1.5rem;
@@ -145,7 +145,7 @@
 }
 
 .support-table-header {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #35808d 0%, #337cc5 100%);
     color: white;
     padding: 1rem 1.5rem;
 }
@@ -310,11 +310,11 @@
 
 .btn-view {
     background: #dbeafe;
-    color: #1e40af;
+    color: #1ea5af;
 }
 
 .btn-view:hover {
-    background: #1e40af;
+    background: #096f81;
     color: white;
 }
 
@@ -346,6 +346,29 @@
 .btn-delete:hover {
     background: #dc2626;
     color: white;
+}
+
+/* Botón Nuevo Soporte - Personalizado */
+.btn-nuevo-soporte {
+    background: linear-gradient(135deg, #38b4bd 0%, #118488 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
+}
+
+.btn-nuevo-soporte:hover {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+.btn-nuevo-soporte:active {
+    transform: translateY(0);
 }
 
 /* Dark Mode Support */

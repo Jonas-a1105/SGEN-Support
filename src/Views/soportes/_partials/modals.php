@@ -31,53 +31,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-<script>
-let signaturePad;
 
-function abrirModalFirma() {
-    const modal = new bootstrap.Modal(document.getElementById('modalFirma'));
-    modal.show();
-    
-    // Inicializar SignaturePad despuÃ©s de que el modal se muestre
-    const canvas = document.getElementById('signature-pad');
-    if (!signaturePad) {
-        signaturePad = new SignaturePad(canvas, {
-            backgroundColor: 'rgb(255, 255, 255)'
-        });
-    } else {
-        signaturePad.clear();
-    }
-    
-    // Ajustar tamaÃ±o del canvas
-    function resizeCanvas() {
-        const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        signaturePad.clear();
-    }
-    // window.addEventListener("resize", resizeCanvas);
-    // resizeCanvas();
-}
-
-function limpiarFirma() {
-    if (signaturePad) {
-        signaturePad.clear();
-    }
-}
-
-function guardarFirma() {
-    if (signaturePad.isEmpty()) {
-        Swal.fire('AtenciÃ³n', 'Por favor proporcione una firma.', 'warning');
-        return;
-    }
-    
-    const dataUrl = signaturePad.toDataURL();
-    document.getElementById('firma_base64').value = dataUrl;
-    document.getElementById('formFirma').submit();
-}
-</script>
     </div>
 </div>
 

@@ -6,7 +6,12 @@ $action_title = $es_edicion ? 'Editar' : 'Registrar';
 // Valores por defecto
 $val_codigo       = $es_edicion ? ($equipo->codigo_inventario ?? '') : '';
 $val_serie        = $es_edicion ? ($equipo->numero_serie ?? '') : '';
+$val_nombre       = $es_edicion ? ($equipo->tipo ?? '') : ''; // Usamos 'tipo' como nombre principal visualmente si no hay campo nombre explicito, pero el diseño pide nombre
+// El model original no tenia 'nombre' explícito para equipos, usaba 'tipo'. 
+// Pero el diseño pide "Nombre / Título". Usaremos 'tipo' mejorado o agregaremos un campo visual. Al guardar, mapearemos.
+// Revisando el controlador: 'tipo' es enum. 
 $val_tipo         = $es_edicion ? ($equipo->tipo ?? '') : '';
+
 $val_marca        = $es_edicion ? ($equipo->marca ?? '') : '';
 $val_modelo       = $es_edicion ? ($equipo->modelo ?? '') : '';
 $val_procesador   = $es_edicion ? ($equipo->procesador ?? '') : '';
@@ -26,7 +31,7 @@ $val_proveedor_rif = $es_edicion ? ($equipo->proveedor_rif ?? '') : '';
 $val_garantia     = $es_edicion ? ($equipo->garantia ?? '') : '';
 $val_valor        = $es_edicion ? ($equipo->valor_compra ?? '') : '';
 
-// Arrays de opciones - si no están definidos desde el controlador, usar valores por defecto
+// Arrays de opciones
 if (!isset($tipos_equipo)) {
     $tipos_equipo = ['computadora', 'impresora', 'escaner', 'servidor', 'monitor', 'teclado', 'raton', 'otro'];
 }
@@ -35,265 +40,324 @@ if (!isset($estados_equipo)) {
 }
 ?>
 
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0"><?= $action_title ?> Equipo</h5>
-            </div>
-            
-            <div class="card-body p-4">
-                <form action="<?= BASE_URL ?>equipos/guardar" method="POST">
-                    
-                    <?php if ($es_edicion): ?>
-                        <input type="hidden" name="id" value="<?= $equipo->id ?>">
-                    <?php endif; ?>
+<!-- Load Assets -->
+<link rel="stylesheet" href="<?= BASE_URL ?>public/css/equipment-form-modern.css?v=<?= time() ?>">
 
-                    <!-- Tabs Navigation -->
-                    <ul class="nav nav-tabs mb-4" id="equipoTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="basica-tab" data-bs-toggle="tab" data-bs-target="#basica" type="button" role="tab">Información Básica</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="tecnica-tab" data-bs-toggle="tab" data-bs-target="#tecnica" type="button" role="tab">Características Técnicas</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="ubicacion-tab" data-bs-toggle="tab" data-bs-target="#ubicacion" type="button" role="tab">Ubicación y Asignación</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="adquisicion-tab" data-bs-toggle="tab" data-bs-target="#adquisicion" type="button" role="tab">Adquisición y Mantenimiento</button>
-                        </li>
-                    </ul>
-
-                    <!-- Tabs Content -->
-                    <div class="tab-content" id="equipoTabsContent">
-                        
-                        <!-- Tab 1: Información Básica -->
-                        <div class="tab-pane fade show active" id="basica" role="tabpanel">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="codigo_inventario" name="codigo_inventario" placeholder="Código" required value="<?= htmlspecialchars($val_codigo) ?>">
-                                        <label for="codigo_inventario">Código de Inventario *</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="numero_serie" name="numero_serie" placeholder="Serial" required value="<?= htmlspecialchars($val_serie) ?>">
-                                        <label for="numero_serie">Número de Serie *</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <select class="form-select" id="tipo" name="tipo" required>
-                                            <option value="" disabled <?= !$es_edicion ? 'selected' : '' ?>>Seleccione...</option>
-                                            <?php 
-                                            $is_custom = !in_array($val_tipo, $tipos_equipo) && !empty($val_tipo);
-                                            foreach ($tipos_equipo as $t): 
-                                            ?>
-                                                <option value="<?= $t ?>" <?= ($val_tipo == $t || ($t == 'otro' && $is_custom)) ? 'selected' : '' ?>><?= ucfirst($t) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <label for="tipo">Tipo de Equipo *</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6" id="tipo_otro_container" style="display: <?= $is_custom ? 'block' : 'none' ?>;">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="tipo_otro" name="tipo_otro" placeholder="Especifique el tipo" value="<?= $is_custom ? htmlspecialchars($val_tipo) : '' ?>">
-                                        <label for="tipo_otro">Especifique el tipo *</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <select class="form-select" id="estado" name="estado" required>
-                                            <?php foreach ($estados_equipo as $e): ?>
-                                                <option value="<?= $e ?>" <?= ($val_estado == $e) ? 'selected' : '' ?>><?= ucfirst(str_replace('_', ' ', $e)) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <label for="estado">Estado *</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="marca" name="marca" placeholder="Marca" required value="<?= htmlspecialchars($val_marca) ?>">
-                                        <label for="marca">Marca *</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="modelo" name="modelo" placeholder="Modelo" required value="<?= htmlspecialchars($val_modelo) ?>">
-                                        <label for="modelo">Modelo *</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tab 2: Características Técnicas -->
-                        <div class="tab-pane fade" id="tecnica" role="tabpanel">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="procesador" name="procesador" placeholder="CPU" value="<?= htmlspecialchars($val_procesador) ?>">
-                                        <label for="procesador">Procesador (CPU)</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="memoria_ram" name="memoria_ram" placeholder="RAM" value="<?= htmlspecialchars($val_ram) ?>">
-                                        <label for="memoria_ram">Memoria RAM</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="almacenamiento" name="almacenamiento" placeholder="HDD/SSD" value="<?= htmlspecialchars($val_almacenamiento) ?>">
-                                        <label for="almacenamiento">Almacenamiento</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="sistema_operativo" name="sistema_operativo" placeholder="OS" value="<?= htmlspecialchars($val_so) ?>">
-                                        <label for="sistema_operativo">Sistema Operativo</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="direccion_ip" name="direccion_ip" placeholder="IP (Opcional)" value="<?= htmlspecialchars($val_ip) ?>">
-                                        <label for="direccion_ip">Dirección IP (Opcional)</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="driver" name="driver" placeholder="Driver (Opcional)" value="<?= htmlspecialchars($val_driver) ?>">
-                                        <label for="driver">Driver (URL/Nombre) (Opcional)</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="toner" name="toner" placeholder="Toner (Opcional)" value="<?= htmlspecialchars($val_toner) ?>">
-                                        <label for="toner">Toner (Modelo) (Opcional)</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tab 3: Ubicación y Asignación -->
-                        <div class="tab-pane fade" id="ubicacion" role="tabpanel">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <select class="form-select" id="departamento_id" name="departamento_id">
-                                            <option value="">Sin Asignar</option>
-                                            <?php if (isset($departamentos)): foreach ($departamentos as $d): ?>
-                                                <option value="<?= $d->id ?>" <?= ($val_dept_id == $d->id) ? 'selected' : '' ?>>
-                                                    <?= htmlspecialchars($d->nombre) ?>
-                                                </option>
-                                            <?php endforeach; endif; ?>
-                                        </select>
-                                        <label for="departamento_id">Departamento</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <select class="form-select" id="empleado_id" name="empleado_id">
-                                            <option value="">Sin Asignar</option>
-                                            <?php if (isset($empleados)): foreach ($empleados as $e): ?>
-                                                <option value="<?= $e->id ?>" <?= ($val_emp_id == $e->id) ? 'selected' : '' ?>>
-                                                    <?= htmlspecialchars($e->nombre . ' ' . $e->apellido) ?>
-                                                </option>
-                                            <?php endforeach; endif; ?>
-                                        </select>
-                                        <label for="empleado_id">Usuario Asignado</label>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="ubicacion_fisica" name="ubicacion_fisica" placeholder="Ubicación Física (Opcional)" value="<?= htmlspecialchars($val_ubicacion) ?>">
-                                        <label for="ubicacion_fisica">Ubicación Física Detallada (Opcional)</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tab 4: Adquisición -->
-                        <div class="tab-pane fade" id="adquisicion" role="tabpanel">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="date" class="form-control" id="fecha_compra" name="fecha_compra" value="<?= htmlspecialchars($val_fecha_compra) ?>">
-                                        <label for="fecha_compra">Fecha de Compra</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="proveedor" name="proveedor" placeholder="Proveedor" value="<?= htmlspecialchars($val_proveedor) ?>">
-                                        <label for="proveedor">Proveedor (Nombre)</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="proveedor_rif" name="proveedor_rif" placeholder="RIF" value="<?= htmlspecialchars($val_proveedor_rif) ?>">
-                                        <label for="proveedor_rif">RIF del Proveedor</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="date" class="form-control" id="garantia" name="garantia" value="<?= htmlspecialchars($val_garantia) ?>">
-                                        <label for="garantia">Vencimiento Garantía</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="number" step="0.01" class="form-control" id="valor_compra" name="valor_compra" placeholder="Valor" value="<?= htmlspecialchars($val_valor) ?>">
-                                        <label for="valor_compra">Valor de Compra</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div> <!-- End Tab Content -->
-
-                    <hr class="my-4">
-                    <div class="d-flex justify-content-between">
-                        <a href="<?= BASE_URL ?>equipos" class="btn btn-secondary">
-                            <i class="bi bi-x-circle me-1"></i> Regresar
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle me-1"></i> <?= $action_title ?> Equipo
-                        </button>
-                    </div>
-                </form>
-            </div>
+<div class="eq-wizard-wrapper">
+    
+    <!-- Sidebar -->
+    <div class="eq-sidebar">
+        <div class="eq-header">
+            <h1 class="eq-title">
+                <div class="eq-icon-box">
+                     <i class="bi bi-laptop"></i>
+                </div>
+                <?= $action_title ?> Equipo
+            </h1>
+            <p class="eq-subtitle">Complete los datos para dar de alta el activo en inventario.</p>
         </div>
+
+        <div class="eq-stepper">
+            <!-- Step 1 -->
+            <button class="eq-step-btn active" data-step="0">
+                <div class="eq-step-indicator"></div>
+                <div class="eq-step-icon"><i class="bi bi-laptop"></i></div>
+                <div class="eq-step-info">
+                    <span class="eq-step-label">Información Básica</span>
+                    <span class="eq-step-desc">Identificación del activo</span>
+                </div>
+            </button>
+            <!-- Step 2 -->
+            <button class="eq-step-btn" data-step="1">
+                <div class="eq-step-indicator"></div>
+                <div class="eq-step-icon"><i class="bi bi-cpu"></i></div>
+                <div class="eq-step-info">
+                    <span class="eq-step-label">Especificaciones</span>
+                    <span class="eq-step-desc">Hardware y Software</span>
+                </div>
+            </button>
+            <!-- Step 3 -->
+            <button class="eq-step-btn" data-step="2">
+                <div class="eq-step-indicator"></div>
+                <div class="eq-step-icon"><i class="bi bi-geo-alt"></i></div>
+                <div class="eq-step-info">
+                    <span class="eq-step-label">Ubicación</span>
+                    <span class="eq-step-desc">Asignación física</span>
+                </div>
+            </button>
+            <!-- Step 4 -->
+            <button class="eq-step-btn" data-step="3">
+                <div class="eq-step-indicator"></div>
+                <div class="eq-step-icon"><i class="bi bi-receipt"></i></div>
+                <div class="eq-step-info">
+                    <span class="eq-step-label">Adquisición</span>
+                    <span class="eq-step-desc">Garantía y Costos</span>
+                </div>
+            </button>
+        </div>
+
+        <div class="eq-photo-box">
+             <div class="eq-photo-circle">
+                 <i class="bi bi-camera" style="font-size: 1.5rem;"></i>
+             </div>
+             <p style="font-size: 0.75rem; font-weight: 600; color: var(--eq-slate-600);">Subir foto del equipo</p>
+             <p style="font-size: 0.65rem; color: var(--eq-slate-400); margin-top: 0.25rem;">JPG, PNG max 2MB</p>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="eq-content">
+        <form action="<?= BASE_URL ?>equipos/guardar" method="POST" id="equipmentForm" style="display: flex; flex-direction: column; height: 100%;">
+            
+            <?php if ($es_edicion): ?>
+                <input type="hidden" name="id" value="<?= $equipo->id ?>">
+            <?php endif; ?>
+            
+            <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['HTTP_REFERER'] ?? '') ?>">
+
+            <div class="eq-form-container">
+                <div class="eq-step-header">
+                    <h2 class="eq-step-title">Información Básica</h2>
+                    <span class="eq-step-badge">Paso 1 de 4</span>
+                </div>
+
+                <!-- STEP 0: BASICA -->
+                <div class="step-pane active" data-step="0">
+                    <div class="eq-grid">
+                        
+                        <!-- Codigo -->
+                        <div class="eq-field">
+                            <label>Código Inventario <span class="eq-required">*</span></label>
+                            <div class="eq-input-wrapper">
+                                <i class="bi bi-hash eq-input-icon"></i>
+                                <input type="text" name="codigo_inventario" class="eq-input" placeholder="SGEN-001" required value="<?= htmlspecialchars($val_codigo) ?>">
+                            </div>
+                        </div>
+
+                        <!-- Serial -->
+                        <div class="eq-field">
+                            <label>Nro de Serie <span class="eq-required">*</span></label>
+                            <div class="eq-input-wrapper">
+                                <i class="bi bi-upc eq-input-icon"></i>
+                                <input type="text" name="numero_serie" class="eq-input" placeholder="XJ9-22001" required value="<?= htmlspecialchars($val_serie) ?>">
+                            </div>
+                        </div>
+
+                        <!-- Tipo -->
+                        <div class="eq-field">
+                            <label>Tipo de Equipo <span class="eq-required">*</span></label>
+                            <div class="eq-select-wrapper">
+                                <i class="bi bi-laptop eq-input-icon"></i>
+                                <select name="tipo" id="tipo" class="eq-select" required>
+                                    <option value="" disabled <?= !$es_edicion ? 'selected' : '' ?>>Seleccione...</option>
+                                    <?php 
+                                    $is_custom = !in_array($val_tipo, $tipos_equipo) && !empty($val_tipo);
+                                    foreach ($tipos_equipo as $t): 
+                                    ?>
+                                        <option value="<?= $t ?>" <?= ($val_tipo == $t || ($t == 'otro' && $is_custom)) ? 'selected' : '' ?>><?= ucfirst($t) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <i class="bi bi-chevron-down eq-select-chevron"></i>
+                            </div>
+                        </div>
+
+                        <!-- Otro Tipo -->
+                        <div class="eq-field" id="tipo_otro_container" style="display: none;">
+                            <label>Especifique Tipo <span class="eq-required">*</span></label>
+                            <div class="eq-input-wrapper">
+                                <input type="text" name="tipo_otro" id="tipo_otro" class="eq-input no-icon" placeholder="Eje: Proyector" value="<?= $is_custom ? htmlspecialchars($val_tipo) : '' ?>">
+                            </div>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="eq-field">
+                            <label>Estado Inicial <span class="eq-required">*</span></label>
+                            <div class="eq-select-wrapper">
+                                <i class="bi bi-check-circle eq-input-icon"></i>
+                                <select name="estado" class="eq-select" required>
+                                    <?php foreach ($estados_equipo as $e): ?>
+                                        <option value="<?= $e ?>" <?= ($val_estado == $e) ? 'selected' : '' ?>><?= ucfirst(str_replace('_', ' ', $e)) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <i class="bi bi-chevron-down eq-select-chevron"></i>
+                            </div>
+                        </div>
+
+                        <!-- Marca -->
+                        <div class="eq-field">
+                            <label>Marca <span class="eq-required">*</span></label>
+                            <div class="eq-input-wrapper">
+                                <input type="text" name="marca" class="eq-input no-icon" placeholder="Dell, HP..." required value="<?= htmlspecialchars($val_marca) ?>">
+                            </div>
+                        </div>
+
+                        <!-- Modelo -->
+                        <div class="eq-field">
+                            <label>Modelo <span class="eq-required">*</span></label>
+                            <div class="eq-input-wrapper">
+                                <input type="text" name="modelo" class="eq-input no-icon" placeholder="Modelo exacto" required value="<?= htmlspecialchars($val_modelo) ?>">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- STEP 1: TECNICA -->
+                <div class="step-pane" data-step="1">
+                    <div class="eq-callout mb-4">
+                        <i class="bi bi-cpu eq-callout-icon"></i>
+                        <div>
+                            <h4 class="eq-callout-title">Hardware Principal</h4>
+                            <p class="eq-callout-text">Especifique los componentes clave para el control de renovaciones.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="eq-grid">
+                        <div class="eq-field">
+                             <label>Procesador (CPU)</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-cpu eq-input-icon"></i>
+                                <input type="text" name="procesador" class="eq-input" placeholder="Intel Core i7" value="<?= htmlspecialchars($val_procesador) ?>">
+                             </div>
+                        </div>
+                        <div class="eq-field">
+                             <label>Memoria RAM</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-memory eq-input-icon"></i>
+                                <input type="text" name="memoria_ram" class="eq-input" placeholder="16 GB" value="<?= htmlspecialchars($val_ram) ?>">
+                             </div>
+                        </div>
+                        <div class="eq-field">
+                             <label>Almacenamiento</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-hdd eq-input-icon"></i>
+                                <input type="text" name="almacenamiento" class="eq-input" placeholder="512 GB SSD" value="<?= htmlspecialchars($val_almacenamiento) ?>">
+                             </div>
+                        </div>
+                        <div class="eq-field">
+                             <label>Sistema Operativo</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-windows eq-input-icon"></i>
+                                <input type="text" name="sistema_operativo" class="eq-input" placeholder="Windows 11" value="<?= htmlspecialchars($val_so) ?>">
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: UBICACION -->
+                <div class="step-pane" data-step="2">
+                    <div class="eq-grid">
+                        
+                        <div class="eq-field">
+                            <label>Departamento Asignado</label>
+                            <div class="eq-select-wrapper">
+                                <i class="bi bi-building eq-input-icon"></i>
+                                <select name="departamento_id" class="eq-select">
+                                    <option value="">Sin Asignar</option>
+                                    <?php if (isset($departamentos)): foreach ($departamentos as $d): ?>
+                                        <option value="<?= $d->id ?>" <?= ($val_dept_id == $d->id) ? 'selected' : '' ?>><?= htmlspecialchars($d->nombre) ?></option>
+                                    <?php endforeach; endif; ?>
+                                </select>
+                                <i class="bi bi-chevron-down eq-select-chevron"></i>
+                            </div>
+                        </div>
+
+                        <div class="eq-field">
+                            <label>Usuario Responsable</label>
+                            <div class="eq-select-wrapper">
+                                <i class="bi bi-person eq-input-icon"></i>
+                                <select name="empleado_id" class="eq-select">
+                                    <option value="">Sin Asignar</option>
+                                    <?php if (isset($empleados)): foreach ($empleados as $e): ?>
+                                        <option value="<?= $e->id ?>" <?= ($val_emp_id == $e->id) ? 'selected' : '' ?>><?= htmlspecialchars($e->nombre . ' ' . $e->apellido) ?></option>
+                                    <?php endforeach; endif; ?>
+                                </select>
+                                <i class="bi bi-chevron-down eq-select-chevron"></i>
+                            </div>
+                        </div>
+
+                        <div class="eq-field eq-col-span-2">
+                             <label>Ubicación Física Detallada</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-geo-alt eq-input-icon"></i>
+                                <input type="text" name="ubicacion_fisica" class="eq-input" placeholder="Edificio A, Piso 2, Oficina 204" value="<?= htmlspecialchars($val_ubicacion) ?>">
+                             </div>
+                        </div>
+
+                        <div class="eq-field eq-col-span-2">
+                             <label>Dirección IP (Opcional)</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-wifi eq-input-icon"></i>
+                                <input type="text" name="direccion_ip" class="eq-input" placeholder="192.168.1.XXX" value="<?= htmlspecialchars($val_ip) ?>">
+                             </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- STEP 3: ADQUISICION -->
+                <div class="step-pane" data-step="3">
+                    <div class="eq-grid">
+                        
+                        <div class="eq-field">
+                             <label>Fecha de Compra</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-calendar3 eq-input-icon"></i>
+                                <input type="date" name="fecha_compra" class="eq-input" value="<?= htmlspecialchars($val_fecha_compra) ?>">
+                             </div>
+                        </div>
+
+                        <div class="eq-field">
+                             <label>Vencimiento Garantía</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-shield-check eq-input-icon"></i>
+                                <input type="date" name="garantia" class="eq-input" value="<?= htmlspecialchars($val_garantia) ?>">
+                             </div>
+                        </div>
+
+                        <div class="eq-field eq-col-span-2">
+                             <label>Proveedor</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-shop eq-input-icon"></i>
+                                <input type="text" name="proveedor" class="eq-input" placeholder="Nombre del proveedor" value="<?= htmlspecialchars($val_proveedor) ?>">
+                             </div>
+                        </div>
+
+                        <div class="eq-field">
+                             <label>RIF / Tax ID</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-hash eq-input-icon"></i>
+                                <input type="text" name="proveedor_rif" class="eq-input" placeholder="J-12345678-9" value="<?= htmlspecialchars($val_proveedor_rif) ?>">
+                             </div>
+                        </div>
+
+                        <div class="eq-field">
+                             <label>Valor de Compra</label>
+                             <div class="eq-input-wrapper">
+                                <i class="bi bi-currency-dollar eq-input-icon"></i>
+                                <input type="number" step="0.01" name="valor_compra" class="eq-input" placeholder="0.00" value="<?= htmlspecialchars($val_valor) ?>">
+                             </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="eq-footer">
+                <button type="button" class="btn-nav-prev" disabled>Atrás</button>
+                
+                <button type="button" class="btn-nav-next">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </button>
+                
+                <button type="submit" class="btn-nav-save" style="display: none;">
+                    <i class="bi bi-save"></i> <?= $es_edicion ? 'Guardar Cambios' : 'Registrar Equipo' ?>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tipoSelect = document.getElementById('tipo');
-    const container = document.getElementById('tipo_otro_container');
-    const input = document.getElementById('tipo_otro');
-
-    function toggleOtro() {
-        if (tipoSelect.value === 'otro') {
-            container.style.display = 'block';
-            input.required = true;
-        } else {
-            container.style.display = 'none';
-            input.required = false;
-            // Only clear if we are hiding it, not on initial load if it was custom
-            if (document.activeElement === tipoSelect) {
-                 input.value = '';
-            }
-        }
-    }
-
-    tipoSelect.addEventListener('change', toggleOtro);
-    
-    // Run on load to set initial state correctly
-    toggleOtro();
-});
-</script>
-
-<?php if (!$es_edicion || !isset($_GET['url']) || strpos($_GET['url'], 'equipos/editar') === false): ?>
-<?php require_once '../src/Views/layout/footer.php'; ?>
-<?php endif; ?>
+<script src="<?= BASE_URL ?>public/js/equipment-form.js?v=<?= time() ?>"></script>

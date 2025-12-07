@@ -1,58 +1,127 @@
 <?php
 /**
- * Tab: Archivos Adjuntos
+ * Tab: Archivos Adjuntos - V2 Ultra Moderna
+ * Dropzone y galería de archivos
  */
+
+use App\Helpers\ViewHelper;
+
+// Obtener archivos del ticket
+$archivos = $archivos ?? [];
 ?>
 
-<div class="card shadow-sm">
-    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="bi bi-paperclip me-2"></i>Archivos Adjuntos</h5>
-        <?php if (in_array($soporte->estado, ['pendiente', 'en_proceso'])): ?>
-            <button class="btn btn-sm btn-light" onclick="document.getElementById('inputArchivo').click()">
-                <i class="bi bi-plus-lg me-1"></i> Adjuntar
-            </button>
-            <input type="file" id="inputArchivo" style="display: none;" onchange="subirArchivo(this)">
+<div class="td-card">
+    <div class="td-card-header">
+        <div class="td-card-header-left">
+            <div class="td-card-icon slate">
+                <i class="bi bi-paperclip"></i>
+            </div>
+            <h3 class="td-card-title">Evidencias Adjuntas</h3>
+        </div>
+        
+        <?php if ($soporte->estado !== 'cerrado'): ?>
+        <button type="button" class="btn btn-dark btn-sm d-flex align-items-center gap-2" 
+                data-bs-toggle="modal" data-bs-target="#modalSubirArchivo"
+                style="border-radius: 8px; font-weight: 700; font-size: 0.75rem; padding: 0.5rem 1rem;">
+            <i class="bi bi-plus"></i> Subir Archivo
+        </button>
         <?php endif; ?>
     </div>
-    <div class="card-body">
-        <div id="listaArchivos" class="list-group list-group-flush">
-            <?php if (empty($archivos)): ?>
-                <p class="text-muted text-center my-3" id="noArchivosMsg">No hay archivos adjuntos.</p>
-            <?php else: ?>
-                <?php foreach ($archivos as $archivo): ?>
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <?php
-                                $icono = 'bi-file-earmark';
-                                if (strpos($archivo->tipo_mime, 'image') !== false) $icono = 'bi-file-earmark-image text-primary';
-                                elseif (strpos($archivo->tipo_mime, 'pdf') !== false) $icono = 'bi-file-earmark-pdf text-danger';
-                                elseif (strpos($archivo->tipo_mime, 'spreadsheet') !== false || strpos($archivo->tipo_mime, 'excel') !== false) $icono = 'bi-file-earmark-excel text-success';
-                                elseif (strpos($archivo->tipo_mime, 'word') !== false) $icono = 'bi-file-earmark-word text-primary';
-                            ?>
-                            <i class="bi <?= $icono ?> fs-4 me-3"></i>
-                            <div>
-                                <h6 class="mb-0">
-                                    <a href="<?= BASE_URL ?>soportes/descargar_archivo/<?= $archivo->id ?>" target="_blank" class="text-decoration-none text-dark">
-                                        <?= htmlspecialchars($archivo->nombre_original) ?>
-                                    </a>
-                                </h6>
-                                <small class="text-muted">
-                                    <?= number_format($archivo->tamaño_bytes / 1024, 2) ?> KB - 
-                                    <?= date('d/m/Y H:i', strtotime($archivo->fecha_subida)) ?> - 
-                                    Por: <?= htmlspecialchars($archivo->nombre_usuario ?? 'Desconocido') ?>
-                                </small>
-                            </div>
-                        </div>
-                        <a href="<?= BASE_URL ?>soportes/descargar_archivo/<?= $archivo->id ?>" class="btn btn-sm btn-outline-primary" title="Descargar">
-                            <i class="bi bi-download"></i>
-                        </a>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+    
+    <?php if (!empty($archivos)): ?>
+    <!-- Grid de archivos -->
+    <div class="td-files-grid">
+        <?php foreach ($archivos as $archivo): ?>
+        <?php
+            $ext = strtolower(pathinfo($archivo->nombre_original ?? $archivo->nombre, PATHINFO_EXTENSION));
+            $iconClass = 'bi-file-earmark';
+            $iconType = '';
+            
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                $iconClass = 'bi-image';
+                $iconType = 'image';
+            } elseif ($ext === 'pdf') {
+                $iconClass = 'bi-file-pdf';
+                $iconType = 'pdf';
+            } elseif (in_array($ext, ['doc', 'docx'])) {
+                $iconClass = 'bi-file-word';
+                $iconType = 'doc';
+            } elseif (in_array($ext, ['xls', 'xlsx'])) {
+                $iconClass = 'bi-file-excel';
+                $iconType = 'doc';
+            }
+            
+            $fileSize = $archivo->tamano ?? 0;
+            $fileSizeText = $fileSize > 1048576 
+                ? round($fileSize / 1048576, 1) . ' MB' 
+                : round($fileSize / 1024) . ' KB';
+        ?>
+        <a href="<?= BASE_URL ?>soportes/descargar_archivo/<?= $archivo->id ?>" 
+           class="td-file-item" title="Descargar archivo">
+            <div class="td-file-icon <?= $iconType ?>">
+                <i class="bi <?= $iconClass ?>"></i>
+            </div>
+            <p class="td-file-name"><?= htmlspecialchars($archivo->nombre_original ?? $archivo->nombre) ?></p>
+            <span class="td-file-size"><?= $fileSizeText ?></span>
+        </a>
+        <?php endforeach; ?>
+    </div>
+    <?php else: ?>
+    <!-- Dropzone vacío -->
+    <div class="td-files-dropzone" onclick="document.getElementById('archivoInput')?.click()">
+        <div class="td-files-dropzone-icon">
+            <i class="bi bi-image"></i>
         </div>
-        <!-- Progress Bar -->
-        <div class="progress mt-3 d-none" id="uploadProgressContainer">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" id="uploadProgressBar"></div>
+        <h4>Arrastra archivos aquí</h4>
+        <p>Soporta imágenes (PNG, JPG) y documentos PDF hasta 10MB.</p>
+        <span class="td-files-dropzone-link">O selecciona desde tu ordenador</span>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Modal Subir Archivo -->
+<div class="modal fade" id="modalSubirArchivo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 16px; border: none;">
+            <div class="modal-header" style="border-bottom: 1px solid #f1f5f9;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-cloud-upload text-primary me-2"></i>
+                    Subir Archivo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="<?= BASE_URL ?>soportes/subir_archivo" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="soporte_id" value="<?= $soporte->id ?>">
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Archivo</label>
+                        <input type="file" 
+                               name="archivo" 
+                               id="archivoInput"
+                               class="form-control" 
+                               accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx"
+                               required>
+                        <div class="form-text">
+                            Formatos permitidos: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (máx. 10MB)
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Descripción (opcional)</label>
+                        <input type="text" 
+                               name="descripcion" 
+                               class="form-control" 
+                               placeholder="Ej: Foto del daño, factura de repuesto...">
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #f1f5f9;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-cloud-upload me-1"></i> Subir
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -5,7 +5,7 @@
     
     let inactivityTimer;
     
-    // Tiempo de inactividad: 2 minutos (120,000 ms)
+    // Tiempo de inactividad: 10 minutos (600,000 ms)
     // Puedes cambiarlo aquí si lo necesitas
     const inactivityTime = 600000; 
     

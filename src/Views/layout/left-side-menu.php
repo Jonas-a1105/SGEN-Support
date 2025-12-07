@@ -7,378 +7,219 @@ function isActive($link, $currentUri) {
     return (strpos($currentUri, $link) === 0) ? 'active' : '';
 }
 ?>
-<style>
-/* Opaque Glass Sidebar (Corporate Style) */
-.glass-sidebar {
-    position: fixed;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    height: 95vh;
-    width: 85px;
-    background: var(--glass-opaque, rgba(255, 255, 255, 0.95));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: var(--glass-border, 1px solid rgba(226, 232, 240, 0.8));
-    border-radius: 30px;
-    box-shadow: var(--shadow-soft, 0 4px 6px -1px rgba(0, 0, 0, 0.05));
-    z-index: 1050;
-    transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.3s;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    padding: 30px 0;
-}
 
-.glass-sidebar:hover {
-    width: 300px;
-    background: #FFFFFF;
-}
-
-/* Brand / Logo Area */
-.sidebar-brand {
-    display: flex;
-    align-items: center;
-    padding: 0 28px;
-    margin-bottom: 30px;
-    height: 50px;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.sidebar-brand-icon {
-    min-width: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.8rem;
-    color: var(--primary, #0F172A);
-}
-
-.sidebar-brand-text {
-    margin-left: 15px;
-    font-weight: 800;
-    font-size: 1.4rem;
-    color: var(--primary, #0F172A);
-    opacity: 0;
-    transition: opacity 0.3s ease 0.1s;
-}
-
-.glass-sidebar:hover .sidebar-brand-text {
-    opacity: 1;
-}
-
-/* Navigation Links */
-.sidebar-nav {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-/* Hide scrollbar */
-.sidebar-nav::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
-    padding: 12px 28px;
-    color: var(--muted, #6C7A92);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    position: relative;
-}
-
-.sidebar-link i {
-    font-size: 1.4rem;
-    min-width: 30px;
-    text-align: center;
-    transition: color 0.3s;
-}
-
-.sidebar-link span {
-    margin-left: 15px;
-    font-weight: 500;
-    font-size: 1rem;
-    opacity: 0;
-    transform: translateX(-10px);
-    transition: all 0.3s ease;
-}
-
-.glass-sidebar:hover .sidebar-link span {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-
-
-/* Hover & Active States */
-.sidebar-link:hover {
-    color: var(--primary, #0F172A);
-    background: rgba(0,0,0,0.02);
-}
-
-.sidebar-link:hover i {
-    transform: scale(1.1);
-    color: var(--accent, #3B82F6);
-}
-
-.sidebar-link.active {
-    color: var(--primary, #0F172A) !important; /* Force dark color */
-    background: rgba(59, 130, 246, 0.08);
-}
-
-.sidebar-link.active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 70%;
-    width: 4px;
-    background: var(--accent, #3B82F6);
-    border-radius: 0 4px 4px 0;
-}
-
-.sidebar-link.active i {
-    color: var(--accent, #3B82F6);
-}
-
-/* Divider */
-.sidebar-divider {
-    height: 1px;
-    background: rgba(0,0,0,0.06);
-    margin: 10px 20px;
-}
-
-/* Section Labels (only visible on hover) */
-.sidebar-label {
-    padding: 10px 28px;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted, #94A3B8);
-    font-weight: 700;
-    opacity: 0;
-    transition: opacity 0.3s;
-    white-space: nowrap;
-}
-
-.glass-sidebar:hover .sidebar-label {
-    opacity: 1;
-    transition-delay: 0.1s;
-}
-
-/* Footer / User Profile */
-.sidebar-footer {
-    margin-top: auto;
-    padding: 0; /* Remove padding to allow full centering */
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.glass-sidebar:hover .sidebar-footer {
-    padding: 0 20px; /* Restore padding on hover */
-    display: block; /* Reset to block for normal flow */
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-radius: 15px;
-    transition: background 0.3s;
-    cursor: pointer;
-    justify-content: center; /* Center by default (collapsed) */
-    width: 100%; /* Full width to center properly */
-}
-
-.glass-sidebar:hover .user-profile {
-    justify-content: flex-start; /* Left align when expanded */
-    width: auto; /* Auto width when expanded */
-}
-
-.user-profile:hover {
-    background: rgba(0,0,0,0.03);
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--primary, #0F172A);
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    flex-shrink: 0;
-}
-
-.user-info {
-    margin-left: 12px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    white-space: nowrap;
-    display: none; /* Hide completely when collapsed to avoid layout shifts */
-}
-
-.glass-sidebar:hover .user-info {
-    opacity: 1;
-    display: block; /* Show when expanded */
-}
-
-.user-name {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--text, #1F2430);
-    display: block;
-}
-
-.user-role {
-    font-size: 0.75rem;
-    color: var(--muted, #6C7A92);
-}
-</style>
-
-<div class="glass-sidebar" id="glassSidebar">
-    
-    <!-- Brand -->
-    <div class="sidebar-brand">
-        <div class="sidebar-brand-icon">
-            <i class="bi bi-cloud-fill"></i>
-        </div>
-        <span class="sidebar-brand-text">SGEN</span>
+<aside class="ms-sidebar">
+    <!-- 1. Area del Logo -->
+    <div class="ms-brand-area">
+        <a href="<?= BASE_URL ?>" class="ms-brand-group">
+            <div class="ms-logo-box">
+                <!-- Logo SVG simple -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem; color: white;">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
+                </svg>
+            </div>
+            <span class="ms-brand-text">SGEN</span>
+        </a>
     </div>
 
-    <!-- Navigation -->
-    <nav class="sidebar-nav">
+    <!-- 2. Items de Navegacion -->
+    <div class="ms-nav-container">
         
-        <!-- Dashboard (todos los roles) -->
-        <a href="<?= BASE_URL ?>" class="sidebar-link <?= isActive('/', $currentUri) ?>">
-            <i class="bi bi-grid-fill"></i>
-            <span>Dashboard</span>
-        </a>
+        <!-- Dashboard Wrapper -->
+        <div class="ms-section">
+            <div class="ms-nav-list">
+                <a href="<?= BASE_URL ?>" class="ms-link <?= isActive('/', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/LayoutDashboard -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Dashboard</span>
+                </a>
+            </div>
+        </div>
 
-        <!-- Operaciones -->
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-label">Operaciones</div>
-        
-        <!-- Tickets (todos los roles) -->
-        <a href="<?= BASE_URL ?>soportes" class="sidebar-link <?= isActive('soportes', $currentUri) ?>">
-            <i class="bi bi-ticket-perforated-fill"></i>
-            <span>Tickets</span>
-        </a>
-        
-        <!-- Inventario (admin y tecnico) -->
-        <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
-        <a href="<?= BASE_URL ?>inventario" class="sidebar-link <?= isActive('inventario', $currentUri) && strpos($currentUri, 'inventario/departamento') === false ? 'active' : '' ?>">
-            <i class="bi bi-box-seam-fill"></i>
-            <span>Inventario General</span>
-        </a>
-        <a href="<?= BASE_URL ?>inventario/departamento" class="sidebar-link <?= isActive('inventario/departamento', $currentUri) ? 'active' : '' ?>">
-            <i class="bi bi-shop"></i>
-            <span>Inv. por Depto</span>
-        </a>
-        <?php endif; ?>
-        
-        <!-- Equipos (admin, tecnico y consultor) -->
+        <!-- OPERACIONES -->
+        <div class="ms-section">
+            <div class="ms-section-title">Operaciones</div>
+            <div class="ms-nav-list">
+                <!-- Tickets -->
+                <a href="<?= BASE_URL ?>soportes" class="ms-link <?= isActive('soportes', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Ticket -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path>
+                            <path d="M13 5v2"></path>
+                            <path d="M13 17v2"></path>
+                            <path d="M13 11v2"></path>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Tickets</span>
+                </a>
+
+                <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
+                <!-- Inventario General -->
+                <a href="<?= BASE_URL ?>inventario" class="ms-link <?= isActive('inventario', $currentUri) && strpos($currentUri, 'inventario/departamento') === false ? 'active' : '' ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Box -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Inventario General</span>
+                </a>
+                <!-- Inv. por Depto -->
+                <a href="<?= BASE_URL ?>inventario/departamento" class="ms-link <?= isActive('inventario/departamento', $currentUri) ? 'active' : '' ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Building -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                            <path d="M9 22v-4h6v4"></path>
+                            <path d="M8 6h.01"></path>
+                            <path d="M16 6h.01"></path>
+                            <path d="M12 6h.01"></path>
+                            <path d="M12 10h.01"></path>
+                            <path d="M12 14h.01"></path>
+                            <path d="M16 10h.01"></path>
+                            <path d="M16 14h.01"></path>
+                            <path d="M8 10h.01"></path>
+                            <path d="M8 14h.01"></path>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Inv. por Depto</span>
+                </a>
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico', 'consultor'])): ?>
+                <!-- Equipos -->
+                <a href="<?= BASE_URL ?>equipos" class="ms-link <?= isActive('equipos', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Laptop -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"></path>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Equipos</span>
+                </a>
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
+                <!-- Mantenimientos -->
+                <a href="<?= BASE_URL ?>mantenimientos" class="ms-link <?= isActive('mantenimientos', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Wrench -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Mantenimientos</span>
+                </a>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- ORGANIZACION -->
         <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico', 'consultor'])): ?>
-        <a href="<?= BASE_URL ?>equipos" class="sidebar-link <?= isActive('equipos', $currentUri) ?>">
-            <i class="bi bi-pc-display-horizontal"></i>
-            <span>Equipos</span>
-        </a>
+        <div class="ms-section">
+            <div class="ms-section-title">Organización</div>
+            <div class="ms-nav-list">
+                <a href="<?= BASE_URL ?>empleados" class="ms-link <?= isActive('empleados', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Users -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Empleados</span>
+                </a>
+                <a href="<?= BASE_URL ?>departamentos" class="ms-link <?= isActive('departamentos', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Briefcase -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Departamentos</span>
+                </a>
+            </div>
+        </div>
         <?php endif; ?>
-        
-        <!-- Mantenimientos (solo admin y tecnico) -->
-        <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
-        <a href="<?= BASE_URL ?>mantenimientos" class="sidebar-link <?= isActive('mantenimientos', $currentUri) ?>">
-            <i class="bi bi-tools"></i>
-            <span>Mantenimientos</span>
-        </a>
-        <?php endif; ?>
 
-        <!-- Organización (admin, tecnico y consultor) -->
-        <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico', 'consultor'])): ?>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-label">Organización</div>
-
-        <a href="<?= BASE_URL ?>empleados" class="sidebar-link <?= isActive('empleados', $currentUri) ?>">
-            <i class="bi bi-people-fill"></i>
-            <span>Empleados</span>
-        </a>
-        <a href="<?= BASE_URL ?>departamentos" class="sidebar-link <?= isActive('departamentos', $currentUri) ?>">
-            <i class="bi bi-building-fill"></i>
-            <span>Departamentos</span>
-        </a>
-        <?php endif; ?>
-
-
-
-        <!-- Admin Section (solo admin) -->
+        <!-- AUDITORIA / ADMIN EXTRAS -->
         <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-label">Admin</div>
-            
-            <a href="<?= BASE_URL ?>usuarios" class="sidebar-link <?= isActive('usuarios', $currentUri) ?>">
-                <i class="bi bi-person-badge-fill"></i>
-                <span>Usuarios</span>
-            </a>
-            <a href="<?= BASE_URL ?>reportes" class="sidebar-link <?= isActive('reportes', $currentUri) ?>">
-                <i class="bi bi-bar-chart-fill"></i>
-                <span>Reportes</span>
-            </a>
-            <a href="<?= BASE_URL ?>configuracion" class="sidebar-link <?= isActive('configuracion', $currentUri) ?>">
-                <i class="bi bi-gear-fill"></i>
-                <span>Configuración</span>
-            </a>
+        <div class="ms-section">
+            <div class="ms-section-title">Admin</div>
+            <div class="ms-nav-list">
+                <a href="<?= BASE_URL ?>usuarios" class="ms-link <?= isActive('usuarios', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/PersonBadge => UserCog or similar -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Usuarios</span>
+                </a>
+                <a href="<?= BASE_URL ?>reportes" class="ms-link <?= isActive('reportes', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                         <!-- icons/BarChart -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="20" x2="12" y2="10"></line>
+                            <line x1="18" y1="20" x2="18" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="16"></line>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Reportes</span>
+                </a>
+                <a href="<?= BASE_URL ?>configuracion" class="ms-link <?= isActive('configuracion', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Settings -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12.22 2h-.44a2 2 0 0 1-2 1.08l-.68.61a2 2 0 0 1-2.48.54l-.84-.44a2 2 0 0 0-2.22.46l-.54.54a2 2 0 0 0-.46 2.22l.44.84a2 2 0 0 1-.54 2.48l-.61.68a2 2 0 0 1-1.08 2v.44a2 2 0 0 1 1.08 2l.61.68a2 2 0 0 1 .54 2.48l-.44.84a2 2 0 0 0 .46 2.22l.54.54a2 2 0 0 0 2.22-.46l.84-.44a2 2 0 0 1 2.48.54l.68.61a2 2 0 0 1 2 1.08h.44a2 2 0 0 1 2-1.08l.68-.61a2 2 0 0 1 2.48-.54l.84.44a2 2 0 0 0 2.22-.46l.54-.54a2 2 0 0 0 .46-2.22l-.44-.84a2 2 0 0 1 .54-2.48l.61-.68a2 2 0 0 1 1.08-2v-.44a2 2 0 0 1-1.08-2l-.61-.68a2 2 0 0 1-.54-2.48l.44-.84a2 2 0 0 0-.46-2.22l-.54-.54a2 2 0 0 0-2.22.46l-.84.44a2 2 0 0 1-2.48-.54l-.68-.61a2 2 0 0 1-2-1.08z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Configuración</span>
+                </a>
+            </div>
+        </div>
         <?php endif; ?>
+    </div>
 
-        <!-- Logs y Bitácora (Admin, Consultor, Tecnico, Empleado) -->
-        <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'consultor', 'tecnico', 'empleado'])): ?>
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-label">Auditoría</div>
-
-            <a href="<?= BASE_URL ?>logs" class="sidebar-link <?= isActive('logs', $currentUri) ?>">
-                <i class="bi bi-file-text-fill"></i>
-                <span>Logs Sesión</span>
-            </a>
-            
-            <?php if (in_array($_SESSION['rol'], ['admin', 'consultor', 'tecnico'])): ?>
-            <a href="<?= BASE_URL ?>bitacora" class="sidebar-link <?= isActive('bitacora', $currentUri) ?>">
-                <i class="bi bi-clipboard-data-fill"></i>
-                <span>Bitácora</span>
-            </a>
-            <?php endif; ?>
-        <?php endif; ?>
-
-        <!-- Acerca de (todos los usuarios) -->
-        <div class="sidebar-divider"></div>
-        <a href="<?= BASE_URL ?>about" class="sidebar-link <?= isActive('about', $currentUri) ?>">
-            <i class="bi bi-info-circle-fill"></i>
-            <span>Acerca de</span>
-        </a>
-
-    </nav>
-
-    <!-- User Profile (Bottom) -->
-    <div class="sidebar-footer">
-        <div class="user-profile">
-            <div class="user-avatar">
+    <!-- 3. Footer de Usuario -->
+    <div class="ms-footer">
+        <button class="ms-user-btn" onclick="location.href='<?= BASE_URL ?>perfil'">
+            <div class="ms-avatar">
                 <?= strtoupper(substr($_SESSION['usuario'] ?? 'U', 0, 1)) ?>
             </div>
-            <div class="user-info">
-                <span class="user-name"><?= htmlspecialchars($_SESSION['usuario'] ?? 'Usuario') ?></span>
-                <span class="user-role"><?= ucfirst($_SESSION['rol'] ?? 'Invitado') ?></span>
+            <div class="ms-user-info">
+                <p class="ms-user-name"><?= htmlspecialchars($_SESSION['usuario'] ?? 'Usuario') ?></p>
+                <p class="ms-user-role"><?= ucfirst($_SESSION['rol'] ?? 'Invitado') ?></p>
             </div>
-        </div>
+            <svg class="ms-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
     </div>
-
-</div>
+</aside>

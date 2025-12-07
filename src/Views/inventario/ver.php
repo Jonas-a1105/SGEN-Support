@@ -1,309 +1,314 @@
 <?php require_once '../src/Views/layout/header.php'; ?>
 <?php require_once '../src/Views/layout/left-side-menu.php'; ?>
 
-<div class="main-content">
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Detalle del Artículo</h1>
-            <a href="<?= BASE_URL ?>inventario" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Volver
+<!-- Include Modern CSS -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/product-detail-modern.css?v=<?= time() ?>">
+
+<div class="pd-wrapper">
+    <!-- Header -->
+    <div class="pd-container pd-header">
+        <div>
+            <a href="<?= BASE_URL ?>inventario" class="pd-back-link">
+                <i class="bi bi-arrow-left me-1"></i> Volver al inventario
             </a>
-        </div>
-
-        <div class="row g-4">
-            <!-- Main Info Card -->
-            <div class="col-md-8">
-                <div class="card border-0 shadow-sm h-100 glass-opaque">
-                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 text-primary fw-bold">
-                            <i class="bi bi-box-seam me-2"></i>Información General
-                        </h5>
-                        <span class="badge bg-secondary fs-6"><?= htmlspecialchars($item->codigo ?? '') ?></span>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-4">
-                            <div class="col-md-12">
-                                <h2 class="fw-bold mb-1"><?= htmlspecialchars($item->nombre ?? '') ?></h2>
-                                <p class="text-muted mb-0"><?= htmlspecialchars($item->descripcion ?? 'Sin descripción') ?></p>
-                            </div>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="p-3 rounded bg-light-subtle border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Categoría</small>
-                                    <span class="fs-5 text-dark"><?= htmlspecialchars($item->categoria ?? 'N/A') ?></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="p-3 rounded bg-light-subtle border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Ubicación Actual</small>
-                                    <span class="fs-5 text-dark"><?= htmlspecialchars($item->ubicacion ?? 'N/A') ?></span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-3 rounded bg-light-subtle border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Marca</small>
-                                    <span class="fw-medium"><?= htmlspecialchars($item->marca ?? 'N/A') ?></span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-3 rounded bg-light-subtle border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Modelo</small>
-                                    <span class="fw-medium"><?= htmlspecialchars($item->modelo ?? 'N/A') ?></span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-3 rounded bg-light-subtle border">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Unidad</small>
-                                    <span class="fw-medium"><?= htmlspecialchars($item->unidad_medida ?? 'Unidad') ?></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="pd-title-wrapper">
+                <h1 class="pd-title"><?= htmlspecialchars($item->nombre ?? 'Sin Nombre') ?></h1>
+                <span class="pd-id-badge">ID: <?= htmlspecialchars($item->codigo ?? 'N/A') ?></span>
             </div>
+        </div>
+        <div class="pd-actions">
+            <?php if ($_SESSION['rol'] === 'admin'): ?>
+                <a href="<?= BASE_URL ?>inventario/editar/<?= $item->id ?>" class="pd-btn pd-btn-white">
+                    <i class="bi bi-pencil me-2"></i> Editar
+                </a>
+                <button type="button" class="pd-btn pd-btn-primary" 
+                        onclick="StockAdjustmentModal.open({
+                            id: <?= $item->id ?>,
+                            name: '<?= addslashes($item->nombre) ?>',
+                            code: '<?= addslashes($item->codigo ?? $item->id) ?>',
+                            stock: <?= $item->stock_actual ?? 0 ?>,
+                            unit: '<?= addslashes($item->unidad_medida ?? 'Unidades') ?>'
+                        })">
+                    <i class="bi bi-box-seam me-2"></i> Ajustar Stock
+                </button>
+            <?php endif; ?>
+        </div>
+    </div>
 
-            <!-- Stock Status Card -->
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 glass-opaque">
-                    <div class="card-header bg-transparent border-0">
-                        <h5 class="card-title mb-0 text-success fw-bold">
-                            <i class="bi bi-graph-up-arrow me-2"></i>Estado del Stock
-                        </h5>
-                    </div>
-                    <div class="card-body text-center d-flex flex-column justify-content-center">
-                        <div class="mb-4">
-                            <span class="display-4 fw-bold <?= ($item->stock_actual <= $item->stock_minimo) ? 'text-danger' : 'text-success' ?>">
-                                <?= $item->stock_actual ?? 0 ?>
-                            </span>
-                            <span class="text-muted d-block">Unidades Disponibles</span>
+    <div class="pd-container pd-grid">
+        
+        <!-- --- COLUMNA IZQUIERDA: INFORMACIÓN PRINCIPAL (2/3) --- -->
+        <div class="pd-col-left">
+            
+            <!-- Tarjeta de Información General -->
+            <div class="pd-card">
+                <div class="pd-card-header">
+                    <h2 class="pd-card-title">
+                        <i class="bi bi-box text-primary"></i>
+                        Información General
+                    </h2>
+                </div>
+                
+                <div class="pd-card-body">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="bi bi-tag"></i> Categoría</span>
+                            <span class="detail-value"><?= htmlspecialchars($item->categoria ?? 'N/A') ?></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="bi bi-geo-alt"></i> Ubicación Actual</span>
+                            <span class="detail-value"><?= htmlspecialchars($item->ubicacion ?? 'N/A') ?></span>
                         </div>
                         
-                        <div class="d-flex justify-content-between px-4 mb-3">
-                            <div class="text-start">
-                                <small class="text-muted d-block">Mínimo Requerido</small>
-                                <span class="fw-bold"><?= $item->stock_minimo ?? 0 ?></span>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-muted d-block">Estado</small>
-                                <?php if(($item->stock_actual ?? 0) <= ($item->stock_minimo ?? 0)): ?>
-                                    <span class="badge bg-danger">Stock Bajo</span>
-                                <?php else: ?>
-                                    <span class="badge bg-success">Óptimo</span>
-                                <?php endif; ?>
-                            </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Marca</span>
+                            <?php if(!empty($item->marca)): ?>
+                                <span class="detail-value"><?= htmlspecialchars($item->marca) ?></span>
+                            <?php else: ?>
+                                <span class="detail-value empty-value">No especificada</span>
+                            <?php endif; ?>
                         </div>
 
-                        <div class="d-grid gap-2 mt-auto">
-                            <?php if ($_SESSION['rol'] === 'admin'): ?>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMovimiento<?= $item->id ?>">
-                                <i class="bi bi-arrow-left-right me-2"></i>Ajustar Stock
-                            </button>
-                            <a href="<?= BASE_URL ?>inventario/distribucion/<?= $item->id ?>" class="btn btn-outline-info">
-                                <i class="bi bi-diagram-3 me-2"></i>Ver Distribución
-                            </a>
+                        <div class="detail-item">
+                            <span class="detail-label">Modelo</span>
+                            <?php if(!empty($item->modelo)): ?>
+                                <span class="detail-value"><?= htmlspecialchars($item->modelo) ?></span>
+                            <?php else: ?>
+                                <span class="detail-value empty-value">No especificado</span>
                             <?php endif; ?>
+                        </div>
+                        
+                        <div style="grid-column: 1 / -1; padding-top: 1rem; margin-top: 0.5rem; border-top: 1px solid var(--pd-slate-100); display: flex; justify-content: space-between; align-items: center;">
+                             <div class="detail-item">
+                                <span class="detail-label">Unidad de Medida</span>
+                                <span class="detail-value"><?= htmlspecialchars($item->unidad_medida ?? 'Unidad') ?></span>
+                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Purchase Details Card -->
-            <div class="col-md-12">
-                <div class="card border-0 shadow-sm glass-opaque">
-                    <div class="card-header bg-transparent border-0">
-                        <h5 class="card-title mb-0 text-info fw-bold">
-                            <i class="bi bi-receipt me-2"></i>Detalles de Compra y Garantía
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-4">
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
-                                        <i class="bi bi-calendar-event text-info fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted d-block">Fecha de Compra</small>
-                                        <span class="fw-medium"><?= !empty($item->fecha_compra) ? date('d/m/Y', strtotime($item->fecha_compra)) : 'No registrada' ?></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
-                                        <i class="bi bi-shop text-warning fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted d-block">Proveedor</small>
-                                        <span class="fw-medium"><?= htmlspecialchars($item->proveedor ?? 'No registrado') ?></span>
-                                        <?php if(!empty($item->proveedor_rif)): ?>
-                                            <br><small class="text-muted text-xs"><?= htmlspecialchars($item->proveedor_rif) ?></small>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
-                                        <i class="bi bi-currency-dollar text-success fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted d-block">Valor de Compra</small>
-                                        <span class="fw-medium"><?= !empty($item->valor_compra) ? '$' . number_format($item->valor_compra, 2) : 'No registrado' ?></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
-                                        <i class="bi bi-shield-check text-danger fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted d-block">Garantía Vence</small>
-                                        <span class="fw-medium <?= (!empty($item->garantia_fin) && strtotime($item->garantia_fin) < time()) ? 'text-danger' : '' ?>">
-                                            <?= !empty($item->garantia_fin) ? date('d/m/Y', strtotime($item->garantia_fin)) : 'No aplica' ?>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Tarjeta de Compra y Garantía -->
+            <div class="pd-card">
+                <div class="pd-card-body">
+                    <h2 class="pd-card-title" style="margin-bottom: 1.5rem;">
+                       <i class="bi bi-currency-dollar text-primary"></i>
+                       Detalles de Compra y Garantía
+                    </h2>
+                    
+                    <div class="metrics-grid">
+                       <div class="metric-item">
+                           <div class="metric-icon blue"><i class="bi bi-calendar-event"></i></div>
+                           <div class="metric-content">
+                               <span class="metric-label">Fecha Compra</span>
+                               <span class="metric-value"><?= !empty($item->fecha_compra) ? date('d/m/Y', strtotime($item->fecha_compra)) : "N/A" ?></span>
+                           </div>
+                       </div>
+                       
+                       <div class="metric-item">
+                           <div class="metric-icon amber"><i class="bi bi-shop"></i></div>
+                           <div class="metric-content">
+                               <span class="metric-label">Proveedor</span>
+                               <span class="metric-value"><?= htmlspecialchars($item->proveedor ?? 'N/A') ?></span>
+                           </div>
+                       </div>
+                       
+                       <div class="metric-item">
+                           <div class="metric-icon emerald"><i class="bi bi-cash"></i></div>
+                           <div class="metric-content">
+                               <span class="metric-label">Costo</span>
+                               <span class="metric-value"><?= !empty($item->valor_compra) ? '$' . number_format($item->valor_compra, 2) : '$0.00' ?></span>
+                           </div>
+                       </div>
+                       
+                       <?php
+                            $garantiaVencida = false;
+                            $garantiaTexto = "No aplica";
+                            if (!empty($item->garantia_fin)) {
+                                if (strtotime($item->garantia_fin) < time()) {
+                                    $garantiaVencida = true;
+                                    $garantiaTexto = date('d/m/Y', strtotime($item->garantia_fin));
+                                } else {
+                                    $garantiaTexto = date('d/m/Y', strtotime($item->garantia_fin));
+                                }
+                            }
+                       ?>
+
+                       <div class="metric-item">
+                           <div class="metric-icon rose"><i class="bi bi-shield-exclamation"></i></div>
+                           <div class="metric-content">
+                               <span class="metric-label">Garantía</span>
+                               <span class="metric-value"><?= $garantiaTexto ?></span>
+                               <?php if($garantiaVencida): ?>
+                                   <span class="metric-sub alert">Vencida</span>
+                               <?php endif; ?>
+                           </div>
+                       </div>
                     </div>
                 </div>
             </div>
 
             <!-- Historial de Movimientos -->
-            <div class="col-md-12">
-                <div class="card border-0 shadow-sm glass-opaque">
-                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 text-secondary fw-bold">
-                            <i class="bi bi-clock-history me-2"></i>Historial de Movimientos
-                        </h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0 align-middle">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th class="ps-4">Fecha</th>
-                                        <th>Tipo</th>
-                                        <th>Cantidad</th>
-                                        <th>Motivo</th>
-                                        <th>Usuario</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($movimientos)): ?>
-                                        <?php foreach ($movimientos as $mov): ?>
-                                            <tr>
-                                                <td class="ps-4 text-muted small">
-                                                    <?= date('d/m/Y H:i', strtotime($mov->fecha)) ?>
-                                                </td>
-                                                <td>
-                                                    <?php
-                                                    $tipo = strtoupper(trim($mov->tipo_movimiento ?? ''));
-                                                    
-                                                    // Si tipo_movimiento está vacío, inferir del contexto
-                                                    if (empty($tipo)) {
-                                                        $motivo_lower = strtolower($mov->motivo ?? '');
-                                                        if (strpos($motivo_lower, 'transferencia') !== false) {
-                                                            $tipo = 'TRANSFERENCIA';
-                                                        } elseif (strpos($motivo_lower, 'abastecimiento') !== false || strpos($motivo_lower, 'stock inicial') !== false) {
-                                                            $tipo = 'ENTRADA';
-                                                        } elseif ($mov->cantidad > 0) {
-                                                            $tipo = 'ENTRADA';
-                                                        } else {
-                                                            $tipo = 'SALIDA';
-                                                        }
-                                                    }
-                                                    
-                                                    if ($tipo === 'ENTRADA') {
-                                                        $badgeClass = 'bg-success';
-                                                    } elseif ($tipo === 'SALIDA') {
-                                                        $badgeClass = 'bg-danger';
-                                                    } elseif ($tipo === 'TRANSFERENCIA') {
-                                                        $badgeClass = 'bg-warning text-dark';
-                                                    } elseif ($tipo === 'CONSUMO') {
-                                                        $badgeClass = 'bg-warning text-dark';
-                                                    } elseif ($tipo === 'BAJA') {
-                                                        $badgeClass = 'bg-dark';
-                                                    } elseif ($tipo === 'AJUSTE') {
-                                                        $badgeClass = 'bg-primary';
-                                                    } else {
-                                                        $badgeClass = 'bg-secondary';
-                                                    }
-                                                    ?>
-                                                    <span class="badge <?= $badgeClass ?>">
-                                                        <?= htmlspecialchars($tipo) ?>
-                                                    </span>
-                                                </td>
-                                                    <?php
-                                                    $isPositive = in_array($tipo, ['ENTRADA']);
-                                                    $isNegative = in_array($tipo, ['SALIDA', 'BAJA', 'CONSUMO']);
-                                                    $colorClass = $isPositive ? 'text-success' : ($isNegative ? 'text-danger' : 'text-warning');
-                                                    $sign = $isPositive ? '+' : ($isNegative ? '-' : '');
-                                                    ?>
-                                                    <td class="fw-bold <?= $colorClass ?>">
-                                                        <?= $sign ?><?= $mov->cantidad ?>
-                                                    </td>
-                                                <td class="text-muted small"><?= htmlspecialchars($mov->motivo) ?></td>
-                                                <td class="text-muted small">
-                                                    <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($mov->username ?? 'Sistema') ?>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="5" class="text-center py-4 text-muted">
-                                                No hay movimientos registrados para este ítem.
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+            <div class="pd-card">
+                 <div class="pd-card-header">
+                    <h2 class="pd-card-title">
+                        <i class="bi bi-clock-history text-primary"></i>
+                        Historial de Movimientos
+                    </h2>
+                    <?php if (!empty($movimientos)): ?>
+                        <a href="<?= BASE_URL ?>inventario/historial" class="pd-btn pd-btn-white" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Ver todo</a>
+                    <?php endif; ?>
+                 </div>
+                 
+                 <?php if (empty($movimientos)): ?>
+                     <div class="history-empty">
+                        <div class="history-empty-icon">
+                            <i class="bi bi-clock-history fs-3"></i>
                         </div>
+                        <h3 style="font-size: 1rem; font-weight: 500; color: var(--pd-slate-900); margin-bottom: 0.25rem;">Sin movimientos recientes</h3>
+                        <p style="font-size: 0.875rem; color: var(--pd-slate-500); max-width: 250px;">
+                            No se han registrado entradas o salidas para este artículo recientemente.
+                        </p>
+                     </div>
+                 <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Motivo</th>
+                                    <th>Usuario</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($movimientos as $mov): ?>
+                                    <?php
+                                        // Inferir tipo si está vacío
+                                        $tipo = strtoupper(trim($mov->tipo_movimiento ?? ''));
+                                        if (empty($tipo)) {
+                                            $motivo_lower = strtolower($mov->motivo ?? '');
+                                            if (strpos($motivo_lower, 'transferencia') !== false) {
+                                                $tipo = 'TRANSFERENCIA';
+                                            } elseif ($mov->cantidad > 0) {
+                                                $tipo = 'ENTRADA';
+                                            } else {
+                                                $tipo = 'SALIDA';
+                                            }
+                                        }
+
+                                        $isPositive = in_array($tipo, ['ENTRADA']);
+                                        $isNegative = in_array($tipo, ['SALIDA', 'BAJA', 'CONSUMO']);
+                                        $sign = $isPositive ? '+' : ($isNegative ? '-' : '');
+                                        
+                                        $badgeColor = 'bg-secondary';
+                                        if ($isPositive) $badgeColor = 'bg-success';
+                                        if ($isNegative) $badgeColor = 'bg-danger';
+                                        if ($tipo === 'TRANSFERENCIA' || $tipo === 'AJUSTE') $badgeColor = 'bg-warning text-dark';
+                                    ?>
+                                    <tr>
+                                        <td><?= date('d/m/Y H:i', strtotime($mov->fecha)) ?></td>
+                                        <td><span class="badge <?= $badgeColor ?>"><?= $tipo ?></span></td>
+                                        <td class="fw-bold <?= $isPositive ? 'text-success' : ($isNegative ? 'text-danger' : '') ?>">
+                                            <?= $sign . abs($mov->cantidad) ?>
+                                        </td>
+                                        <td><?= htmlspecialchars($mov->motivo) ?></td>
+                                        <td><i class="bi bi-person-circle text-muted me-1"></i> <?= htmlspecialchars($mov->username ?? 'Sistema') ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                 <?php endif; ?>
+            </div>
+
+        </div>
+
+        <!-- --- COLUMNA DERECHA: STOCK (1/3) --- -->
+        <div class="pd-col-right">
+          <?php
+            $stock = $item->stock_actual ?? 0;
+            $minStock = $item->stock_minimo ?? 0;
+            
+            // Logic for status
+            if ($stock <= 0) {
+                $statusLabel = 'Agotado';
+                $statusClass = 'stock-badge-red';
+                $glowClass = 'bg-glow-red';
+                $icon = 'bi-exclamation-circle';
+            } elseif ($stock <= $minStock) {
+                $statusLabel = 'Stock Bajo';
+                $statusClass = 'stock-badge-orange';
+                $glowClass = 'bg-glow-orange';
+                $icon = 'bi-exclamation-triangle';
+            } else {
+                $statusLabel = 'Disponible';
+                $statusClass = 'stock-badge-green';
+                $glowClass = 'bg-glow-green';
+                $icon = 'bi-check-circle';
+            }
+          ?>
+          <div class="pd-card stock-card">
+            <div class="pd-card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--pd-slate-700); margin: 0;">Estado del Stock</h3>
+                    <div class="stock-status-badge <?= $statusClass ?>">
+                        <i class="bi <?= $icon ?>"></i>
+                        <?= $statusLabel ?>
                     </div>
                 </div>
+
+                <div class="big-stock-indicator">
+                    <div class="stock-glow <?= $glowClass ?>"></div>
+                    <span class="stock-number"><?= $stock ?></span>
+                    <span class="stock-label">Unidades Disponibles</span>
+                </div>
+
+                <div class="d-flex flex-column gap-0 mb-4">
+                    <div class="stock-meta-row">
+                        <span class="stock-meta-label">Mínimo Requerido</span>
+                        <span class="stock-meta-val"><?= $minStock ?> u.</span>
+                    </div>
+                    <div class="stock-meta-row">
+                        <span class="stock-meta-label">Valor de Inventario</span>
+                        <span class="stock-meta-val">$0.00</span>
+                    </div>
+                </div>
+
+                <?php if ($_SESSION['rol'] === 'admin'): ?>
+                <div class="stock-actions">
+                    <button type="button" class="pd-btn pd-btn-primary justify-content-center" 
+                            onclick="StockAdjustmentModal.open({
+                                id: <?= $item->id ?>,
+                                name: '<?= addslashes($item->nombre) ?>',
+                                code: '<?= addslashes($item->codigo ?? $item->id) ?>',
+                                stock: <?= $item->stock_actual ?? 0 ?>,
+                                unit: '<?= addslashes($item->unidad_medida ?? 'Unidades') ?>'
+                            })">
+                        <i class="bi bi-graph-up-arrow me-2"></i> Solicitar Reposición
+                    </button>
+                    <a href="<?= BASE_URL ?>inventario/distribucion/<?= $item->id ?>" class="pd-btn pd-btn-white justify-content-center">
+                        Ver Distribución
+                    </a>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($stock <= $minStock): ?>
+                <div class="stock-alert-msg">
+                    <i class="bi bi-info-circle flex-shrink-0 mt-1"></i>
+                    <p class="m-0">El stock está por debajo del mínimo (<?= $minStock ?>). Se recomienda iniciar una orden de compra inmediatamente.</p>
+                </div>
+                <?php endif; ?>
+
             </div>
+          </div>
         </div>
+
     </div>
 </div>
 
-<!-- Modal for Stock Adjustment (Reused logic) -->
-<div class="modal fade" id="modalMovimiento<?= $item->id ?>" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="<?= BASE_URL ?>inventario/movimiento" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">Ajustar Stock: <?= $item->nombre ?></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="item_id" value="<?= $item->id ?>">
-                    <div class="mb-3">
-                        <label>Tipo</label>
-                        <select name="tipo" class="form-select">
-                            <option value="ENTRADA">Entrada (Compra/Devolución)</option>
-                            <option value="SALIDA">Salida (Asignación/Uso)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Cantidad</label>
-                        <input type="number" name="cantidad" class="form-control" min="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Motivo</label>
-                        <input type="text" name="motivo" class="form-control" placeholder="Ej: Entrega a RRHH" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- Modal for Stock Adjustment (Maintained existing logic) -->
+
 
 <?php require_once '../src/Views/layout/footer.php'; ?>

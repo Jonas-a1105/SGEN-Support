@@ -35,6 +35,7 @@ $router->get('/soportes/editar/{id}', [SoportesController::class, 'editar']);
 $router->post('/soportes/guardar',  [SoportesController::class, 'guardar']);
 $router->get('/soportes/eliminar/{id}', [SoportesController::class, 'eliminar']); 
 $router->get('/soportes/asignar/{id}', [SoportesController::class, 'asignar']);
+$router->post('/soportes/procesar_asignacion', [SoportesController::class, 'procesar_asignacion']);
 $router->post('/soportes/guardar_firma', [SoportesController::class, 'guardar_firma']);
 $router->get('/soportes/pdf/{id}',      [SoportesController::class, 'pdf']);
 $router->post('/soportes/agregar_comentario', [SoportesController::class, 'agregar_comentario']);
@@ -46,6 +47,7 @@ $router->get('/soportes/marcar_espera/{id}', [SoportesController::class, 'marcar
 $router->get('/soportes/reanudar/{id}', [SoportesController::class, 'reanudar']);
 $router->get('/soportes/resolver/{id}', [SoportesController::class, 'resolver']);
 $router->post('/soportes/agregar_consumo', [SoportesController::class, 'agregar_consumo']);
+$router->post('/soportes/guardar_valoracion', [SoportesController::class, 'guardar_valoracion']);
 
 // Categorías
 $router->get('/categorias', [App\Controllers\CategoriasController::class, 'index']);
@@ -56,10 +58,16 @@ $router->post('/categorias/actualizar/{id}', [App\Controllers\CategoriasControll
 $router->get('/categorias/eliminar/{id}', [App\Controllers\CategoriasController::class, 'eliminar']);
 
 // Equipos
-
+$router->get('/equipos', [EquiposController::class, 'index']);
+$router->get('/equipos/crear', [EquiposController::class, 'crear']);
+$router->get('/equipos/ver/{id}', [EquiposController::class, 'ver']);
+$router->get('/equipos/editar/{id}', [EquiposController::class, 'editar']);
 $router->post('/equipos/guardar', [EquiposController::class, 'guardar']);
 $router->post('/equipos/eliminar/{id}', [EquiposController::class, 'eliminar']);
 $router->get('/equipos/apiBuscar', [EquiposController::class, 'apiBuscar']);
+$router->get('/equipos/historial/{id}', [EquiposController::class, 'historial']);
+$router->get('/equipos/imprimir/{id}', [EquiposController::class, 'imprimir']);
+$router->get('/equipos/duplicar/{id}', [EquiposController::class, 'duplicar']);
 
 // Departamentos
 $router->get('/departamentos', [DepartamentosController::class, 'index']);
@@ -73,6 +81,7 @@ $router->post('/departamentos/asignarEquipo', [DepartamentosController::class, '
 // Empleados
 $router->get('/empleados', [EmpleadosController::class, 'index']);
 $router->get('/empleados/crear', [EmpleadosController::class, 'crear']);
+$router->get('/empleados/ver/{id}', [EmpleadosController::class, 'ver']);
 $router->get('/empleados/editar/{id}', [EmpleadosController::class, 'editar']);
 $router->post('/empleados/guardar', [EmpleadosController::class, 'guardar']);
 $router->get('/empleados/eliminar/{id}', [EmpleadosController::class, 'eliminar']);
@@ -96,6 +105,7 @@ $router->post('/configuracion/guardar', [ConfiguracionController::class, 'guarda
 
 // Reportes (sistema info moved to /about)
 $router->get('/reportes', [ReportesController::class, 'index']);
+$router->get('/reportes/historial', [ReportesController::class, 'historial']);
 $router->get('/reportes/soportes', [ReportesController::class, 'soportes']);
 $router->get('/reportes/soportes_excel', [ReportesController::class, 'soportes_excel']);
 $router->get('/reportes/inventario', [ReportesController::class, 'inventario']);
@@ -115,10 +125,14 @@ $router->post('/inventario/crear',  [InventarioController::class, 'crear']);
 $router->post('/inventario/movimiento', [InventarioController::class, 'movimiento']);
 $router->post('/inventario/baja', [InventarioController::class, 'baja']);
 $router->get('/inventario/ver/{id}', [InventarioController::class, 'ver']);
+$router->get('/inventario/editar/{id}', [InventarioController::class, 'editar']);
+$router->post('/inventario/actualizar/{id}', [InventarioController::class, 'actualizar']);
+$router->get('/inventario/eliminar/{id}', [InventarioController::class, 'eliminar']);
 $router->get('/inventario/distribucion/{id}', [InventarioController::class, 'distribucion']);
 $router->post('/inventario/transferir', [InventarioController::class, 'transferir']);
 $router->get('/inventario/departamento', [InventarioController::class, 'por_departamento']);
 $router->get('/inventario/departamento/{id}', [InventarioController::class, 'por_departamento']);
+$router->get('/inventario/historial-departamento/{id}', [InventarioController::class, 'historial_departamento']);
 
 // Mantenimientos
 $router->get('/mantenimientos', [MantenimientosController::class, 'index']);

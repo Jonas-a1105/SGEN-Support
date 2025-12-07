@@ -38,12 +38,15 @@ class Mantenimiento extends Model
         $sql = "
             SELECT 
                 m.*, 
+                CONCAT(e.tipo, ' ', e.marca, ' ', e.modelo) AS equipo_nombre,
                 e.codigo_inventario AS equipo_codigo,
                 e.tipo AS equipo_tipo,
                 e.marca AS equipo_marca,
-                e.modelo AS equipo_modelo
+                e.modelo AS equipo_modelo,
+                u.username AS tecnico_nombre
             FROM {$this->table} m
             LEFT JOIN equipos e ON m.equipo_id = e.id
+            LEFT JOIN usuarios u ON m.tecnico_id = u.id
             ORDER BY m.proxima_fecha ASC, m.fecha DESC
         ";
         $stmt = $this->pdo->query($sql);
@@ -150,12 +153,15 @@ class Mantenimiento extends Model
         $sql = "
             SELECT 
                 m.*, 
+                CONCAT(e.tipo, ' ', e.marca, ' ', e.modelo) AS equipo_nombre,
                 e.codigo_inventario AS equipo_codigo,
                 e.tipo AS equipo_tipo,
                 e.marca AS equipo_marca,
-                e.modelo AS equipo_modelo
+                e.modelo AS equipo_modelo,
+                u.username AS tecnico_nombre
             FROM {$this->table} m
             LEFT JOIN equipos e ON m.equipo_id = e.id
+            LEFT JOIN usuarios u ON m.tecnico_id = u.id
             WHERE e.departamento_id = ?
             ORDER BY m.proxima_fecha ASC, m.fecha DESC
         ";

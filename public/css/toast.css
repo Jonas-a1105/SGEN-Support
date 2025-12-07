@@ -1,0 +1,225 @@
+/* Toast Notification System Styles */
+
+/* Container */
+#toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    /* bottom-6 */
+    right: 1.5rem;
+    /* right-6 */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    /* gap-3 */
+    z-index: 9999;
+    /* z-50 + generous buffer */
+    pointer-events: none;
+    /* Allows clicking through the empty container */
+}
+
+/* Toast Item Base */
+.toast-item {
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    /* gap-3 */
+    padding: 0.875rem 1rem;
+    /* px-4 py-3.5 */
+    border-radius: 0.5rem;
+    /* rounded-lg */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    /* shadow-[...] */
+    border: 1px solid transparent;
+    transition: all 0.3s ease-out;
+    /* duration-300 */
+    transform: translateX(3rem) opacity(0);
+    /* Start hidden (slide in) */
+    min-width: 320px;
+    max-width: 24rem;
+    /* max-w-sm */
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* Visibility State */
+.toast-item.show {
+    transform: translateX(0) opacity(1);
+}
+
+.toast-item.removing {
+    transform: translateX(100%);
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Variants */
+
+/* SUCCESS */
+.toast-success {
+    background-color: #ffffff;
+    /* bg-white */
+    border-color: #d1fae5;
+    /* border-emerald-100 */
+    color: #334155;
+    /* text-slate-700 */
+}
+
+.toast-success .toast-icon {
+    color: #10b981;
+    /* text-emerald-500 */
+}
+
+.toast-success .toast-progress-bar {
+    background-color: #10b981;
+    /* bg-emerald-500 */
+}
+
+/* ERROR */
+.toast-error {
+    background-color: #ffffff;
+    /* bg-white */
+    border-color: #ffe4e6;
+    /* border-rose-100 */
+    color: #334155;
+    /* text-slate-700 */
+}
+
+.toast-error .toast-icon {
+    color: #f43f5e;
+    /* text-rose-500 */
+}
+
+.toast-error .toast-progress-bar {
+    background-color: #f43f5e;
+    /* bg-rose-500 */
+}
+
+/* NEUTRAL / INFO */
+.toast-neutral {
+    background-color: #1e293b;
+    /* bg-slate-800 */
+    border-color: #334155;
+    /* border-slate-700 */
+    color: #f1f5f9;
+    /* text-slate-100 */
+}
+
+.toast-neutral .toast-icon {
+    color: #94a3b8;
+    /* text-slate-400 */
+}
+
+.toast-neutral .toast-progress-bar {
+    background-color: #94a3b8;
+    /* bg-slate-400 */
+}
+
+.toast-neutral .toast-close {
+    color: #64748b;
+    /* text-slate-500 */
+}
+
+.toast-neutral .toast-close:hover {
+    color: #cbd5e1;
+    /* text-slate-300 */
+}
+
+/* Content Elements */
+.toast-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-content {
+    flex: 1;
+    margin-right: 0.5rem;
+}
+
+.toast-message {
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 500;
+    /* font-medium */
+    margin: 0;
+    line-height: 1.25rem;
+}
+
+/* Buttons */
+.toast-undo-btn {
+    font-size: 0.75rem;
+    /* text-xs */
+    font-weight: 700;
+    /* font-bold */
+    color: #cbd5e1;
+    /* text-slate-300 */
+    background-color: #334155;
+    /* bg-slate-700 */
+    padding: 0.25rem 0.5rem;
+    /* px-2 py-1 */
+    border-radius: 0.25rem;
+    /* rounded */
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.toast-undo-btn:hover {
+    color: #ffffff;
+    /* hover:text-white */
+    background-color: #475569;
+    /* hover:bg-slate-600 */
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    /* rounded-md */
+    color: #94a3b8;
+    /* text-slate-400 */
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-close:hover {
+    color: #475569;
+    /* hover:text-slate-600 */
+    background-color: #f1f5f9;
+    /* hover:bg-slate-100 */
+}
+
+/* Neutral variant override for close button is handled above in .toast-neutral block */
+
+
+/* Progress Bar */
+.toast-progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background-color: rgba(241, 245, 249, 0.2);
+    /* bg-slate-100/20 */
+}
+
+.toast-progress-bar {
+    height: 100%;
+    width: 0%;
+    /* Ends at 0% */
+    /* Transition is handled via inline style for dynamic duration, or standard class */
+    transition: width linear;
+}

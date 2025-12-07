@@ -1,74 +1,117 @@
 <?php
 /**
- * Tab: Comentarios
+ * Tab: Comentarios - V2 Ultra Moderna
+ * Hilo de conversación estilo chat
  */
+
+use App\Helpers\ViewHelper;
+
+$comentarios = $comentarios ?? [];
+$canComment = in_array($_SESSION['rol'], ['admin', 'tecnico', 'consultor']);
 ?>
 
-<div class="card shadow-sm">
-    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 text-dark"><i class="bi bi-chat-dots me-2"></i>Comentarios</h5>
-        <span class="badge bg-secondary"><?= count($comentarios ?? []) ?></span>
+<div class="td-card td-comments-container">
+    <!-- Header -->
+    <div class="td-comments-header">
+        <h3 class="td-comments-title">
+            <i class="bi bi-chat-dots"></i>
+            Hilo de Conversación
+        </h3>
+        <span class="td-comments-count"><?= count($comentarios) ?></span>
     </div>
-    <div class="card-body">
-        <!-- Lista de Comentarios -->
-        <div class="mb-4" style="max-height: 500px; overflow-y: auto;">
-            <?php if (empty($comentarios)): ?>
-                <p class="text-muted text-center py-3">No hay comentarios aún.</p>
-            <?php else: ?>
-                <?php foreach ($comentarios as $comentario): ?>
-                    <div class="d-flex mb-3 <?= $comentario->es_interno ? 'ms-4' : '' ?>">
-                        <div class="flex-shrink-0">
-                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                <?= strtoupper(substr($comentario->nombre_usuario, 0, 1)) ?>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="card <?= $comentario->es_interno ? 'border-warning bg-light-warning' : 'bg-light' ?>">
-                                <div class="card-body p-2">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="card-title mb-0 small fw-bold">
-                                            <?= htmlspecialchars($comentario->nombre_usuario) ?>
-                                            <?php if ($comentario->es_interno): ?>
-                                                <span class="badge bg-warning text-dark ms-1"><i class="bi bi-lock-fill"></i> Interno</span>
-                                            <?php endif; ?>
-                                        </h6>
-                                        <small class="text-muted" style="font-size: 0.75rem;">
-                                            <?= date('d/m/Y H:i', strtotime($comentario->fecha)) ?>
-                                        </small>
-                                    </div>
-                                    <p class="card-text small mb-0"><?= nl2br(htmlspecialchars($comentario->comentario)) ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
 
-        <!-- Formulario Nuevo Comentario -->
-        <?php if (in_array($soporte->estado, ['pendiente', 'en_proceso', 'en_espera'])): ?>
-            <hr>
-            <form action="<?= BASE_URL ?>soportes/agregar_comentario" method="POST">
-                <input type="hidden" name="ticket_id" value="<?= $soporte->id ?>">
-                <div class="mb-2">
-                    <textarea name="comentario" class="form-control form-control-sm" rows="3" placeholder="Escribe un comentario..." required></textarea>
+    <!-- Lista de Comentarios -->
+    <div class="td-comments-list">
+        <?php if (!empty($comentarios)): ?>
+            <?php foreach ($comentarios as $comentario): ?>
+            <?php
+                $initials = 'U';
+                $authorName = $comentario->usuario_nombre ?? 'Usuario';
+                $parts = explode(' ', $authorName);
+                $initials = strtoupper(substr($parts[0] ?? '', 0, 1) . substr($parts[1] ?? '', 0, 1));
+                if (strlen($initials) < 2) $initials = strtoupper(substr($authorName, 0, 2));
+                
+                $isInternal = !empty($comentario->es_interno) && $comentario->es_interno;
+                $timeAgo = ViewHelper::timeAgo($comentario->fecha_creacion ?? $comentario->fecha);
+            ?>
+            <div class="td-comment <?= $isInternal ? 'internal' : '' ?>">
+                <div class="td-comment-avatar"><?= $initials ?></div>
+                <div class="td-comment-content">
+                    <div class="td-comment-meta">
+                        <span class="td-comment-author"><?= htmlspecialchars($authorName) ?></span>
+                        <span class="td-comment-time"><?= $timeAgo ?></span>
+                        <?php if ($isInternal): ?>
+                        <span class="td-comment-internal-badge">
+                            <i class="bi bi-lock-fill"></i> Interno
+                        </span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="td-comment-text">
+                        <?= nl2br(htmlspecialchars($comentario->contenido ?? $comentario->comentario)) ?>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <?php if (in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="es_interno" name="es_interno" value="1">
-                            <label class="form-check-label small text-muted" for="es_interno">
-                                <i class="bi bi-lock"></i> Comentario Interno
-                            </label>
-                        </div>
-                    <?php else: ?>
-                        <div></div>
-                    <?php endif; ?>
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="bi bi-send me-1"></i> Enviar
-                    </button>
-                </div>
-            </form>
+            </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="td-comments-empty">
+                <i class="bi bi-chat-dots"></i>
+                <p>Sin mensajes aún.</p>
+            </div>
         <?php endif; ?>
     </div>
+
+    <!-- Input Area -->
+    <?php if ($canComment && $soporte->estado !== 'cerrado'): ?>
+    <form action="<?= BASE_URL ?>soportes/agregar_comentario" method="POST" class="td-comment-input-wrapper">
+        <input type="hidden" name="soporte_id" value="<?= $soporte->id ?>">
+        
+        <div class="td-comment-input-box">
+            <span class="td-comment-input-label">Nuevo Mensaje</span>
+            <textarea 
+                name="contenido" 
+                class="td-comment-textarea" 
+                placeholder="Escribe un comentario..." 
+                rows="3"
+                required
+            ></textarea>
+            
+            <div class="td-comment-actions">
+                <label class="td-comment-visibility-toggle" id="toggleVisibility">
+                    <input type="checkbox" name="es_interno" value="1" style="display: none;" id="checkInterno">
+                    <i class="bi bi-eye" id="visibilityIcon"></i>
+                    <span id="visibilityText">Visible para todos</span>
+                </label>
+                
+                <button type="submit" class="td-comment-send-btn">
+                    Enviar <i class="bi bi-send"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+    <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('toggleVisibility');
+    const checkbox = document.getElementById('checkInterno');
+    const icon = document.getElementById('visibilityIcon');
+    const text = document.getElementById('visibilityText');
+    
+    if (toggle && checkbox) {
+        toggle.addEventListener('click', function() {
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                toggle.classList.add('internal');
+                icon.className = 'bi bi-lock-fill';
+                text.textContent = 'Solo visible para técnicos';
+            } else {
+                toggle.classList.remove('internal');
+                icon.className = 'bi bi-eye';
+                text.textContent = 'Visible para todos';
+            }
+        });
+    }
+});
+</script>

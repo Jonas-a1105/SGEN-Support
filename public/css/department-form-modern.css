@@ -1,0 +1,522 @@
+/* Department Form Modern Styles */
+:root {
+    --df-slate-50: #f8fafc;
+    --df-slate-100: #f1f5f9;
+    --df-slate-200: #e2e8f0;
+    --df-slate-300: #cbd5e1;
+    --df-slate-400: #94a3b8;
+    --df-slate-500: #64748b;
+    --df-slate-600: #475569;
+    --df-slate-700: #334155;
+    --df-slate-800: #1e293b;
+    --df-slate-900: #0f172a;
+
+    --df-blue-50: #eff6ff;
+    --df-blue-100: #dbeafe;
+    --df-blue-500: #3b82f6;
+    --df-blue-600: #2563eb;
+    --df-blue-700: #1d4ed8;
+
+    --df-emerald-50: #ecfdf5;
+    --df-emerald-100: #d1fae5;
+    --df-emerald-700: #047857;
+
+    --df-red-500: #ef4444;
+
+    --df-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --df-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dept-form-wrapper {
+    min-height: 100vh;
+    background-color: var(--df-slate-50);
+    padding: 1.5rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--df-slate-800);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.dept-form-container {
+    width: 1150px;
+    margin: 0 auto;
+}
+
+/* Header */
+.dept-header {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    color: var(--df-slate-400);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    transition: color 0.2s;
+}
+
+.btn-back:hover {
+    color: var(--df-slate-600);
+}
+
+.btn-back i {
+    margin-right: 0.25rem;
+    transition: transform 0.2s;
+}
+
+.btn-back:hover i {
+    transform: translateX(-4px);
+}
+
+.dept-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--df-slate-900);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.dept-title-icon {
+    color: var(--df-blue-600);
+}
+
+.dept-subtitle {
+    color: var(--df-slate-500);
+    margin-top: 0.5rem;
+    font-size: 1.125rem;
+}
+
+.status-badge {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        background-color: var(--df-emerald-50);
+        color: var(--df-emerald-700);
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        border: 1px solid var(--df-emerald-100);
+    }
+}
+
+/* Main Card */
+.dept-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: var(--df-shadow);
+    border: 1px solid var(--df-slate-100);
+    overflow: hidden;
+}
+
+.dept-form-body {
+    padding: 2rem;
+}
+
+@media (min-width: 768px) {
+    .dept-form-body {
+        padding: 2.5rem;
+    }
+}
+
+.form-split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .form-split {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Section Headers */
+.section-header {
+    border-bottom: 1px solid var(--df-slate-100);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--df-slate-400);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Inputs */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--df-slate-700);
+    margin-bottom: 0.5rem;
+}
+
+.req-star {
+    color: var(--df-red-500);
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--df-slate-400);
+    pointer-events: none;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    padding-left: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--df-slate-300);
+    font-size: 0.875rem;
+    color: var(--df-slate-800);
+    background: white;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.form-input.has-icon {
+    padding-left: 2.5rem;
+}
+
+.form-input:focus {
+    border-color: var(--df-blue-500);
+    box-shadow: 0 0 0 3px var(--df-blue-100);
+}
+
+.form-input::placeholder {
+    color: var(--df-slate-400);
+}
+
+.form-textarea {
+    resize: none;
+}
+
+/* Map Preview */
+.map-preview {
+    margin-top: 1rem;
+    height: 8rem;
+    width: 100%;
+    background-color: var(--df-slate-100);
+    border-radius: 0.5rem;
+    border: 1px solid var(--df-slate-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--df-slate-400);
+    font-size: 0.75rem;
+}
+
+/* Manager Section */
+.manager-card {
+    background-color: var(--df-slate-50);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid var(--df-slate-200);
+}
+
+.manager-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+    .manager-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.current-manager-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.manager-avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.manager-avatar.assigned {
+    background-color: var(--df-blue-600);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 4px solid white;
+}
+
+.manager-avatar.empty {
+    background-color: var(--df-slate-200);
+    color: var(--df-slate-400);
+    border: 2px dashed var(--df-slate-300);
+}
+
+.manager-details h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.manager-details h4.text-dark {
+    color: var(--df-slate-800);
+}
+
+.manager-details h4.text-muted {
+    color: var(--df-slate-400);
+    font-style: italic;
+}
+
+.manager-role-badge {
+    font-size: 0.75rem;
+    color: var(--df-blue-600);
+    background-color: var(--df-blue-100);
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    display: inline-block;
+    margin-top: 0.25rem;
+}
+
+.btn-toggle-search {
+    padding: 0.625rem 1.25rem;
+    background: white;
+    border: 1px solid var(--df-slate-300);
+    color: var(--df-slate-700);
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: center;
+    cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    .btn-toggle-search {
+        width: auto;
+    }
+}
+
+.btn-toggle-search:hover {
+    border-color: var(--df-blue-500);
+    color: var(--df-blue-600);
+}
+
+/* Manager Search Dropdown */
+.manager-search-area {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--df-slate-200);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.search-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--df-slate-400);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+
+.employee-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .employee-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .employee-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.emp-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--df-slate-200);
+    background: white;
+    text-align: left;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.emp-card:hover {
+    box-shadow: var(--df-shadow-sm);
+    border-color: var(--df-blue-100);
+}
+
+.emp-card.active {
+    border-color: var(--df-blue-500);
+    background-color: var(--df-blue-50);
+    box-shadow: 0 0 0 1px var(--df-blue-500);
+}
+
+.emp-avatar-small {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: var(--df-slate-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--df-slate-600);
+}
+
+.emp-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.emp-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--df-slate-800);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.emp-role {
+    font-size: 0.625rem;
+    color: var(--df-slate-500);
+    display: block;
+}
+
+.check-icon {
+    color: var(--df-blue-600);
+}
+
+.btn-remove-assign {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px dashed var(--df-slate-300);
+    color: var(--df-slate-500);
+    background: transparent;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.btn-remove-assign:hover {
+    background-color: var(--df-slate-50);
+    color: var(--df-red-500);
+    border-color: #fecaca;
+    /* red-200 */
+}
+
+/* Footer & Buttons */
+.form-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--df-slate-100);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.btn-footer-cancel {
+    padding: 0.75rem 1.5rem;
+    color: var(--df-slate-500);
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+}
+
+.btn-footer-cancel:hover {
+    background-color: var(--df-slate-50);
+    color: var(--df-slate-700);
+}
+
+.btn-footer-save {
+    padding: 0.75rem 2rem;
+    background-color: var(--df-blue-600);
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    /* blue shadow */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-footer-save:hover {
+    background-color: var(--df-blue-700);
+    transform: translateY(-1px);
+}
+
+.btn-footer-save:active {
+    transform: translateY(0);
+}

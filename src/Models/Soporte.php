@@ -32,13 +32,17 @@ class Soporte extends Model
                 u.username AS tecnico_asignado,
                 c.nombre AS categoria_nombre,
                 c.color AS categoria_color,
-                c.icono AS categoria_icono
+                c.icono AS categoria_icono,
+                sol.id AS solicitante_id,
+                CONCAT(sol.nombre, ' ', IFNULL(sol.apellido, '')) AS solicitante_nombre,
+                (SELECT COUNT(*) FROM ticket_comentarios tc WHERE tc.ticket_id = s.id) AS comentarios_count
             FROM {$this->table} s
             JOIN equipos e ON s.equipo_id = e.id
             JOIN departamentos d ON e.departamento_id = d.id
             LEFT JOIN empleados emp ON s.empleado_id = emp.id
             LEFT JOIN usuarios u ON emp.usuario_id = u.id
             LEFT JOIN categorias c ON s.categoria_id = c.id
+            LEFT JOIN empleados sol ON e.empleado_id = sol.id
             ORDER BY s.fecha DESC
         ";
         $stmt = $this->pdo->query($sql);
@@ -72,6 +76,7 @@ class Soporte extends Model
                 eq.tipo AS equipo_tipo,
                 eq.marca AS equipo_marca,
                 eq.modelo AS equipo_modelo,
+                eq.empleado_id AS equipo_empleado_id,
                 d.nombre AS departamento_nombre,
                 d.ubicacion AS departamento_ubicacion,
                 CONCAT(emp.nombre, ' ', emp.apellido) AS nombre_tecnico,
@@ -79,13 +84,15 @@ class Soporte extends Model
                 s.observaciones AS soporte_observaciones,
                 c.nombre AS categoria_nombre,
                 c.color AS categoria_color,
-                c.icono AS categoria_icono
+                c.icono AS categoria_icono,
+                CONCAT(emp_equipo.nombre, ' ', IFNULL(emp_equipo.apellido, '')) AS equipo_empleado_nombre
             FROM {$this->table} s
             LEFT JOIN equipos eq ON s.equipo_id = eq.id
             LEFT JOIN departamentos d ON eq.departamento_id = d.id
             LEFT JOIN empleados emp ON s.empleado_id = emp.id
             LEFT JOIN usuarios u ON emp.usuario_id = u.id
             LEFT JOIN categorias c ON s.categoria_id = c.id
+            LEFT JOIN empleados emp_equipo ON eq.empleado_id = emp_equipo.id
             WHERE s.id = ?
         ";
         $stmt = $this->pdo->prepare($sql);
@@ -171,6 +178,20 @@ class Soporte extends Model
         if (isset($data['tiempo_atencion_minutos'])) {
             $fields[] = "tiempo_atencion_minutos = ?";
             $values[] = $data['tiempo_atencion_minutos'];
+        }
+        
+        // Campos de valoración
+        if (isset($data['valoracion'])) {
+            $fields[] = "valoracion = ?";
+            $values[] = $data['valoracion'];
+        }
+        if (isset($data['comentario_valoracion'])) {
+            $fields[] = "comentario_valoracion = ?";
+            $values[] = $data['comentario_valoracion'];
+        }
+        if (isset($data['fecha_valoracion'])) {
+            $fields[] = "fecha_valoracion = ?";
+            $values[] = $data['fecha_valoracion'];
         }
 
         if (empty($fields)) {

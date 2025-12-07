@@ -26,9 +26,13 @@ class InventarioController extends Controller {
         // Search
         $search = isset($_GET['q']) ? trim($_GET['q']) : '';
 
+        // Pagination Preference
+        $cookiePerPage = isset($_COOKIE['sgen_pagination_per_page']) ? (int)$_COOKIE['sgen_pagination_per_page'] : 10;
+        $perPage = isset($_GET['per_page']) ? max(1, (int)$_GET['per_page']) : $cookiePerPage;
+
         // Pagination for Items
         $pageItems = isset($_GET['page_items']) ? (int)$_GET['page_items'] : 1;
-        $limitItems = 10;
+        $limitItems = $perPage;
         $offsetItems = ($pageItems - 1) * $limitItems;
         
         $items = $this->inventarioModel->obtenerTodosPaginated($limitItems, $offsetItems, $search);
@@ -37,7 +41,7 @@ class InventarioController extends Controller {
 
         // Pagination for Unassigned Equipment
         $pageEquipos = isset($_GET['page_equipos']) ? (int)$_GET['page_equipos'] : 1;
-        $limitEquipos = 10;
+        $limitEquipos = $perPage;
         $offsetEquipos = ($pageEquipos - 1) * $limitEquipos;
 
         $equiposSinAsignar = $this->equipoModel->findUnassignedPaginated($limitEquipos, $offsetEquipos, $search);
@@ -60,12 +64,14 @@ class InventarioController extends Controller {
             'empleados' => $empleados,
             'estados_equipo' => $estados_equipo,
             'tipos_equipo' => $tipos_equipo,
-            // Pagination Data
-            'pageItems' => $pageItems,
             'totalPagesItems' => $totalPagesItems,
-            'pageEquipos' => $pageEquipos,
+            'pageItems' => $pageItems,
             'totalPagesEquipos' => $totalPagesEquipos,
-            'search' => $search
+            'pageEquipos' => $pageEquipos,
+            'search' => $search,
+            'totalItemsCount' => $totalItemsCount,
+            'totalEquiposCount' => $totalEquiposCount,
+            'perPage' => $perPage
         ]);
     }
 
@@ -90,9 +96,10 @@ class InventarioController extends Controller {
                 'valor_compra' => !empty($_POST['valor_compra']) ? $_POST['valor_compra'] : 0.00
             ];
             
-            if ($this->inventarioModel->registrarItem($datos)) {
+            $itemId = $this->inventarioModel->registrarItem($datos);
+            if ($itemId > 0) {
                 $this->setFlashMessage('success', 'Ítem creado exitosamente.');
-                $this->logBitacora("Registró nuevo ítem '{$datos['nombre']}'", 'inventario', null);
+                $this->logBitacora("Registró nuevo ítem '{$datos['nombre']}'", 'inventario', $itemId);
                 header('Location: ' . BASE_URL . 'inventario');
                 exit;
             }
@@ -136,6 +143,97 @@ class InventarioController extends Controller {
             'item' => $item,
             'movimientos' => $movimientos
         ]);
+    }
+
+    /**
+     * Muestra el formulario de edición de un ítem del inventario.
+     */
+    public function editar(int $id) {
+        $this->restrictTo(['admin']);
+        
+        $item = $this->inventarioModel->findById($id);
+        if (!$item) {
+            $this->setFlashMessage('error', 'Ítem no encontrado.');
+            header('Location: ' . BASE_URL . 'inventario');
+            exit;
+        }
+
+        $this->render('inventario/formulario', [
+            'titulo' => 'Editar Artículo: ' . $item->nombre,
+            'item' => $item,
+            'editMode' => true
+        ]);
+    }
+
+    /**
+     * Actualiza un ítem del inventario.
+     */
+    public function actualizar(int $id) {
+        $this->restrictTo(['admin']);
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'inventario');
+            exit;
+        }
+
+        $item = $this->inventarioModel->findById($id);
+        if (!$item) {
+            $this->setFlashMessage('error', 'Ítem no encontrado.');
+            header('Location: ' . BASE_URL . 'inventario');
+            exit;
+        }
+
+        $datos = [
+            'id' => $id,
+            'codigo' => $_POST['codigo'] ?? $item->codigo,
+            'nombre' => $_POST['nombre'] ?? $item->nombre,
+            'categoria' => $_POST['categoria'] ?? $item->categoria,
+            'descripcion' => $_POST['descripcion'] ?? $item->descripcion,
+            'marca' => $_POST['marca'] ?? $item->marca,
+            'modelo' => $_POST['modelo'] ?? $item->modelo,
+            'unidad_medida' => $_POST['unidad_medida'] ?? $item->unidad_medida,
+            'stock_minimo' => $_POST['stock_minimo'] ?? $item->stock_minimo,
+            'ubicacion' => $_POST['ubicacion'] ?? $item->ubicacion,
+            'proveedor' => $_POST['proveedor'] ?? $item->proveedor,
+            'proveedor_rif' => $_POST['proveedor_rif'] ?? $item->proveedor_rif,
+            'valor_compra' => $_POST['valor_compra'] ?? $item->valor_compra,
+        ];
+
+        try {
+            $this->inventarioModel->actualizarItem($datos);
+            $this->setFlashMessage('success', 'Artículo actualizado correctamente.');
+            $this->logBitacora("Actualizó el artículo #{$id} ({$datos['nombre']})", 'inventario', $id);
+        } catch (\Exception $e) {
+            $this->setFlashMessage('error', 'Error al actualizar: ' . $e->getMessage());
+        }
+
+        header('Location: ' . BASE_URL . 'inventario/ver/' . $id);
+        exit;
+    }
+
+    /**
+     * Elimina un ítem del inventario.
+     */
+    public function eliminar(int $id) {
+        $this->restrictTo(['admin']);
+        
+        $item = $this->inventarioModel->findById($id);
+        if (!$item) {
+            $this->setFlashMessage('error', 'Ítem no encontrado.');
+            header('Location: ' . BASE_URL . 'inventario');
+            exit;
+        }
+
+        try {
+            $this->inventarioModel->eliminarItem($id);
+            $this->setFlashMessage('success', 'Artículo eliminado correctamente.');
+            $this->logBitacora("Eliminó el artículo #{$id} ({$item->nombre})", 'inventario', $id);
+        } catch (\Exception $e) {
+            $this->setFlashMessage('error', 'Error al eliminar: ' . $e->getMessage());
+        }
+
+        header('Location: ' . BASE_URL . 'inventario');
+        exit;
     }
 
     public function distribucion(int $itemId) {
@@ -195,7 +293,7 @@ class InventarioController extends Controller {
         
         if (!$id) {
             if ($_SESSION['rol'] === 'admin') {
-                $departamentos = (new \App\Models\Departamento())->findAll();
+                $departamentos = (new \App\Models\Departamento())->findAllWithStats();
                 $this->render('inventario/selector_departamento', [
                     'titulo' => 'Inventario por Departamento',
                     'departamentos' => $departamentos
@@ -220,7 +318,7 @@ class InventarioController extends Controller {
             exit;
         }
 
-        $departamento = (new \App\Models\Departamento())->findById($id);
+        $departamento = (new \App\Models\Departamento())->findByIdWithStats($id);
         if (!$departamento) {
             $this->setFlashMessage('error', 'Departamento no encontrado.');
             header('Location: ' . BASE_URL . 'inventario');
@@ -228,11 +326,46 @@ class InventarioController extends Controller {
         }
 
         $items = $this->inventarioModel->obtenerItemsPorDepartamento($id);
+        
+        // Obtener historial de movimientos del departamento
+        $movimientos = $this->inventarioModel->obtenerMovimientosPorDepartamento($id, 20);
 
         $this->render('inventario/por_departamento', [
             'titulo' => 'Inventario: ' . $departamento->nombre,
             'items' => $items,
-            'departamento' => $departamento
+            'departamento' => $departamento,
+            'movimientos' => $movimientos
+        ]);
+    }
+
+    /**
+     * Muestra el historial de movimientos de un departamento específico.
+     */
+    public function historial_departamento(int $id)
+    {
+        $this->restrictTo(['admin', 'tecnico']);
+        
+        // Verificar permisos para técnicos
+        if ($_SESSION['rol'] === 'tecnico' && $id != $_SESSION['departamento_id']) {
+            $this->setFlashMessage('error', 'No tienes permiso para ver el historial de otros departamentos.');
+            header('Location: ' . BASE_URL . 'inventario/departamento/' . $_SESSION['departamento_id']);
+            exit;
+        }
+
+        $departamento = (new \App\Models\Departamento())->findByIdWithStats($id);
+        if (!$departamento) {
+            $this->setFlashMessage('error', 'Departamento no encontrado.');
+            header('Location: ' . BASE_URL . 'inventario');
+            exit;
+        }
+
+        // Obtener más movimientos para la página dedicada (50 en lugar de 20)
+        $movimientos = $this->inventarioModel->obtenerMovimientosPorDepartamento($id, 50);
+
+        $this->render('inventario/historial_departamento', [
+            'titulo' => 'Historial: ' . $departamento->nombre,
+            'departamento' => $departamento,
+            'movimientos' => $movimientos
         ]);
     }
 

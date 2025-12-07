@@ -76,6 +76,7 @@
                         <button class="btn btn-primary btn-lg" type="submit" id="enviar">
                             <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
                         </button>
+                    </div>
                 </form>
             </div>
         </div>

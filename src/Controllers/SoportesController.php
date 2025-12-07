@@ -11,9 +11,15 @@ use App\Models\Categoria;
 use App\Models\TicketArchivo;
 use App\Models\TicketComentario;
 use App\Models\Notificacion;
+use App\Services\TicketService;
+use App\Services\FileUploadService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
+/**
+ * SoportesController - Controlador refactorizado
+ * Lógica de negocio delegada a TicketService y FileUploadService
+ */
 class SoportesController extends Controller
 {
     private $soporteModel;
@@ -25,20 +31,29 @@ class SoportesController extends Controller
     private $ticketArchivoModel;
     private $ticketComentarioModel;
     private $notificacionModel;
+    
+    // Services
+    private $ticketService;
+    private $fileUploadService;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->soporteModel      = new Soporte();
-        $this->equipoModel       = new Equipo();
+        // Models
+        $this->soporteModel = new Soporte();
+        $this->equipoModel = new Equipo();
         $this->departamentoModel = new Departamento();
-        $this->usuarioModel      = new Usuario();
-        $this->inventarioModel   = new Inventario();
-        $this->categoriaModel    = new Categoria();
+        $this->usuarioModel = new Usuario();
+        $this->inventarioModel = new Inventario();
+        $this->categoriaModel = new Categoria();
         $this->ticketArchivoModel = new TicketArchivo();
         $this->ticketComentarioModel = new TicketComentario();
         $this->notificacionModel = new Notificacion();
+        
+        // Services
+        $this->ticketService = new TicketService();
+        $this->fileUploadService = new FileUploadService();
     }
 
     /**
@@ -50,35 +65,25 @@ class SoportesController extends Controller
             $departamentoId = $_SESSION['departamento_id'] ?? 0;
             $soportes = $this->soporteModel->findAllByDepartment($departamentoId);
         } else {
-            // Admin y Técnico ven todos los tickets
             $soportes = $this->soporteModel->findAllWithDetails();
         }
         
-        // Calcular KP Is para el dashboard
-        $kpis = [
-            'pendientes' => 0,
-            'en_proceso' => 0,
-            'resueltos' => 0,
-            'alta_prioridad' => 0
-        ];
-        
+        // Calcular KPIs
+        $kpis = ['pendientes' => 0, 'en_proceso' => 0, 'resueltos' => 0, 'alta_prioridad' => 0];
         foreach ($soportes as $soporte) {
             if ($soporte->estado === 'pendiente') $kpis['pendientes']++;
             if ($soporte->estado === 'en_proceso') $kpis['en_proceso']++;
             if ($soporte->estado === 'resuelto') $kpis['resueltos']++;
-            if ($soporte->prioridad === 'alta' && $soporte->estado !== 'resuelto') {
-                $kpis['alta_prioridad']++;
-            }
+            if ($soporte->prioridad === 'alta' && $soporte->estado !== 'resuelto') $kpis['alta_prioridad']++;
         }
         
-        // Obtener categorías para filtro
         $categorias = $this->categoriaModel->findAll();
 
         $this->render('soportes/lista', [
             'soportes' => $soportes,
             'kpis' => $kpis,
             'categorias' => $categorias,
-            'titulo'   => 'Listado de Soportes'
+            'titulo' => 'Listado de Soportes'
         ]);
     }
 
@@ -94,28 +99,25 @@ class SoportesController extends Controller
             die("Error 404: Ticket no encontrado.");
         }
 
-        // Obtener consumos de inventario
         $consumos = $this->soporteModel->getConsumos($id);
-        
-        // Obtener items del inventario del departamento del equipo
         $equipo = $this->equipoModel->findById($soporte->equipo_id);
         $departamentoId = $equipo->departamento_id ?? null;
         
-        $items = [];
-        if ($departamentoId) {
-            $items = $this->inventarioModel->obtenerItemsPorDepartamento($departamentoId);
-        }
-
-        // Obtener comentarios
+        $items = $departamentoId ? $this->inventarioModel->obtenerItemsPorDepartamento($departamentoId) : [];
+        
         $includeInternos = in_array($_SESSION['rol'], ['admin', 'tecnico']);
         $comentarios = $this->ticketComentarioModel->findByTicketId($id, $includeInternos);
+        
+        // Cargar archivos adjuntos
+        $archivos = $this->ticketArchivoModel->findByTicketId($id);
 
         $this->render('soportes/detalle', [
-            'titulo'  => "Detalle de Soporte #{$soporte->id}",
+            'titulo' => "Detalle de Soporte #{$soporte->id}",
             'soporte' => $soporte,
             'consumos' => $consumos,
             'items' => $items,
-            'comentarios' => $comentarios
+            'comentarios' => $comentarios,
+            'archivos' => $archivos
         ]);
     }
 
@@ -128,22 +130,21 @@ class SoportesController extends Controller
         if ($rol === 'tecnico' || $rol === 'consultor') {
             $departamentoId = $_SESSION['departamento_id'] ?? 0;
             $equipos = $this->equipoModel->findByDepartamentoId($departamentoId);
-            // Técnicos y Consultores solo ven su propio departamento
             $departamentos = $this->departamentoModel->findById($departamentoId);
             $departamentos = $departamentos ? [$departamentos] : [];
         } else {
-            $equipos       = $this->equipoModel->findAll();
+            $equipos = $this->equipoModel->findAll();
             $departamentos = $this->departamentoModel->findAll();
         }
 
         $categorias = $this->categoriaModel->findAllActive();
 
         $this->render('soportes/formulario', [
-            'titulo'           => 'Crear Nuevo Ticket de Soporte',
-            'equipo_list'      => $equipos,
-            'departamento_list'=> $departamentos,
-            'categoria_list'   => $categorias,
-            'soporte'          => null
+            'titulo' => 'Crear Nuevo Ticket de Soporte',
+            'equipo_list' => $equipos,
+            'departamento_list' => $departamentos,
+            'categoria_list' => $categorias,
+            'soporte' => null
         ]);
     }
 
@@ -159,8 +160,8 @@ class SoportesController extends Controller
             die("Ticket de soporte no encontrado.");
         }
 
-        // Restricción para técnicos y consultores: solo pueden editar sus propios tickets
-        if (($_SESSION['rol'] === 'tecnico' || $_SESSION['rol'] === 'consultor') && $soporte->usuario_creacion_id != $_SESSION['user_id']) {
+        // Validar permisos usando el service
+        if (!$this->ticketService->puedeEditar($id, $_SESSION['user_id'], $_SESSION['rol'])) {
             $this->setFlashMessage('error', 'No tienes permiso para editar este ticket.');
             header('Location: ' . BASE_URL . 'soportes');
             exit;
@@ -172,18 +173,18 @@ class SoportesController extends Controller
             $departamentos = $this->departamentoModel->findById($departamentoId);
             $departamentos = $departamentos ? [$departamentos] : [];
         } else {
-            $equipos       = $this->equipoModel->findAll();
+            $equipos = $this->equipoModel->findAll();
             $departamentos = $this->departamentoModel->findAll();
         }
 
         $categorias = $this->categoriaModel->findAllActive();
 
         $this->render('soportes/formulario', [
-            'titulo'           => "Editar Ticket #{$id}",
-            'equipo_list'      => $equipos,
-            'departamento_list'=> $departamentos,
-            'categoria_list'   => $categorias,
-            'soporte'          => $soporte
+            'titulo' => "Editar Ticket #{$id}",
+            'equipo_list' => $equipos,
+            'departamento_list' => $departamentos,
+            'categoria_list' => $categorias,
+            'soporte' => $soporte
         ]);
     }
 
@@ -197,29 +198,21 @@ class SoportesController extends Controller
             exit;
         }
 
-        $id          = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
-        $equipo_id   = filter_input(INPUT_POST, 'equipo_id', FILTER_SANITIZE_NUMBER_INT);
+        $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
+        $equipo_id = filter_input(INPUT_POST, 'equipo_id', FILTER_SANITIZE_NUMBER_INT);
         $descripcion = filter_input(INPUT_POST, 'descripcion', FILTER_SANITIZE_SPECIAL_CHARS);
-        $prioridad   = filter_input(INPUT_POST, 'prioridad', FILTER_SANITIZE_SPECIAL_CHARS);
+        $prioridad = filter_input(INPUT_POST, 'prioridad', FILTER_SANITIZE_SPECIAL_CHARS);
         $categoria_id = filter_input(INPUT_POST, 'categoria_id', FILTER_SANITIZE_NUMBER_INT);
 
         if (empty($descripcion) || empty($equipo_id)) {
-            $this->setFlashMessage('error', 'Error: Faltan datos obligatorios (Descripción y Equipo).');
+            $this->setFlashMessage('error', 'Error: Faltan datos obligatorios.');
             header('Location: ' . $_SERVER['HTTP_REFERER']);
             exit;
         }
 
-        // VALIDACIÓN: Técnico/Consultor solo puede crear tickets para equipos de su departamento
-        if ($_SESSION['rol'] === 'tecnico' || $_SESSION['rol'] === 'consultor') {
-            $equipo = $this->equipoModel->findById($equipo_id);
-            if (!$equipo) {
-                $this->setFlashMessage('error', 'Error: Equipo no encontrado.');
-                header('Location: ' . $_SERVER['HTTP_REFERER']);
-                exit;
-            }
-            
-            $userDeptId = $_SESSION['departamento_id'] ?? null;
-            if ($equipo->departamento_id != $userDeptId) {
+        // Validar equipo-departamento para técnicos/consultores
+        if (in_array($_SESSION['rol'], ['tecnico', 'consultor'])) {
+            if (!$this->ticketService->validarEquipoDepartamento($equipo_id, $_SESSION['departamento_id'] ?? null)) {
                 $this->setFlashMessage('error', 'No tiene permisos para crear tickets para equipos fuera de su departamento.');
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
                 exit;
@@ -227,58 +220,35 @@ class SoportesController extends Controller
         }
 
         $datos = [
-            'equipo_id'   => $equipo_id,
+            'equipo_id' => $equipo_id,
             'descripcion' => $descripcion,
-            'prioridad'   => $prioridad ?? 'media',
+            'prioridad' => $prioridad ?? 'media',
             'categoria_id' => $categoria_id ?: null,
         ];
 
         if ($id) {
+            // Actualización
             $this->restrictTo(['admin', 'consultor', 'tecnico']);
 
-            // Validar propiedad del ticket para consultores y técnicos
-            if ($_SESSION['rol'] === 'consultor' || $_SESSION['rol'] === 'tecnico') {
-                $soporte = $this->soporteModel->findById($id);
-                if (!$soporte || $soporte->usuario_creacion_id != $_SESSION['user_id']) {
-                    $this->setFlashMessage('error', 'No tienes permiso para editar este ticket.');
-                    header('Location: ' . BASE_URL . 'soportes');
-                    exit;
-                }
+            if (!$this->ticketService->puedeEditar($id, $_SESSION['user_id'], $_SESSION['rol'])) {
+                $this->setFlashMessage('error', 'No tienes permiso para editar este ticket.');
+                header('Location: ' . BASE_URL . 'soportes');
+                exit;
             }
 
-            if ($this->soporteModel->update($id, $datos)) {
+            if ($this->ticketService->actualizarTicket($id, $datos)) {
                 $this->setFlashMessage('success', "Ticket #{$id} actualizado correctamente.");
-                $this->logBitacora("Actualizó ticket #{$id}", 'soporte', $id); // Log
+                $this->logBitacora("Actualizó ticket #{$id}", 'soporte', $id);
             }
             $redirect_id = $id;
         } else {
-            $datos['fecha']               = date('Y-m-d H:i:s');
-            $datos['estado']              = 'pendiente';
-            $datos['usuario_creacion_id'] = $_SESSION['user_id'] ?? null;
-
-            if ($redirect_id = $this->soporteModel->create($datos)) {
+            // Creación
+            $redirect_id = $this->ticketService->crearTicket($datos, $_SESSION['user_id']);
+            
+            if ($redirect_id) {
                 $this->setFlashMessage('success', 'Nuevo ticket de soporte creado exitosamente.');
-                $this->logBitacora("Creó ticket #{$redirect_id}", 'soporte', $redirect_id); // Log
-                
-                // Actualizar estado del equipo a "En reparación"
-                $this->equipoModel->update($equipo_id, ['estado' => 'en_reparacion']);
-                
-                // Notificar a todos los técnicos
-                $tecnicos = $this->usuarioModel->findAllTechnicians();
-                foreach ($tecnicos as $tech) {
-                    // Asegurarse de tener usuario_id (depende de la corrección en UsuarioModel)
-                    $techId = $tech->usuario_id ?? $tech->id; // Fallback si no se corrigió
-                    if ($techId) {
-                        $this->notificacionModel->createNotification(
-                            $techId,
-                            "Nuevo ticket #{$redirect_id} creado.",
-                            "/soportes/ver/{$redirect_id}"
-                        );
-                    }
-                }
-                
-                // Notificar a admins si no es admin quien crea
-                $this->notifyAdmins(
+                $this->logBitacora("Creó ticket #{$redirect_id}", 'soporte', $redirect_id);
+                $this->ticketService->notificarAdmins(
                     "{$_SESSION['username']} creó un nuevo ticket #{$redirect_id}",
                     "/soportes/ver/{$redirect_id}"
                 );
@@ -288,7 +258,6 @@ class SoportesController extends Controller
         header("Location: " . BASE_URL . "soportes/ver/{$redirect_id}");
         exit;
     }
-
 
     /**
      * Formulario para asignar técnico.
@@ -305,9 +274,9 @@ class SoportesController extends Controller
         $tecnicos = $this->usuarioModel->findAllTechnicians();
 
         $this->render('soportes/asignar_form', [
-            'titulo'  => "Asignar Técnico a Soporte #{$id}",
+            'titulo' => "Asignar Técnico a Soporte #{$id}",
             'soporte' => $soporte,
-            'tecnicos'=> $tecnicos
+            'tecnicos' => $tecnicos
         ]);
     }
 
@@ -323,33 +292,15 @@ class SoportesController extends Controller
             exit;
         }
 
-        $soporte_id  = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
+        $soporte_id = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
         $empleado_id = filter_input(INPUT_POST, 'empleado_id', FILTER_SANITIZE_NUMBER_INT);
 
         if (empty($soporte_id) || empty($empleado_id)) {
             die("Error: Faltan IDs para la asignación.");
         }
 
-        $updateData = [
-            'empleado_id' => $empleado_id,
-            'estado'      => 'en_proceso'
-        ];
-
-        if ($this->soporteModel->update($soporte_id, $updateData)) {
-            $this->logBitacora("Asignó ticket #{$soporte_id} a empleado #{$empleado_id}", 'soporte', $soporte_id); // Log
-            
-            // Buscar el usuario_id asociado al empleado para notificarle
-            // Esto requiere consultar el empleado para obtener su usuario_id
-            // Por simplicidad, asumimos que el modelo Empleado tiene findById
-            $empleado = (new \App\Models\Empleado())->findById($empleado_id);
-            if ($empleado && $empleado->usuario_id) {
-                $this->notificacionModel->createNotification(
-                    $empleado->usuario_id,
-                    "Te han asignado el ticket #{$soporte_id}",
-                    "/soportes/ver/{$soporte_id}"
-                );
-            }
-
+        if ($this->ticketService->asignarTecnico($soporte_id, $empleado_id)) {
+            $this->logBitacora("Asignó ticket #{$soporte_id} a empleado #{$empleado_id}", 'soporte', $soporte_id);
             header("Location: " . BASE_URL . "soportes/ver/{$soporte_id}");
             exit;
         } else {
@@ -364,48 +315,17 @@ class SoportesController extends Controller
     {
         $this->restrictTo(['admin', 'tecnico']);
 
-        $soporte = $this->soporteModel->findById($id);
-        if (!$soporte) {
-            $this->setFlashMessage('error', "Error: Ticket #{$id} no encontrado.");
-            header("Location: " . BASE_URL . "soportes");
-            exit;
-        }
+        $resultado = $this->ticketService->resolverTicket($id);
 
-        if ($soporte->estado !== 'en_proceso') {
-            $this->setFlashMessage('error', "Error: El ticket debe estar 'en proceso' para resolverse (Estado actual: {$soporte->estado}).");
-            header("Location: " . BASE_URL . "soportes/ver/{$id}");
-            exit;
-        }
-
-        $fechaCierre = date('Y-m-d H:i:s');
-        $tiempoMinutos = (strtotime($fechaCierre) - strtotime($soporte->fecha)) / 60;
-
-        $updateData = [
-            'estado'       => 'resuelto',
-            'fecha_cierre' => $fechaCierre,
-            'tiempo_atencion_minutos' => round($tiempoMinutos)
-        ];
-
-        if ($this->soporteModel->update($id, $updateData)) {
+        if ($resultado['success']) {
             $this->setFlashMessage('success', "¡Ticket #{$id} marcado como RESUELTO!");
-            $this->logBitacora("Resolvió ticket #{$id}", 'soporte', $id); // Log
-            
-            // Notificar al creador si existe
-            if ($soporte->usuario_creacion_id) {
-                $this->notificacionModel->createNotification(
-                    $soporte->usuario_creacion_id,
-                    "Tu ticket #{$id} ha sido resuelto.",
-                    "/soportes/ver/{$id}"
-                );
-            }
-            
-            // Notificar a admins si un técnico resuelve
-            $this->notifyAdmins(
+            $this->logBitacora("Resolvió ticket #{$id}", 'soporte', $id);
+            $this->ticketService->notificarAdmins(
                 "{$_SESSION['username']} resolvió el ticket #{$id}",
                 "/soportes/ver/{$id}"
             );
         } else {
-            $this->setFlashMessage('error', "Error fatal al actualizar el ticket en la base de datos.");
+            $this->setFlashMessage('error', $resultado['error']);
         }
 
         header("Location: " . BASE_URL . "soportes/ver/{$id}");
@@ -419,28 +339,13 @@ class SoportesController extends Controller
     {
         $this->restrictTo(['admin', 'tecnico']);
 
-        $soporte = $this->soporteModel->findById($id);
-        if (!$soporte) {
-            $this->setFlashMessage('error', "Error: Ticket #{$id} no encontrado.");
-            header("Location: " . BASE_URL . "soportes");
-            exit;
-        }
+        $resultado = $this->ticketService->ponerEnEspera($id);
 
-        if ($soporte->estado !== 'en_proceso') {
-            $this->setFlashMessage('error', "Error: El ticket debe estar 'en proceso' para ponerse en espera.");
-            header("Location: " . BASE_URL . "soportes/ver/{$id}");
-            exit;
-        }
-
-        $updateData = [
-            'estado' => 'en_espera'
-        ];
-
-        if ($this->soporteModel->update($id, $updateData)) {
+        if ($resultado['success']) {
             $this->setFlashMessage('success', "Ticket #{$id} puesto EN ESPERA.");
-            $this->logBitacora("Puso en espera ticket #{$id}", 'soporte', $id); // Log
+            $this->logBitacora("Puso en espera ticket #{$id}", 'soporte', $id);
         } else {
-            $this->setFlashMessage('error', "Error al actualizar el estado del ticket.");
+            $this->setFlashMessage('error', $resultado['error']);
         }
 
         header("Location: " . BASE_URL . "soportes/ver/{$id}");
@@ -454,28 +359,13 @@ class SoportesController extends Controller
     {
         $this->restrictTo(['admin', 'tecnico']);
 
-        $soporte = $this->soporteModel->findById($id);
-        if (!$soporte) {
-            $this->setFlashMessage('error', "Error: Ticket #{$id} no encontrado.");
-            header("Location: " . BASE_URL . "soportes");
-            exit;
-        }
+        $resultado = $this->ticketService->reanudarTicket($id);
 
-        if ($soporte->estado !== 'en_espera') {
-            $this->setFlashMessage('error', "Error: El ticket debe estar 'en espera' para reanudarse.");
-            header("Location: " . BASE_URL . "soportes/ver/{$id}");
-            exit;
-        }
-
-        $updateData = [
-            'estado' => 'en_proceso'
-        ];
-
-        if ($this->soporteModel->update($id, $updateData)) {
+        if ($resultado['success']) {
             $this->setFlashMessage('success', "Ticket #{$id} REANUDADO (En Proceso).");
-            $this->logBitacora("Reanudó ticket #{$id}", 'soporte', $id); // Log
+            $this->logBitacora("Reanudó ticket #{$id}", 'soporte', $id);
         } else {
-            $this->setFlashMessage('error', "Error al actualizar el estado del ticket.");
+            $this->setFlashMessage('error', $resultado['error']);
         }
 
         header("Location: " . BASE_URL . "soportes/ver/{$id}");
@@ -505,7 +395,6 @@ class SoportesController extends Controller
             exit;
         }
 
-        // Obtener el departamento del equipo del soporte
         $soporte = $this->soporteModel->findByIdWithDetails($soporteId);
         $equipo = $this->equipoModel->findById($soporte->equipo_id);
         $departamentoId = $equipo->departamento_id ?? null;
@@ -517,7 +406,6 @@ class SoportesController extends Controller
         }
 
         try {
-            // Guardar el consumo (se descuenta el stock automáticamente)
             $this->inventarioModel->consumirEnTicket($itemId, $soporteId, $cantidad, $usuarioId, $departamentoId);
             $this->setFlashMessage('success', 'Consumo registrado exitosamente.');
             $this->logBitacora("Agregó consumo de inventario al ticket #{$soporteId}", 'soporte', $soporteId);
@@ -528,7 +416,6 @@ class SoportesController extends Controller
         header('Location: ' . BASE_URL . "soportes/ver/{$soporteId}");
         exit;
     }
-
 
     /**
      * Guarda las observaciones técnicas de un ticket.
@@ -558,15 +445,13 @@ class SoportesController extends Controller
             exit;
         }
 
-        // Solo admin puede editar observaciones de tickets resueltos
         if ($soporte->estado == 'resuelto' && $_SESSION['rol'] != 'admin') {
             $this->setFlashMessage('error', 'No se pueden modificar observaciones de tickets cerrados.');
             header("Location: " . BASE_URL . "soportes/ver/{$soporteId}");
             exit;
         }
 
-        // Actualizar observaciones
-        if ($this->soporteModel->update($soporteId, ['observaciones' => $observaciones])) {
+        if ($this->ticketService->guardarObservaciones($soporteId, $observaciones)) {
             $this->setFlashMessage('success', 'Observaciones guardadas correctamente.');
             $this->logBitacora("Guardó observaciones en Ticket #{$soporteId}", 'soporte', $soporteId);
         } else {
@@ -598,28 +483,13 @@ class SoportesController extends Controller
             exit;
         }
 
-        $soporte = $this->soporteModel->findById($soporteId);
-        if (!$soporte) {
-            $this->setFlashMessage('error', 'Ticket no encontrado.');
-            header('Location: ' . BASE_URL . 'soportes');
-            exit;
-        }
+        $resultado = $this->ticketService->actualizarFechaCierre($soporteId, $nuevaFechaCierre);
 
-        // Convertir el formato datetime-local a MySQL datetime
-        $fechaCierreMySQL = date('Y-m-d H:i:s', strtotime($nuevaFechaCierre));
-
-        // Recalcular tiempo de atención
-        $tiempoMinutos = (strtotime($fechaCierreMySQL) - strtotime($soporte->fecha)) / 60;
-
-        // Actualizar fecha de cierre y tiempo de atención
-        if ($this->soporteModel->update($soporteId, [
-            'fecha_cierre' => $fechaCierreMySQL,
-            'tiempo_atencion_minutos' => round($tiempoMinutos)
-        ])) {
+        if ($resultado['success']) {
             $this->setFlashMessage('success', 'Fecha de cierre actualizada y tiempo de atención recalculado.');
-            $this->logBitacora("Actualizó fecha de cierre del Ticket #{$soporteId} a {$fechaCierreMySQL}", 'soporte', $soporteId);
+            $this->logBitacora("Actualizó fecha de cierre del Ticket #{$soporteId} a {$resultado['fecha']}", 'soporte', $soporteId);
         } else {
-            $this->setFlashMessage('error', 'Error al actualizar la fecha de cierre.');
+            $this->setFlashMessage('error', $resultado['error'] ?? 'Error al actualizar la fecha de cierre.');
         }
 
         header("Location: " . BASE_URL . "soportes/ver/{$soporteId}");
@@ -637,7 +507,7 @@ class SoportesController extends Controller
             exit;
         }
 
-        $ticketId = filter_input(INPUT_POST, 'ticket_id', FILTER_SANITIZE_NUMBER_INT);
+        $ticketId = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
         
         if (!$ticketId || empty($_FILES['archivo'])) {
             http_response_code(400);
@@ -645,51 +515,18 @@ class SoportesController extends Controller
             exit;
         }
 
-        $archivo = $_FILES['archivo'];
-        $nombreOriginal = $archivo['name'];
-        $tipoMime = $archivo['type'];
-        $tamanoBytes = $archivo['size'];
-        $ext = strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
+        $resultado = $this->fileUploadService->subirArchivo(
+            $ticketId, 
+            $_FILES['archivo'], 
+            $_SESSION['user_id'] ?? null
+        );
 
-        // Validaciones
-        $extPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
-        if (!in_array($ext, $extPermitidas)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Tipo de archivo no permitido']);
-            exit;
-        }
-
-        if ($tamanoBytes > 5 * 1024 * 1024) { // 5MB
-            http_response_code(400);
-            echo json_encode(['error' => 'El archivo excede el tamaño máximo de 5MB']);
-            exit;
-        }
-
-        // Generar nombre único
-        $nombreUnico = 'ticket_' . $ticketId . '_' . time() . '_' . uniqid() . '.' . $ext;
-        $rutaDestino = 'public/uploads/tickets/' . $nombreUnico;
-        $rutaAbsoluta = __DIR__ . '/../../' . $rutaDestino;
-
-        if (move_uploaded_file($archivo['tmp_name'], $rutaAbsoluta)) {
-            $datosArchivo = [
-                'ticket_id' => $ticketId,
-                'nombre_archivo' => $nombreUnico,
-                'nombre_original' => $nombreOriginal,
-                'ruta' => $rutaDestino,
-                'tipo_mime' => $tipoMime,
-                'tamaño_bytes' => $tamanoBytes,
-                'subido_por' => $_SESSION['user_id'] ?? null
-            ];
-
-            if ($this->ticketArchivoModel->create($datosArchivo)) {
-                echo json_encode(['success' => true, 'mensaje' => 'Archivo subido correctamente']);
-            } else {
-                http_response_code(500);
-                echo json_encode(['error' => 'Error al guardar en base de datos']);
-            }
+        if ($resultado['success']) {
+            $this->setFlashMessage('success', 'Archivo subido correctamente.');
+            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}");
         } else {
-            http_response_code(500);
-            echo json_encode(['error' => 'Error al mover el archivo al servidor']);
+            $this->setFlashMessage('error', $resultado['error']);
+            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}");
         }
         exit;
     }
@@ -699,27 +536,14 @@ class SoportesController extends Controller
      */
     public function descargar_archivo($id)
     {
-        $archivo = $this->ticketArchivoModel->findById($id);
+        $resultado = $this->fileUploadService->descargarArchivo($id);
         
-        if (!$archivo) {
-            die('Archivo no encontrado');
+        if (!$resultado['success']) {
+            die($resultado['error']);
         }
 
-        $rutaAbsoluta = __DIR__ . '/../../' . $archivo->ruta;
-
-        if (file_exists($rutaAbsoluta)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: ' . $archivo->tipo_mime);
-            header('Content-Disposition: attachment; filename="' . $archivo->nombre_original . '"');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($rutaAbsoluta));
-            readfile($rutaAbsoluta);
-            exit;
-        } else {
-            die('El archivo físico no existe');
-        }
+        $this->fileUploadService->servirArchivo($resultado['archivo'], $resultado['ruta']);
+        exit;
     }
 
     /**
@@ -732,8 +556,8 @@ class SoportesController extends Controller
             exit;
         }
 
-        $ticketId = filter_input(INPUT_POST, 'ticket_id', FILTER_SANITIZE_NUMBER_INT);
-        $comentario = filter_input(INPUT_POST, 'comentario', FILTER_SANITIZE_SPECIAL_CHARS);
+        $ticketId = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
+        $comentario = filter_input(INPUT_POST, 'contenido', FILTER_SANITIZE_SPECIAL_CHARS);
         $esInterno = isset($_POST['es_interno']) ? 1 : 0;
 
         if (!$ticketId || empty($comentario)) {
@@ -742,9 +566,8 @@ class SoportesController extends Controller
             exit;
         }
 
-        // Validar permisos para comentarios internos
         if ($esInterno && !in_array($_SESSION['rol'], ['admin', 'tecnico'])) {
-            $esInterno = 0; // Forzar a público si no tiene permisos
+            $esInterno = 0;
         }
 
         $datosComentario = [
@@ -757,7 +580,6 @@ class SoportesController extends Controller
         if ($this->ticketComentarioModel->create($datosComentario)) {
             $this->setFlashMessage('success', 'Comentario agregado correctamente.');
             
-            // Notificar si es un comentario público de un técnico/admin al usuario creador
             if (!$esInterno && in_array($_SESSION['rol'], ['admin', 'tecnico'])) {
                 $soporte = $this->soporteModel->findById($ticketId);
                 if ($soporte && $soporte->usuario_creacion_id != $_SESSION['user_id']) {
@@ -783,21 +605,13 @@ class SoportesController extends Controller
     {
         $this->restrictTo(['admin', 'consultor', 'tecnico']);
 
-        $soporte = $this->soporteModel->findById($id);
-        if (!$soporte) {
-            $this->setFlashMessage('error', "Error: Ticket #{$id} no encontrado.");
-            header("Location: " . BASE_URL . "soportes");
-            exit;
-        }
-
-        // Restricción para consultores y técnicos: solo pueden eliminar sus propios tickets
-        if (($_SESSION['rol'] === 'consultor' || $_SESSION['rol'] === 'tecnico') && $soporte->usuario_creacion_id != $_SESSION['user_id']) {
+        if (!$this->ticketService->puedeEditar($id, $_SESSION['user_id'], $_SESSION['rol'])) {
             $this->setFlashMessage('error', 'No tienes permiso para eliminar este ticket.');
             header('Location: ' . BASE_URL . 'soportes');
             exit;
         }
 
-        if ($this->soporteModel->delete($id)) {
+        if ($this->ticketService->eliminarTicket($id)) {
             $this->setFlashMessage('success', "Ticket #{$id} eliminado correctamente.");
             $this->logBitacora("Eliminó ticket #{$id}", 'soporte', $id);
         } else {
@@ -827,14 +641,59 @@ class SoportesController extends Controller
             exit;
         }
 
-        // Actualizar solo el campo de firma
-        if ($this->soporteModel->update($ticketId, ['firma_usuario' => $firmaBase64])) {
+        if ($this->ticketService->guardarFirma($ticketId, $firmaBase64)) {
             $this->setFlashMessage('success', 'Firma guardada correctamente.');
         } else {
             $this->setFlashMessage('error', 'Error al guardar la firma.');
         }
 
         header("Location: " . BASE_URL . "soportes/ver/{$ticketId}");
+        exit;
+    }
+
+    /**
+     * Guarda la valoración del servicio
+     */
+    public function guardar_valoracion()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'soportes');
+            exit;
+        }
+
+        $soporteId = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
+        $valoracion = filter_input(INPUT_POST, 'valoracion', FILTER_SANITIZE_SPECIAL_CHARS);
+        $comentario = filter_input(INPUT_POST, 'comentario_valoracion', FILTER_SANITIZE_SPECIAL_CHARS);
+
+        $valoracionesValidas = ['excelente', 'bueno', 'regular', 'malo'];
+        
+        if (!$soporteId || !in_array($valoracion, $valoracionesValidas)) {
+            $this->setFlashMessage('error', 'Valoración inválida.');
+            header("Location: " . BASE_URL . "soportes/ver/{$soporteId}");
+            exit;
+        }
+
+        $soporte = $this->soporteModel->findById($soporteId);
+        if (!$soporte || $soporte->estado !== 'resuelto') {
+            $this->setFlashMessage('error', 'Solo se pueden valorar tickets resueltos.');
+            header("Location: " . BASE_URL . "soportes/ver/{$soporteId}");
+            exit;
+        }
+
+        $datos = [
+            'valoracion' => $valoracion,
+            'comentario_valoracion' => $comentario ?: null,
+            'fecha_valoracion' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->soporteModel->update($soporteId, $datos)) {
+            $this->setFlashMessage('success', '¡Gracias por tu valoración!');
+            $this->logBitacora("Valoró el ticket #{$soporteId} como '{$valoracion}'", 'soporte', $soporteId);
+        } else {
+            $this->setFlashMessage('error', 'Error al guardar la valoración.');
+        }
+
+        header("Location: " . BASE_URL . "soportes/ver/{$soporteId}");
         exit;
     }
 
@@ -849,11 +708,9 @@ class SoportesController extends Controller
             die("Ticket no encontrado.");
         }
 
-        // Obtener datos adicionales para el PDF
         $archivos = $this->ticketArchivoModel->findByTicketId($id);
-        $comentarios = $this->ticketComentarioModel->findByTicketId($id, false); // Solo comentarios públicos
+        $comentarios = $this->ticketComentarioModel->findByTicketId($id, false);
 
-        // Renderizar vista a HTML (capturar salida)
         ob_start();
         extract([
             'soporte' => $soporte,
@@ -863,7 +720,6 @@ class SoportesController extends Controller
         require_once '../src/Views/soportes/pdf.php';
         $html = ob_get_clean();
 
-        // Configurar Dompdf
         $options = new Options();
         $options->set('isRemoteEnabled', true);
         $options->set('defaultFont', 'Arial');
@@ -873,7 +729,6 @@ class SoportesController extends Controller
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        // Stream PDF
         $dompdf->stream("ticket_{$id}.pdf", ["Attachment" => false]);
     }
 }

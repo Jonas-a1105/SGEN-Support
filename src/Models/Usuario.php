@@ -75,4 +75,35 @@ class Usuario extends Model
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+
+    /**
+     * Busca todos los usuarios con detalles del empleado y departamento vinculados.
+     * @return array
+     */
+    public function findAllWithDetails(): array
+    {
+        $sql = "
+            SELECT 
+                u.*,
+                e.id as empleado_id,
+                e.nombre as empleado_nombre,
+                e.apellido as empleado_apellido,
+                e.email as empleado_email,
+                d.id as departamento_id,
+                d.nombre as departamento_nombre
+            FROM {$this->table} u
+            LEFT JOIN empleados e ON u.empleado_id = e.id
+            LEFT JOIN departamentos d ON u.departamento_id = d.id
+            ORDER BY 
+                CASE u.rol 
+                    WHEN 'admin' THEN 1 
+                    WHEN 'tecnico' THEN 2 
+                    WHEN 'consultor' THEN 3 
+                    ELSE 4 
+                END,
+                u.username ASC
+        ";
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
 }

@@ -1,205 +1,266 @@
-<?php require_once '../src/Views/layout/header.php'; ?>
-<?php require_once '../src/Views/layout/left-side-menu.php'; ?>
+<?php
+/**
+ * Vista de Formulario de Mantenimiento - Diseño Moderno
+ */
+$isEdit = isset($mantenimiento);
+$tipo = $isEdit ? $mantenimiento->tipo_mantenimiento : 'preventivo'; 
+// Default to preventive if new
 
-<div class="main-content">
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-tools"></i> 
-                            <?= isset($mantenimiento) && $mantenimiento ? 'Editar Mantenimiento' : 'Programar Nuevo Mantenimiento' ?>
-                        </h5>
+$tituloPagina = $isEdit ? 'Editar Mantenimiento' : 'Programar Mantenimiento';
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title><?= $tituloPagina ?></title>
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/maintenance-form-modern.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="mf-container">
+
+    <form action="<?= BASE_URL ?>mantenimientos/guardar" method="POST" id="mainForm">
+        <?php if($isEdit): ?>
+            <input type="hidden" name="id" value="<?= $mantenimiento->id ?>">
+        <?php endif; ?>
+        
+        <!-- Hidden Fields managed by JS -->
+        <input type="hidden" name="equipo_id" id="inputDeviceID" value="<?= $isEdit ? $mantenimiento->equipo_id : ($equipo_preseleccionado->id ?? '') ?>">
+        <input type="hidden" name="tipo_mantenimiento" id="inputTypeMantenimiento" value="<?= $tipo ?>">
+        <input type="hidden" name="checklist" id="inputChecklistJson" value='<?= $isEdit ? ($mantenimiento->checklist ?? '[]') : '[]' ?>'>
+        
+        <!-- Store initial checklist for JS to read -->
+        <textarea id="initialChecklist" style="display:none;"><?= $isEdit ? ($mantenimiento->checklist ?? '[]') : '[]' ?></textarea>
+
+        <!-- --- HEADER --- -->
+        <header class="mf-header">
+            <div class="mf-max-w-6xl mf-header-content">
+                <div class="mf-breadcrumb">
+                    <a href="<?= BASE_URL ?>mantenimientos">Mantenimientos</a>
+                    <i class="bi bi-chevron-right" style="font-size: 0.75rem;"></i>
+                    <span><?= $isEdit ? 'Editar' : 'Programar' ?></span>
+                </div>
+                
+                <div class="mf-header-main">
+                    <div class="mf-title-row">
+                        <div id="headerIconWrapper" class="mf-icon-wrapper <?= $tipo == 'correctivo' ? 'corrective' : 'preventive' ?>">
+                            <i id="iconPreventive" class="bi bi-calendar-plus-fill fs-4" style="<?= $tipo == 'correctivo' ? 'display:none' : '' ?>"></i>
+                            <i id="iconCorrective" class="bi bi-exclamation-triangle-fill fs-4" style="<?= $tipo == 'preventivo' ? 'display:none' : '' ?>"></i>
+                        </div>
+                        <div class="mf-title-text">
+                            <h1 id="headerTitle"><?= $isEdit && $tipo == 'correctivo' ? 'Reporte Mantenimiento Correctivo' : ($tipo == 'correctivo' ? 'Reportar Mantenimiento Correctivo' : 'Programar Mantenimiento') ?></h1>
+                            <p>Complete los detalles técnicos y logísticos para la orden de trabajo.</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form action="<?= BASE_URL ?>mantenimientos/guardar" method="POST">
-                            <?php if (isset($mantenimiento) && $mantenimiento): ?>
-                                <input type="hidden" name="id" value="<?= $mantenimiento->id ?>">
-                            <?php endif; ?>
 
-                            <div class="row g-3">
-                                <!-- Equipo -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Equipo <span class="text-danger">*</span></label>
-                                    <select name="equipo_id" class="form-select" required>
-                                        <option value="">Seleccionar equipo...</option>
-                                        <?php foreach ($equipos as $equipo): ?>
-                                            <option value="<?= $equipo->id ?>" 
-                                                <?= (isset($equipo_preseleccionado) && $equipo_preseleccionado && $equipo_preseleccionado->id == $equipo->id) || 
-                                                    (isset($mantenimiento) && $mantenimiento && $mantenimiento->equipo_id == $equipo->id) ? 'selected' : '' ?>>
-                                                <?= htmlspecialchars($equipo->codigo_inventario ?? $equipo->numero_serie) ?> - 
-                                                <?= htmlspecialchars($equipo->tipo) ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <!-- Tipo de Mantenimiento -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Tipo de Mantenimiento <span class="text-danger">*</span></label>
-                                    <select name="tipo_mantenimiento" class="form-select" required>
-                                        <option value="preventivo" <?= isset($mantenimiento) && $mantenimiento->tipo_mantenimiento == 'preventivo' ? 'selected' : '' ?>>
-                                            🛡️ Preventivo
-                                        </option>
-                                        <option value="correctivo" <?= isset($mantenimiento) && $mantenimiento->tipo_mantenimiento == 'correctivo' ? 'selected' : '' ?>>
-                                            🔧 Correctivo
-                                        </option>
-                                        <option value="predictivo" <?= isset($mantenimiento) && $mantenimiento->tipo_mantenimiento == 'predictivo' ? 'selected' : '' ?>>
-                                            📊 Predictivo
-                                        </option>
-                                    </select>
-                                    <div class="form-text">
-                                        Preventivo: Programado regularmente | Correctivo: Reparación | Predictivo: Basado en análisis
-                                    </div>
-                                </div>
-
-                                <!-- Estado -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Estado <span class="text-danger">*</span></label>
-                                    <select name="estado" class="form-select" required>
-                                        <option value="pendiente" <?= (!isset($mantenimiento) || $mantenimiento->estado == 'pendiente') ? 'selected' : '' ?>>
-                                            ⏳ Pendiente
-                                        </option>
-                                        <option value="en_proceso" <?= isset($mantenimiento) && $mantenimiento->estado == 'en_proceso' ? 'selected' : '' ?>>
-                                            🔄 En Proceso
-                                        </option>
-                                        <option value="completado" <?= isset($mantenimiento) && $mantenimiento->estado == 'completado' ? 'selected' : '' ?>>
-                                            ✅ Completado
-                                        </option>
-                                        <option value="pospuesto" <?= isset($mantenimiento) && $mantenimiento->estado == 'pospuesto' ? 'selected' : '' ?>>
-                                            ⏸️ Pospuesto
-                                        </option>
-                                        <option value="cancelado" <?= isset($mantenimiento) && $mantenimiento->estado == 'cancelado' ? 'selected' : '' ?>>
-                                            ❌ Cancelado
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <!-- Frecuencia -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Frecuencia</label>
-                                    <select name="frecuencia" class="form-select" id="frecuencia">
-                                        <option value="unica" <?= (!isset($mantenimiento) || $mantenimiento->frecuencia == 'unica') ? 'selected' : '' ?>>
-                                            Una sola vez
-                                        </option>
-                                        <option value="mensual" <?= isset($mantenimiento) && $mantenimiento->frecuencia == 'mensual' ? 'selected' : '' ?>>
-                                            🔁 Mensual
-                                        </option>
-                                        <option value="trimestral" <?= isset($mantenimiento) && $mantenimiento->frecuencia == 'trimestral' ? 'selected' : '' ?>>
-                                            🔁 Trimestral (cada 3 meses)
-                                        </option>
-                                        <option value="semestral" <?= isset($mantenimiento) && $mantenimiento->frecuencia == 'semestral' ? 'selected' : '' ?>>
-                                            🔁 Semestral (cada 6 meses)
-                                        </option>
-                                        <option value="anual" <?= isset($mantenimiento) && $mantenimiento->frecuencia == 'anual' ? 'selected' : '' ?>>
-                                            🔁 Anual
-                                        </option>
-                                    </select>
-                                    <div class="form-text">
-                                        Si es recurrente, se programará automáticamente la próxima fecha al completar
-                                    </div>
-                                </div>
-
-                                <!-- Fecha de Realización -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Fecha de Realización <span class="text-danger">*</span></label>
-                                    <input type="datetime-local" 
-                                           name="fecha" 
-                                           class="form-control" 
-                                           value="<?= isset($mantenimiento) ? date('Y-m-d\TH:i', strtotime($mantenimiento->fecha)) : date('Y-m-d\TH:i') ?>"
-                                           required>
-                                </div>
-
-                                <!-- Próxima Fecha (solo si es recurrente) -->
-                                <div class="col-md-6" id="proxima-fecha-group">
-                                    <label class="form-label">Próxima Fecha Programada</label>
-                                    <input type="date" 
-                                           name="proxima_fecha" 
-                                           class="form-control"
-                                           value="<?= isset($mantenimiento) && $mantenimiento->proxima_fecha ? date('Y-m-d', strtotime($mantenimiento->proxima_fecha)) : '' ?>">
-                                    <div class="form-text">
-                                        Para mantenimientos recurrentes
-                                    </div>
-                                </div>
-
-                                <!-- Descripción -->
-                                <div class="col-12">
-                                    <label class="form-label">Descripción <span class="text-danger">*</span></label>
-                                    <textarea name="descripcion" 
-                                              class="form-control" 
-                                              rows="4" 
-                                              placeholder="Detalle del mantenimiento a realizar..."
-                                              required><?= isset($mantenimiento) ? htmlspecialchars($mantenimiento->descripcion) : '' ?></textarea>
-                                </div>
-
-                                <!-- Costo -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Costo Estimado/Real ($)</label>
-                                    <input type="number" 
-                                           name="costo" 
-                                           class="form-control" 
-                                           step="0.01"
-                                           min="0"
-                                           placeholder="0.00"
-                                           value="<?= isset($mantenimiento) ? $mantenimiento->costo : '' ?>">
-                                </div>
-
-                                <!-- Realizado Por -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Realizado Por</label>
-                                    <input type="text" 
-                                           name="realizado_por" 
-                                           class="form-control" 
-                                           placeholder="Nombre del técnico o empresa"
-                                           value="<?= isset($mantenimiento) ? htmlspecialchars($mantenimiento->realizado_por) : ($_SESSION['username'] ?? '') ?>">
-                                </div>
-
-                                <!-- Observaciones -->
-                                <div class="col-12">
-                                    <label class="form-label">Observaciones</label>
-                                    <textarea name="observaciones" 
-                                              class="form-control" 
-                                              rows="3" 
-                                              placeholder="Notas adicionales, hallazgos, recomendaciones..."><?= isset($mantenimiento) ? htmlspecialchars($mantenimiento->observaciones) : '' ?></textarea>
-                                </div>
-                            </div>
-
-                            <!-- Botones -->
-                            <div class="mt-4 d-flex gap-2 justify-content-end">
-                                <a href="<?= BASE_URL ?>mantenimientos" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle"></i> Cancelar
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-save"></i> Guardar Mantenimiento
-                                </button>
-                            </div>
-                        </form>
+                    <div class="mf-header-actions">
+                        <a href="<?= BASE_URL ?>mantenimientos" class="mf-btn-cancel">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" id="btnSave" class="mf-btn-save <?= $tipo == 'correctivo' ? 'corrective' : 'preventive' ?>">
+                            <i class="bi bi-save"></i> Guardar Orden
+                        </button>
                     </div>
                 </div>
             </div>
+        </header>
+
+        <!-- --- MAIN CONTENT --- -->
+        <main class="mf-max-w-6xl mf-grid">
+            
+            <!-- LEFT COLUMN (2/3) -->
+            <div>
+                
+                <!-- SECTION 1: ASSET SELECTION -->
+                <section class="mf-section">
+                    <div class="mf-section-header">
+                        <i class="bi bi-pc-display text-muted"></i>
+                        <h3 class="mf-section-title">1. Selección del Activo</h3>
+                    </div>
+                    <div class="mf-section-body">
+                        
+                        <!-- Search View -->
+                        <div id="deviceSearchView" style="<?= ($isEdit || isset($equipo_preseleccionado)) ? 'display:none' : '' ?>">
+                            <label class="mf-label">Buscar Equipo</label>
+                            <select id="selectDevice" class="mf-select">
+                                <option value="">Seleccione un equipo...</option>
+                                <?php foreach($equipos as $eq): ?>
+                                    <option value="<?= $eq->id ?>" 
+                                            data-code="<?= $eq->codigo_inventario ?>"
+                                            data-location="<?= $eq->departamento_nombre ?? '' ?>"
+                                            data-type="<?= $eq->tipo ?>">
+                                        <?= $eq->nombre ?? $eq->tipo . ' ' . $eq->marca . ' ' . $eq->modelo ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="text-muted small mt-2">Puede buscar por nombre, marca o código de inventario.</p>
+                        </div>
+
+                        <!-- Selected View -->
+                        <div id="deviceSelectedView" style="<?= ($isEdit || isset($equipo_preseleccionado)) ? '' : 'display:none' ?>">
+                            <div class="mf-device-selected">
+                                <div class="mf-device-info">
+                                    <?php 
+                                        $eqNombre = 'Equipo Seleccionado';
+                                        $eqMeta = 'Detalles';
+                                        
+                                        if($isEdit && isset($mantenimiento->equipo_nombre)) {
+                                            $eqNombre = $mantenimiento->equipo_nombre;
+                                            $eqMeta = ($mantenimiento->equipo_codigo ?? '') . ' • ' . ($mantenimiento->equipo_ubicacion ?? 'Ubicación desconocida');
+                                        } elseif(isset($equipo_preseleccionado)) {
+                                            $eqNombre = $equipo_preseleccionado->nombre ?? ($equipo_preseleccionado->tipo . ' ' . $equipo_preseleccionado->marca);
+                                            $eqMeta = ($equipo_preseleccionado->codigo_inventario ?? '') . ' • ' . ($equipo_preseleccionado->departamento_nombre ?? '');
+                                        }
+                                    ?>
+                                    <h4 id="selectedDeviceName"><?= $eqNombre ?></h4>
+                                    <p id="selectedDeviceMeta"><i class="bi bi-geo-alt"></i> <?= $eqMeta ?></p>
+                                </div>
+                                <button type="button" class="mf-btn-change-device" onclick="clearDeviceSelection()">Cambiar</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- SECTION 2: JOB DETAILS -->
+                <section class="mf-section">
+                    <div class="mf-section-header">
+                        <i class="bi bi-file-text text-muted"></i>
+                        <h3 class="mf-section-title">2. Detalle del Trabajo</h3>
+                    </div>
+                    <div class="mf-section-body">
+                        
+                        <div class="row" style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                            <div class="col" style="flex: 1; min-width: 250px;">
+                                <label class="mf-label">Tipo de Mantenimiento</label>
+                                <div class="mf-toggle-group">
+                                    <div id="btnTypePreventive" class="mf-toggle-btn <?= $tipo != 'correctivo' ? 'active preventive' : '' ?>">Preventivo</div>
+                                    <div id="btnTypeCorrective" class="mf-toggle-btn <?= $tipo == 'correctivo' ? 'active corrective' : '' ?>">Correctivo</div>
+                                </div>
+                            </div>
+                            <div class="col" style="flex: 1; min-width: 250px;">
+                                <div class="mf-form-group">
+                                    <label class="mf-label">Estado Inicial</label>
+                                    <select name="estado" class="mf-select">
+                                        <option value="pendiente" <?= ($isEdit && $mantenimiento->estado == 'pendiente') ? 'selected' : '' ?>>Pendiente</option>
+                                        <option value="programado" <?= ($isEdit && $mantenimiento->estado == 'programado') ? 'selected' : '' ?>>Programado</option>
+                                        <option value="en_proceso" <?= ($isEdit && $mantenimiento->estado == 'en_proceso') ? 'selected' : '' ?>>En Proceso</option>
+                                        <option value="realizado" <?= ($isEdit && $mantenimiento->estado == 'realizado') ? 'selected' : '' ?>>Realizado / Completado</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mf-form-group">
+                            <label class="mf-label">Descripción General</label>
+                            <textarea name="descripcion" class="mf-textarea" rows="4" placeholder="Describa el objetivo o la falla detectada..."><?= $isEdit ? $mantenimiento->descripcion : '' ?></textarea>
+                        </div>
+
+                        <!-- Checklist -->
+                        <div class="mf-form-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <label class="mf-label" style="margin: 0;"><i class="bi bi-check2-square text-primary"></i> Checklist de Tareas</label>
+                                <span class="text-muted small" id="taskCount">0 tareas</span>
+                            </div>
+                            
+                            <div class="mf-checklist-container">
+                                <div id="checklistItems">
+                                    <!-- Items rendered by JS -->
+                                </div>
+                                
+                                <div class="mf-add-task-row" id="formAddTask">
+                                    <i class="bi bi-plus-lg mf-add-task-icon"></i>
+                                    <input type="text" id="inputAddTask" class="mf-input-add-task" placeholder="Añadir nueva tarea y presionar Enter...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mf-form-group">
+                            <label class="mf-label">Observaciones Adicionales</label>
+                            <textarea name="observaciones" class="mf-textarea" rows="2" placeholder="Notas internas..."><?= $isEdit ? $mantenimiento->observaciones : '' ?></textarea>
+                        </div>
+
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- RIGHT COLUMN (1/3) -->
+            <div>
+                
+                <!-- SECTION 3: PLANNING -->
+                <section class="mf-section" style="position: sticky; top: 100px;">
+                    <div class="mf-section-header">
+                        <i class="bi bi-clock text-muted"></i>
+                        <h3 class="mf-section-title">Planificación</h3>
+                    </div>
+                    <div class="mf-section-body">
+                        
+                        <div class="mf-form-group">
+                            <label class="mf-label">Fecha Programada</label>
+                            <input type="date" name="fecha" required class="mf-input" value="<?= $isEdit ? date('Y-m-d', strtotime($mantenimiento->fecha)) : date('Y-m-d') ?>">
+                        </div>
+
+                        <div id="recurrenceContainer" style="<?= $tipo == 'correctivo' ? 'display:none' : '' ?>">
+                            <div class="mf-form-group">
+                                <label class="mf-label">Recurrencia (Próxima Fecha Auto.)</label>
+                                <select name="frecuencia" class="mf-select">
+                                    <option value="unica" <?= ($isEdit && $mantenimiento->frecuencia == 'unica') ? 'selected' : '' ?>>Una sola vez</option>
+                                    <option value="semanal" <?= ($isEdit && $mantenimiento->frecuencia == 'semanal') ? 'selected' : '' ?>>Semanal</option>
+                                    <option value="mensual" <?= ($isEdit && $mantenimiento->frecuencia == 'mensual') ? 'selected' : '' ?>>Mensual</option>
+                                    <option value="trimestral" <?= ($isEdit && $mantenimiento->frecuencia == 'trimestral') ? 'selected' : '' ?>>Trimestral</option>
+                                    <option value="semestral" <?= ($isEdit && $mantenimiento->frecuencia == 'semestral') ? 'selected' : '' ?>>Semestral</option>
+                                    <option value="anual" <?= ($isEdit && $mantenimiento->frecuencia == 'anual') ? 'selected' : '' ?>>Anual</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mf-form-group">
+                                <label class="mf-label">Próxima Fecha (Estimada)</label>
+                                <input type="date" name="proxima_fecha" class="mf-input" value="<?= $isEdit ? ($mantenimiento->proxima_fecha ?? '') : '' ?>">
+                            </div>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid var(--mf-slate-200); margin: 1.5rem 0;">
+
+                        <div class="mf-section-header" style="background: transparent; padding: 0; margin-bottom: 1rem; border: none;">
+                            <i class="bi bi-box-seam text-muted"></i>
+                            <h3 class="mf-section-title">Recursos</h3>
+                        </div>
+
+                        <div class="mf-form-group">
+                            <label class="mf-label">Asignado a (Técnico)</label>
+                            <!-- Assuming only admin can change this or logic is handled in backend defaults -->
+                             <?php if($_SESSION['rol'] === 'admin'): ?>
+                                <select name="tecnico_id" class="mf-select">
+                                    <!-- Populate via controller if available, otherwise just current user or 'admin' placeholder -->
+                                    <option value="<?= $_SESSION['user_id'] ?>"><?= $_SESSION['username'] ?> (Yo)</option>
+                                    <!-- If $tecnicos passed from controller, loop here. -->
+                                </select>
+                             <?php else: ?>
+                                <input type="text" class="mf-input" value="<?= $_SESSION['username'] ?>" readonly disabled>
+                             <?php endif; ?>
+                        </div>
+
+                        <div class="mf-form-group">
+                            <label class="mf-label">Costo Estimado ($)</label>
+                            <input type="number" step="0.01" name="costo" class="mf-input" placeholder="0.00" value="<?= $isEdit ? $mantenimiento->costo : '' ?>">
+                        </div>
+
+                    </div>
+                </section>
+
+            </div>
+
+        </main>
+
+        <!-- Mobile Footer -->
+        <div class="mf-mobile-footer">
+            <a href="<?= BASE_URL ?>mantenimientos" class="mf-mob-btn mf-mob-cancel">Cancelar</a>
+            <button type="submit" class="mf-mob-btn mf-mob-save">Guardar</button>
         </div>
-    </div>
-</div>
 
-<script>
-// Mostrar/ocultar campo de próxima fecha según frecuencia
-document.getElementById('frecuencia').addEventListener('change', function() {
-    const proximaFechaGroup = document.getElementById('proxima-fecha-group');
-    if (this.value === 'unica') {
-        proximaFechaGroup.style.display = 'none';
-    } else {
-        proximaFechaGroup.style.display = 'block';
-    }
-});
+    </form>
 
-// Ejecutar al cargar
-window.addEventListener('DOMContentLoaded', function() {
-    const frecuencia = document.getElementById('frecuencia');
-    if (frecuencia.value === 'unica') {
-        document.getElementById('proxima-fecha-group').style.display = 'none';
-    }
-});
-</script>
-
-<?php require_once '../src/Views/layout/footer.php'; ?>
+    <script src="<?= BASE_URL ?>js/maintenance-form.js?v=<?= time() ?>"></script>
+</body>
+</html>

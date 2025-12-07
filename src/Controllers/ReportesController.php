@@ -33,6 +33,50 @@ class ReportesController extends Controller
         ]);
     }
 
+    public function historial()
+    {
+        // Datos simulados de historial de descargas
+        $historial = [
+            (object)[
+                'id' => 1,
+                'tipo' => 'Soportes',
+                'formato' => 'PDF',
+                'fecha' => date('Y-m-d H:i:s', strtotime('-1 hour')),
+                'usuario' => $_SESSION['usuario']['username'] ?? 'admin',
+                'filtros' => 'Estado: Todos, Prioridad: Alta'
+            ],
+            (object)[
+                'id' => 2,
+                'tipo' => 'Inventario',
+                'formato' => 'PDF',
+                'fecha' => date('Y-m-d H:i:s', strtotime('-3 hours')),
+                'usuario' => $_SESSION['usuario']['username'] ?? 'admin',
+                'filtros' => 'Completo'
+            ],
+            (object)[
+                'id' => 3,
+                'tipo' => 'Soportes',
+                'formato' => 'Excel',
+                'fecha' => date('Y-m-d H:i:s', strtotime('-1 day')),
+                'usuario' => $_SESSION['usuario']['username'] ?? 'admin',
+                'filtros' => 'Fecha: Último mes'
+            ],
+            (object)[
+                'id' => 4,
+                'tipo' => 'Mantenimientos',
+                'formato' => 'PDF',
+                'fecha' => date('Y-m-d H:i:s', strtotime('-2 days')),
+                'usuario' => $_SESSION['usuario']['username'] ?? 'admin',
+                'filtros' => 'Completo'
+            ],
+        ];
+
+        $this->render('reportes/historial', [
+            'titulo' => 'Historial de Reportes',
+            'historial' => $historial
+        ]);
+    }
+
     public function soportes()
     {
         $filters = [

@@ -22,7 +22,7 @@ class UsuariosController extends Controller
     }
     
     public function index() { 
-        $usuarios = $this->usuarioModel->findAll(); 
+        $usuarios = $this->usuarioModel->findAllWithDetails(); 
         $this->render('usuarios/lista', [ 'titulo' => 'Gestión de Usuarios', 'usuarios' => $usuarios ]); 
     }
     
