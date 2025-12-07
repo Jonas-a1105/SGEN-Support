@@ -1,265 +1,206 @@
-<?php require_once __DIR__ . '/../layout/header.php'; ?>
-<?php require_once __DIR__ . '/../layout/left-side-menu.php'; ?>
+<?php 
+// Modern About Page View
+// Loaded via Controller with $systemInfo, $techInfo, $credits, $changelog
+?>
+<link rel="stylesheet" href="<?= BASE_URL ?>css/about-modern.css?v=<?= time() ?>">
 
-<div class="container-fluid px-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="h3 mb-3 fw-bold">
-                <i class="bi bi-info-circle-fill me-2"></i>
-                Acerca de SGEN-Support
-            </h1>
-        </div>
-    </div>
-
-    <!-- Información Principal -->
-    <div class="row mb-4">
-        <div class="col-lg-8 mx-auto">
-            <div class="card glass-card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <div class="text-center mb-4">
-                        <i class="bi bi-cloud-fill text-primary" style="font-size: 4rem;"></i>
-                        <h2 class="mt-3 fw-bold"><?= htmlspecialchars($systemInfo['nombre']) ?></h2>
-                        <p class="text-muted mb-0">Versión <?= htmlspecialchars($systemInfo['version']) ?></p>
-                    </div>
-                    
-                    <hr class="my-4">
-                    
-                    <div class="px-md-4">
-                        <h5 class="fw-bold mb-3">
-                            <i class="bi bi-file-text me-2 text-primary"></i>
-                            Descripción
-                        </h5>
-                        <p class="text-muted mb-4">
-                            <?= htmlspecialchars($systemInfo['descripcion']) ?>. Una solución integral 
-                            para la gestión eficiente de tickets de soporte, inventario de equipos, 
-                            mantenimientos programados y administración de personal.
-                        </p>
-
-                        <h5 class="fw-bold mb-3 mt-4">
-                            <i class="bi bi-stack me-2 text-primary"></i>
-                            Tecnologías
-                        </h5>
-                        <div class="row g-3 mb-4">
-                            <?php foreach ($systemInfo['stack'] as $tech => $value): ?>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center p-3 rounded glass-card">
-                                    <i class="bi bi-check-circle-fill text-success me-3"></i>
-                                    <div>
-                                        <strong><?= htmlspecialchars($tech) ?>:</strong>
-                                        <span class="text-muted"><?= htmlspecialchars($value) ?></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
-
-                        <div class="text-center py-3 border-top">
-                            <p class="text-muted mb-0">
-                                <i class="bi bi-c-circle me-1"></i>
-                                <?= $systemInfo['year'] ?> SGEN-Support. Todos los derechos reservados.
-                            </p>
-                        </div>
-                    </div>
+<div class="about-wrapper">
+    <div class="about-card">
+        
+        <!-- SIDEBAR -->
+        <div class="about-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-box">
+                    <i class="bi bi-lightning-charge-fill" style="font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h1 class="app-title"><?= htmlspecialchars($systemInfo['nombre']) ?></h1>
+                    <span class="app-version">v<?= htmlspecialchars($systemInfo['version']) ?> (Stable)</span>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Módulos del Sistema -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h4 class="fw-bold mb-3">
-                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
-                Módulos del Sistema
-            </h4>
-        </div>
-    </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-target="tab-general">
+                    <i class="bi bi-info-circle nav-btn-icon"></i>
+                    Visión General
+                </button>
+                <button class="nav-btn" data-target="tab-modules">
+                    <i class="bi bi-grid nav-btn-icon"></i>
+                    Módulos
+                </button>
+                <button class="nav-btn" data-target="tab-technical">
+                    <i class="bi bi-hdd-network nav-btn-icon"></i>
+                    Info. Técnica
+                </button>
+                <button class="nav-btn" data-target="tab-changelog">
+                    <i class="bi bi-clock-history nav-btn-icon"></i>
+                    Versiones
+                </button>
+                <button class="nav-btn" data-target="tab-credits">
+                    <i class="bi bi-people nav-btn-icon"></i>
+                    Créditos
+                </button>
+            </nav>
 
-    <div class="row g-4 mb-4">
-        <?php foreach ($systemInfo['modulos'] as $modulo): ?>
-        <div class="col-md-6 col-lg-4">
-            <div class="card glass-card border-0 h-100 hoverable-card">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-start">
-                        <div class="me-3">
-                            <i class="bi <?= htmlspecialchars($modulo['icono']) ?> text-primary" style="font-size: 2rem;"></i>
-                        </div>
-                        <div>
-                            <h5 class="card-title fw-bold mb-2"><?= htmlspecialchars($modulo['nombre']) ?></h5>
-                            <p class="card-text text-muted small mb-0">
-                                <?= htmlspecialchars($modulo['descripcion']) ?>
-                            </p>
+            <div class="sidebar-footer">
+                <div style="font-size: 0.75rem; color: #94a3b8; display: flex; align-items: center; gap: 0.25rem;">
+                    <i class="bi bi-shield-check"></i> Licencia MIT
+                </div>
+                <p style="font-size: 0.625rem; color: #cbd5e1; margin: 0;">© <?= date('Y') ?> SGEN-Support Inc.</p>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="about-content">
+            
+            <!-- 1. GENERAL TAB -->
+            <div id="tab-general" class="tab-pane active">
+                <h2 class="section-title">Acerca del Sistema</h2>
+                <p class="section-desc">
+                    <?= htmlspecialchars($systemInfo['descripcion']) ?>. 
+                    Centraliza incidencias, inventario y personal en una plataforma unificada y escalable.
+                </p>
+
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <div class="tech-icon-box indigo"><i class="bi bi-code-square" style="font-size: 1.25rem;"></i></div>
+                        <div class="tech-info">
+                            <span class="tech-label">Backend</span>
+                            <p class="tech-value">PHP <?= htmlspecialchars($techInfo['php_version']) ?></p>
+                            <span class="tech-sub">Laravel Like (MVC)</span>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
-
-    <!-- Información Técnica del Sistema -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h4 class="fw-bold mb-3">
-                <i class="bi bi-gear-wide-connected me-2"></i>
-                Información Técnica
-            </h4>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <!-- Servidor -->
-        <div class="col-md-6">
-            <div class="card glass-card border-0 h-100">
-                <div class="card-header bg-transparent border-0 fw-bold">
-                    <i class="bi bi-server me-2 text-primary"></i>Servidor
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="small">Software del Servidor</span>
-                        <span class="text-muted small"><?= htmlspecialchars($techInfo['server_software']) ?></span>
-                    </li>
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="small">Sistema Operativo</span>
-                        <span class="text-muted small"><?= htmlspecialchars($techInfo['os']) ?></span>
-                    </li>
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="small">Versión de PHP</span>
-                        <span class="badge bg-primary"><?= htmlspecialchars($techInfo['php_version']) ?></span>
-                    </li>
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="small">Base de Datos</span>
-                        <span class="text-muted small"><?= htmlspecialchars($techInfo['db_driver']) ?></span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Configuración PHP -->
-        <div class="col-md-6">
-            <div class="card glass-card border-0 h-100">
-                <div class="card-header bg-transparent border-0 fw-bold">
-                    <i class="bi bi-gear-fill me-2 text-primary"></i>Configuración PHP
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="small">Límite de Memoria</span>
-                        <span class="fw-bold"><?= htmlspecialchars($techInfo['memory_limit']) ?></span>
-                    </li>
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="small">Max Upload Size</span>
-                        <span class="fw-bold"><?= htmlspecialchars($techInfo['upload_max_filesize']) ?></span>
-                    </li>
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="small">Max Post Size</span>
-                        <span class="fw-bold"><?= htmlspecialchars($techInfo['post_max_size']) ?></span>
-                    </li>
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="small">Max Execution Time</span>
-                        <span class="fw-bold"><?= htmlspecialchars($techInfo['max_execution_time']) ?>s</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Aplicación -->
-        <div class="col-12">
-            <div class="card glass-card border-0">
-                <div class="card-header bg-transparent border-0 fw-bold">
-                    <i class="bi bi-app-indicator me-2 text-primary"></i>Aplicación
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-muted small">URL Base</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-link"></i></span>
-                                <input type="text" class="form-control bg-white" value="<?= htmlspecialchars($techInfo['base_url']) ?>" readonly>
-                            </div>
+                    <div class="tech-card">
+                        <div class="tech-icon-box cyan"><i class="bi bi-window-desktop" style="font-size: 1.25rem;"></i></div>
+                        <div class="tech-info">
+                            <span class="tech-label">Frontend</span>
+                            <p class="tech-value">Vanilla JS / CSS</p>
+                            <span class="tech-sub">Modern UI System</span>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-muted small">Estado del Sistema</label>
-                            <div>
-                                <span class="badge bg-success p-2"><i class="bi bi-check-circle me-1"></i> Operativo</span>
-                            </div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon-box blue"><i class="bi bi-database" style="font-size: 1.25rem;"></i></div>
+                        <div class="tech-info">
+                            <span class="tech-label">Base de Datos</span>
+                            <p class="tech-value">MySQL</p>
+                            <span class="tech-sub"><?= htmlspecialchars($techInfo['db_driver']) ?></span>
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon-box emerald"><i class="bi bi-cpu" style="font-size: 1.25rem;"></i></div>
+                        <div class="tech-info">
+                            <span class="tech-label">Arquitectura</span>
+                            <p class="tech-value">MVC Modular</p>
+                            <span class="tech-sub">Scalable Design</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Créditos -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h4 class="fw-bold mb-3">
-                <i class="bi bi-people-fill me-2"></i>
-                Créditos
-            </h4>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <!-- Desarrollado por -->
-        <div class="col-12">
-            <div class="card glass-card border-0">
-                <div class="card-header bg-transparent border-0 fw-bold">
-                    <i class="bi bi-code-slash me-2 text-primary"></i>Desarrollado por: Jonas Mendoza
+                <div class="status-box">
+                    <div>
+                        <h3 style="font-weight: 600; color: var(--blue-600); font-size: 1rem; margin: 0;">Estado del Sistema</h3>
+                        <p style="font-size: 0.875rem; color: var(--blue-500); margin: 0.25rem 0 0;">Todas las conexiones operativas</p>
+                    </div>
+                    <div class="status-badge">
+                        <div class="pulse-dot"></div>
+                        OPERATIVO
+                    </div>
                 </div>
-                <div class="card-body">
-                    <?php foreach ($credits['development'] as $member): ?>
-                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                        <div class="me-3">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                <i class="bi bi-person-fill fs-4"></i>
-                            </div>
+            </div>
+
+            <!-- 2. MODULES TAB -->
+            <div id="tab-modules" class="tab-pane">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+                    <h2 class="section-title" style="margin: 0;">Módulos Instalados</h2>
+                    <span style="font-size: 0.75rem; font-weight: 600; background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem; color: #64748b;"><?= count($systemInfo['modulos']) ?> Activos</span>
+                </div>
+
+                <div class="tech-grid">
+                    <?php 
+                    $colors = ['mod-rose', 'mod-blue', 'mod-amber', 'mod-emerald', 'mod-indigo', 'mod-cyan'];
+                    foreach($systemInfo['modulos'] as $idx => $mod): 
+                        $colorClass = $colors[$idx % count($colors)];
+                    ?>
+                    <div class="module-card">
+                        <div class="module-icon <?= $colorClass ?>">
+                            <i class="bi <?= htmlspecialchars($mod['icono']) ?>"></i>
                         </div>
-                        <div>
-                            <h6 class="mb-1 fw-bold"><?= htmlspecialchars($member['name']) ?></h6>
-                            <small class="text-muted"><?= htmlspecialchars($member['role']) ?></small>
-                        </div>
+                        <h3 style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; font-size: 1rem;"><?= htmlspecialchars($mod['nombre']) ?></h3>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0; line-height: 1.5;"><?= htmlspecialchars($mod['descripcion']) ?></p>
                     </div>
                     <?php endforeach; ?>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Changelog / Historial de Versiones -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h4 class="fw-bold mb-3">
-                <i class="bi bi-clock-history me-2"></i>
-                Historial de Versiones
-            </h4>
-        </div>
-    </div>
+            <!-- 3. TECHNICAL TAB -->
+            <div id="tab-technical" class="tab-pane">
+                <h2 class="section-title">Especificaciones Técnicas</h2>
+                <p class="section-desc">Detalles del entorno de ejecución.</p>
 
-    <div class="row mb-4">
-        <div class="col-lg-10 mx-auto">
-            <div class="card glass-card border-0">
-                <div class="card-body p-4">
-                    <?php foreach ($changelog as $index => $version): ?>
-                    <div class="version-entry <?= $index < count($changelog) - 1 ? 'mb-4 pb-4 border-bottom' : '' ?>">
-                        <div class="d-flex align-items-center mb-3">
-                            <?php
-                            $badgeClass = $version['type'] === 'release' ? 'bg-success' : 'bg-info';
-                            $badgeIcon = $version['type'] === 'release' ? 'bi-rocket-takeoff-fill' : 'bi-arrow-up-circle-fill';
-                            ?>
-                            <span class="badge <?= $badgeClass ?> me-2 p-2">
-                                <i class="bi <?= $badgeIcon ?> me-1"></i>
-                                v<?= htmlspecialchars($version['version']) ?>
-                            </span>
-                            <small class="text-muted">
-                                <i class="bi bi-calendar3 me-1"></i>
-                                <?= date('d/m/Y', strtotime($version['date'])) ?>
-                            </small>
+                <div class="spec-box">
+                    <div class="spec-header">
+                        <i class="bi bi-server"></i> Entorno del Servidor
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">OS</span>
+                        <span class="spec-val"><?= htmlspecialchars($techInfo['os']) ?></span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Servidor Web</span>
+                        <span class="spec-val"><?= htmlspecialchars($techInfo['server_software']) ?></span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">PHP Version</span>
+                        <span class="spec-val" style="background: var(--indigo-50); color: var(--indigo-600); padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 700;"><?= htmlspecialchars($techInfo['php_version']) ?></span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Base de Datos</span>
+                        <span class="spec-val"><?= htmlspecialchars($techInfo['db_driver']) ?></span>
+                    </div>
+                </div>
+
+                <div class="spec-box">
+                    <div class="spec-header">
+                        <i class="bi bi-lightning"></i> Límites de Memoria (PHP.ini)
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Memory Limit</span>
+                        <span class="spec-val"><?= htmlspecialchars($techInfo['memory_limit']) ?></span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Max Upload Size</span>
+                        <span class="spec-val"><?= htmlspecialchars($techInfo['upload_max_filesize']) ?></span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Max Execution Time</span>
+                        <span class="spec-val"><?= htmlspecialchars($techInfo['max_execution_time']) ?>s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. CHANGELOG TAB -->
+            <div id="tab-changelog" class="tab-pane">
+                <h2 class="section-title" style="margin-bottom: 2rem;">Historial de Cambios</h2>
+                
+                <div class="changelog-wrapper">
+                    <?php foreach($changelog as $idx => $log): 
+                        $isLatest = ($log['type'] === 'release' || $idx === count($changelog) - 1); // Logic assumption: last in array is usually latest, but user mapped differently. Let's assume passed order.
+                        // Actually in controller array: idx 0 is 1.0.0, idx 1 is 1.0.1. So last item is latest.
+                        $isLatest = ($idx === count($changelog) - 1);
+                    ?>
+                    <div class="version-item">
+                        <div class="version-dot <?= $isLatest ? 'dot-latest' : 'dot-old' ?>"></div>
+                        <div class="version-header">
+                            <span class="version-num">v<?= htmlspecialchars($log['version']) ?></span>
+                            <?php if($isLatest): ?>
+                                <span class="badge-latest">LATEST</span>
+                            <?php endif; ?>
+                            <span class="version-date"><?= date('d M, Y', strtotime($log['date'])) ?></span>
                         </div>
-                        <ul class="changes-list mb-0">
-                            <?php foreach ($version['changes'] as $change): ?>
-                            <li class="mb-2">
-                                <i class="bi bi-arrow-right-short text-primary me-1"></i>
-                                <span class="small"><?= htmlspecialchars($change) ?></span>
+                        <ul class="change-list">
+                            <?php foreach($log['changes'] as $change): ?>
+                            <li class="change-item">
+                                <span class="change-bullet">•</span> <?= htmlspecialchars($change) ?>
                             </li>
                             <?php endforeach; ?>
                         </ul>
@@ -267,52 +208,46 @@
                     <?php endforeach; ?>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Información de Contacto/Soporte -->
-    <div class="row mb-4">
-        <div class="col-lg-8 mx-auto">
-            <div class="card glass-card border-0 shadow-sm">
-                <div class="card-body p-4 text-center">
-                    <h5 class="fw-bold mb-3">
-                        <i class="bi bi-headset me-2 text-primary"></i>
-                        Soporte y Asistencia
-                    </h5>
-                    <p class="text-muted mb-3">
-                        Para obtener ayuda o reportar problemas, contacta al administrador del sistema.
-                    </p>
-                    <div class="d-flex flex-wrap justify-content-center gap-3">
-                        <a href="<?= BASE_URL ?>soportes/crear" class="btn btn-primary">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Crear Ticket
-                        </a>
-                        <a href="<?= BASE_URL ?>configuracion" class="btn btn-outline-secondary">
-                            <i class="bi bi-gear me-2"></i>
-                            Configuración
-                        </a>
+            <!-- 5. CREDITS TAB -->
+            <div id="tab-credits" class="tab-pane">
+                <h2 class="section-title">Equipo de Desarrollo</h2>
+                <p class="section-desc">Mentes detrás del código.</p>
+                
+                <?php 
+                // Primary dev from credits
+                $devName = 'Jonas Mendoza';
+                $devRole = 'Lead Fullstack Developer';
+                if(!empty($credits['development'][0])) {
+                    $devName = $credits['development'][0]['role']; // In controller struct was: name=>Desarrollador, role=>Jonas. Swapped logic to match display name
+                    $devName = $credits['development'][0]['role']; // Jonas
+                    $roleLabel = str_replace(':', '', $credits['development'][0]['name']); // Desarrollador
+                }
+                ?>
+
+                <div class="dev-banner">
+                    <div class="dev-glow"></div>
+                    <div class="dev-content">
+                        <div class="dev-avatar">
+                            <?= strtoupper(substr($devName, 0, 2)) ?>
+                        </div>
+                        <div style="text-align: center; md:text-align: left;">
+                            <h3 class="dev-name"><?= htmlspecialchars($devName) ?></h3>
+                            <p class="dev-role"><?= htmlspecialchars($roleLabel ?? 'Fullstack Developer') ?></p>
+                        </div>
                     </div>
                 </div>
+
+                <div style="border: 1px solid #f1f5f9; background: #f8fafc; padding: 2rem; border-radius: 1rem; text-align: center;">
+                    <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1rem;">¿Necesitas soporte personalizado o reportar un bug?</p>
+                    <a href="<?= BASE_URL ?>soportes/crear" style="background: white; border: 1px solid #cbd5e1; color: #334155; padding: 0.5rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: 500; font-size: 0.875rem; display: inline-block;">
+                        Contactar Soporte
+                    </a>
+                </div>
             </div>
+
         </div>
     </div>
 </div>
 
-<style>
-.hoverable-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hoverable-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-}
-
-.glass-card {
-    background: var(--glass-opaque, rgba(255, 255, 255, 0.95));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-</style>
-
-<?php require_once __DIR__ . '/../layout/footer.php'; ?>
+<script src="<?= BASE_URL ?>js/about.js?v=<?= time() ?>"></script>

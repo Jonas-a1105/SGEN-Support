@@ -1,0 +1,526 @@
+/* =========================================
+   Assign Technician Modal CSS
+   ========================================= */
+
+:root {
+    --at-slate-50: #f8fafc;
+    --at-slate-100: #f1f5f9;
+    --at-slate-200: #e2e8f0;
+    --at-slate-300: #cbd5e1;
+    --at-slate-400: #94a3b8;
+    --at-slate-500: #64748b;
+    --at-slate-600: #475569;
+    --at-slate-700: #334155;
+    --at-slate-800: #1e293b;
+    --at-slate-900: #0f172a;
+
+    --at-blue-50: #eff6ff;
+    --at-blue-100: #dbeafe;
+    --at-blue-200: #bfdbfe;
+    --at-blue-500: #3b82f6;
+    --at-blue-600: #2563eb;
+    --at-blue-700: #1d4ed8;
+
+    --at-emerald-500: #10b981;
+    --at-amber-500: #f59e0b;
+    --at-amber-600: #d97706;
+
+    --at-red-100: #fee2e2;
+    --at-red-700: #b91c1c;
+}
+
+/* Modal Overlay */
+.at-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.4);
+    /* slate-900/40 */
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+    /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.at-overlay.show {
+    opacity: 1;
+}
+
+/* Modal Container */
+.at-modal {
+    background-color: white;
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 42rem;
+    /* max-w-2xl */
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.at-overlay.show .at-modal {
+    transform: scale(1);
+}
+
+/* Header */
+.at-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--at-slate-100);
+    background-color: rgba(248, 250, 252, 0.5);
+    /* slate-50/50 */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.at-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--at-slate-800);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.at-icon-box {
+    padding: 0.5rem;
+    background-color: var(--at-blue-100);
+    color: var(--at-blue-600);
+    border-radius: 0.5rem;
+    display: flex;
+}
+
+.at-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.at-id-badge {
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--at-slate-500);
+}
+
+.at-dot {
+    width: 0.25rem;
+    height: 0.25rem;
+    background-color: var(--at-slate-300);
+    border-radius: 50%;
+}
+
+.at-ticket-title {
+    color: var(--at-slate-600);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.at-close-btn {
+    color: var(--at-slate-400);
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.at-close-btn:hover {
+    color: var(--at-slate-600);
+    background-color: var(--at-slate-100);
+}
+
+/* Layout Columns */
+.at-body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+}
+
+@media (min-width: 768px) {
+    .at-body {
+        flex-direction: row;
+    }
+}
+
+/* Left Column: Context */
+.at-col-left {
+    background-color: var(--at-slate-50);
+    border-right: 1px solid var(--at-slate-100);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+    .at-col-left {
+        width: 33.333333%;
+    }
+}
+
+.at-section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--at-slate-400);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.at-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.at-info-icon {
+    color: var(--at-slate-400);
+    margin-top: 0.125rem;
+}
+
+.at-info-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.at-info-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--at-slate-400);
+}
+
+.at-info-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--at-slate-700);
+    line-height: 1.25;
+}
+
+.at-priority-card {
+    background-color: white;
+    border: 1px solid var(--at-slate-200);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.at-priority-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.at-priority-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.at-priority-high {
+    background-color: var(--at-red-100);
+    color: var(--at-red-700);
+}
+
+.at-priority-medium {
+    background-color: var(--at-blue-100);
+    color: var(--at-blue-700);
+}
+
+.at-priority-low {
+    background-color: var(--at-slate-100);
+    color: var(--at-slate-700);
+}
+
+/* Right Column: Technicians */
+.at-col-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    min-height: 400px;
+}
+
+.at-search-box {
+    padding: 1rem;
+    border-bottom: 1px solid var(--at-slate-100);
+}
+
+.at-search-wrapper {
+    position: relative;
+}
+
+.at-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--at-slate-400);
+}
+
+.at-search-input {
+    width: 100%;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    background-color: var(--at-slate-50);
+    border: 1px solid var(--at-slate-200);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.at-search-input:focus {
+    background-color: white;
+    border-color: var(--at-blue-500);
+    box-shadow: 0 0 0 3px var(--at-blue-100);
+}
+
+.at-tech-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Technician Card */
+.at-tech-card {
+    position: relative;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--at-slate-200);
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.at-tech-card:hover {
+    border-color: var(--at-blue-200);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.at-tech-card.selected {
+    border-color: var(--at-blue-500);
+    background-color: rgba(59, 130, 246, 0.05);
+    /* blue-50/50 */
+    box-shadow: 0 0 0 1px var(--at-blue-500);
+}
+
+.at-tech-card.offline {
+    opacity: 0.6;
+    background-color: var(--at-slate-50);
+    cursor: not-allowed;
+}
+
+.at-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.at-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: var(--at-slate-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--at-slate-600);
+    border: 2px solid white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.at-status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.at-status-available {
+    background-color: var(--at-emerald-500);
+}
+
+.at-status-busy {
+    background-color: var(--at-amber-500);
+}
+
+.at-status-offline {
+    background-color: var(--at-slate-400);
+}
+
+.at-tech-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.at-tech-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.125rem;
+}
+
+.at-tech-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--at-slate-800);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.at-tech-specialty {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--at-slate-400);
+    background-color: var(--at-slate-100);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.at-workload-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.at-bar-bg {
+    flex: 1;
+    height: 0.375rem;
+    background-color: var(--at-slate-100);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.at-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+
+.at-workload-text {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--at-slate-500);
+    white-space: nowrap;
+}
+
+.at-check-icon {
+    color: var(--at-blue-600);
+    animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Footer Action */
+.at-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--at-slate-100);
+    background-color: white;
+}
+
+.at-warning-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--at-amber-600);
+    background-color: #fffbeb;
+    /* amber-50 */
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.at-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.at-btn-cancel {
+    padding: 0.5rem 1rem;
+    color: var(--at-slate-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.at-btn-cancel:hover {
+    background-color: var(--at-slate-100);
+}
+
+.at-btn-confirm {
+    padding: 0.5rem 1.5rem;
+    background-color: var(--at-blue-600);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border-radius: 0.5rem;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    /* shadow-blue-200 equiv */
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.at-btn-confirm:hover {
+    background-color: var(--at-blue-700);
+}
+
+.at-btn-confirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}

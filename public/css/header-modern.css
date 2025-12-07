@@ -1,0 +1,61 @@
+/* Header Modern CSS */
+
+/* Glassmorphism Header */
+.glass-opaque {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    /* Slate 200 */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    height: 4rem;
+    /* 64px */
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+[data-theme="dark"] .glass-opaque {
+    background: rgba(15, 23, 42, 0.9);
+    /* Slate 900 */
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    /* Slate 700 */
+}
+
+/* Navbar Brand adjustment */
+.navbar-brand {
+    font-size: 1.25rem;
+    padding-left: 1rem;
+}
+
+/* User Avatar Small */
+.user-avatar-small {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    background-color: #0f172a;
+    /* Slate 900 */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Ensure navbar items are centered vertically */
+.navbar-nav .nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav .nav-link {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+/* Notification Bell Wrapper (Overrides/Helpers) */
+.notification-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}

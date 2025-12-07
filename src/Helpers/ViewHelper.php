@@ -141,4 +141,41 @@ class ViewHelper
     {
         return htmlspecialchars((string) ($value ?? $default), ENT_QUOTES, 'UTF-8');
     }
+    
+    /**
+     * Convierte fecha a formato relativo "Hace X tiempo"
+     * 
+     * @param string|null $datetime Fecha en formato ISO o MySQL
+     * @return string Tiempo relativo
+     */
+    public static function timeAgo(?string $datetime): string
+    {
+        if (!$datetime) return '--';
+        
+        try {
+            $time = strtotime($datetime);
+            $now = time();
+            $diff = $now - $time;
+            
+            if ($diff < 60) {
+                return 'Hace un momento';
+            } elseif ($diff < 3600) {
+                $mins = floor($diff / 60);
+                return "Hace {$mins} " . ($mins == 1 ? 'minuto' : 'minutos');
+            } elseif ($diff < 86400) {
+                $hours = floor($diff / 3600);
+                return "Hace {$hours} " . ($hours == 1 ? 'hora' : 'horas');
+            } elseif ($diff < 604800) {
+                $days = floor($diff / 86400);
+                return "Hace {$days} " . ($days == 1 ? 'día' : 'días');
+            } elseif ($diff < 2592000) {
+                $weeks = floor($diff / 604800);
+                return "Hace {$weeks} " . ($weeks == 1 ? 'semana' : 'semanas');
+            } else {
+                return date('d/m/Y', $time);
+            }
+        } catch (\Exception $e) {
+            return '--';
+        }
+    }
 }

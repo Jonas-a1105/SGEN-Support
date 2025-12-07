@@ -109,4 +109,21 @@ class BitacoraModel extends Model
         $result = $stmt->fetch(PDO::FETCH_OBJ);
         return $result ? (int)$result->total : 0;
     }
+
+    /**
+     * Obtiene registros de bitácora para una entidad específica.
+     * @param string $enlaceTipo Tipo de entidad (ej: 'equipo', 'soporte')
+     * @param int $enlaceId ID de la entidad
+     * @return array
+     */
+    public function findByEntity(string $enlaceTipo, int $enlaceId): array
+    {
+        $sql = "SELECT * FROM {$this->table} 
+                WHERE enlace_tipo = ? AND enlace_id = ?
+                ORDER BY created_at DESC";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$enlaceTipo, $enlaceId]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
 }

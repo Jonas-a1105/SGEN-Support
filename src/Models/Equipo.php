@@ -85,9 +85,11 @@ class Equipo extends Model
 
     public function findByDepartamentoId($departamento_id)
     {
-        $sql = "SELECT e.*, d.nombre AS departamento_nombre 
+        $sql = "SELECT e.*, d.nombre AS departamento_nombre,
+                       CONCAT(emp.nombre, ' ', IFNULL(emp.apellido, '')) AS empleado_nombre
                 FROM {$this->table} e 
                 LEFT JOIN departamentos d ON e.departamento_id = d.id 
+                LEFT JOIN empleados emp ON e.empleado_id = emp.id
                 WHERE e.departamento_id = ? 
                 ORDER BY e.codigo_inventario ASC";
         $stmt = $this->pdo->prepare($sql);

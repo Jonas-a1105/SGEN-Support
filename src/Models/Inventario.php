@@ -75,8 +75,9 @@ class Inventario extends Model {
 
     /**
      * Registra un nuevo ítem en el inventario.
+     * @return int ID del item creado, o 0 si falló
      */
-    public function registrarItem(array $datos): bool
+    public function registrarItem(array $datos): int
     {
         try {
             $this->pdo->beginTransaction();
@@ -103,7 +104,7 @@ class Inventario extends Model {
                 'valor_compra' => $datos['valor_compra']
             ]);
 
-            $itemId = $this->pdo->lastInsertId();
+            $itemId = (int)$this->pdo->lastInsertId();
 
             // Si hay stock inicial, registrarlo en Almacén Central (departamento_id = NULL)
             if ($datos['stock_actual'] > 0) {
@@ -121,12 +122,50 @@ class Inventario extends Model {
             }
 
             $this->pdo->commit();
-            return true;
+            return $itemId;
         } catch (\Exception $e) {
             $this->pdo->rollBack();
             // Log error if needed
-            return false;
+            return 0;
         }
+    }
+
+    /**
+     * Actualiza un ítem existente del inventario.
+     */
+    public function actualizarItem(array $datos): bool
+    {
+        $sql = "UPDATE {$this->table} SET 
+                    codigo = :codigo, 
+                    nombre = :nombre, 
+                    categoria = :categoria, 
+                    descripcion = :descripcion, 
+                    marca = :marca, 
+                    modelo = :modelo, 
+                    unidad_medida = :unidad_medida, 
+                    stock_minimo = :stock_minimo, 
+                    ubicacion = :ubicacion, 
+                    proveedor = :proveedor, 
+                    proveedor_rif = :proveedor_rif, 
+                    valor_compra = :valor_compra 
+                WHERE id = :id";
+        
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            'id' => $datos['id'],
+            'codigo' => $datos['codigo'],
+            'nombre' => $datos['nombre'],
+            'categoria' => $datos['categoria'],
+            'descripcion' => $datos['descripcion'],
+            'marca' => $datos['marca'],
+            'modelo' => $datos['modelo'],
+            'unidad_medida' => $datos['unidad_medida'],
+            'stock_minimo' => $datos['stock_minimo'],
+            'ubicacion' => $datos['ubicacion'],
+            'proveedor' => $datos['proveedor'],
+            'proveedor_rif' => $datos['proveedor_rif'],
+            'valor_compra' => $datos['valor_compra'],
+        ]);
     }
 
     /**
@@ -361,6 +400,32 @@ class Inventario extends Model {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+
+    /**
+     * Obtiene el historial de movimientos de un departamento específico.
+     * Incluye transferencias entrantes, salientes y consumos.
+     */
+    public function obtenerMovimientosPorDepartamento(int $departamentoId, int $limit = 20): array
+    {
+        $sql = "SELECT m.*, i.nombre as item_nombre, i.codigo as item_codigo, u.username,
+                       d_origen.nombre as origen_nombre, d_destino.nombre as destino_nombre
+                FROM inventario_movimientos m
+                JOIN inventario_items i ON m.item_id = i.id
+                LEFT JOIN usuarios u ON m.usuario_id = u.id
+                LEFT JOIN departamentos d_origen ON m.origen_departamento_id = d_origen.id
+                LEFT JOIN departamentos d_destino ON m.destino_departamento_id = d_destino.id
+                WHERE m.origen_departamento_id = :dept_id 
+                   OR m.destino_departamento_id = :dept_id2
+                ORDER BY m.fecha DESC
+                LIMIT :limit";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':dept_id', $departamentoId, PDO::PARAM_INT);
+        $stmt->bindValue(':dept_id2', $departamentoId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
     /**
      * Registra una baja de inventario (daño, pérdida, etc).
      * Resta del stock central (o especificado) y guarda registro en bajas_inventario.

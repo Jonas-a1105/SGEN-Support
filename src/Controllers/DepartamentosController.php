@@ -18,7 +18,8 @@ class DepartamentosController extends Controller
     
     public function index() { 
         if ($_SESSION['rol'] === 'admin') {
-            $departamentos = $this->departamentoModel->findAll(); 
+            // Obtener departamentos con estadísticas de empleados y equipos
+            $departamentos = $this->departamentoModel->findAllWithStats(); 
         } else {
             // Tecnico/Consultor see only their department
             $deptId = $_SESSION['departamento_id'];
@@ -26,6 +27,11 @@ class DepartamentosController extends Controller
             if ($deptId) {
                 $dept = $this->departamentoModel->findById($deptId);
                 if ($dept) {
+                    // Obtener estadísticas para este departamento
+                    $equipoModel = new \App\Models\Equipo();
+                    $empleadoModel = new \App\Models\Empleado();
+                    $dept->empleados_count = count($empleadoModel->findByDepartamentoId($deptId));
+                    $dept->equipos_count = count($equipoModel->findByDepartamentoId($deptId));
                     $departamentos[] = $dept;
                 }
             }
@@ -35,7 +41,16 @@ class DepartamentosController extends Controller
     
     public function crear() { 
         $this->restrictTo(['admin']);
-        $this->render('departamentos/formulario', [ 'titulo' => 'Crear Nuevo Departamento', 'departamento' => null ]); 
+        
+        // Obtener lista de empleados para el select de jefe de área
+        $empleadoModel = new \App\Models\Empleado();
+        $empleados = $empleadoModel->findAll();
+        
+        $this->render('departamentos/formulario', [ 
+            'titulo' => 'Crear Nuevo Departamento', 
+            'departamento' => null,
+            'empleados' => $empleados
+        ]); 
     }
     
     public function editar(int $id) { 
@@ -45,8 +60,17 @@ class DepartamentosController extends Controller
             $this->setFlashMessage('error', 'Departamento no encontrado.'); 
             header('Location: ' . BASE_URL . 'departamentos'); 
             exit; 
-        } 
-        $this->render('departamentos/formulario', [ 'titulo' => "Editar Departamento: {$departamento->nombre}", 'departamento' => $departamento ]); 
+        }
+        
+        // Obtener lista de empleados para el select de jefe de área
+        $empleadoModel = new \App\Models\Empleado();
+        $empleados = $empleadoModel->findAll();
+        
+        $this->render('departamentos/formulario', [ 
+            'titulo' => "Editar Departamento: {$departamento->nombre}", 
+            'departamento' => $departamento,
+            'empleados' => $empleados
+        ]); 
     }
 
     public function guardar()
@@ -70,7 +94,10 @@ class DepartamentosController extends Controller
 
         $datos = [ 
             'nombre' => $validator->get('nombre'),
-            'ubicacion' => $validator->get('ubicacion')
+            'ubicacion' => $validator->get('ubicacion'),
+            'descripcion' => $validator->get('descripcion'),
+            'jefe_area_id' => $validator->getInt('jefe_area_id') ?: null,
+            'jefe_area_nombre' => $validator->get('jefe_area_nombre') ?: null
         ];
 
         try {

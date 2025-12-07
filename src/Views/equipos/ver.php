@@ -1,258 +1,479 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><?= $titulo ?></h2>
-    <div>
-    <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
-        <a href="<?= BASE_URL ?>equipos/editar/<?= $equipo->id ?>" class="btn btn-warning">
-            <i class="bi bi-pencil"></i> Editar
-        </a>
-    <?php endif; ?>
-        <a href="<?= BASE_URL ?>equipos" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Volver
-        </a>
-    </div>
-</div>
+<?php
+// Configuración de estados
+$estadoConfig = [
+    'disponible' => ['class' => 'ed-status-active', 'text' => 'Disponible'],
+    'en_uso' => ['class' => 'ed-status-active', 'text' => 'En Uso'],
+    'nuevo' => ['class' => 'ed-status-active', 'text' => 'Nuevo'],
+    'usado' => ['class' => 'ed-status-maintenance', 'text' => 'Usado'],
+    'en_reparacion' => ['class' => 'ed-status-maintenance', 'text' => 'En Reparación'],
+    'fuera_de_servicio' => ['class' => 'ed-status-retired', 'text' => 'Fuera de Servicio'],
+    'en_reserva' => ['class' => 'ed-status-maintenance', 'text' => 'En Reserva'],
+];
+$estado = $equipo->estado ?? 'disponible';
+$estadoInfo = $estadoConfig[$estado] ?? $estadoConfig['disponible'];
 
-<div class="row">
-    <!-- Columna Izquierda: Información Principal -->
-    <div class="col-md-4">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body text-center">
-                <div class="display-1 text-muted mb-3">
-                    <i class="bi bi-pc-display"></i>
+// Calcular progreso de garantía
+$warrantyPercent = 0;
+$warrantyStatus = 'expired';
+$warrantyRemaining = '';
+if (!empty($equipo->fecha_compra) && !empty($equipo->garantia)) {
+    $start = strtotime($equipo->fecha_compra);
+    $end = strtotime($equipo->garantia);
+    $now = time();
+    $total = $end - $start;
+    $elapsed = $now - $start;
+    
+    if ($total > 0) {
+        $warrantyPercent = max(0, min(100, (($total - $elapsed) / $total) * 100));
+        if ($now < $end) {
+            $warrantyStatus = $warrantyPercent > 33 ? 'active' : 'warning';
+            $diasRestantes = ceil(($end - $now) / 86400);
+            $warrantyRemaining = $diasRestantes > 365 
+                ? round($diasRestantes / 365, 1) . ' años' 
+                : round($diasRestantes / 30) . ' meses';
+        }
+    }
+}
+
+// Icono según tipo de equipo
+$tipoIcon = match(strtolower($equipo->tipo ?? 'computadora')) {
+    'laptop', 'portatil' => 'bi-laptop',
+    'impresora' => 'bi-printer',
+    'monitor' => 'bi-display',
+    'telefono', 'celular' => 'bi-phone',
+    'servidor' => 'bi-hdd-rack',
+    'red', 'router', 'switch' => 'bi-router',
+    default => 'bi-pc-display'
+};
+?>
+<link rel="stylesheet" href="<?= BASE_URL ?>css/equipo-detail.css?v=<?= time() ?>">
+
+<div class="ed-container">
+    <div class="ed-max-w">
+
+        <!-- TOP NAVIGATION -->
+        <div class="ed-top-nav">
+            <a href="<?= BASE_URL ?>equipos" class="ed-back-btn">
+                <i class="bi bi-arrow-left"></i>
+                Volver a Inventario
+            </a>
+            <div class="ed-actions">
+                <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
+                <a href="<?= BASE_URL ?>equipos/editar/<?= $equipo->id ?>" class="ed-btn-edit">
+                    <i class="bi bi-pencil"></i>
+                    Editar
+                </a>
+                <?php endif; ?>
+                <div class="ed-dropdown">
+                    <button class="ed-btn-more" onclick="toggleEdDropdown(event)">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <div class="ed-dropdown-menu" id="ed-dropdown-menu">
+                        <a href="<?= BASE_URL ?>equipos/historial/<?= $equipo->id ?>" class="ed-dropdown-item">
+                            <i class="bi bi-clock-history"></i>
+                            Ver Historial de Cambios
+                        </a>
+                        <a href="<?= BASE_URL ?>equipos/imprimir/<?= $equipo->id ?>" class="ed-dropdown-item" target="_blank">
+                            <i class="bi bi-printer"></i>
+                            Imprimir Ficha
+                        </a>
+                        <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
+                        <div class="ed-dropdown-divider"></div>
+                        <a href="#" onclick="duplicarEquipo(<?= $equipo->id ?>); return false;" class="ed-dropdown-item ed-no-delete">
+                            <i class="bi bi-copy"></i>
+                            Duplicar Equipo
+                        </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <h4 class="card-title"><?= htmlspecialchars(($equipo->marca ?? '') . ' ' . ($equipo->modelo ?? '')) ?></h4>
-                <p class="text-muted"><?= htmlspecialchars($equipo->codigo_inventario ?? 'N/A') ?></p>
-                <span class="badge bg-<?= $equipo->estado == 'disponible' ? 'success' : ($equipo->estado == 'en_uso' ? 'primary' : 'warning') ?> fs-6">
-                    <?= ucfirst(str_replace('_', ' ', $equipo->estado)) ?>
-                </span>
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                    <strong>Serial:</strong>
-                    <span><?= htmlspecialchars($equipo->numero_serie ?? 'N/A') ?></span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <strong>Tipo:</strong>
-                    <span><?= ucfirst($equipo->tipo) ?></span>
-                </li>
-            </ul>
-        </div>
-
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">Ubicación</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>Departamento:</strong> <br> 
-                    <?= $equipo->departamento_nombre ?? 'No Asignado' ?>
-                </p>
-                <p><strong>Usuario:</strong> <br> 
-                    <?= $equipo->empleado_nombre ?? 'No Asignado' ?>
-                </p>
-                <p><strong>Ubicación Física:</strong> <br> 
-                    <?= htmlspecialchars($equipo->ubicacion_fisica ?? 'No especificada') ?>
-                </p>
             </div>
         </div>
-    </div>
 
-    <!-- Columna Derecha: Detalles Técnicos y Adquisición -->
-    <div class="col-md-8">
-        <ul class="nav nav-tabs mb-3" id="verEquipoTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tecnica-tab" data-bs-toggle="tab" data-bs-target="#tecnica" type="button" role="tab">Especificaciones</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="adquisicion-tab" data-bs-toggle="tab" data-bs-target="#adquisicion" type="button" role="tab">Adquisición</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="soportes-tab" data-bs-toggle="tab" data-bs-target="#soportes" type="button" role="tab">
-                    Historial Soportes
-                    <?php if (!empty($soportes)): ?>
-                        <span class="badge bg-danger ms-1"><?= count($soportes) ?></span>
+        <!-- MAIN GRID -->
+        <div class="ed-grid">
+            
+            <!-- LEFT COLUMN -->
+            <div class="ed-left-col">
+                
+                <!-- Identity Card -->
+                <div class="ed-identity-card">
+                    <div class="ed-qr-decoration">
+                        <i class="bi bi-qr-code"></i>
+                    </div>
+                    
+                    <div class="ed-equip-icon">
+                        <i class="bi <?= $tipoIcon ?>"></i>
+                    </div>
+                    
+                    <span class="ed-status-badge <?= $estadoInfo['class'] ?>">
+                        <span class="pulse"></span>
+                        <?= $estadoInfo['text'] ?>
+                    </span>
+
+                    <h1 class="ed-equip-name"><?= htmlspecialchars(($equipo->marca ?? '') . ' ' . ($equipo->modelo ?? '')) ?></h1>
+                    <p class="ed-equip-type"><?= ucfirst($equipo->tipo ?? 'Equipo') ?></p>
+
+                    <div class="ed-divider"></div>
+
+                    <div class="ed-info-row">
+                        <span class="ed-info-label">Código</span>
+                        <span class="ed-info-value"><?= htmlspecialchars($equipo->codigo_inventario ?? 'N/A') ?></span>
+                    </div>
+                    <div class="ed-info-row">
+                        <span class="ed-info-label">Serial</span>
+                        <span class="ed-info-value"><?= htmlspecialchars($equipo->numero_serie ?? 'N/A') ?></span>
+                    </div>
+                </div>
+
+                <!-- Location Card -->
+                <div class="ed-location-card">
+                    <h3 class="ed-location-title">
+                        <i class="bi bi-geo-alt"></i>
+                        Ubicación Actual
+                    </h3>
+                    
+                    <div class="ed-location-item">
+                        <div class="ed-location-icon blue">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div>
+                            <p class="ed-location-label">Departamento</p>
+                            <p class="ed-location-value"><?= htmlspecialchars($equipo->departamento_nombre ?? 'No Asignado') ?></p>
+                            <p class="ed-location-sub"><?= htmlspecialchars($equipo->ubicacion_fisica ?? 'Sin ubicación específica') ?></p>
+                        </div>
+                    </div>
+
+                    <div class="ed-location-item">
+                        <div class="ed-location-icon orange">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <p class="ed-location-label">Asignado a</p>
+                            <?php if (empty($equipo->empleado_nombre) || $equipo->empleado_nombre === 'No Asignado'): ?>
+                                <span class="ed-location-unassigned">-- Sin asignar --</span>
+                            <?php else: ?>
+                                <p class="ed-location-value"><?= htmlspecialchars($equipo->empleado_nombre) ?></p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
+                    <button class="ed-btn-location" onclick="alert('Función en desarrollo')">
+                        Cambiar Ubicación / Asignación
+                    </button>
                     <?php endif; ?>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="mantenimiento-tab" data-bs-toggle="tab" data-bs-target="#mantenimiento" type="button" role="tab">Historial Mantenimiento</button>
-            </li>
-        </ul>
+                </div>
 
-        <div class="tab-content" id="verEquipoTabsContent">
-            <!-- Especificaciones -->
-            <div class="tab-pane fade show active" id="tecnica" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="text-muted small">Procesador</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->procesador ?? 'N/A') ?></p>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="ed-right-col">
+                
+                <!-- Tabs Navigation -->
+                <div class="ed-tabs-nav">
+                    <button class="ed-tab-btn active" onclick="showEdTab('specs')" id="ed-tab-specs">
+                        <i class="bi bi-cpu"></i>
+                        Especificaciones
+                    </button>
+                    <button class="ed-tab-btn" onclick="showEdTab('purchase')" id="ed-tab-purchase">
+                        <i class="bi bi-receipt"></i>
+                        Adquisición
+                    </button>
+                    <button class="ed-tab-btn" onclick="showEdTab('support')" id="ed-tab-support">
+                        <i class="bi bi-chat-square-text"></i>
+                        Soportes
+                        <?php if (!empty($soportes)): ?>
+                        <span class="ed-tab-badge"><?= count($soportes) ?></span>
+                        <?php endif; ?>
+                    </button>
+                    <button class="ed-tab-btn" onclick="showEdTab('maintenance')" id="ed-tab-maintenance">
+                        <i class="bi bi-tools"></i>
+                        Mantenimiento
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="ed-tab-content">
+                    
+                    <!-- Tab: Especificaciones -->
+                    <div id="ed-panel-specs" class="ed-tab-panel active">
+                        <h3 class="ed-section-title">
+                            <i class="bi bi-cpu"></i>
+                            Especificaciones Técnicas
+                        </h3>
+                        
+                        <div class="ed-specs-grid">
+                            <div class="ed-spec-card">
+                                <div class="ed-spec-icon"><i class="bi bi-cpu"></i></div>
+                                <div>
+                                    <p class="ed-spec-label">Procesador</p>
+                                    <p class="ed-spec-value"><?= htmlspecialchars($equipo->procesador ?? 'N/A') ?></p>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Memoria RAM</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->memoria_ram ?? 'N/A') ?></p>
+                            <div class="ed-spec-card">
+                                <div class="ed-spec-icon"><i class="bi bi-memory"></i></div>
+                                <div>
+                                    <p class="ed-spec-label">Memoria RAM</p>
+                                    <p class="ed-spec-value"><?= htmlspecialchars($equipo->memoria_ram ?? 'N/A') ?></p>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Almacenamiento</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->almacenamiento ?? 'N/A') ?></p>
+                            <div class="ed-spec-card">
+                                <div class="ed-spec-icon"><i class="bi bi-hdd"></i></div>
+                                <div>
+                                    <p class="ed-spec-label">Almacenamiento</p>
+                                    <p class="ed-spec-value"><?= htmlspecialchars($equipo->almacenamiento ?? 'N/A') ?></p>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Sistema Operativo</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->sistema_operativo ?? 'N/A') ?></p>
+                            <div class="ed-spec-card">
+                                <div class="ed-spec-icon"><i class="bi bi-windows"></i></div>
+                                <div>
+                                    <p class="ed-spec-label">Sistema Operativo</p>
+                                    <p class="ed-spec-value"><?= htmlspecialchars($equipo->sistema_operativo ?? 'N/A') ?></p>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Dirección IP</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->direccion_ip ?? 'N/A') ?></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Driver</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->driver ?? 'N/A') ?></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Toner</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->toner ?? 'N/A') ?></p>
+                        </div>
+
+                        <div class="ed-network-section">
+                            <h4 class="ed-network-title">Detalles de Red</h4>
+                            <div class="ed-network-grid">
+                                <div>
+                                    <span class="ed-network-label">Dirección IP</span>
+                                    <span class="ed-network-value"><?= htmlspecialchars($equipo->direccion_ip ?? 'N/A') ?></span>
+                                </div>
+                                <div>
+                                    <span class="ed-network-label">MAC Address</span>
+                                    <span class="ed-network-value"><?= htmlspecialchars($equipo->mac_address ?? 'N/A') ?></span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Adquisición -->
-            <div class="tab-pane fade" id="adquisicion" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="text-muted small">Fecha de Compra</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->fecha_compra ?? 'N/A') ?></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Valor de Compra</label>
-                                <p class="fw-bold"><?= $equipo->valor_compra ? '$' . number_format($equipo->valor_compra, 2) : 'N/A' ?></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Proveedor</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->proveedor ?? 'N/A') ?></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">RIF Proveedor</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->proveedor_rif ?? 'N/A') ?></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small">Garantía Hasta</label>
-                                <p class="fw-bold"><?= htmlspecialchars($equipo->garantia ?? 'N/A') ?></p>
-                            </div>
+                    <!-- Tab: Adquisición -->
+                    <div id="ed-panel-purchase" class="ed-tab-panel">
+                        <div class="ed-purchase-header">
+                            <h3 class="ed-section-title">
+                                <i class="bi bi-file-earmark-text" style="color: #059669;"></i>
+                                Adquisición y Garantía
+                            </h3>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Historial de Soportes -->
-            <div class="tab-pane fade" id="soportes" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Ticket #</th>
-                                        <th>Fecha Reporte</th>
-                                        <th>Estado</th>
-                                        <th>Descripción</th>
-                                        <th>Técnico</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (empty($soportes)): ?>
-                                        <tr>
-                                            <td colspan="6" class="text-center py-3">No hay tickets de soporte registrados para este equipo.</td>
-                                        </tr>
-                                    <?php else: ?>
-                                        <?php foreach ($soportes as $s): ?>
-                                            <?php
-                                            $estadoClass = '';
-                                            switch ($s->estado) {
-                                                case 'pendiente':
-                                                    $estadoClass = 'bg-warning text-dark';
-                                                    break;
-                                                case 'en_proceso':
-                                                    $estadoClass = 'bg-info text-dark';
-                                                    break;
-                                                case 'en_espera':
-                                                    $estadoClass = 'bg-secondary';
-                                                    break;
-                                                case 'resuelto':
-                                                    $estadoClass = 'bg-success';
-                                                    break;
-                                            }
-                                            ?>
-                                            <tr>
-                                                <td><strong>#<?= $s->id ?></strong></td>
-                                                <td><?= date('d/m/Y H:i', strtotime($s->fecha)) ?></td>
-                                                <td><span class="badge <?= $estadoClass ?>"><?= ucfirst(str_replace('_', ' ', $s->estado)) ?></span></td>
-                                                <td><?= htmlspecialchars(substr($s->descripcion, 0, 50)) ?><?= strlen($s->descripcion) > 50 ? '...' : '' ?></td>
-                                                <td><?= htmlspecialchars($s->tecnico_asignado ?? 'Sin asignar') ?></td>
-                                                <td>
-                                                    <a href="<?= BASE_URL ?>soportes/ver/<?= $s->id ?>" class="btn btn-sm btn-primary">
-                                                        <i class="bi bi-eye"></i> Ver
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
+                        <div class="ed-purchase-card">
+                            <div class="ed-purchase-top">
+                                <div>
+                                    <p class="ed-vendor-label">Proveedor</p>
+                                    <p class="ed-vendor-name"><?= htmlspecialchars($equipo->proveedor ?? 'No registrado') ?></p>
+                                    <?php if (!empty($equipo->proveedor_rif)): ?>
+                                    <p class="ed-order-id">RIF: <?= htmlspecialchars($equipo->proveedor_rif) ?></p>
                                     <?php endif; ?>
-                                </tbody>
-                            </table>
+                                </div>
+                                <div style="text-align: right;">
+                                    <p class="ed-price-label">Valor de Compra</p>
+                                    <p class="ed-price-value"><?= $equipo->valor_compra ? '$' . number_format($equipo->valor_compra, 2) : 'N/A' ?></p>
+                                </div>
+                            </div>
+
+                            <!-- Warranty Progress Bar -->
+                            <?php if (!empty($equipo->garantia)): ?>
+                            <div class="ed-warranty-section">
+                                <div class="ed-warranty-header">
+                                    <span class="ed-warranty-label">Estado de Garantía</span>
+                                    <span class="ed-warranty-status <?= $warrantyStatus ?>">
+                                        <?php if ($warrantyStatus === 'expired'): ?>
+                                            Expirada
+                                        <?php else: ?>
+                                            Activa (<?= $warrantyRemaining ?> restantes)
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+                                <div class="ed-warranty-bar">
+                                    <div class="ed-warranty-fill <?= $warrantyStatus ?>" style="width: <?= $warrantyPercent ?>%"></div>
+                                </div>
+                                <div class="ed-warranty-dates">
+                                    <span>Inicio: <?= $equipo->fecha_compra ? date('d M Y', strtotime($equipo->fecha_compra)) : 'N/A' ?></span>
+                                    <span>Fin: <?= date('d M Y', strtotime($equipo->garantia)) ?></span>
+                                </div>
+                            </div>
+                            <?php else: ?>
+                            <div class="ed-warranty-section">
+                                <p style="text-align: center; color: #94a3b8; margin: 0;">Sin información de garantía</p>
+                            </div>
+                            <?php endif; ?>
                         </div>
-                        <div class="p-3 text-end bg-light">
-                            <a href="<?= BASE_URL ?>soportes/crear?equipo_id=<?= $equipo->id ?>" class="btn btn-sm btn-primary">
-                                <i class="bi bi-plus-circle"></i> Crear Nuevo Ticket
+                    </div>
+
+                    <!-- Tab: Soportes -->
+                    <div id="ed-panel-support" class="ed-tab-panel">
+                        <?php if (empty($soportes)): ?>
+                        <div class="ed-empty-state">
+                            <div class="ed-empty-icon">
+                                <i class="bi bi-chat-square-text"></i>
+                            </div>
+                            <h3 class="ed-empty-title">Sin tickets activos</h3>
+                            <p class="ed-empty-text">Este equipo funciona correctamente. No hay reportes de soporte pendientes.</p>
+                            <a href="<?= BASE_URL ?>soportes/crear?equipo_id=<?= $equipo->id ?>" class="ed-btn-primary">
+                                <i class="bi bi-plus-lg"></i>
+                                Crear Ticket
                             </a>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mantenimiento -->
-            <div class="tab-pane fade" id="mantenimiento" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Tipo</th>
-                                        <th>Descripción</th>
-                                        <th>Realizado Por</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (empty($mantenimientos)): ?>
-                                        <tr>
-                                            <td colspan="4" class="text-center py-3">No hay mantenimientos registrados.</td>
-                                        </tr>
-                                    <?php else: ?>
-                                        <?php foreach ($mantenimientos as $m): ?>
-                                            <tr>
-                                                <td><?= date('d/m/Y', strtotime($m->fecha)) ?></td>
-                                                <td><?= ucfirst($m->tipo_mantenimiento) ?></td>
-                                                <td><?= htmlspecialchars(substr($m->descripcion, 0, 50)) ?>...</td>
-                                                <td><?= htmlspecialchars($m->realizado_por) ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                        <?php else: ?>
+                        <div class="ed-tickets-list">
+                            <?php foreach ($soportes as $s): ?>
+                            <?php
+                            $sEstado = match($s->estado) {
+                                'pendiente' => ['bg' => '#fef3c7', 'color' => '#d97706'],
+                                'en_proceso' => ['bg' => '#dbeafe', 'color' => '#2563eb'],
+                                'en_espera' => ['bg' => '#f1f5f9', 'color' => '#64748b'],
+                                'resuelto' => ['bg' => '#d1fae5', 'color' => '#059669'],
+                                default => ['bg' => '#f1f5f9', 'color' => '#64748b']
+                            };
+                            ?>
+                            <div class="ed-ticket-item">
+                                <div>
+                                    <span class="ed-ticket-id">#<?= $s->id ?></span>
+                                    <span class="ed-ticket-desc">- <?= htmlspecialchars(substr($s->descripcion, 0, 40)) ?><?= strlen($s->descripcion) > 40 ? '...' : '' ?></span>
+                                    <div class="ed-ticket-meta">
+                                        <span class="ed-ticket-date"><?= date('d/m/Y H:i', strtotime($s->fecha)) ?></span>
+                                        <span class="ed-ticket-status" style="background: <?= $sEstado['bg'] ?>; color: <?= $sEstado['color'] ?>;">
+                                            <?= ucfirst(str_replace('_', ' ', $s->estado)) ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <a href="<?= BASE_URL ?>soportes/ver/<?= $s->id ?>" class="ed-ticket-link">
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                            <?php endforeach; ?>
                         </div>
-                        <div class="p-3 text-end">
-                            <a href="<?= BASE_URL ?>mantenimientos/crear?equipo_id=<?= $equipo->id ?>" class="btn btn-sm btn-primary">
-                                <i class="bi bi-plus-circle"></i> Nuevo Mantenimiento
+                        <div class="ed-tickets-footer">
+                            <a href="<?= BASE_URL ?>soportes/crear?equipo_id=<?= $equipo->id ?>" class="ed-btn-primary">
+                                <i class="bi bi-plus-lg"></i>
+                                Crear Ticket
                             </a>
                         </div>
+                        <?php endif; ?>
                     </div>
+
+                    <!-- Tab: Mantenimiento -->
+                    <div id="ed-panel-maintenance" class="ed-tab-panel">
+                        <div class="ed-maint-header">
+                            <h3 class="ed-section-title">
+                                <i class="bi bi-tools" style="color: #d97706;"></i>
+                                Historial de Mantenimiento
+                            </h3>
+                            <?php 
+                            // Buscar próximo mantenimiento programado
+                            $proximoMant = null;
+                            if (!empty($mantenimientos)) {
+                                foreach ($mantenimientos as $m) {
+                                    if (!empty($m->proxima_fecha) && strtotime($m->proxima_fecha) > time()) {
+                                        $proximoMant = $m->proxima_fecha;
+                                        break;
+                                    }
+                                }
+                            }
+                            ?>
+                            <?php if ($proximoMant): ?>
+                            <span class="ed-next-maint">
+                                Próximo: <?= date('d M', strtotime($proximoMant)) ?>
+                            </span>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <?php if (empty($mantenimientos)): ?>
+                        <div class="ed-empty-state">
+                            <div class="ed-empty-icon">
+                                <i class="bi bi-tools"></i>
+                            </div>
+                            <h3 class="ed-empty-title">Sin historial de mantenimiento</h3>
+                            <p class="ed-empty-text">No hay mantenimientos registrados para este equipo.</p>
+                            <a href="<?= BASE_URL ?>mantenimientos/crear?equipo_id=<?= $equipo->id ?>" class="ed-btn-dark">
+                                <i class="bi bi-plus-lg"></i>
+                                Nuevo Mantenimiento
+                            </a>
+                        </div>
+                        <?php else: ?>
+                        <div class="ed-timeline">
+                            <?php foreach (array_slice($mantenimientos, 0, 5) as $m): ?>
+                            <div class="ed-timeline-item">
+                                <div class="ed-timeline-dot"></div>
+                                <p class="ed-timeline-date"><?= date('d M Y', strtotime($m->fecha)) ?></p>
+                                <div class="ed-timeline-card">
+                                    <h4 class="ed-timeline-title"><?= ucfirst($m->tipo_mantenimiento ?? 'Mantenimiento') ?></h4>
+                                    <p class="ed-timeline-desc"><?= htmlspecialchars(substr($m->descripcion ?? '', 0, 100)) ?></p>
+                                    <?php if (!empty($m->realizado_por)): ?>
+                                    <span class="ed-timeline-user">
+                                        <i class="bi bi-person"></i>
+                                        Realizado por: <?= htmlspecialchars($m->realizado_por) ?>
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="ed-maint-footer">
+                            <a href="<?= BASE_URL ?>mantenimientos/crear?equipo_id=<?= $equipo->id ?>" class="ed-btn-dark">
+                                <i class="bi bi-plus-lg"></i>
+                                Nuevo Mantenimiento
+                            </a>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
     </div>
 </div>
+
+<script>
+function showEdTab(tabId) {
+    // Hide all panels
+    document.querySelectorAll('.ed-tab-panel').forEach(p => p.classList.remove('active'));
+    
+    // Reset all tabs
+    document.querySelectorAll('.ed-tab-btn').forEach(t => t.classList.remove('active'));
+    
+    // Show selected panel
+    document.getElementById('ed-panel-' + tabId).classList.add('active');
+    
+    // Activate selected tab
+    document.getElementById('ed-tab-' + tabId).classList.add('active');
+}
+
+// Dropdown toggle
+function toggleEdDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('ed-dropdown-menu');
+    menu.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const dropdown = document.querySelector('.ed-dropdown');
+    const menu = document.getElementById('ed-dropdown-menu');
+    if (dropdown && !dropdown.contains(e.target)) {
+        menu.classList.remove('show');
+    }
+});
+
+// Duplicate equipment
+function duplicarEquipo(id) {
+    Swal.fire({
+        title: '¿Duplicar equipo?',
+        text: 'Se creará una copia de este equipo en el mismo departamento.',
+        icon: 'question',
+        iconColor: '#4f46e5',
+        showCancelButton: true,
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, duplicar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '<?= BASE_URL ?>equipos/duplicar/' + id;
+        }
+    });
+}
+</script>

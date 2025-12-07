@@ -1,0 +1,323 @@
+/* Modern Sidebar CSS */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    --ms-slate-50: #f8fafc;
+    --ms-slate-100: #f1f5f9;
+    --ms-slate-200: #e2e8f0;
+    --ms-slate-400: #94a3b8;
+    --ms-slate-500: #64748b;
+    --ms-slate-800: #1e293b;
+    --ms-slate-900: #0f172a;
+    --ms-blue-50: #eff6ff;
+    --ms-blue-600: #2563eb;
+    --ms-white: #ffffff;
+}
+
+/* Main Sidebar Container */
+.ms-sidebar {
+    position: fixed;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: auto;
+    max-height: calc(100vh - 3rem);
+    width: 5.5rem;
+    /* Reduced width */
+    background-color: var(--ms-white);
+    border-right: none;
+    border-radius: 1.5rem;
+    z-index: 1060;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--ms-slate-200);
+    overflow: hidden;
+}
+
+.ms-sidebar:hover {
+    width: 16rem;
+    /* Expanded width */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.ms-nav-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem 0;
+}
+
+/* Custom Scrollbar */
+.ms-nav-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ms-nav-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ms-nav-container::-webkit-scrollbar-thumb {
+    background-color: var(--ms-slate-200);
+    border-radius: 4px;
+}
+
+.ms-section {
+    padding: 0 0.75rem;
+    /* px-3 */
+}
+
+.ms-section-title {
+    font-size: 0.625rem;
+    /* 10px */
+    font-weight: 700;
+    color: var(--ms-slate-400);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    /* tracking-wider */
+    margin-bottom: 0.5rem;
+    padding: 0 0.75rem;
+    transition: opacity 0.3s;
+    opacity: 0;
+    white-space: nowrap;
+    display: none;
+    /* Always hidden as requested */
+}
+
+/* Hover rule removed to prevent vertical jump */
+
+.ms-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    /* space-y-1 */
+}
+
+.ms-link {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Center by default */
+    height: 3rem;
+    padding: 0;
+    /* Remove padding by default */
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--ms-slate-500);
+    overflow: hidden;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.ms-link:hover {
+    background-color: var(--ms-slate-50);
+    color: var(--ms-slate-800);
+}
+
+.ms-sidebar:hover .ms-link {
+    justify-content: flex-start;
+    padding: 0 0.75rem;
+    /* Restore padding on hover */
+}
+
+.ms-link.active {
+    background-color: var(--ms-blue-50);
+    color: var(--ms-blue-600);
+}
+
+.ms-link.active .ms-active-indicator {
+    display: block;
+}
+
+.ms-icon-box {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    /* w-8 */
+    height: 2rem;
+    /* h-8 */
+    transition: transform 0.3s;
+}
+
+.ms-link.active .ms-icon-box {
+    transform: translateX(0.25rem);
+    /* translate-x-1 */
+}
+
+.ms-link-text {
+    margin-left: 0;
+    /* Remove margin by default */
+    width: 0;
+    /* Ensure width is 0 */
+    font-weight: 500;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    transition: all 0.3s;
+    transform-origin: left;
+    opacity: 0;
+    transform: translateX(-2.5rem);
+}
+
+.ms-sidebar:hover .ms-link-text {
+    opacity: 1;
+    width: auto;
+    /* Restore width */
+    margin-left: 0.75rem;
+    /* Restore margin */
+    transform: translateX(0);
+}
+
+/* 3. Footer / User */
+.ms-footer {
+    padding: 1rem;
+    /* p-4 */
+    border-top: 1px solid var(--ms-slate-100);
+    background-color: var(--ms-white);
+    flex-shrink: 0;
+}
+
+.ms-user-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    /* Align fix: No gap when collapsed */
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.ms-sidebar:hover .ms-user-btn {
+    justify-content: flex-start;
+    gap: 0.75rem;
+    /* Restore gap on hover */
+}
+
+.ms-user-btn:hover {
+    background-color: var(--ms-slate-50);
+}
+
+/* 1. Logo Area */
+.ms-brand-area {
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Center logo by default */
+    padding: 0;
+    border-bottom: 1px solid var(--ms-slate-50);
+    flex-shrink: 0;
+    transition: all 0.3s;
+}
+
+.ms-sidebar:hover .ms-brand-area {
+    justify-content: flex-start;
+    padding: 0 1.5rem;
+}
+
+.ms-brand-group {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    /* Align fix: No gap when collapsed */
+    text-decoration: none;
+    overflow: hidden;
+    transition: gap 0.3s;
+}
+
+.ms-sidebar:hover .ms-brand-group {
+    gap: 0.75rem;
+    /* Restore gap on hover */
+}
+
+.ms-logo-box {
+    width: 1.75rem;
+    height: 1.75rem;
+    background-color: var(--ms-slate-900);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+}
+
+.ms-brand-text {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--ms-slate-900);
+    letter-spacing: -0.025em;
+    white-space: nowrap;
+    width: 0;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s;
+}
+
+.ms-sidebar:hover .ms-brand-text {
+    width: auto;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.ms-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    background-color: var(--ms-slate-900);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.ms-user-info {
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all 0.3s;
+    width: 0;
+    opacity: 0;
+}
+
+.ms-sidebar:hover .ms-user-info {
+    width: auto;
+    opacity: 1;
+}
+
+.ms-user-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--ms-slate-800);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.ms-user-role {
+    font-size: 0.75rem;
+    color: var(--ms-slate-500);
+    margin: 0;
+}
+
+.ms-chevron {
+    margin-left: auto;
+    color: var(--ms-slate-400);
+    display: none;
+}
+
+.ms-sidebar:hover .ms-chevron {
+    display: block;
+}

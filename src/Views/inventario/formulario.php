@@ -1,113 +1,282 @@
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800"><?= $titulo ?></h1>
+<?php
+/**
+ * Vista de Formulario de Inventario - Moderno V2
+ * Diseño basado en React Component 'NewItemRegistration'
+ */
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Datos del Artículo</h6>
-        </div>
-        <div class="card-body">
-            <form action="<?= BASE_URL ?>inventario/crear" method="POST">
+// Helpers
+$isEdit = isset($editMode) && $editMode === true;
+$item = $item ?? (object)[];
+
+// Valores por defecto para creación
+$codigo = $item->codigo ?? '';
+$nombre = $item->nombre ?? '';
+$categoria = $item->categoria ?? '';
+$marca = $item->marca ?? '';
+$modelo = $item->modelo ?? '';
+$descripcion = $item->descripcion ?? '';
+$unidad = $item->unidad_medida ?? 'Unidad';
+$stockMin = $item->stock_minimo ?? 5;
+$ubicacion = $item->ubicacion ?? 'Almacén Central';
+$proveedor = $item->proveedor ?? '';
+$garantia = $item->garantia_fin ?? '';
+$costo = $item->valor_compra ?? '';
+$stockInicial = 0; // Solo para create
+
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title><?= $titulo ?? 'Gestión de Ítem' ?></title>
+    <!-- CSS Moderno -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/item-form-modern.css?v=<?= time() ?>">
+    <!-- Bootstrap Icons (Reemplaza Lucide) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="item-form-wrapper">
+
+    <div class="item-form-container">
+        
+        <form id="itemForm" action="<?= BASE_URL ?>inventario/<?= $isEdit ? 'actualizar/' . $item->id : 'crear' ?>" method="POST" enctype="multipart/form-data">
+            
+            <?php if ($isEdit): ?>
+                <input type="hidden" name="id" value="<?= $item->id ?>">
+            <?php endif; ?>
+
+            <!-- HEADER -->
+            <div class="item-form-header">
+                <div>
+                    <h1 class="item-header-title">
+                        <div class="item-header-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <?= $isEdit ? 'Editar Artículo' : 'Registrar Nuevo Artículo' ?>
+                    </h1>
+                    <p class="item-header-subtitle">
+                        <?= $isEdit ? 'Modifica los datos del producto existente.' : 'Agrega un nuevo producto al catálogo global.' ?>
+                    </p>
+                </div>
                 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="codigo" class="form-label">Código *</label>
-                        <input type="text" name="codigo" id="codigo" class="form-control" required>
-                    </div>
-                    <div class="col-md-8 mb-3">
-                        <label for="nombre" class="form-label">Nombre del Artículo *</label>
-                        <input type="text" name="nombre" id="nombre" class="form-control" required>
-                    </div>
+                <div class="item-header-actions">
+                    <a href="<?= BASE_URL ?>inventario" class="btn-cancel">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-save" id="btnSubmit">
+                        <i class="bi bi-check-lg"></i> 
+                        <span id="submitText"><?= $isEdit ? 'Actualizar Producto' : 'Guardar Producto' ?></span>
+                    </button>
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="categoria" class="form-label">Categoría *</label>
-                        <select name="categoria" id="categoria" class="form-select" required>
-                            <option value="">Seleccionar...</option>
-                            <option value="Hardware">Hardware</option>
-                            <option value="Software">Software</option>
-                            <option value="Periféricos">Periféricos</option>
-                            <option value="Cables">Cables</option>
-                            <option value="Consumibles">Consumibles</option>
-                            <option value="Herramientas">Herramientas</option>
-                            <option value="Otros">Otros</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="marca" class="form-label">Marca</label>
-                        <input type="text" name="marca" id="marca" class="form-control">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="modelo" class="form-label">Modelo</label>
-                        <input type="text" name="modelo" id="modelo" class="form-control">
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="descripcion" class="form-label">Descripción</label>
-                    <textarea name="descripcion" id="descripcion" class="form-control" rows="3"></textarea>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="unidad_medida" class="form-label">Unidad de Medida</label>
-                        <select name="unidad_medida" id="unidad_medida" class="form-select">
-                            <option value="Unidad">Unidad</option>
-                            <option value="Caja">Caja</option>
-                            <option value="Metro">Metro</option>
-                            <option value="Paquete">Paquete</option>
-                            <option value="Litro">Litro</option>
-                            <option value="Kg">Kg</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="stock_inicial" class="form-label">Stock Inicial</label>
-                        <input type="number" name="stock_inicial" id="stock_inicial" class="form-control" value="0" min="0">
-                        <small class="text-muted">Se asignará al Almacén Central</small>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="stock_minimo" class="form-label">Stock Mínimo (Alerta)</label>
-                        <input type="number" name="stock_minimo" id="stock_minimo" class="form-control" value="5" min="0">
-                    </div>
-                </div>
-
-                <hr class="my-4">
-                <h6 class="font-weight-bold text-primary mb-3">Datos de Compra y Garantía</h6>
-
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="fecha_compra" class="form-label">Fecha de Compra</label>
-                        <input type="date" name="fecha_compra" id="fecha_compra" class="form-control">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="proveedor" class="form-label">Proveedor</label>
-                        <input type="text" name="proveedor" id="proveedor" class="form-control">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="proveedor_rif" class="form-label">RIF del Proveedor</label>
-                        <input type="text" name="proveedor_rif" id="proveedor_rif" class="form-control">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="garantia_fin" class="form-label">Vencimiento de la Garantía</label>
-                        <input type="date" name="garantia_fin" id="garantia_fin" class="form-control">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="valor_compra" class="form-label">Valor de Compra</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" name="valor_compra" id="valor_compra" class="form-control" step="0.01" min="0">
+            <!-- MAIN GRID -->
+            <div class="item-form-grid">
+                
+                <!-- COLUMNA IZQUIERDA: Identidad -->
+                <div class="item-col-left">
+                    
+                    <!-- Foto Uploader (Visual Only for now) -->
+                    <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('imageUpload').click()">
+                        <input type="file" id="imageUpload" name="imagen_referencia" accept="image/*" style="display: none;">
+                        
+                        <div id="imagePreviewContainer" style="display: none; width: 100%; height: 100%;"></div>
+                        
+                        <div class="image-upload-content" id="uploadPlaceholder">
+                            <div class="image-icon-wrapper">
+                                <i class="bi bi-cloud-arrow-up-fill" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <p class="image-upload-label">Subir Imagen Principal</p>
+                            <p class="image-upload-sub">PNG, JPG hasta 5MB</p>
                         </div>
                     </div>
+
+                    <!-- Código y SKU -->
+                    <div class="code-input-box">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Código SKU / Barras
+                                <span class="req-badge">REQ</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-upc-scan input-icon"></i>
+                                <input type="text" name="codigo" class="form-input-control has-icon mono" 
+                                       placeholder="Auto-generar..." value="<?= htmlspecialchars($codigo) ?>">
+                            </div>
+                        </div>
+                        <div class="info-tip">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <span>Si se deja vacío, el sistema generará uno automáticamente.</span>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="form-group">
+                        <label class="form-label">Descripción / Notas</label>
+                        <textarea name="descripcion" class="form-input-control" rows="5" 
+                                  placeholder="Detalles técnicos, compatibilidad, color..." 
+                                  style="resize: none;"><?= htmlspecialchars($descripcion) ?></textarea>
+                    </div>
+
                 </div>
 
-                <div class="d-flex justify-content-end">
-                    <a href="<?= BASE_URL ?>inventario" class="btn btn-secondary me-2">Cancelar</a>
-                    <button type="submit" class="btn btn-success">Guardar Producto</button>
+                <!-- COLUMNA DERECHA: Detalles -->
+                <div class="item-col-right">
+                    
+                    <!-- SECCIÓN 1: Ficha Técnica -->
+                    <section>
+                        <div class="form-section-header">
+                            <i class="bi bi-tags-fill form-section-icon"></i>
+                            <h3 class="form-section-title">Ficha Técnica</h3>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Nombre del Artículo
+                                    <span class="req-badge">REQ</span>
+                                </label>
+                                <input type="text" name="nombre" class="form-input-control large-text" 
+                                       placeholder="Ej: Cable HDMI 4K Trenzado 2m" value="<?= htmlspecialchars($nombre) ?>" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row cols-2">
+                            <div class="form-group">
+                                <label class="form-label">Categoría</label>
+                                <div class="input-wrapper">
+                                    <select name="categoria" class="form-select-control">
+                                        <option value="">Seleccionar...</option>
+                                        <?php 
+                                        $cats = ['Hardware', 'Software', 'Periféricos', 'Cables', 'Consumibles', 'Herramientas', 'Otros'];
+                                        foreach ($cats as $cat): ?>
+                                            <option value="<?= $cat ?>" <?= $categoria === $cat ? 'selected' : '' ?>><?= $cat ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <i class="bi bi-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Unidad de Medida</label>
+                                <div class="input-wrapper">
+                                    <select name="unidad_medida" class="form-select-control">
+                                        <?php 
+                                        $units = ['Unidad', 'Caja', 'Metro', 'Paquete', 'Litro', 'Kg'];
+                                        foreach ($units as $u): ?>
+                                            <option value="<?= $u ?>" <?= $unidad === $u ? 'selected' : '' ?>><?= $u ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <i class="bi bi-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row cols-2">
+                            <div class="form-group">
+                                <label class="form-label">Marca</label>
+                                <input type="text" name="marca" class="form-input-control" 
+                                       placeholder="Ej: Belkin" value="<?= htmlspecialchars($marca) ?>">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Modelo</label>
+                                <input type="text" name="modelo" class="form-input-control" 
+                                       placeholder="Ej: F3Y021bt2M" value="<?= htmlspecialchars($modelo) ?>">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 2: Logística -->
+                    <section>
+                        <div class="form-section-header" style="justify-content: space-between; border-bottom: none; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="bi bi-layers-fill form-section-icon"></i>
+                                <h3 class="form-section-title">Control de Stock</h3>
+                            </div>
+                            
+                            <div class="location-badge">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                Asignación: <?= htmlspecialchars($ubicacion) ?>
+                            </div>
+                        </div>
+                        <input type="hidden" name="ubicacion" value="<?= htmlspecialchars($ubicacion) ?>">
+
+                        <div style="background-color: var(--if-slate-50); border-radius: 0.75rem; padding: 1.5rem; border: 1px solid var(--if-slate-200);">
+                            <div class="form-row cols-3" style="margin-bottom: 1.5rem;">
+                                
+                                <?php if (!$isEdit): ?>
+                                <div class="form-group">
+                                    <label class="form-label">Stock Inicial</label>
+                                    <div class="input-wrapper">
+                                        <i class="bi bi-box-seam input-icon text-blue"></i>
+                                        <input type="number" name="stock_inicial" id="stock_inicial" class="form-input-control has-icon" 
+                                               placeholder="0" min="0" value="0" style="color: var(--if-blue-600); font-weight: 700;">
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+
+                                <div class="form-group">
+                                    <label class="form-label">Stock Mínimo (Alerta)</label>
+                                    <input type="number" name="stock_minimo" class="form-input-control" 
+                                           placeholder="Ej: 5" min="0" value="<?= $stockMin ?>">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Costo Unitario ($)</label>
+                                    <div class="input-wrapper">
+                                        <i class="bi bi-currency-dollar input-icon"></i>
+                                        <input type="number" name="valor_compra" id="valor_compra" class="form-input-control has-icon" 
+                                               placeholder="0.00" step="0.01" min="0" value="<?= $costo ?>">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Value Feedback -->
+                            <div class="inventory-value-card" id="inventoryValueContainer" style="display: none;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div class="value-icon-wrapper">
+                                        <i class="bi bi-cash-stack" style="font-size: 1.25rem;"></i>
+                                    </div>
+                                    <div>
+                                        <p class="value-label">Valor Total Inventario</p>
+                                        <p class="value-amount" id="totalValueDisplay">$0.00</p>
+                                    </div>
+                                </div>
+                                <div style="text-align: right; font-size: 0.75rem; color: var(--if-slate-400);" id="formulaDisplay">
+                                    0 unidades x $0.00
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- SECCIÓN 3: Proveedor (Opcional) -->
+                    <div class="form-row cols-2" style="margin-bottom: 0;">
+                        <div class="form-group">
+                            <label class="form-label">Proveedor</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-truck input-icon"></i>
+                                <input type="text" name="proveedor" class="form-input-control has-icon" 
+                                       placeholder="Ej: TecnoSupply C.A." value="<?= htmlspecialchars($proveedor) ?>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Vencimiento Garantía</label>
+                            <div class="input-wrapper">
+                                <input type="date" name="garantia_fin" class="form-input-control" value="<?= $garantia ?>">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="proveedor_rif" value="<?= htmlspecialchars($item->proveedor_rif ?? '') ?>">
+
                 </div>
-            </form>
-        </div>
+            </div>
+
+        </form>
     </div>
-</div>
+
+    <!-- Scripts -->
+    <script src="<?= BASE_URL ?>js/item-form.js?v=<?= time() ?>"></script>
+
+</body>
+</html>

@@ -1,0 +1,761 @@
+/* ============================================
+   MESA DE AYUDA - Interfaz Moderna de Soporte
+   ============================================ */
+
+/* Variables */
+:root {
+    --help-rose: #e11d48;
+    --help-rose-light: #ffe4e6;
+    --help-rose-dark: #be123c;
+    --help-slate-50: #f8fafc;
+    --help-slate-100: #f1f5f9;
+    --help-slate-200: #e2e8f0;
+    --help-slate-300: #cbd5e1;
+    --help-slate-400: #94a3b8;
+    --help-slate-500: #64748b;
+    --help-slate-600: #475569;
+    --help-slate-800: #1e293b;
+    --help-slate-900: #0f172a;
+    --help-emerald: #10b981;
+    --help-emerald-light: #d1fae5;
+    --help-amber: #f59e0b;
+    --help-amber-light: #fef3c7;
+    --help-blue: #3b82f6;
+    --help-blue-light: #dbeafe;
+    --help-indigo: #6366f1;
+    --help-indigo-light: #e0e7ff;
+    --help-cyan: #06b6d4;
+    --help-cyan-light: #ecfeff;
+}
+
+/* Container - Full Width */
+.helpdesk-container {
+    background: var(--help-slate-50);
+    min-height: 100vh;
+    padding-bottom: 3rem;
+    /* Breakout del contenedor padre */
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}
+
+/* Top Header Blanco */
+.helpdesk-nav {
+    background: white;
+    color: var(--help-slate-900);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--help-slate-200);
+    /* Limitar ancho y centrar */
+    max-width: 1150px;
+    margin: 0 auto;
+    border-radius: 0 0 12px 12px;
+}
+
+.helpdesk-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.helpdesk-brand-icon {
+    background: var(--help-rose);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.helpdesk-brand-icon i {
+    font-size: 1.25rem;
+}
+
+.helpdesk-brand h1 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.helpdesk-brand p {
+    font-size: 0.75rem;
+    color: var(--help-slate-400);
+    margin: 0;
+}
+
+.helpdesk-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--help-slate-400);
+    background: var(--help-slate-800);
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+}
+
+.helpdesk-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--help-emerald);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Botón Nuevo Ticket */
+.btn-nuevo-ticket {
+    background: var(--help-rose);
+    color: white;
+    padding: 0.625rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
+    text-decoration: none;
+}
+
+.btn-nuevo-ticket:hover {
+    background: var(--help-rose-dark);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* KPI Cards */
+.helpdesk-kpis {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .helpdesk-kpis {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .helpdesk-kpis {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.helpdesk-kpi {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--help-slate-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.helpdesk-kpi:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.helpdesk-kpi.critical {
+    border-color: var(--help-rose-light);
+}
+
+.helpdesk-kpi.critical:hover {
+    border-color: var(--help-rose);
+}
+
+.helpdesk-kpi-bg {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 1rem;
+    opacity: 0.05;
+}
+
+.helpdesk-kpi-bg i {
+    font-size: 4rem;
+}
+
+.helpdesk-kpi:hover .helpdesk-kpi-bg {
+    opacity: 0.1;
+}
+
+.helpdesk-kpi-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--help-slate-500);
+}
+
+.helpdesk-kpi-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-top: 0.25rem;
+}
+
+.helpdesk-kpi-value.critical {
+    color: var(--help-rose);
+}
+
+.helpdesk-kpi-value.amber {
+    color: var(--help-amber);
+}
+
+.helpdesk-kpi-value.emerald {
+    color: var(--help-emerald);
+}
+
+.helpdesk-kpi-value.blue {
+    color: var(--help-blue);
+}
+
+.helpdesk-kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.helpdesk-kpi-icon.rose {
+    background: var(--help-rose-light);
+    color: var(--help-rose);
+}
+
+.helpdesk-kpi-icon.amber {
+    background: var(--help-amber-light);
+    color: var(--help-amber);
+}
+
+.helpdesk-kpi-icon.emerald {
+    background: var(--help-emerald-light);
+    color: var(--help-emerald);
+}
+
+.helpdesk-kpi-icon.blue {
+    background: var(--help-blue-light);
+    color: var(--help-blue);
+}
+
+/* Filter Tabs */
+.helpdesk-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .helpdesk-filters {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.helpdesk-tabs {
+    display: flex;
+    background: white;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--help-slate-200);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.helpdesk-tab {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--help-slate-600);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.helpdesk-tab:hover {
+    background: var(--help-slate-50);
+}
+
+.helpdesk-tab.active {
+    background: var(--help-slate-900);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Search Box */
+.helpdesk-search {
+    position: relative;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .helpdesk-search {
+        width: 320px;
+    }
+}
+
+.helpdesk-search i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--help-slate-400);
+    transition: color 0.2s;
+}
+
+.helpdesk-search input {
+    width: 100%;
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    background: white;
+    border: 1px solid var(--help-slate-200);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.helpdesk-search input:focus {
+    outline: none;
+    border-color: var(--help-rose);
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+}
+
+.helpdesk-search:focus-within i {
+    color: var(--help-rose);
+}
+
+/* Ticket Feed */
+.helpdesk-feed {
+    background: white;
+    border: 1px solid var(--help-slate-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.helpdesk-ticket {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-bottom: 1px solid var(--help-slate-100);
+    transition: background 0.2s;
+    position: relative;
+}
+
+.helpdesk-ticket:hover {
+    background: var(--help-slate-50);
+}
+
+.helpdesk-ticket:last-child {
+    border-bottom: none;
+}
+
+@media (min-width: 768px) {
+    .helpdesk-ticket {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+/* Priority Stripe */
+.helpdesk-ticket::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+}
+
+.helpdesk-ticket.priority-alta::before {
+    background: var(--help-rose);
+}
+
+.helpdesk-ticket.priority-media::before {
+    background: var(--help-amber);
+}
+
+.helpdesk-ticket.priority-baja::before {
+    background: var(--help-slate-300);
+}
+
+/* Status Icon */
+.helpdesk-status-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+}
+
+.helpdesk-status-icon.resuelto {
+    background: var(--help-emerald-light);
+    color: var(--help-emerald);
+}
+
+.helpdesk-status-icon.en_proceso {
+    background: var(--help-blue-light);
+    color: var(--help-blue);
+}
+
+.helpdesk-status-icon.pendiente {
+    background: var(--help-slate-100);
+    color: var(--help-slate-500);
+}
+
+.helpdesk-status-icon.espera {
+    background: var(--help-amber-light);
+    color: var(--help-amber);
+}
+
+/* Ticket Content */
+.helpdesk-ticket-content {
+    flex: 1;
+    min-width: 0;
+    padding-left: 0.5rem;
+}
+
+.helpdesk-ticket-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.helpdesk-ticket-id {
+    font-size: 0.75rem;
+    font-family: monospace;
+    color: var(--help-slate-400);
+}
+
+/* Category Badge */
+.helpdesk-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid;
+}
+
+.helpdesk-category.hardware {
+    background: var(--help-rose-light);
+    color: var(--help-rose-dark);
+    border-color: #fecdd3;
+}
+
+.helpdesk-category.redes {
+    background: var(--help-cyan-light);
+    color: #0e7490;
+    border-color: #a5f3fc;
+}
+
+.helpdesk-category.software {
+    background: var(--help-indigo-light);
+    color: var(--help-indigo);
+    border-color: #c7d2fe;
+}
+
+.helpdesk-category.default {
+    background: var(--help-slate-100);
+    color: var(--help-slate-600);
+    border-color: var(--help-slate-200);
+}
+
+/* Urgente Badge */
+.helpdesk-urgente {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    background: var(--help-rose-light);
+    color: var(--help-rose);
+    border: 1px solid #fecdd3;
+}
+
+.helpdesk-ticket-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--help-slate-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.helpdesk-ticket:hover .helpdesk-ticket-title {
+    color: var(--help-rose);
+}
+
+.helpdesk-ticket-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--help-slate-500);
+}
+
+.helpdesk-ticket-info span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Solicitante Link */
+.helpdesk-solicitante-link {
+    color: var(--help-slate-600);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.helpdesk-solicitante-link:hover {
+    color: var(--help-blue);
+    text-decoration: underline;
+}
+
+/* Ticket Actions */
+.helpdesk-ticket-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-left: 2.5rem;
+}
+
+@media (min-width: 768px) {
+    .helpdesk-ticket-actions {
+        padding-left: 0;
+        justify-content: flex-end;
+    }
+}
+
+/* Assignee */
+.helpdesk-assignee {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.helpdesk-assignee-info {
+    text-align: right;
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .helpdesk-assignee-info {
+        display: block;
+    }
+}
+
+.helpdesk-assignee-label {
+    font-size: 0.625rem;
+    color: var(--help-slate-400);
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.helpdesk-assignee-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--help-slate-700);
+}
+
+.helpdesk-assignee-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--help-indigo-light);
+    color: var(--help-indigo);
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Assign Button */
+.helpdesk-assign-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    border: 1px dashed var(--help-slate-300);
+    background: transparent;
+    color: var(--help-slate-500);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.helpdesk-assign-btn:hover {
+    border-color: var(--help-rose);
+    color: var(--help-rose);
+    background: var(--help-rose-light);
+}
+
+/* Time & Comments */
+.helpdesk-ticket-time {
+    text-align: right;
+    padding-left: 1rem;
+    border-left: 1px solid var(--help-slate-100);
+}
+
+.helpdesk-ticket-time-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--help-slate-700);
+}
+
+.helpdesk-ticket-comments {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    font-size: 0.625rem;
+    color: var(--help-slate-400);
+}
+
+/* Quick Links a Comentarios y Observaciones */
+.helpdesk-quick-links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.helpdesk-quick-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.625rem;
+    color: var(--help-slate-400);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.helpdesk-quick-link:hover {
+    color: var(--help-blue);
+    background: var(--help-blue-light);
+}
+
+.helpdesk-quick-link i {
+    font-size: 0.75rem;
+}
+
+/* Action Button */
+.helpdesk-action-btn {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    color: var(--help-slate-300);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+}
+
+.helpdesk-action-btn:hover {
+    color: var(--help-rose);
+    background: var(--help-rose-light);
+}
+
+/* Action Buttons Container */
+.helpdesk-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.helpdesk-action-btn.edit:hover {
+    color: var(--help-blue);
+    background: var(--help-blue-light);
+}
+
+.helpdesk-action-btn.delete:hover {
+    color: #dc2626;
+    background: #fef2f2;
+}
+
+/* Feed Footer */
+.helpdesk-feed-footer {
+    background: var(--help-slate-50);
+    padding: 0.75rem;
+    border-top: 1px solid var(--help-slate-200);
+    text-align: center;
+}
+
+.helpdesk-feed-footer button {
+    font-size: 0.875rem;
+    color: var(--help-slate-500);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.helpdesk-feed-footer button:hover {
+    color: var(--help-rose);
+}
+
+/* Empty State */
+.helpdesk-empty {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.helpdesk-empty i {
+    font-size: 3rem;
+    color: var(--help-slate-300);
+}

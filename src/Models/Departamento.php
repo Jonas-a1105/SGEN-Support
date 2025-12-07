@@ -31,4 +31,39 @@ class Departamento extends Model
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
+
+    /**
+     * Obtiene todos los departamentos con estadísticas de empleados y equipos
+     */
+    public function findAllWithStats()
+    {
+        $sql = "SELECT d.*, 
+                       (SELECT COUNT(*) FROM empleados e WHERE e.departamento_id = d.id) as empleados_count,
+                       (SELECT COUNT(*) FROM equipos eq WHERE eq.departamento_id = d.id) as equipos_count,
+                       COALESCE(
+                           d.jefe_area_nombre,
+                           CONCAT(jefe.nombre, ' ', IFNULL(jefe.apellido, ''))
+                       ) as jefe_nombre
+                FROM {$this->table} d 
+                LEFT JOIN empleados jefe ON d.jefe_area_id = jefe.id
+                ORDER BY d.nombre ASC";
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+    public function findByIdWithStats($id)
+    {
+        $sql = "SELECT d.*, 
+                       (SELECT COUNT(*) FROM empleados e WHERE e.departamento_id = d.id) as empleados_count,
+                       (SELECT COUNT(*) FROM equipos eq WHERE eq.departamento_id = d.id) as equipos_count,
+                       COALESCE(
+                           d.jefe_area_nombre,
+                           CONCAT(jefe.nombre, ' ', IFNULL(jefe.apellido, ''))
+                       ) as jefe_nombre
+                FROM {$this->table} d 
+                LEFT JOIN empleados jefe ON d.jefe_area_id = jefe.id
+                WHERE d.id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
 }

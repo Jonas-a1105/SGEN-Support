@@ -53,6 +53,21 @@ class EmpleadosController extends Controller {
         ]);
     }
 
+    public function ver(int $id) {
+        $empleado = $this->empleadoModel->findByIdWithDetails($id);
+        
+        if (!$empleado) {
+            $this->setFlashMessage('error', "Empleado ID #{$id} no encontrado.");
+            header('Location: ' . BASE_URL . 'empleados');
+            exit;
+        }
+
+        $this->render('empleados/ver', [
+            'titulo' => 'Perfil de Empleado',
+            'empleado' => $empleado
+        ]);
+    }
+
     public function editar(int $id) {
         $this->crear($id);
     }

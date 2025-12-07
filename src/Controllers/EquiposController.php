@@ -167,7 +167,9 @@ class EquiposController extends Controller
             exit;
         }
         
-        if ($fue_asignado || $es_edicion) {
+        if (!empty($_POST['redirect_url']) && strpos($_POST['redirect_url'], BASE_URL) === 0) {
+            header("Location: " . $_POST['redirect_url']);
+        } elseif ($fue_asignado || $es_edicion) {
             header("Location: " . BASE_URL . "equipos");
         } else {
             header("Location: " . BASE_URL . "inventario");
@@ -325,5 +327,103 @@ class EquiposController extends Controller
         exit;
     }
 
+    /**
+     * Muestra el historial de cambios de un equipo
+     */
+    public function historial(int $id)
+    {
+        $equipo = $this->equipoModel->findById($id);
+        if (!$equipo) {
+            $this->setFlashMessage('error', 'Equipo no encontrado.');
+            header('Location: ' . BASE_URL . 'equipos');
+            exit;
+        }
+
+        $bitacoraModel = new \App\Models\BitacoraModel();
+        $historial = $bitacoraModel->findByEntity('equipo', $id);
+
+        $this->render('equipos/historial', [
+            'titulo' => "Historial de Cambios: {$equipo->codigo_inventario}",
+            'equipo' => $equipo,
+            'historial' => $historial
+        ]);
+    }
+
+    /**
+     * Muestra versión imprimible del equipo
+     */
+    public function imprimir(int $id)
+    {
+        $equipo = $this->equipoModel->findById($id);
+        if (!$equipo) {
+            $this->setFlashMessage('error', 'Equipo no encontrado.');
+            header('Location: ' . BASE_URL . 'equipos');
+            exit;
+        }
+
+        $departamento = $equipo->departamento_id ? $this->departamentoModel->findById($equipo->departamento_id) : null;
+        $empleado = $equipo->empleado_id ? $this->empleadoModel->findById($equipo->empleado_id) : null;
+
+        $this->render('equipos/imprimir', [
+            'titulo' => "Ficha del Equipo: {$equipo->codigo_inventario}",
+            'equipo' => $equipo,
+            'departamento' => $departamento,
+            'empleado' => $empleado
+        ], 'blank');
+    }
+
+    /**
+     * Duplica un equipo en el mismo departamento
+     */
+    public function duplicar(int $id)
+    {
+        $this->restrictTo(['admin']);
+        
+        $equipo = $this->equipoModel->findById($id);
+        if (!$equipo) {
+            $this->setFlashMessage('error', 'Equipo no encontrado.');
+            header('Location: ' . BASE_URL . 'equipos');
+            exit;
+        }
+
+        // Preparar datos para duplicar
+        $datos = [
+            'codigo_inventario' => $equipo->codigo_inventario . '-COPIA',
+            'numero_serie'      => $equipo->numero_serie . '-COPIA',
+            'tipo'              => $equipo->tipo,
+            'marca'             => $equipo->marca,
+            'modelo'            => $equipo->modelo,
+            'procesador'        => $equipo->procesador,
+            'memoria_ram'       => $equipo->memoria_ram,
+            'almacenamiento'    => $equipo->almacenamiento,
+            'sistema_operativo' => $equipo->sistema_operativo,
+            'direccion_ip'      => null, // No duplicar IP
+            'driver'            => $equipo->driver,
+            'toner'             => $equipo->toner,
+            'departamento_id'   => $equipo->departamento_id, // Mismo departamento
+            'empleado_id'       => null, // Sin asignar a empleado
+            'ubicacion_fisica'  => $equipo->ubicacion_fisica,
+            'estado'            => 'disponible',
+            'fecha_compra'      => $equipo->fecha_compra,
+            'proveedor'         => $equipo->proveedor,
+            'proveedor_rif'     => $equipo->proveedor_rif,
+            'garantia'          => $equipo->garantia,
+            'valor_compra'      => $equipo->valor_compra,
+        ];
+
+        try {
+            if ($newId = $this->equipoModel->create($datos)) {
+                $this->setFlashMessage('success', "Equipo duplicado exitosamente. Nuevo código: {$datos['codigo_inventario']}");
+                $this->logBitacora("Duplicó el equipo (Original: {$equipo->codigo_inventario}, Nuevo: {$datos['codigo_inventario']})", 'equipo', $newId);
+                header('Location: ' . BASE_URL . 'equipos/editar/' . $newId);
+                exit;
+            }
+        } catch (PDOException $e) {
+            $this->setFlashMessage('error', 'Error al duplicar: ' . $e->getMessage());
+        }
+
+        header('Location: ' . BASE_URL . 'equipos/ver/' . $id);
+        exit;
+    }
 
 }

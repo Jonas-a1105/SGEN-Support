@@ -1,402 +1,482 @@
 ﻿<?php require_once '../src/Views/layout/header.php'; ?>
 <?php require_once '../src/Views/layout/left-side-menu.php'; ?>
 
-<div class="main-content">
-    <div class="container-fluid">
-        <div class="centered-card">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h4 mb-0 text-dark">📦 Inventario General</h2>
-                <?php if ($_SESSION['rol'] === 'admin'): ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>css/inventario-moderno.css?v=<?= time() ?>">
+
+<div class="inventario-container">
+    <div class="inventario-wrapper">
+        
+        <!-- Header -->
+        <div class="inventario-header">
+            <div class="inventario-title">
+                <span class="inventario-title-icon">📦</span>
                 <div>
-                    <a href="index.php?url=inventario/crear" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Nuevo Artículo
-                    </a>
-                    <button type="button" class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#modalNuevoEquipo">
-                        <i class="bi bi-pc-display"></i> Nuevo Equipo
-                    </button>
+                    <h1>Inventario General</h1>
+                    <p>Gestión centralizada de recursos</p>
                 </div>
-                <?php endif; ?>
+            </div>
+            
+            <?php if ($_SESSION['rol'] === 'admin'): ?>
+            <div class="inventario-actions">
+                <a href="<?= BASE_URL ?>inventario/crear" class="btn-nuevo-articulo">
+                    <i class="bi bi-box-seam"></i>
+                    Nuevo Artículo
+                </a>
+                <a href="<?= BASE_URL ?>equipos/crear" class="btn-nuevo-equipo">
+                    <i class="bi bi-pc-display"></i>
+                    Nuevo Equipo
+                </a>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Search Box -->
+        <div class="inventario-search">
+            <i class="bi bi-search"></i>
+            <form action="<?= BASE_URL ?>inventario" method="GET" id="searchForm" style="display: contents;">
+                <input type="text" name="q" id="searchInput"
+                       placeholder="Buscar por código, nombre, serial, marca, modelo..." 
+                       value="<?= htmlspecialchars($search ?? '') ?>" 
+                       autocomplete="off">
+            </form>
+        </div>
+
+        <!-- KPI Cards -->
+        <?php 
+        $totalItems = count($items);
+        $totalStock = 0;
+        $itemsBajoStock = 0;
+        foreach ($items as $item) {
+            $totalStock += $item->stock_actual ?? 0;
+            if (($item->stock_actual ?? 0) <= ($item->stock_minimo ?? 0)) {
+                $itemsBajoStock++;
+            }
+        }
+        ?>
+        <div class="inventario-kpis">
+            <!-- Total Artículos -->
+            <div class="inventario-kpi blue">
+                <div>
+                    <p class="inventario-kpi-label">Total Artículos</p>
+                    <h3 class="inventario-kpi-value"><?= $totalItems ?></h3>
+                </div>
+                <div class="inventario-kpi-icon blue">
+                    <i class="bi bi-box-seam"></i>
+                </div>
             </div>
 
-            <!-- Search Bar -->
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <form action="<?= BASE_URL ?>inventario" method="GET" id="searchForm">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-search text-muted"></i>
-                            </span>
-                            <input type="text" name="q" class="form-control border-start-0 ps-0" 
-                                   placeholder="Buscar por código, nombre, serial, marca, modelo..." 
-                                   value="<?= htmlspecialchars($search ?? '') ?>" 
-                                   id="searchInput" autocomplete="off">
-                            <?php if (!empty($search)): ?>
-                                <a href="<?= BASE_URL ?>inventario" class="btn btn-outline-secondary" title="Limpiar búsqueda">
-                                    <i class="bi bi-x-lg"></i>
-                                </a>
+            <!-- Stock Total -->
+            <div class="inventario-kpi emerald">
+                <div>
+                    <p class="inventario-kpi-label">Stock Total</p>
+                    <h3 class="inventario-kpi-value"><?= $totalStock ?> unidades</h3>
+                </div>
+                <div class="inventario-kpi-icon emerald">
+                    <i class="bi bi-boxes"></i>
+                </div>
+            </div>
+
+            <!-- Stock Bajo -->
+            <div class="inventario-kpi amber">
+                <div>
+                    <p class="inventario-kpi-label">Stock Bajo</p>
+                    <h3 class="inventario-kpi-value"><?= $itemsBajoStock ?> artículos</h3>
+                </div>
+                <div class="inventario-kpi-icon amber">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="inventario-view-toggle">
+            <button class="inventario-toggle-btn active" data-view="table" data-target="items">
+                <i class="bi bi-list-ul"></i> Tabla
+            </button>
+            <button class="inventario-toggle-btn" data-view="cards" data-target="items">
+                <i class="bi bi-grid-3x3-gap"></i> Cards
+            </button>
+        </div>
+
+        <!-- Table View -->
+        <div class="inventario-table-container" id="items-table">
+            <table class="inventario-table" id="tablaInventario">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Artículo</th>
+                        <th>Categoría</th>
+                        <th>Ubicación</th>
+                        <th class="text-center">Stock</th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($items as $item): ?>
+                    <tr>
+                        <td>
+                            <span class="inventario-code"><?= htmlspecialchars($item->codigo ?? $item->id) ?></span>
+                        </td>
+                        <td>
+                            <span class="inventario-article-name"><?= htmlspecialchars($item->nombre ?? '') ?></span>
+                        </td>
+                        <td>
+                            <span class="inventario-category-badge"><?= $item->categoria ?? 'General' ?></span>
+                        </td>
+                        <td style="color: var(--inv-slate-600);"><?= htmlspecialchars($item->ubicacion ?? 'Almacén Central') ?></td>
+                        <td class="text-center">
+                            <?php if(($item->stock_actual ?? 0) <= ($item->stock_minimo ?? 0)): ?>
+                                <span class="inventario-stock low"><?= $item->stock_actual ?? 0 ?></span>
+                            <?php else: ?>
+                                <span class="inventario-stock high"><?= $item->stock_actual ?? 0 ?></span>
                             <?php endif; ?>
-                        </div>
-                    </form>
+                        </td>
+                        <td>
+                            <div class="inventario-actions-cell">
+                                <a href="<?= BASE_URL ?>inventario/ver/<?= $item->id ?>" 
+                                   class="inventario-action-btn view" 
+                                   title="Ver Detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <?php if ($_SESSION['rol'] === 'admin'): ?>
+                                <a href="<?= BASE_URL ?>inventario/distribucion/<?= $item->id ?>" 
+                                   class="inventario-action-btn structure" 
+                                   title="Estructura">
+                                    <i class="bi bi-diagram-3"></i>
+                                </a>
+                                <button class="inventario-action-btn edit" 
+                                        onclick="StockAdjustmentModal.open({
+                                            id: <?= $item->id ?>,
+                                            name: '<?= addslashes($item->nombre) ?>',
+                                            code: '<?= addslashes($item->codigo ?? $item->id) ?>',
+                                            stock: <?= $item->stock_actual ?? 0 ?>,
+                                            unit: '<?= addslashes($item->unidad_medida ?? 'Unidades') ?>'
+                                        })"
+                                        title="Recibir Stock / Ajuste">
+                                    <i class="bi bi-box-arrow-in-down"></i>
+                                </button>
+                                <button class="inventario-action-btn delete" 
+                                        onclick="InventoryModal.open({
+                                            id: <?= $item->id ?>,
+                                            name: '<?= addslashes($item->nombre) ?>',
+                                            code: '<?= addslashes($item->codigo ?? $item->id) ?>',
+                                            stock: <?= $item->stock_actual ?? 0 ?>,
+                                            unit: '<?= addslashes($item->unidad_medida ?? 'Unidades') ?>'
+                                        })"
+                                        title="Eliminar / Baja">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cards Carousel View -->
+        <div class="inventario-carousel-wrapper" id="items-cards">
+            <button class="inventario-carousel-nav prev" data-carousel="items-carousel">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="inventario-carousel" id="items-carousel">
+                <?php foreach ($items as $item): ?>
+                <div class="inventario-card">
+                    <div class="inventario-card-header">
+                        <span class="inventario-card-code"><?= htmlspecialchars($item->codigo ?? $item->id) ?></span>
+                        <?php if(($item->stock_actual ?? 0) <= ($item->stock_minimo ?? 0)): ?>
+                            <span class="inventario-card-stock low"><?= $item->stock_actual ?? 0 ?></span>
+                        <?php else: ?>
+                            <span class="inventario-card-stock high"><?= $item->stock_actual ?? 0 ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <h4 class="inventario-card-title"><?= htmlspecialchars($item->nombre ?? '') ?></h4>
+                    <span class="inventario-card-category"><?= $item->categoria ?? 'General' ?></span>
+                    <div class="inventario-card-location">
+                        <i class="bi bi-geo-alt"></i>
+                        <?= htmlspecialchars($item->ubicacion ?? 'Almacén Central') ?>
+                    </div>
+                    <div class="inventario-card-actions">
+                        <a href="<?= BASE_URL ?>inventario/ver/<?= $item->id ?>" 
+                           class="inventario-action-btn view" title="Ver">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <?php if ($_SESSION['rol'] === 'admin'): ?>
+                        <a href="<?= BASE_URL ?>inventario/distribucion/<?= $item->id ?>" 
+                           class="inventario-action-btn structure" title="Estructura">
+                            <i class="bi bi-diagram-3"></i>
+                        </a>
+                        <button class="inventario-action-btn edit" 
+                                onclick="StockAdjustmentModal.open({
+                                    id: <?= $item->id ?>,
+                                    name: '<?= addslashes($item->nombre) ?>',
+                                    code: '<?= addslashes($item->codigo ?? $item->id) ?>',
+                                    stock: <?= $item->stock_actual ?? 0 ?>,
+                                    unit: '<?= addslashes($item->unidad_medida ?? 'Unidades') ?>'
+                                })"
+                                title="Recibir Stock">
+                            <i class="bi bi-box-arrow-in-down"></i>
+                        </button>
+                        <button class="inventario-action-btn delete" 
+                                onclick="InventoryModal.open({
+                                    id: <?= $item->id ?>,
+                                    name: '<?= addslashes($item->nombre) ?>',
+                                    code: '<?= addslashes($item->codigo ?? $item->id) ?>',
+                                    stock: <?= $item->stock_actual ?? 0 ?>,
+                                    unit: '<?= addslashes($item->unidad_medida ?? 'Unidades') ?>'
+                                })">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <button class="inventario-carousel-nav next" data-carousel="items-carousel">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+            <!-- Modern Pagination Footer for Items -->
+            <?php if ($totalPagesItems > 1 || !empty($items)): ?>
+            <div style="padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid #e2e8f0; margin-top: 1rem;">
+                <!-- Left: Counts & Selector -->
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <span style="font-size: 0.875rem; color: #64748b;">
+                        Mostrando <strong style="color: #0f172a;"><?= count($items) ?></strong> de <strong style="color: #0f172a;"><?= $totalItemsCount ?? count($items) ?></strong> items
+                    </span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #94a3b8;">Mostrar:</span>
+                        <select onchange="changeItemsPerPage(this.value)" style="padding: 0.25rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.75rem; color: #475569; background: white; cursor: pointer;">
+                            <option value="5" <?= isset($perPage) && $perPage == 5 ? 'selected' : '' ?>>5</option>
+                            <option value="10" <?= (!isset($perPage) || $perPage == 10) ? 'selected' : '' ?>>10</option>
+                            <option value="25" <?= isset($perPage) && $perPage == 25 ? 'selected' : '' ?>>25</option>
+                            <option value="50" <?= isset($perPage) && $perPage == 50 ? 'selected' : '' ?>>50</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Right: Navigation -->
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <a href="<?= BASE_URL ?>inventario?page_items=<?= max(1, $pageItems - 1) ?>&page_equipos=<?= $pageEquipos ?>&q=<?= urlencode($search ?? '') ?>&per_page=<?= $perPage ?>" 
+                       style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #64748b; font-size: 0.875rem; text-decoration: none; transition: all 0.2s; <?= $pageItems <= 1 ? 'pointer-events: none; opacity: 0.5;' : '' ?>"
+                       onmouseover="this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';"
+                       onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#64748b';">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                    
+                    <span style="font-size: 0.875rem; color: #475569; font-weight: 500; padding: 0 0.5rem;">
+                        Página <?= $pageItems ?> / <?= $totalPagesItems ?>
+                    </span>
+                    
+                    <a href="<?= BASE_URL ?>inventario?page_items=<?= min($totalPagesItems, $pageItems + 1) ?>&page_equipos=<?= $pageEquipos ?>&q=<?= urlencode($search ?? '') ?>&per_page=<?= $perPage ?>" 
+                       style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #64748b; font-size: 0.875rem; text-decoration: none; transition: all 0.2s; <?= $pageItems >= $totalPagesItems ? 'pointer-events: none; opacity: 0.5;' : '' ?>"
+                       onmouseover="this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';"
+                       onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#64748b';">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
                 </div>
             </div>
+            <?php endif; ?>
 
-            <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <?php 
-                $totalItems = count($items);
-                $totalStock = 0;
-                $itemsBajoStock = 0;
-                foreach ($items as $item) {
-                    $totalStock += $item->stock_actual ?? 0;
-                    if (($item->stock_actual ?? 0) <= ($item->stock_minimo ?? 0)) {
-                        $itemsBajoStock++;
-                    }
-                }
-                ?>
-                <div class="col-md-4">
-                    <div class="card border-left-primary shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        Total Artículos
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $totalItems ?></div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-boxes fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        Stock Total
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $totalStock ?> unidades</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-cubes fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-left-warning shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Stock Bajo
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $itemsBajoStock ?> artículos</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- Equipos Sin Asignar Section -->
+        <div class="inventario-equipos-section">
+            <div class="inventario-section-title">
+                <i class="bi bi-pc-display"></i>
+                <span>Equipos en Stock (Sin Asignar)</span>
             </div>
 
-            <!-- Table -->
-            <div class="table-responsive">
-                <table class="table table-striped table-hover" id="tablaInventario">
+            <?php if (empty($equiposSinAsignar)): ?>
+            <!-- Empty State -->
+            <div class="inventario-empty">
+                <div class="inventario-empty-icon">
+                    <i class="bi bi-pc-display"></i>
+                </div>
+                <p class="text-main">No hay equipos sin asignar</p>
+                <p class="text-sub">Los equipos disponibles aparecerán en esta lista.</p>
+            </div>
+            <?php else: ?>
+
+            <!-- View Toggle for Equipos -->
+            <div class="inventario-view-toggle">
+                <button class="inventario-toggle-btn active" data-view="table" data-target="equipos">
+                    <i class="bi bi-list-ul"></i> Tabla
+                </button>
+                <button class="inventario-toggle-btn" data-view="cards" data-target="equipos">
+                    <i class="bi bi-grid-3x3-gap"></i> Cards
+                </button>
+            </div>
+
+            <!-- Equipos Table -->
+            <div class="inventario-table-container" id="equipos-table">
+                <table class="inventario-table">
                     <thead>
                         <tr>
                             <th>Código</th>
-                            <th>Artículo</th>
-                            <th>Categoría</th>
-                            <th>Ubicación</th>
-                            <th>Stock</th>
-                            <th style="width: 150px;" class="text-center">Acciones</th>
+                            <th>Equipo</th>
+                            <th>Marca / Modelo</th>
+                            <th>Serial</th>
+                            <th>Estado</th>
+                            <?php if ($_SESSION['rol'] !== 'tecnico'): ?>
+                            <th class="text-right">Acciones</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($items as $item): ?>
+                        <?php foreach ($equiposSinAsignar as $equipo): ?>
                         <tr>
-                            <td><span class="badge bg-secondary"><?= htmlspecialchars($item->codigo ?? '') ?></span></td>
                             <td>
-                                <strong><?= htmlspecialchars($item->nombre ?? '') ?></strong><br>
-                                <small class="text-muted"><?= htmlspecialchars($item->descripcion ?? '') ?></small>
+                                <span class="inventario-code"><?= htmlspecialchars($equipo->codigo_inventario ?? '') ?></span>
                             </td>
-                            <td><span class="badge bg-info text-dark"><?= $item->categoria ?? '' ?></span></td>
-                            <td><?= htmlspecialchars($item->ubicacion ?? '') ?></td>
                             <td>
-                                <?php if(($item->stock_actual ?? 0) <= ($item->stock_minimo ?? 0)): ?>
-                                    <span class="badge bg-danger fs-6"><?= $item->stock_actual ?? 0 ?> (Bajo)</span>
-                                <?php else: ?>
-                                    <span class="badge bg-success fs-6"><?= $item->stock_actual ?? 0 ?></span>
-                                <?php endif; ?>
+                                <span class="inventario-article-name"><?= htmlspecialchars(ucfirst($equipo->tipo ?? '')) ?></span>
                             </td>
-                            <td class="text-center">
-                                <div class="d-flex gap-2 justify-content-center">
-                                    <a href="<?= BASE_URL ?>inventario/ver/<?= $item->id ?>" 
-                                       class="btn btn-sm btn-primary text-white" 
-                                       data-bs-toggle="tooltip" 
-                                       title="Ver Detalles">
-                                        <i class="bi bi-eye-fill"></i>
+                            <td>
+                                <span class="inventario-category-badge"><?= htmlspecialchars($equipo->marca ?? '') ?> - <?= htmlspecialchars($equipo->modelo ?? '') ?></span>
+                            </td>
+                            <td style="color: var(--inv-slate-600);"><?= htmlspecialchars($equipo->numero_serie ?? '') ?></td>
+                            <td>
+                                <?php 
+                                $estado = $equipo->estado ?? '';
+                                if (empty($estado)) {
+                                    echo '<span class="inventario-stock low">Sin estado</span>';
+                                } else {
+                                    $estadoClass = match($estado) {
+                                        'nuevo', 'disponible' => 'high',
+                                        default => 'low'
+                                    };
+                                    echo '<span class="inventario-stock ' . $estadoClass . '">' . ucfirst(str_replace('_', ' ', $estado)) . '</span>';
+                                }
+                                ?>
+                            </td>
+                            <?php if ($_SESSION['rol'] !== 'tecnico'): ?>
+                            <td>
+                                <div class="inventario-actions-cell">
+                                    <a href="<?= BASE_URL ?>equipos/ver/<?= $equipo->id ?>" 
+                                       class="inventario-action-btn view" 
+                                       title="Ver Detalle">
+                                        <i class="bi bi-eye"></i>
                                     </a>
-                                    <?php if ($_SESSION['rol'] === 'admin'): ?>
-                                    <a href="<?= BASE_URL ?>inventario/distribucion/<?= $item->id ?>" 
-                                       class="btn btn-sm btn-info text-white" 
-                                       data-bs-toggle="tooltip" 
-                                       title="Ver Distribución">
-                                        <i class="bi bi-diagram-3-fill"></i>
+                                    <a href="<?= BASE_URL ?>equipos/editar/<?= $equipo->id ?>" 
+                                       class="inventario-action-btn edit" 
+                                       title="Editar">
+                                        <i class="bi bi-pencil"></i>
                                     </a>
-                                    <button class="btn btn-sm btn-warning text-dark" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#modalMovimiento<?= $item->id ?>" 
-                                            title="Ajuste Rápido">
-                                        <i class="bi bi-pencil-square"></i>
+                                    <button class="inventario-action-btn delete delete-equipo-btn" 
+                                            data-id="<?= $equipo->id ?>" 
+                                            data-tipo="<?= htmlspecialchars($equipo->tipo ?? '', ENT_QUOTES) ?>"
+                                            type="button">
+                                        <i class="bi bi-trash"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger text-white" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#modalBaja<?= $item->id ?>" 
-                                            title="Reportar Daño / Baja">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
-                                    <?php endif; ?>
                                 </div>
                             </td>
+                            <?php endif; ?>
                         </tr>
-
-
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
-            <!-- Pagination for Items -->
-            <?php if ($totalPagesItems > 1): ?>
-            <nav aria-label="Page navigation" class="mt-3">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item <?= ($pageItems <= 1) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= BASE_URL ?>inventario?page_items=<?= $pageItems - 1 ?>&page_equipos=<?= $pageEquipos ?>&q=<?= urlencode($search ?? '') ?>">Anterior</a>
-                    </li>
-                    <?php for($i = 1; $i <= $totalPagesItems; $i++): ?>
-                        <li class="page-item <?= ($pageItems == $i) ? 'active' : '' ?>">
-                            <a class="page-link" href="<?= BASE_URL ?>inventario?page_items=<?= $i ?>&page_equipos=<?= $pageEquipos ?>&q=<?= urlencode($search ?? '') ?>"><?= $i ?></a>
-                        </li>
-                    <?php endfor; ?>
-                    <li class="page-item <?= ($pageItems >= $totalPagesItems) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= BASE_URL ?>inventario?page_items=<?= $pageItems + 1 ?>&page_equipos=<?= $pageEquipos ?>&q=<?= urlencode($search ?? '') ?>">Siguiente</a>
-                    </li>
-                </ul>
-            </nav>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
 
-    <!-- Equipos Sin Asignar -->
-    <div class="card shadow-sm mt-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="card-title mb-0 text-primary">
-                <i class="bi bi-pc-display-horizontal me-2"></i>Equipos en Stock (Sin Asignar)
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Código</th>
-                            <th>Equipo</th>
-                            <th>Serial</th>
-                            <th>Estado</th>
-                            <?php if ($_SESSION['rol'] !== 'tecnico'): ?>
-                            <th class="text-center">Acciones</th>
-                            <?php endif; ?>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($equiposSinAsignar)): ?>
-                            <tr>
-                                <td colspan="<?= ($_SESSION['rol'] === 'tecnico') ? '4' : '5' ?>" class="text-center py-3 text-muted">No hay equipos sin asignar en este momento.</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($equiposSinAsignar as $equipo): ?>
-                            <tr>
-                                <td><span class="badge bg-secondary"><?= htmlspecialchars($equipo->codigo_inventario ?? '') ?></span></td>
-                                <td>
-                                    <strong><?= htmlspecialchars(ucfirst($equipo->tipo ?? '')) ?></strong><br>
-                                    <small class="text-muted"><?= htmlspecialchars($equipo->marca ?? '') ?> - <?= htmlspecialchars($equipo->modelo ?? '') ?></small>
-                                </td>
-                                <td><?= htmlspecialchars($equipo->numero_serie ?? '') ?></td>
-                                <td>
-                                    <?php 
-                                    $estado = $equipo->estado ?? '';
-                                    if (empty($estado)) {
-                                        echo '<span class="badge bg-warning text-dark">Sin estado</span>';
-                                    } else {
-                                        $estadoClass = match($estado) {
-                                            'nuevo' => 'bg-success',
-                                            'usado' => 'bg-info text-dark',
-                                            'en_reparacion' => 'bg-warning text-dark',
-                                            'fuera_de_servicio' => 'bg-danger',
-                                            'disponible' => 'bg-primary',
-                                            'en_reserva' => 'bg-info text-dark',
-                                            'en_uso' => 'bg-secondary',
-                                            default => 'bg-secondary'
-                                        };
-                                        echo '<span class="badge ' . $estadoClass . '">' . ucfirst(str_replace('_', ' ', $estado)) . '</span>';
-                                    }
-                                    ?>
-                                </td>
-                                <?php if ($_SESSION['rol'] !== 'tecnico'): ?>
-                                <td class="text-center">
-                                    <div class="d-flex gap-2 justify-content-center">
-                                        <a href="<?= BASE_URL ?>equipos/editar/<?= $equipo->id ?>" 
-                                           class="btn btn-sm btn-primary text-white" 
-                                           data-bs-toggle="tooltip" 
-                                           title="Asignar a Empleado/Departamento">
-                                            <i class="bi bi-person-plus-fill me-1"></i> Asignar
-                                        </a>
-                                        <button class="btn btn-sm btn-danger delete-equipo-btn" 
-                                                data-id="<?= $equipo->id ?>" 
-                                                data-tipo="<?= htmlspecialchars($equipo->tipo ?? '', ENT_QUOTES) ?>"
-                                                type="button">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <?php endif; ?>
-                            </tr>
-                            <?php endforeach; ?>
+            <!-- Equipos Cards Carousel -->
+            <div class="inventario-carousel-wrapper" id="equipos-cards">
+                <button class="inventario-carousel-nav prev" data-carousel="equipos-carousel">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <div class="inventario-carousel" id="equipos-carousel">
+                    <?php foreach ($equiposSinAsignar as $equipo): ?>
+                    <div class="inventario-card">
+                        <div class="inventario-card-header">
+                            <span class="inventario-card-code"><?= htmlspecialchars($equipo->codigo_inventario ?? '') ?></span>
+                            <?php 
+                            $estado = $equipo->estado ?? '';
+                            $estadoClass = match($estado) {
+                                'nuevo', 'disponible' => 'high',
+                                default => 'low'
+                            };
+                            ?>
+                            <span class="inventario-card-stock <?= $estadoClass ?>"><?= ucfirst(str_replace('_', ' ', $estado ?: 'Sin estado')) ?></span>
+                        </div>
+                        <h4 class="inventario-card-title"><?= htmlspecialchars(ucfirst($equipo->tipo ?? '')) ?></h4>
+                        <span class="inventario-card-category"><?= htmlspecialchars($equipo->marca ?? '') ?> - <?= htmlspecialchars($equipo->modelo ?? '') ?></span>
+                        <div class="inventario-card-location">
+                            <i class="bi bi-upc"></i>
+                            <?= htmlspecialchars($equipo->numero_serie ?? 'S/N') ?>
+                        </div>
+                        <?php if ($_SESSION['rol'] !== 'tecnico'): ?>
+                        <div class="inventario-card-actions">
+                            <a href="<?= BASE_URL ?>equipos/editar/<?= $equipo->id ?>" 
+                               class="inventario-action-btn view" title="Asignar">
+                                <i class="bi bi-person-plus"></i>
+                            </a>
+                            <button class="inventario-action-btn delete delete-equipo-btn" 
+                                    data-id="<?= $equipo->id ?>" 
+                                    data-tipo="<?= htmlspecialchars($equipo->tipo ?? '', ENT_QUOTES) ?>">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                         <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-            <!-- Pagination for Equipos -->
-            <?php if ($totalPagesEquipos > 1): ?>
-            <nav aria-label="Page navigation" class="mt-3">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item <?= ($pageEquipos <= 1) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= BASE_URL ?>inventario?page_items=<?= $pageItems ?>&page_equipos=<?= $pageEquipos - 1 ?>&q=<?= urlencode($search ?? '') ?>">Anterior</a>
-                    </li>
-                    <?php for($i = 1; $i <= $totalPagesEquipos; $i++): ?>
-                        <li class="page-item <?= ($pageEquipos == $i) ? 'active' : '' ?>">
-                            <a class="page-link" href="<?= BASE_URL ?>inventario?page_items=<?= $pageItems ?>&page_equipos=<?= $i ?>&q=<?= urlencode($search ?? '') ?>"><?= $i ?></a>
-                        </li>
-                    <?php endfor; ?>
-                    <li class="page-item <?= ($pageEquipos >= $totalPagesEquipos) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= BASE_URL ?>inventario?page_items=<?= $pageItems ?>&page_equipos=<?= $pageEquipos + 1 ?>&q=<?= urlencode($search ?? '') ?>">Siguiente</a>
-                    </li>
-                </ul>
-            </nav>
-            <?php endif; ?>
-        </div>
-    </div>
-
-<!-- Modal Nuevo Equipo -->
-<div class="modal fade" id="modalNuevoEquipo" tabindex="-1" aria-labelledby="modalNuevoEquipoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalNuevoEquipoLabel">Registrar Nuevo Equipo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <?php 
-                // Variables para el formulario
-                $equipo = null; 
-                // $departamentos y $empleados ya están disponibles en la vista
-                include '../src/Views/equipos/formulario.php'; 
-                ?>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modals for Items (Moved outside table) -->
-<?php foreach ($items as $item): ?>
-<!-- Modal for Stock Adjustment -->
-<div class="modal fade" id="modalMovimiento<?= $item->id ?>" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="<?= BASE_URL ?>inventario/movimiento" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">Ajustar Stock: <?= $item->nombre ?></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
-                <div class="modal-body">
-                    <input type="hidden" name="item_id" value="<?= $item->id ?>">
-                    <div class="mb-3">
-                        <label>Tipo</label>
-                        <select name="tipo" class="form-select">
-                            <option value="ENTRADA">Entrada (Compra/Devolución)</option>
-                            <option value="SALIDA">Salida (Asignación/Uso)</option>
+                <button class="inventario-carousel-nav next" data-carousel="equipos-carousel">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+            
+            <!-- Modern Pagination Footer for Equipos -->
+            <?php if ($totalPagesEquipos > 1 || !empty($equiposSinAsignar)): ?>
+            <div style="padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid #e2e8f0; margin-top: 1rem;">
+                <!-- Left: Counts & Selector -->
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <span style="font-size: 0.875rem; color: #64748b;">
+                         Mostrando <strong style="color: #0f172a;"><?= count($equiposSinAsignar) ?></strong> de <strong style="color: #0f172a;"><?= $totalEquiposCount ?? count($equiposSinAsignar) ?></strong> equipos
+                    </span>
+                    <!-- Selector compartido (o duplicado si se quiere independiente, pero usamos el mismo) -->
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #94a3b8;">Mostrar:</span>
+                        <select onchange="changeItemsPerPage(this.value)" style="padding: 0.25rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.75rem; color: #475569; background: white; cursor: pointer;">
+                            <option value="5" <?= isset($perPage) && $perPage == 5 ? 'selected' : '' ?>>5</option>
+                            <option value="10" <?= (!isset($perPage) || $perPage == 10) ? 'selected' : '' ?>>10</option>
+                            <option value="25" <?= isset($perPage) && $perPage == 25 ? 'selected' : '' ?>>25</option>
+                            <option value="50" <?= isset($perPage) && $perPage == 50 ? 'selected' : '' ?>>50</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label>Cantidad</label>
-                        <input type="number" name="cantidad" class="form-control" min="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Motivo</label>
-                        <input type="text" name="motivo" class="form-control" placeholder="Ej: Entrega a RRHH" required>
-                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+
+                <!-- Right: Navigation -->
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <a href="<?= BASE_URL ?>inventario?page_items=<?= $pageItems ?>&page_equipos=<?= max(1, $pageEquipos - 1) ?>&q=<?= urlencode($search ?? '') ?>&per_page=<?= $perPage ?>" 
+                       style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #64748b; font-size: 0.875rem; text-decoration: none; transition: all 0.2s; <?= $pageEquipos <= 1 ? 'pointer-events: none; opacity: 0.5;' : '' ?>"
+                       onmouseover="this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';"
+                       onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#64748b';">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                    
+                    <span style="font-size: 0.875rem; color: #475569; font-weight: 500; padding: 0 0.5rem;">
+                        Página <?= $pageEquipos ?> / <?= $totalPagesEquipos ?>
+                    </span>
+                    
+                    <a href="<?= BASE_URL ?>inventario?page_items=<?= $pageItems ?>&page_equipos=<?= min($totalPagesEquipos, $pageEquipos + 1) ?>&q=<?= urlencode($search ?? '') ?>&per_page=<?= $perPage ?>" 
+                       style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #64748b; font-size: 0.875rem; text-decoration: none; transition: all 0.2s; <?= $pageEquipos >= $totalPagesEquipos ? 'pointer-events: none; opacity: 0.5;' : '' ?>"
+                       onmouseover="this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';"
+                       onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#64748b';">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
                 </div>
-            </form>
+            </div>
+            <?php endif; ?>
+            <?php endif; ?>
         </div>
+
     </div>
 </div>
 
-<!-- Modal for Baja/Daño -->
-<div class="modal fade" id="modalBaja<?= $item->id ?>" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="<?= BASE_URL ?>inventario/baja" method="POST">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">Reportar Daño / Baja: <?= $item->nombre ?></h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        Esta acción descontará el stock y registrará una pérdida permanente.
-                    </div>
-                    <input type="hidden" name="item_id" value="<?= $item->id ?>">
-                    <div class="mb-3">
-                        <label>Cantidad Dañada/Perdida</label>
-                        <input type="number" name="cantidad" class="form-control" min="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Motivo / Causa</label>
-                        <textarea name="motivo" class="form-control" rows="2" placeholder="Ej: Dañado por corto circuito, Garantía, Obsoleto..." required></textarea>
-                    </div>
-                    <div class="form-check mt-3">
-                        <input class="form-check-input" type="checkbox" id="eliminarArticulo<?= $item->id ?>" name="eliminar_completo" value="1">
-                        <label class="form-check-label text-danger fw-bold" for="eliminarArticulo<?= $item->id ?>">
-                            <i class="bi bi-exclamation-octagon-fill me-1"></i>
-                            Eliminar este artículo del inventario completamente
-                        </label>
-                        <small class="d-block text-muted mt-1">
-                            ⚠️ Esta acción eliminará el artículo de forma permanente (no solo dar de baja)
-                        </small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Confirmar Baja</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-<?php endforeach; ?>
+<!-- Modal Nuevo Equipo -->
+<!-- Modal Nuevo Equipo REMOVED - Uses Full Page View -->
+
+
+<!-- Modals for Items (Moved outside table) -->
+
 
 
 <!-- Modal de Confirmación para Eliminar Equipo -->
@@ -469,19 +549,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    const modal = document.getElementById('modalNuevoEquipo');
-    if(modal) {
-        // Ocultar el botón de regresar dentro del modal ya que tiene la X de cerrar
-        const backBtn = modal.querySelector('a.btn-secondary');
-        if(backBtn) backBtn.style.display = 'none';
-        
-        // Quitar sombra y borde del card incluido
-        const card = modal.querySelector('.card');
-        if(card) {
-            card.classList.remove('shadow-sm');
-            card.style.border = 'none';
-        }
-    }
+    // Modal styled tweaks removed.
 
     // Auto-submit search with debounce
     const searchInput = document.getElementById('searchInput');
@@ -493,7 +561,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clearTimeout(timeout);
             timeout = setTimeout(function() {
                 searchForm.submit();
-            }, 500); // Wait 500ms after typing stops
+            }, 500);
         });
         
         // Focus input if it has value (after reload)
@@ -505,6 +573,35 @@ document.addEventListener('DOMContentLoaded', function() {
             searchInput.value = val;
         }
     }
+});
+
+// Función para manejar el cambio de items por página
+// Función para manejar el cambio de items por página
+function changeItemsPerPage(perPage) {
+    if (!perPage) {
+        // Fallback si se llama sin argumentos (legacy)
+        const el = document.getElementById('itemsPerPage');
+        if (el) perPage = el.value;
+        else return;
+    }
+    
+    // Guardar preferencia globalmente via cookie (usando PaginationPrefs si existe, o manual)
+    if (window.PaginationPrefs) {
+        PaginationPrefs.set(perPage);
+    } else {
+        // Fallback manual si no cargó el footer aún
+        const expires = new Date();
+        expires.setFullYear(expires.getFullYear() + 1);
+        document.cookie = 'sgen_pagination_per_page=' + perPage + ';expires=' + expires.toUTCString() + ';path=/';
+    }
+    
+    // Recargar página manteniendo parámetros
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', perPage);
+    url.searchParams.set('page_items', '1'); // Resetear página a 1
+    url.searchParams.set('page_equipos', '1');
+    window.location.href = url.toString();
+}
 
     // Toggle fields for "Eliminar Artículo" in Baja modal (Event Delegation)
     document.body.addEventListener('change', function(e) {
@@ -544,7 +641,45 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-});
+
+    // ===== VIEW TOGGLE =====
+    document.querySelectorAll('.inventario-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const view = this.dataset.view;
+            const target = this.dataset.target;
+            
+            // Toggle button active state
+            this.parentElement.querySelectorAll('.inventario-toggle-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Toggle view visibility
+            const tableView = document.getElementById(target + '-table');
+            const cardsView = document.getElementById(target + '-cards');
+            
+            if (view === 'table') {
+                if (tableView) tableView.classList.remove('hidden');
+                if (cardsView) cardsView.classList.remove('active');
+            } else {
+                if (tableView) tableView.classList.add('hidden');
+                if (cardsView) cardsView.classList.add('active');
+            }
+        });
+    });
+
+    // ===== CAROUSEL NAVIGATION =====
+    document.querySelectorAll('.inventario-carousel-nav').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const carouselId = this.dataset.carousel;
+            const carousel = document.getElementById(carouselId);
+            const scrollAmount = 300;
+            
+            if (this.classList.contains('prev')) {
+                carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else {
+                carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+        });
+    });
 </script>
 
 <?php require_once '../src/Views/layout/footer.php'; ?>

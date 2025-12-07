@@ -1,0 +1,311 @@
+/* Modern Modal CSS - Ported from Tailwind */
+:root {
+    --mm-slate-50: #f8fafc;
+    --mm-slate-100: #f1f5f9;
+    --mm-slate-200: #e2e8f0;
+    --mm-slate-300: #cbd5e1;
+    --mm-slate-400: #94a3b8;
+    --mm-slate-500: #64748b;
+    --mm-slate-600: #475569;
+    --mm-slate-700: #334155;
+    --mm-slate-900: #0f172a;
+
+    --mm-red-50: #fef2f2;
+    --mm-red-100: #fee2e2;
+    --mm-red-200: #fecaca;
+    --mm-red-300: #fca5a5;
+    --mm-red-500: #ef4444;
+    --mm-red-600: #dc2626;
+    --mm-red-700: #b91c1c;
+    --mm-red-900: #7f1d1d;
+}
+
+.mm-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+    /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    font-family: 'Inter', system-ui, sans-serif;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.mm-backdrop.show {
+    display: flex;
+    opacity: 1;
+}
+
+.mm-modal {
+    position: relative;
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 28rem;
+    /* max-w-md */
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--mm-slate-100);
+}
+
+.mm-backdrop.show .mm-modal {
+    transform: scale(1);
+}
+
+/* Header */
+.mm-header {
+    background-color: var(--mm-red-50);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--mm-red-100);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.mm-icon-wrapper {
+    padding: 0.5rem;
+    background-color: var(--mm-red-100);
+    color: var(--mm-red-600);
+    border-radius: 9999px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mm-title {
+    font-size: 1.125rem;
+    /* lg */
+    font-weight: 700;
+    color: var(--mm-red-900);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.mm-subtitle {
+    font-size: 0.75rem;
+    /* xs */
+    color: var(--mm-red-700);
+    font-weight: 500;
+    margin: 0;
+}
+
+.mm-close-btn {
+    margin-left: auto;
+    color: var(--mm-red-300);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.mm-close-btn:hover {
+    color: var(--mm-red-500);
+}
+
+/* Body */
+.mm-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.mm-message {
+    color: var(--mm-slate-600);
+    font-size: 0.875rem;
+    /* sm */
+    line-height: 1.625;
+}
+
+.mm-highlight {
+    font-weight: 700;
+    color: var(--mm-slate-900);
+    background-color: var(--mm-slate-100);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+}
+
+/* Input Section */
+.mm-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mm-label {
+    display: block;
+    font-size: 0.75rem;
+    /* xs */
+    font-weight: 600;
+    color: var(--mm-slate-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mm-input-wrapper {
+    position: relative;
+}
+
+.mm-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--mm-slate-200);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    /* sm */
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    outline: none;
+    transition: all 0.2s;
+    background-color: var(--mm-slate-50);
+    color: var(--mm-slate-700);
+}
+
+.mm-input:focus {
+    border-color: var(--mm-slate-400);
+}
+
+.mm-input.match {
+    border-color: var(--mm-red-500);
+    background-color: var(--mm-red-50);
+    color: var(--mm-red-700);
+}
+
+.mm-input.match::placeholder {
+    color: var(--mm-red-200);
+}
+
+.mm-unlock-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--mm-red-500);
+    animation: mm-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    display: none;
+}
+
+.mm-input.match+.mm-unlock-icon {
+    display: block;
+}
+
+/* Notice */
+.mm-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    /* xs */
+    color: var(--mm-slate-400);
+    background-color: var(--mm-slate-50);
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Footer */
+.mm-footer {
+    padding: 1rem 1.5rem;
+    background-color: var(--mm-slate-50);
+    border-top: 1px solid var(--mm-slate-100);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.mm-btn-cancel {
+    padding: 0.5rem 1rem;
+    background-color: white;
+    color: var(--mm-slate-700);
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: 1px solid var(--mm-slate-300);
+    font-size: 0.875rem;
+    /* sm */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mm-btn-cancel:hover {
+    background-color: var(--mm-slate-100);
+}
+
+.mm-btn-delete {
+    padding: 0.5rem 1.5rem;
+    font-weight: 700;
+    border-radius: 0.5rem;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    transform: scale(1);
+    border: none;
+    cursor: pointer;
+}
+
+.mm-btn-delete.disabled {
+    background-color: var(--mm-slate-300);
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+.mm-btn-delete.active {
+    background-color: var(--mm-red-600);
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2);
+}
+
+.mm-btn-delete.active:hover {
+    background-color: var(--mm-red-700);
+}
+
+.mm-btn-delete.active:active {
+    transform: scale(0.95);
+}
+
+/* Animations */
+@keyframes mm-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes mm-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.mm-spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: mm-spin 1s linear infinite;
+}

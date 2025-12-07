@@ -5,8 +5,8 @@
 
 // Usamos un solo "escucha" global en modo captura (el 'true' al final)
 // para interceptar TODOS los clics antes que cualquier otro script.
-document.addEventListener('click', function(e) {
-    
+document.addEventListener('click', function (e) {
+
     // Buscamos el elemento enlace (<a>) más cercano al clic
     // (por si el usuario hizo clic en el icono <i> dentro del enlace)
     const link = e.target.closest('a');
@@ -17,18 +17,24 @@ document.addEventListener('click', function(e) {
     // ----------------------------------------------------------------
     // 1. LÓGICA PARA BOTONES DE "ELIMINAR"
     // ----------------------------------------------------------------
-    
+
     // Criterios para identificar un botón de eliminar:
     const href = link.getAttribute('href') || '';
     const onclickTexto = link.getAttribute('onclick') || '';
-    
+
     const esBorrarPorUrl = href.includes('/eliminar/');       // ¿La URL dice "eliminar"?
     const esBorrarPorClase = link.classList.contains('btn-delete'); // ¿Tiene la clase btn-delete?
     const esBorrarPorOnclick = onclickTexto.includes('confirm'); // ¿Tiene el código viejo?
 
     if (esBorrarPorUrl || esBorrarPorClase || esBorrarPorOnclick) {
-        
+
+        // --- EXCEPCIÓN: Si el botón tiene 'data-no-global-delete', dejamos que su propio script lo maneje
+        if (link.hasAttribute('data-no-global-delete')) {
+            return;
+        }
+
         // ¡IMPORTANTE! Detenemos el evento inmediatamente
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -38,12 +44,12 @@ document.addEventListener('click', function(e) {
         if (link.getAttribute('data-name')) {
             // Opción A: Usamos el atributo data-name (lo ideal)
             mensajeDetalle = `<strong class="text-danger">${link.getAttribute('data-name')}</strong>`;
-        } 
+        }
         else if (esBorrarPorOnclick) {
             // Opción B: Extraemos el texto del onclick antiguo
             const match = onclickTexto.match(/confirm\(['"](.*?)['"]\)/);
             if (match && match[1]) {
-                let textoLimpio = match[1].replace(/^[¿?]+|[?]+$/g, ''); 
+                let textoLimpio = match[1].replace(/^[¿?]+|[?]+$/g, '');
                 mensajeDetalle = `<span class="text-muted">${textoLimpio}</span>`;
             }
         }
@@ -81,16 +87,16 @@ document.addEventListener('click', function(e) {
                 window.location.href = href;
             }
         });
-        
+
         return; // Terminamos aquí para no procesar más lógica
     }
 
     // ----------------------------------------------------------------
     // 2. LÓGICA PARA EL BOTÓN DE "CERRAR SESIÓN"
     // ----------------------------------------------------------------
-    
+
     if (link.classList.contains('btn-logout')) {
-        
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -120,23 +126,10 @@ document.addEventListener('click', function(e) {
         }).then((result) => {
             if (result.isConfirmed) {
                 // Mensaje de despedida (Toast)
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    }
-                });
-                
-                Toast.fire({
-                    icon: 'success',
-                    title: '¡Hasta pronto! 👋'
-                });
-                
+                if (window.Toast) {
+                    Toast.success('¡Hasta pronto! 👋');
+                }
+
                 // Esperamos un poco para que se vea el mensaje antes de redirigir
                 setTimeout(() => {
                     window.location.href = href;

@@ -1,0 +1,619 @@
+/* ============================================
+   DEPARTAMENTOS - Interfaz Moderna
+   ============================================ */
+
+/* Variables de colores */
+:root {
+    --dept-indigo: #4f46e5;
+    --dept-indigo-light: #e0e7ff;
+    --dept-indigo-dark: #3730a3;
+    --dept-slate-50: #f8fafc;
+    --dept-slate-100: #f1f5f9;
+    --dept-slate-200: #e2e8f0;
+    --dept-slate-400: #94a3b8;
+    --dept-slate-500: #64748b;
+    --dept-slate-600: #475569;
+    --dept-slate-900: #0f172a;
+    --dept-emerald: #10b981;
+    --dept-emerald-light: #d1fae5;
+    --dept-orange: #f97316;
+    --dept-orange-light: #ffedd5;
+    --dept-pink: #ec4899;
+    --dept-pink-light: #fce7f3;
+    --dept-cyan: #06b6d4;
+    --dept-cyan-light: #ecfeff;
+}
+
+/* Container principal */
+.departamentos-container {
+    background: var(--dept-slate-50);
+    min-height: 100vh;
+    padding-bottom: 3rem;
+}
+
+/* Header */
+.departamentos-header {
+    background: white;
+    border-bottom: 1px solid var(--dept-slate-200);
+    padding: 2rem 1.5rem;
+}
+
+.departamentos-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--dept-slate-900);
+    letter-spacing: -0.025em;
+}
+
+.departamentos-subtitle {
+    color: var(--dept-slate-500);
+    margin-top: 0.25rem;
+}
+
+/* Botón crear */
+.btn-crear-dept {
+    background: var(--dept-slate-900);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+}
+
+.btn-crear-dept:hover {
+    background: var(--dept-slate-800);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-crear-dept:active {
+    transform: scale(0.98);
+}
+
+/* Toolbar */
+.departamentos-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+    .departamentos-toolbar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+/* Search */
+.search-box-dept {
+    position: relative;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .search-box-dept {
+        width: 24rem;
+    }
+}
+
+.search-box-dept i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dept-slate-400);
+    transition: color 0.2s;
+}
+
+.search-box-dept input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    background: white;
+    border: 1px solid var(--dept-slate-200);
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.search-box-dept input:focus {
+    outline: none;
+    border-color: var(--dept-indigo);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.search-box-dept:focus-within i {
+    color: var(--dept-indigo);
+}
+
+/* View toggle */
+.view-toggle-dept {
+    display: flex;
+    padding: 0.25rem;
+    background: white;
+    border: 1px solid var(--dept-slate-200);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.view-toggle-dept button {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--dept-slate-400);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-toggle-dept button:hover {
+    color: var(--dept-slate-600);
+}
+
+.view-toggle-dept button.active {
+    background: var(--dept-slate-100);
+    color: var(--dept-indigo);
+}
+
+/* Grid de departamentos */
+.departamentos-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .departamentos-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .departamentos-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .departamentos-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Departamento Card */
+.dept-card {
+    background: white;
+    border-radius: 1rem;
+    border: 1px solid var(--dept-slate-200);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.dept-card:hover {
+    border-color: var(--dept-indigo-light);
+    box-shadow: 0 20px 40px rgba(79, 70, 229, 0.08);
+}
+
+/* Decoración superior */
+.dept-card-stripe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+}
+
+.dept-card-stripe.indigo {
+    background: var(--dept-indigo);
+}
+
+.dept-card-stripe.orange {
+    background: var(--dept-orange);
+}
+
+.dept-card-stripe.pink {
+    background: var(--dept-pink);
+}
+
+.dept-card-stripe.emerald {
+    background: var(--dept-emerald);
+}
+
+.dept-card-stripe.cyan {
+    background: var(--dept-cyan);
+}
+
+/* Icon box */
+.dept-icon-box {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    width: fit-content;
+}
+
+.dept-icon-box.indigo {
+    background: var(--dept-indigo-light);
+    color: var(--dept-indigo);
+}
+
+.dept-icon-box.orange {
+    background: var(--dept-orange-light);
+    color: var(--dept-orange);
+}
+
+.dept-icon-box.pink {
+    background: var(--dept-pink-light);
+    color: var(--dept-pink);
+}
+
+.dept-icon-box.emerald {
+    background: var(--dept-emerald-light);
+    color: var(--dept-emerald);
+}
+
+.dept-icon-box.cyan {
+    background: var(--dept-cyan-light);
+    color: var(--dept-cyan);
+}
+
+.dept-icon-box i {
+    font-size: 1.5rem;
+}
+
+/* Card content */
+.dept-card-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--dept-slate-900);
+    transition: color 0.2s;
+}
+
+.dept-card:hover .dept-card-title {
+    color: var(--dept-indigo);
+}
+
+.dept-card-code {
+    font-size: 0.7rem;
+    font-family: monospace;
+    color: var(--dept-slate-400);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.25rem;
+}
+
+.dept-card-desc {
+    font-size: 0.875rem;
+    color: var(--dept-slate-500);
+    margin-top: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Metrics */
+.dept-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.dept-metric {
+    background: var(--dept-slate-50);
+    border: 1px solid var(--dept-slate-100);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+}
+
+.dept-metric-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--dept-slate-400);
+    margin-bottom: 0.25rem;
+}
+
+.dept-metric-header i {
+    font-size: 0.875rem;
+}
+
+.dept-metric-header span {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.dept-metric-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--dept-slate-700);
+}
+
+/* Footer */
+.dept-card-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--dept-slate-50);
+}
+
+.dept-manager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.dept-manager-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dept-manager-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: white;
+}
+
+.dept-manager-avatar.indigo {
+    background: var(--dept-indigo);
+}
+
+.dept-manager-avatar.orange {
+    background: var(--dept-orange);
+}
+
+.dept-manager-avatar.pink {
+    background: var(--dept-pink);
+}
+
+.dept-manager-avatar.emerald {
+    background: var(--dept-emerald);
+}
+
+.dept-manager-avatar.cyan {
+    background: var(--dept-cyan);
+}
+
+.dept-manager-name {
+    font-size: 0.875rem;
+    color: var(--dept-slate-600);
+    font-weight: 500;
+}
+
+.dept-manager-badge {
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.dept-manager-badge.indigo {
+    background: var(--dept-indigo-light);
+    color: var(--dept-indigo);
+}
+
+.dept-manager-badge.orange {
+    background: var(--dept-orange-light);
+    color: var(--dept-orange);
+}
+
+.dept-manager-badge.pink {
+    background: var(--dept-pink-light);
+    color: var(--dept-pink);
+}
+
+.dept-manager-badge.emerald {
+    background: var(--dept-emerald-light);
+    color: var(--dept-emerald);
+}
+
+.dept-manager-badge.cyan {
+    background: var(--dept-cyan-light);
+    color: var(--dept-cyan);
+}
+
+/* Progress bar */
+.dept-progress-wrapper {
+    margin-top: 0.5rem;
+}
+
+.dept-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--dept-slate-100);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.dept-progress-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+}
+
+.dept-progress-fill.indigo {
+    background: var(--dept-indigo);
+}
+
+.dept-progress-fill.orange {
+    background: var(--dept-orange);
+}
+
+.dept-progress-fill.pink {
+    background: var(--dept-pink);
+}
+
+.dept-progress-fill.emerald {
+    background: var(--dept-emerald);
+}
+
+.dept-progress-fill.cyan {
+    background: var(--dept-cyan);
+}
+
+.dept-progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+}
+
+.dept-progress-label {
+    font-size: 0.625rem;
+    color: var(--dept-slate-400);
+    font-weight: 500;
+}
+
+.dept-progress-value {
+    font-size: 0.625rem;
+    color: var(--dept-slate-600);
+    font-weight: 700;
+}
+
+/* Hover action */
+.dept-hover-action {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    opacity: 0;
+    transform: translateX(0.5rem);
+    transition: all 0.3s ease;
+}
+
+.dept-card:hover .dept-hover-action {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.dept-hover-action a {
+    background: var(--dept-slate-900);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    display: inline-flex;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.dept-hover-action a:hover {
+    background: var(--dept-indigo);
+    color: white;
+}
+
+/* Table */
+.departamentos-table-container {
+    background: white;
+    border-radius: 1rem;
+    border: 1px solid var(--dept-slate-200);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.departamentos-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.departamentos-table thead {
+    background: var(--dept-slate-50);
+}
+
+.departamentos-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--dept-slate-500);
+}
+
+.departamentos-table td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+    border-top: 1px solid var(--dept-slate-100);
+}
+
+.departamentos-table tbody tr:hover {
+    background: var(--dept-slate-50);
+}
+
+.dept-table-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dept-table-icon {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.dept-table-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--dept-slate-900);
+}
+
+.dept-table-code {
+    font-size: 0.7rem;
+    color: var(--dept-slate-500);
+    font-family: monospace;
+}
+
+.dept-table-stats {
+    display: flex;
+    gap: 1rem;
+    color: var(--dept-slate-500);
+    font-size: 0.875rem;
+}
+
+.dept-table-stats span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.dept-table-action {
+    color: var(--dept-slate-400);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+}
+
+.dept-table-action:hover {
+    background: var(--dept-indigo-light);
+    color: var(--dept-indigo);
+}
+
+/* Empty state */
+.empty-state-dept {
+    text-align: center;
+    padding: 4rem 1rem;
+    background: white;
+    border-radius: 1rem;
+    border: 2px dashed var(--dept-slate-200);
+}

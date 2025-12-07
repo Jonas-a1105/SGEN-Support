@@ -1,0 +1,405 @@
+/* ============================================
+   INVENTARIO - Selector de Departamentos Moderno
+   Based on React/Tailwind Design
+   ============================================ */
+
+/* Variables de colores */
+:root {
+    --ds-bg: #f9fafb;
+    /* gray-50 */
+    --ds-text-main: #1e293b;
+    /* slate-800 */
+    --ds-text-muted: #64748b;
+    /* slate-500 */
+    --ds-primary: #4f46e5;
+    /* indigo-600 */
+}
+
+/* Utilities equivalent to Tailwind */
+.ds-container {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #1e293b;
+}
+
+.ds-max-w-5xl {
+    width: 100%;
+    max-width: 64rem;
+}
+
+.ds-space-y-8>*+* {
+    margin-top: 2rem;
+}
+
+/* Header */
+.ds-header {
+    text-align: center;
+    max-width: 42rem;
+    margin: 0 auto;
+    margin-bottom: 2rem;
+}
+
+.ds-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.ds-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    margin: 0;
+}
+
+.ds-subtitle {
+    color: #64748b;
+    font-size: 1.125rem;
+    margin-top: 0.5rem;
+}
+
+/* Search */
+.ds-search-container {
+    position: relative;
+    max-width: 28rem;
+    margin: 0 auto 2rem auto;
+    width: 100%;
+}
+
+.ds-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+    transition: color 0.2s;
+    font-size: 1.25rem;
+}
+
+.ds-search-input {
+    display: block;
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    color: #0f172a;
+    font-size: 1rem;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ds-search-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+/* Focus within handling via JS or sibling selector if possible */
+.ds-search-input:focus~.ds-search-icon {
+    color: #6366f1;
+}
+
+/* Grid */
+.ds-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-top: 1rem;
+    width: 100%;
+}
+
+@media(min-width: 768px) {
+    .ds-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Department Card */
+.ds-card {
+    position: relative;
+    background: white;
+    border-radius: 1.5rem;
+    border: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    /* anchor tag */
+    text-decoration: none;
+}
+
+.ds-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-2px);
+}
+
+.ds-card.hidden {
+    display: none;
+}
+
+/* Background Decorator */
+.ds-card-bg-deco {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8rem;
+    height: 8rem;
+    border-bottom-left-radius: 9999px;
+    /* rounded-bl-full */
+    opacity: 0.5;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+}
+
+.ds-card:hover .ds-card-bg-deco {
+    transform: scale(1.1);
+}
+
+/* Content Layout */
+.ds-card-content {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+/* Icon Box */
+.ds-card-icon-box {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.ds-card:hover .ds-card-icon-box {
+    transform: rotate(3deg);
+}
+
+.ds-card-icon-box i {
+    font-size: 2rem;
+    color: white;
+}
+
+/* Card Text */
+.ds-card-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.ds-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
+    transition: color 0.2s;
+    display: block;
+}
+
+.ds-card:hover .ds-card-title {
+    color: #4f46e5;
+}
+
+.ds-card-location {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.ds-card-location i {
+    font-size: 0.875rem;
+}
+
+/* Stats */
+.ds-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.ds-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.ds-stat i {
+    font-size: 1rem;
+    color: #94a3b8;
+}
+
+.ds-stat-val {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.ds-stat-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Enter Arrow */
+.ds-arrow-wrapper {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 1.5rem;
+    opacity: 0;
+    transform: translateX(1rem);
+    transition: all 0.3s ease;
+}
+
+.ds-card:hover .ds-arrow-wrapper {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.ds-arrow-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #4f46e5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.ds-arrow-circle i {
+    color: white;
+    font-size: 1.25rem;
+}
+
+/* Footer Action */
+.ds-footer-action {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.ds-btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    color: #64748b;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.ds-btn-back:hover {
+    background: white;
+    color: #1e293b;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Colors mappings */
+.ds-theme-blue .ds-card-bg-deco {
+    background-color: #eff6ff;
+}
+
+.ds-theme-blue .ds-card-icon-box {
+    background-color: #2563eb;
+}
+
+.ds-theme-blue .ds-card-title,
+.ds-theme-blue.text-theme {
+    color: #2563eb;
+}
+
+.ds-theme-orange .ds-card-bg-deco {
+    background-color: #fff7ed;
+}
+
+.ds-theme-orange .ds-card-icon-box {
+    background-color: #f97316;
+}
+
+.ds-theme-orange .ds-card-title,
+.ds-theme-orange.text-theme {
+    color: #ea580c;
+}
+
+.ds-theme-slate .ds-card-bg-deco {
+    background-color: #f1f5f9;
+}
+
+.ds-theme-slate .ds-card-icon-box {
+    background-color: #334155;
+}
+
+.ds-theme-slate .ds-card-title,
+.ds-theme-slate.text-theme {
+    color: #334155;
+}
+
+.ds-theme-rose .ds-card-bg-deco {
+    background-color: #fff1f2;
+}
+
+.ds-theme-rose .ds-card-icon-box {
+    background-color: #f43f5e;
+}
+
+.ds-theme-rose .ds-card-title,
+.ds-theme-rose.text-theme {
+    color: #e11d48;
+}
+
+.ds-theme-emerald .ds-card-bg-deco {
+    background-color: #d1fae5;
+}
+
+.ds-theme-emerald .ds-card-icon-box {
+    background-color: #10b981;
+}
+
+.ds-theme-emerald .ds-card-title,
+.ds-theme-emerald.text-theme {
+    color: #059669;
+}
+
+.ds-theme-indigo .ds-card-bg-deco {
+    background-color: #e0e7ff;
+}
+
+.ds-theme-indigo .ds-card-icon-box {
+    background-color: #4f46e5;
+}
+
+.ds-theme-indigo .ds-card-title,
+.ds-theme-indigo.text-theme {
+    color: #4338ca;
+}
