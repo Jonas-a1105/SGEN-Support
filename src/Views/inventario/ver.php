@@ -35,6 +35,9 @@
         </div>
     </div>
 
+    <!-- Main Content Card with Border -->
+    <div class="pd-main-content-card">
+
     <div class="pd-container pd-grid">
         
         <!-- --- COLUMNA IZQUIERDA: INFORMACIÓN PRINCIPAL (2/3) --- -->
@@ -306,6 +309,8 @@
         </div>
 
     </div>
+
+    </div><!-- End pd-main-content-card -->
 </div>
 
 <!-- Modal for Stock Adjustment (Maintained existing logic) -->

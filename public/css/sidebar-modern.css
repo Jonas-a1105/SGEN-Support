@@ -27,7 +27,8 @@
     background-color: var(--ms-white);
     border-right: none;
     border-radius: 1.5rem;
-    z-index: 1060;
+    z-index: 1040;
+    /* Lowered from 1060 to sit behind bootstrap modals (1050) */
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -320,4 +321,254 @@
 
 .ms-sidebar:hover .ms-chevron {
     display: block;
+}
+
+/* ======================== */
+/* Global Search Bar Styles */
+/* ======================== */
+
+.ms-search-area {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--ms-slate-100);
+}
+
+.ms-search-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    background: var(--ms-slate-50);
+    border: 1px solid var(--ms-slate-200);
+    border-radius: 0.625rem;
+    color: var(--ms-slate-400);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ms-search-trigger:hover {
+    background: var(--ms-white);
+    border-color: var(--ms-slate-400);
+    color: var(--ms-slate-500);
+}
+
+.ms-search-trigger i {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.ms-search-label {
+    white-space: nowrap;
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.ms-sidebar:hover .ms-search-label {
+    opacity: 1;
+    width: auto;
+}
+
+.ms-search-kbd {
+    margin-left: auto;
+    padding: 0.125rem 0.375rem;
+    background: var(--ms-white);
+    border: 1px solid var(--ms-slate-200);
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--ms-slate-400);
+    font-family: inherit;
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.ms-sidebar:hover .ms-search-kbd {
+    opacity: 1;
+    width: auto;
+}
+
+/* Search Modal Overlay */
+.gs-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+}
+
+.gs-overlay.active {
+    display: flex;
+}
+
+.gs-modal {
+    width: 100%;
+    max-width: 560px;
+    background: var(--ms-white);
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transform: scale(0.95) translateY(-10px);
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gs-overlay.active .gs-modal {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.gs-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--ms-slate-100);
+}
+
+.gs-input-wrapper i {
+    font-size: 1.25rem;
+    color: var(--ms-slate-400);
+}
+
+.gs-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: var(--ms-slate-800);
+    background: transparent;
+}
+
+.gs-input::placeholder {
+    color: var(--ms-slate-400);
+}
+
+.gs-close-hint {
+    font-size: 0.75rem;
+    color: var(--ms-slate-400);
+    padding: 0.25rem 0.5rem;
+    background: var(--ms-slate-100);
+    border-radius: 0.25rem;
+    font-weight: 600;
+}
+
+.gs-results {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.gs-section-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--ms-slate-400);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 0.75rem 0.5rem;
+}
+
+.gs-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-decoration: none;
+    color: var(--ms-slate-700);
+}
+
+.gs-result-item:hover,
+.gs-result-item.selected {
+    background: var(--ms-slate-50);
+}
+
+.gs-result-item.selected {
+    background: var(--ms-blue-50);
+    color: var(--ms-blue-600);
+}
+
+.gs-result-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ms-slate-100);
+    border-radius: 0.5rem;
+    color: var(--ms-slate-500);
+    flex-shrink: 0;
+}
+
+.gs-result-item:hover .gs-result-icon,
+.gs-result-item.selected .gs-result-icon {
+    background: var(--ms-blue-50);
+    color: var(--ms-blue-600);
+}
+
+.gs-result-text {
+    flex: 1;
+}
+
+.gs-result-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.gs-result-description {
+    font-size: 0.75rem;
+    color: var(--ms-slate-500);
+    margin: 0;
+}
+
+.gs-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--ms-slate-400);
+}
+
+.gs-empty i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.gs-footer {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--ms-slate-50);
+    border-top: 1px solid var(--ms-slate-100);
+    font-size: 0.6875rem;
+    color: var(--ms-slate-500);
+}
+
+.gs-footer kbd {
+    padding: 0.125rem 0.375rem;
+    background: var(--ms-white);
+    border: 1px solid var(--ms-slate-200);
+    border-radius: 0.25rem;
+    font-weight: 600;
+    font-family: inherit;
+    margin-right: 0.25rem;
+}
+
+/* Sidebar Refactoring */
+.sidebar-logo-svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: white;
 }

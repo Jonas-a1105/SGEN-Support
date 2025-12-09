@@ -32,17 +32,8 @@ foreach ($mantenimientos as $m) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title><?= $titulo ?? 'Mantenimientos' ?></title>
-    <!-- CSS Dependencies -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/maintenance-modern.css?v=<?= time() ?>">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="mh-container">
+
+<div class="mh-container">
 
     <div class="mh-max-w-6xl">
         
@@ -62,6 +53,9 @@ foreach ($mantenimientos as $m) {
                 <i class="bi bi-plus-lg"></i> Programar Nuevo
             </a>
         </div>
+
+        <!-- Main Content Container -->
+        <div class="mh-main-content-card">
 
         <!-- KPI CARDS -->
         <div class="mh-stats-grid">
@@ -88,7 +82,7 @@ foreach ($mantenimientos as $m) {
                 <div>
                     <span class="mh-stat-value <?= $stats['overdue'] > 0 ? 'alert' : '' ?>"><?= $stats['overdue'] ?></span>
                     <?php if($stats['overdue'] > 0): ?>
-                    <div class="mh-stat-subtext" style="color: var(--mh-rose-600);">
+                    <div class="mh-stat-subtext text-rose-600">
                         Atención Requerida
                     </div>
                     <?php endif; ?>
@@ -135,7 +129,7 @@ foreach ($mantenimientos as $m) {
                         <i class="bi bi-search mh-search-icon"></i>
                         <input type="text" id="mhSearchInput" class="mh-search-input" placeholder="Buscar equipo...">
                     </div>
-                    <div style="position: relative;">
+                    <div class="pos-relative">
                         <button class="mh-btn-filter" id="mhFilterBtn">
                             <i class="bi bi-funnel"></i>
                         </button>
@@ -186,12 +180,11 @@ foreach ($mantenimientos as $m) {
                         if (stripos($m->tipo_mantenimiento, 'impresora') !== false) $iconClass = 'bi-printer';
                         if (stripos($m->tipo_mantenimiento, 'servidor') !== false) $iconClass = 'bi-hdd-rack';
                     ?>
-                        <div class="mh-list-item" 
+                        <div class="mh-list-item cursor-pointer" 
                              data-status="<?= $displayStatus ?>"
                              data-type="<?= strtolower($m->tipo_mantenimiento) ?>"
                              data-search="<?= strtolower($m->equipo_nombre . ' ' . $m->equipo_codigo . ' ' . $m->tecnico_nombre ?? '') ?>"
-                             onclick="window.location.href='<?= BASE_URL ?>mantenimientos/ver/<?= $m->id ?>'"
-                             style="cursor: pointer;">
+                             onclick="window.location.href='<?= BASE_URL ?>mantenimientos/ver/<?= $m->id ?>'">
                             
                             <div class="mh-item-main">
                                 <div class="mh-item-icon">
@@ -200,7 +193,7 @@ foreach ($mantenimientos as $m) {
                                 <div class="mh-item-info">
                                     <h4><?= htmlspecialchars($m->equipo_nombre ?? 'Equipo Desconocido') ?> (<?= htmlspecialchars($m->equipo_codigo ?? 'S/N') ?>)</h4>
                                     <p>
-                                        <span style="font-weight: 600; color: var(--mh-slate-600);"><?= htmlspecialchars($m->tipo_mantenimiento) ?></span>
+                                        <span class="mh-item-type"><?= htmlspecialchars($m->tipo_mantenimiento) ?></span>
                                         <span>•</span>
                                         <span>Asignado a: <?= htmlspecialchars($m->tecnico_nombre ?? 'Sin asignar') ?></span>
                                     </p>
@@ -226,27 +219,58 @@ foreach ($mantenimientos as $m) {
                 <?php endif; ?>
                 
                 <!-- JS Empty State (Hidden) -->
-                <div id="mhEmptyState" class="mh-empty-state" style="display: none;">
+                <div id="mhEmptyState" class="mh-empty-state d-none">
                     <div class="mh-empty-icon"><i class="bi bi-search"></i></div>
                     <h3 class="mh-empty-title">No se encontraron resultados</h3>
                     <p class="mh-empty-text">Intenta ajustar tus filtros de búsqueda.</p>
                 </div>
             </div>
 
-            <!-- Footer Pagination -->
-            <div class="mh-footer">
-                <span>Mostrando <?= count($mantenimientos) ?> registros</span>
-                <div class="mh-pagination">
-                    <!-- Placeholder pagination since controller handles it via all fetch currently -->
-                    <a href="#" class="mh-page-btn disabled">Anterior</a>
-                    <a href="#" class="mh-page-btn disabled">Siguiente</a>
+        </div><!-- End mh-content-card -->
+        
+        <!-- Footer Pagination -->
+        <div class="mh-footer transparent">
+            
+            <!-- Info y selector de items por página -->
+            <div class="mh-footer-row">
+                <span class="mh-footer-text">
+                    Mostrando <strong class="mh-text-dark" id="mhVisibleCount"><?= min(10, count($mantenimientos)) ?></strong> de <strong class="mh-text-dark"><?= count($mantenimientos) ?></strong> registros
+                </span>
+                <div class="mh-footer-select-wrapper">
+                    <span class="mh-footer-label">Mostrar:</span>
+                    <select id="mhItemsPerPage" onchange="mhChangeItemsPerPage()" class="mh-footer-select">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
                 </div>
             </div>
+            
+            <!-- Paginación -->
+            <div class="mh-pagination">
+                <button onclick="mhPreviousPage()" id="mhBtnPrev" class="mh-page-btn" disabled>
+                    <i class="bi bi-arrow-left"></i>
+                    Anterior
+                </button>
 
+                <div class="mh-current-page-info">
+                    <span class="mh-text-dark">Página <span id="mhCurrentPage">1</span></span>
+                    <span class="mh-text-slate-300">/</span>
+                    <span id="mhTotalPages">1</span>
+                </div>
+
+                <button onclick="mhNextPage()" id="mhBtnNext" class="mh-page-btn">
+                    Siguiente
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
         </div>
+        
+        </div><!-- End mh-main-content-card -->
     </div>
+
 
     <!-- Scripts -->
     <script src="<?= BASE_URL ?>js/maintenance-hub.js?v=<?= time() ?>"></script>
-</body>
-</html>
+</div>

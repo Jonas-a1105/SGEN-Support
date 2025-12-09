@@ -1,7 +1,7 @@
 <?php
 // Modern Dashboard View
 ?>
-<link rel="stylesheet" href="<?= BASE_URL ?>css/dashboard-modern.css?v=<?= time() ?>">
+
 
 <div class="dashboard-container">
     
@@ -33,54 +33,49 @@
         <?php endif; ?>
     </div>
 
+    <!-- Main Content Card Container -->
+    <div class="dashboard-content-card">
+    
     <!-- 2. Stats Grid -->
     <div class="stats-grid">
         <!-- Total Equipos -->
         <a href="<?= BASE_URL ?>equipos" class="stat-card stat-blue">
-            <div class="stat-header">
-                <div class="stat-icon"><i class="bi bi-pc-display"></i></div>
-                <div class="stat-trend trend-up"><i class="bi bi-arrow-up-right"></i> +2</div>
-            </div>
-            <div>
+            <div class="stat-left-col">
                 <span class="stat-label">Total Equipos</span>
                 <div class="stat-number"><?= $equiposStats->total ?? 0 ?></div>
+                <div class="stat-trend trend-up"><i class="bi bi-arrow-up-right"></i> +2</div>
             </div>
+            <div class="stat-icon"><i class="bi bi-pc-display"></i></div>
         </a>
 
         <!-- Pendientes -->
         <a href="<?= BASE_URL ?>soportes" class="stat-card stat-amber">
-            <div class="stat-header">
-                <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
-                <div class="stat-trend trend-down"><i class="bi bi-arrow-up-right"></i> +1</div> 
-            </div>
-            <div>
+            <div class="stat-left-col">
                 <span class="stat-label">Pendientes</span>
                 <div class="stat-number"><?= $stats->pendiente ?? 0 ?></div>
+                <div class="stat-trend trend-down"><i class="bi bi-arrow-up-right"></i> +1</div> 
             </div>
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
         </a>
 
         <!-- En Proceso -->
         <a href="<?= BASE_URL ?>soportes" class="stat-card stat-indigo">
-            <div class="stat-header">
-                <div class="stat-icon"><i class="bi bi-gear-fill"></i></div>
-                <div class="stat-trend trend-up"><i class="bi bi-arrow-down-right"></i> -2</div>
-            </div>
-            <div>
+            <div class="stat-left-col">
                 <span class="stat-label">En Proceso</span>
                 <div class="stat-number"><?= $stats->en_proceso ?? 0 ?></div>
+                <div class="stat-trend trend-up"><i class="bi bi-arrow-down-right"></i> -2</div>
             </div>
+            <div class="stat-icon"><i class="bi bi-gear-fill"></i></div>
         </a>
 
         <!-- Resueltos -->
         <a href="<?= BASE_URL ?>soportes" class="stat-card stat-emerald">
-            <div class="stat-header">
-                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
-                <div class="stat-trend trend-up"><i class="bi bi-arrow-up-right"></i> +5</div>
-            </div>
-            <div>
+            <div class="stat-left-col">
                 <span class="stat-label">Resueltos</span>
                 <div class="stat-number"><?= $stats->resuelto ?? 0 ?></div>
+                <div class="stat-trend trend-up"><i class="bi bi-arrow-up-right"></i> +5</div>
             </div>
+            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
         </a>
     </div>
 
@@ -149,6 +144,8 @@
                         <?php endif; ?>
                     </div>
 
+
+
                     <!-- Processing List -->
                     <div id="listProcessing" style="display: none;">
                          <?php if (empty($latestInProcess)): ?>
@@ -163,7 +160,7 @@
                                         <th>ID / Equipo</th>
                                         <th>Técnico</th>
                                         <th>Inicio</th>
-                                        <th style="text-align:right;">Acción</th>
+                                        <th class="text-right">Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -185,7 +182,7 @@
                                             <span class="badge-priority priority-medium">Media</span>
                                             <span class="table-subtext"><?= date('d/m/Y', strtotime($t->fecha)) ?></span>
                                         </td>
-                                        <td style="text-align:right;">
+                                        <td class="text-right">
                                             <a href="<?= BASE_URL ?>soportes/ver/<?= $t->id ?>" class="btn btn-sm btn-light">
                                                 <i class="bi bi-arrow-right"></i>
                                             </a>
@@ -197,14 +194,14 @@
                         <?php endif; ?>
                     </div>
 
-                    <div style="padding: 1rem; text-align: center; border-top: 1px solid var(--dashboard-bg);">
-                        <a href="<?= BASE_URL ?>soportes" style="font-size: 0.875rem; font-weight: 500; color: var(--blue-600); text-decoration: none;">Ver todos los tickets</a>
+                    <div class="panel-footer-link">
+                        <a href="<?= BASE_URL ?>soportes">Ver todos los tickets</a>
                     </div>
                 </div>
             </div>
 
             <!-- Trend Chart -->
-            <div class="glass-panel" style="padding: 1.5rem;">
+            <div class="glass-panel p-panel">
                 <div class="chart-header-row">
                     <h3 class="chart-title">Volumen de Tickets (Últimos meses)</h3>
                     <select class="chart-select">
@@ -235,7 +232,7 @@
                     <div class="trend-bar-wrapper" style="height: <?= $height ?>%;" title="<?= $val ?> Tickets"></div>
                     <?php endforeach; ?>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                <div class="trend-labels">
                     <?php foreach($displayMonths as $m): ?>
                     <span><?= $m ?></span>
                     <?php endforeach; ?>
@@ -273,9 +270,9 @@
                 <div class="category-bar-item">
                     <div class="cat-header">
                         <div class="cat-label">
-                            <i class="bi bi-tag-fill" style="color: #cbd5e1;"></i> <?= htmlspecialchars($cat->nombre) ?>
+                            <i class="bi bi-tag-fill icon-muted"></i> <?= htmlspecialchars($cat->nombre) ?>
                         </div>
-                        <span style="color: var(--text-secondary);"><?= $pct ?>%</span>
+                        <span class="text-muted-custom"><?= $pct ?>%</span>
                     </div>
                     <div class="cat-progress-track">
                         <div class="cat-progress-fill <?= $colorClass ?>" style="width: <?= $pct ?>%;"></div>
@@ -312,15 +309,15 @@
                 <h3 class="sidebar-title">Rendimiento Técnico</h3>
                 <?php if(empty($topTecnicos)): ?>
                     <div style="text-align: center; padding: 1rem;">
-                         <i class="bi bi-people" style="font-size: 1.5rem; color: #cbd5e1;"></i>
+                         <i class="bi bi-people no-data-icon"></i>
                          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">Datos insuficientes</p>
                     </div>
                 <?php else: ?>
-                    <ul style="list-style: none; padding: 0; margin: 0;">
+                    <ul class="tech-list">
                         <?php foreach($topTecnicos as $tech): ?>
-                        <li style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.875rem;">
-                            <span style="color: var(--text-primary); font-weight: 500;"><?= htmlspecialchars($tech->username) ?></span>
-                            <span style="font-weight: 700; color: var(--blue-600);"><?= $tech->total ?></span>
+                        <li class="tech-list-item">
+                            <span class="tech-name"><?= htmlspecialchars($tech->username) ?></span>
+                            <span class="tech-count"><?= $tech->total ?></span>
                         </li>
                         <?php endforeach; ?>
                     </ul>
@@ -330,26 +327,9 @@
         </div>
 
     </div>
+    
+    </div><!-- End dashboard-content-card -->
 
 </div>
 
-<script>
-function showTab(tabName) {
-    // Hide all
-    document.getElementById('listPending').style.display = 'none';
-    document.getElementById('listProcessing').style.display = 'none';
-    
-    // Deactivate buttons
-    document.getElementById('tabPending').classList.remove('active');
-    document.getElementById('tabProcessing').classList.remove('active');
-    
-    // Show Target
-    if(tabName === 'pending') {
-        document.getElementById('listPending').style.display = 'block';
-        document.getElementById('tabPending').classList.add('active');
-    } else {
-        document.getElementById('listProcessing').style.display = 'block';
-        document.getElementById('tabProcessing').classList.add('active');
-    }
-}
-</script>
+<script src="<?= BASE_URL ?>js/dashboard.js?v=<?= time() ?>"></script>

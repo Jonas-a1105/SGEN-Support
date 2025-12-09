@@ -1,5 +1,8 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    
+    # Prevenir listado de directorios
+    Options -Indexes
 
     # 1. Redirigir la raíz del sitio a la carpeta public
     RewriteRule ^$ public/ [L]

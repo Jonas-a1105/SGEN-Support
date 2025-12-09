@@ -106,4 +106,15 @@ class Usuario extends Model
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+    /**
+     * Desvincula un empleado de los usuarios que lo tengan asignado (o de todos si hay inconsistencias).
+     * @param int $empleadoId
+     * @return bool
+     */
+    public function desvincularEmpleado(int $empleadoId): bool
+    {
+        $sql = "UPDATE {$this->table} SET empleado_id = NULL WHERE empleado_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$empleadoId]);
+    }
 }

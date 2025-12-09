@@ -4,7 +4,7 @@ namespace App\Models;
 use App\Core\Model;
 use PDO;
 
-class BitacoraModel extends Model
+class Bitacora extends Model
 {
     protected $table = 'bitacora_acciones';
 

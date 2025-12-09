@@ -81,76 +81,98 @@ function getDeptClass($dept) {
 }
 ?>
 
-<link rel="stylesheet" href="<?= BASE_URL ?>css/empleados-moderno.css?v=<?= time() ?>">
+
 
 <div class="empleados-container">
     
     <!-- Header con Stats -->
+    <!-- Header con Stats -->
     <div class="empleados-header">
-        <div style="max-width: 1400px; margin: 0 auto;">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 p-3" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);">
-                        <i class="bi bi-people-fill text-white fs-4"></i>
-                    </div>
-                    <div>
-                        <h1 class="empleados-title">Directorio de Personal</h1>
-                        <p class="empleados-subtitle mb-0">Gestiona el talento humano de la organización.</p>
-                    </div>
+        <div class="empleados-header-container">
+            <div class="d-flex align-items-center gap-2">
+                <div class="empleados-logo">
+                    <i class="bi bi-people-fill"></i>
                 </div>
-                <?php if ($_SESSION['rol'] === 'admin'): ?>
-                    <a href="<?= BASE_URL ?>empleados/crear" class="btn-nuevo-empleado">
-                        <i class="bi bi-person-plus-fill"></i>
-                        <span>Nuevo Empleado</span>
-                    </a>
-                <?php endif; ?>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon indigo">
-                        <i class="bi bi-people-fill"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label">Total Empleados</p>
-                        <p class="stat-value"><?= $stats['total'] ?></p>
-                    </div>
-                </div>
-                <div class="stat-card emerald">
-                    <div class="stat-icon emerald">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label">Usuarios Activos</p>
-                        <p class="stat-value"><?= $stats['vinculados'] ?></p>
-                    </div>
-                </div>
-                <div class="stat-card amber">
-                    <div class="stat-icon amber">
-                        <i class="bi bi-shield-exclamation"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label">Sin Usuario</p>
-                        <p class="stat-value"><?= $stats['sin_vincular'] ?></p>
-                    </div>
+                <div>
+                    <h1 class="empleados-title">Directorio de Personal</h1>
+                    <p class="empleados-subtitle mb-0">Gestiona el talento humano de la organización.</p>
                 </div>
             </div>
+            <?php if ($_SESSION['rol'] === 'admin'): ?>
+                <a href="<?= BASE_URL ?>empleados/crear" class="btn-nuevo-empleado">
+                    <i class="bi bi-person-plus-fill"></i>
+                    <span>Nuevo Empleado</span>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 
-    <main class="container-fluid px-4 py-4" style="max-width: 1400px;">
+    <main id="empleadosMain" class="empleados-main-container">
+        
+        <!-- Main Content Card Container -->
+        <div class="empleados-content-card">
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid" style="margin-bottom: 1.5rem;">
+            <div class="stat-card">
+                <div class="stat-icon indigo">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Total Empleados</p>
+                    <p class="stat-value"><?= $stats['total'] ?></p>
+                </div>
+            </div>
+            <div class="stat-card emerald">
+                <div class="stat-icon emerald">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Usuarios Activos</p>
+                    <p class="stat-value"><?= $stats['vinculados'] ?></p>
+                </div>
+            </div>
+            <div class="stat-card amber">
+                <div class="stat-icon amber">
+                    <i class="bi bi-shield-exclamation"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Sin Usuario</p>
+                    <p class="stat-value"><?= $stats['sin_vincular'] ?></p>
+                </div>
+            </div>
+        </div>
         
         <!-- Toolbar -->
         <div class="empleados-toolbar">
-            <!-- Department Filters -->
-            <div class="dept-filters">
-                <button class="dept-filter-btn active" data-dept="todos">Todos</button>
-                <?php foreach ($departamentos_unicos as $dept): ?>
-                    <button class="dept-filter-btn" data-dept="<?= htmlspecialchars($dept) ?>">
-                        <?= htmlspecialchars($dept) ?>
+            <!-- Left: Bulk Controls + Department Filters -->
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <!-- Bulk Delete Controls -->
+                <div class="bulk-controls">
+                    <div class="form-check form-switch mb-0" title="Activar selección múltiple">
+                        <input class="form-check-input bulk-toggle" type="checkbox" id="bulkModeToggle" style="cursor: pointer; width: 3em; height: 1.5em;">
+                    </div>
+                    <div id="bulkSelectAllContainer" class="bulk-select-all">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="bulkSelectAll" style="cursor: pointer; border-color: #cbd5e1;">
+                            <label class="form-check-label text-muted fs-sm user-select-none" for="bulkSelectAll" style="cursor: pointer;">Todo</label>
+                        </div>
+                    </div>
+                    <button id="bulkDeleteBtn" class="bulk-delete-btn">
+                        <i class="bi bi-trash"></i>
+                        <span id="bulkSelectedCount">0</span> seleccionados
                     </button>
-                <?php endforeach; ?>
+                </div>
+                
+                <!-- Department Filters -->
+                <div class="dept-filters">
+                    <button class="dept-filter-btn active" data-dept="todos">Todos</button>
+                    <?php foreach ($departamentos_unicos as $dept): ?>
+                        <button class="dept-filter-btn" data-dept="<?= htmlspecialchars($dept) ?>">
+                            <?= htmlspecialchars($dept) ?>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
             </div>
 
             <div class="d-flex align-items-center gap-3 flex-wrap">
@@ -182,8 +204,16 @@ function getDeptClass($dept) {
                 $is_active = !empty($e->usuario_username);
             ?>
                 <div class="empleado-card" 
+                     data-bulk-item
+                     data-empleado-id="<?= $e->id ?>"
                      data-dept="<?= htmlspecialchars($e->departamento_nombre ?? '') ?>"
                      data-search="<?= htmlspecialchars(strtolower($nombre_completo . ' ' . ($e->email ?? ''))) ?>">
+                    
+                    <!-- Bulk Checkbox -->
+                    <div class="bulk-checkbox">
+                        <i class="bi bi-check-circle-fill icon-checked"></i>
+                        <i class="bi bi-circle icon-unchecked"></i>
+                    </div>
                     
                     <!-- Status Indicator -->
                     <div class="empleado-status-indicator <?= $is_active ? 'active' : 'inactive' ?>" 
@@ -253,8 +283,9 @@ function getDeptClass($dept) {
                                 </a>
                                 <a href="<?= BASE_URL ?>empleados/eliminar/<?= $e->id ?>" 
                                    class="empleado-action-btn" 
+                                   data-no-global-delete="true"
                                    title="Eliminar"
-                                   onclick="return confirm('¿Está seguro de eliminar a <?= htmlspecialchars($nombre_completo) ?>?')">
+                                   onclick="return confirmDelete(event, this.href, '<?= addslashes(htmlspecialchars($nombre_completo)) ?>')">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </div>
@@ -286,9 +317,16 @@ function getDeptClass($dept) {
                         $dept_class = getDeptClass($e->departamento_nombre ?? '');
                         $is_active = !empty($e->usuario_username);
                     ?>
-                        <tr data-dept="<?= htmlspecialchars($e->departamento_nombre ?? '') ?>"
+                        <tr data-bulk-item
+                            data-empleado-id="<?= $e->id ?>"
+                            data-dept="<?= htmlspecialchars($e->departamento_nombre ?? '') ?>"
                             data-search="<?= htmlspecialchars(strtolower($nombre_completo . ' ' . ($e->email ?? ''))) ?>">
-                            <td>
+                            <td style="position: relative;">
+                                <!-- Bulk Checkbox -->
+                                <div class="bulk-checkbox">
+                                    <i class="bi bi-check-circle-fill icon-checked"></i>
+                                    <i class="bi bi-circle icon-unchecked"></i>
+                                </div>
                                 <div class="empleado-table-info">
                                     <div class="empleado-table-avatar empleado-avatar <?= $avatar_color ?>">
                                         <?= $initials ?>
@@ -325,8 +363,9 @@ function getDeptClass($dept) {
                                         </a>
                                         <a href="<?= BASE_URL ?>empleados/eliminar/<?= $e->id ?>" 
                                            class="empleado-action-btn" 
+                                           data-no-global-delete="true"
                                            title="Eliminar"
-                                           onclick="return confirm('¿Eliminar a <?= htmlspecialchars($nombre_completo) ?>?')">
+                                           onclick="return confirmDelete(event, this.href, '<?= addslashes(htmlspecialchars($nombre_completo)) ?>')">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </div>
@@ -375,211 +414,47 @@ function getDeptClass($dept) {
             <p class="text-muted">Prueba cambiando los filtros o el término de búsqueda.</p>
             <button onclick="clearFiltersEmp()" class="btn btn-link">Limpiar filtros</button>
         </div>
+        
+        </div><!-- End empleados-content-card -->
 
     </main>
 </div>
 
+<!-- Bulk Delete Assets -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
+<script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
+
+<!-- Modern Simple Delete Modal Integration -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
+<script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>"></script>
+
+<script src="<?= BASE_URL ?>js/empleados.js?v=<?= time() ?>"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const gridView = document.getElementById('gridViewEmp');
-    const listView = document.getElementById('listViewEmp');
-    const emptyState = document.getElementById('emptyStateEmp');
-    const btnViewList = document.getElementById('btnViewListEmp');
-    const btnViewGrid = document.getElementById('btnViewGridEmp');
-    const searchInput = document.getElementById('searchEmpleados');
-    const filterBtns = document.querySelectorAll('.dept-filter-btn');
-    
-    let currentFilter = 'todos';
-    let currentSearch = '';
-    let currentView = 'grid';
-
-    // Toggle de vista
-    btnViewGrid.addEventListener('click', function() {
-        currentView = 'grid';
-        gridView.style.display = 'grid';
-        listView.style.display = 'none';
-        btnViewGrid.classList.add('active');
-        btnViewList.classList.remove('active');
-        applyFilters();
-    });
-
-    btnViewList.addEventListener('click', function() {
-        currentView = 'list';
-        gridView.style.display = 'none';
-        listView.style.display = 'block';
-        btnViewList.classList.add('active');
-        btnViewGrid.classList.remove('active');
-        applyFilters();
-    });
-
-    // Filtros de departamento
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentFilter = this.getAttribute('data-dept');
-            applyFilters();
+    // Helper simple para usar en el onclick inline
+    function confirmDelete(e, url, name) {
+        e.preventDefault();
+        SimpleDeleteModal.open(url, {
+            type: 'Empleado',
+            name: name,
+            warning: 'Esta acción es definitiva. Se desvinculará cualquier usuario asociado.'
         });
-    });
-
-    // Filtrar por dept desde badge
-    window.filterByDept = function(dept) {
-        currentFilter = dept;
-        filterBtns.forEach(b => {
-            b.classList.remove('active');
-            if (b.getAttribute('data-dept') === dept) {
-                b.classList.add('active');
-            }
-        });
-        applyFilters();
-    };
-
-    // Búsqueda
-    searchInput.addEventListener('input', function() {
-        currentSearch = this.value.toLowerCase();
-        applyFilters();
-    });
-
-    // Variables de Paginación
-    let itemsPerPage = <?= $paginationPerPage ?>;
-    let currentPage = 1;
-    let filteredIndices = []; // Indices de items que coinciden con filtro
-    
-    // Init selector
-    const selector = document.getElementById('itemsPerPageSelector');
-    if(selector) selector.value = itemsPerPage;
-
-    window.changeClientItemsPerPage = function(val) {
-        itemsPerPage = parseInt(val);
-        if (window.PaginationPrefs) PaginationPrefs.set(itemsPerPage);
-        else {
-             const expires = new Date();
-             expires.setFullYear(expires.getFullYear() + 1);
-             document.cookie = 'sgen_pagination_per_page=' + itemsPerPage + ';expires=' + expires.toUTCString() + ';path=/';
-        }
-        currentPage = 1;
-        applyFilters();
-    };
-
-    window.prevPage = function() {
-        if (currentPage > 1) {
-            currentPage--;
-            applyFilters();
-        }
-    };
-    window.nextPage = function() {
-        const totalPages = Math.ceil(filteredIndices.length / itemsPerPage);
-        if ((itemsPerPage === -1 && currentPage === 1) || (itemsPerPage !== -1 && currentPage < totalPages)) {
-            currentPage++;
-            applyFilters();
-        }
-    };
-
-    // Aplicar filtros
-    function applyFilters() {
-        // Reset indices
-        filteredIndices = [];
-        const cards = gridView.querySelectorAll('.empleado-card');
-        const rows = listView.querySelectorAll('tbody tr');
-        let visibleCount = 0;
-
-        // 1. Filtrar (Identify matches)
-        cards.forEach((card, index) => {
-            const dept = card.getAttribute('data-dept');
-            const searchText = card.getAttribute('data-search');
-            const matchesFilter = currentFilter === 'todos' || dept === currentFilter;
-            const matchesSearch = searchText.includes(currentSearch);
-            
-            // Ocultar inicialmente
-            card.style.display = 'none';
-            if(rows[index]) rows[index].style.display = 'none';
-
-            if (matchesFilter && matchesSearch) {
-                 filteredIndices.push(index);
-            }
-        });
-
-        const totalVisible = filteredIndices.length;
-        const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalVisible / itemsPerPage) || 1;
-        
-        // Validar página actual
-        if (currentPage > totalPages) currentPage = 1;
-
-        // 2. Paginar (Show slice)
-        const start = itemsPerPage === -1 ? 0 : (currentPage - 1) * itemsPerPage;
-        const end = itemsPerPage === -1 ? totalVisible : start + itemsPerPage;
-        const visibleIndices = filteredIndices.slice(start, end);
-        
-        visibleIndices.forEach(idx => {
-            cards[idx].style.display = 'flex';
-            if(rows[idx]) rows[idx].style.display = '';
-        });
-
-        // 3. Actualizar UI
-        document.getElementById('visibleCountDisplay').textContent = visibleIndices.length;
-        document.getElementById('totalCountDisplay').textContent = cards.length; // Total loaded
-
-        document.getElementById('currentPageDisplay').textContent = currentPage;
-        document.getElementById('totalPagesDisplay').textContent = totalPages;
-        
-        const btnPrev = document.getElementById('btnPrevPage');
-        const btnNext = document.getElementById('btnNextPage');
-        
-        btnPrev.disabled = currentPage === 1;
-        btnPrev.style.opacity = currentPage === 1 ? '0.5' : '1';
-        btnPrev.style.pointerEvents = currentPage === 1 ? 'none' : 'auto';
-        
-        btnNext.disabled = currentPage === totalPages;
-        btnNext.style.opacity = currentPage === totalPages ? '0.5' : '1';
-        btnNext.style.pointerEvents = currentPage === totalPages ? 'none' : 'auto';
-
-        // Empty state
-        if (visibleIndices.length === 0) {
-            emptyState.style.display = 'block';
-            if (currentView === 'grid') gridView.style.display = 'none';
-            else listView.style.display = 'none';
-            document.getElementById('paginationFooter').style.display = 'none'; // Hide footer if filtered out
-        } else {
-            emptyState.style.display = 'none';
-            if (currentView === 'grid') gridView.style.display = 'grid';
-            else listView.style.display = 'block';
-            document.getElementById('paginationFooter').style.display = 'flex';
-        }
+        return false;
     }
-
-    // Limpiar filtros
-    window.clearFiltersEmp = function() {
-        currentFilter = 'todos';
-        currentSearch = '';
-        searchInput.value = '';
-        filterBtns.forEach(b => {
-            b.classList.remove('active');
-            if (b.getAttribute('data-dept') === 'todos') {
-                b.classList.add('active');
-            }
-        });
-        currentPage = 1;
-        applyFilters();
-    };
     
-    // Initial call
-    applyFilters();
-
-    // Copiar email
-    window.copyEmail = function(email, element) {
-        if (!email) return;
-        
-        navigator.clipboard.writeText(email).then(() => {
-            const originalHTML = element.innerHTML;
-            const copyIcon = element.querySelector('.copy-icon');
-            if (copyIcon) {
-                copyIcon.outerHTML = '<span class="copied-feedback"><i class="bi bi-check"></i> Copiado</span>';
-            }
-            
-            setTimeout(() => {
-                element.innerHTML = originalHTML;
-            }, 2000);
+    // Initialize Bulk Delete
+    document.addEventListener('DOMContentLoaded', function() {
+        BulkDelete.init({
+            containerId: 'empleadosMain',
+            itemSelector: '[data-bulk-item]',
+            itemIdAttribute: 'data-empleado-id',
+            deleteUrl: BASE_URL + 'empleados/eliminar_masivo',
+            entityName: 'empleados',
+            entityNameSingular: 'empleado',
+            toggleId: 'bulkModeToggle',
+            selectAllId: 'bulkSelectAll',
+            selectAllContainerId: 'bulkSelectAllContainer',
+            deleteButtonId: 'bulkDeleteBtn',
+            countSpanId: 'bulkSelectedCount'
         });
-    };
-});
+    });
 </script>

@@ -48,9 +48,9 @@
 /* Base Layout */
 .pd-wrapper {
     min-height: 100vh;
-    background-color: var(--pd-slate-50);
+    background-color: transparent;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    padding: 2rem;
+    padding: 0 2rem 2rem 2rem;
 }
 
 .pd-container {
@@ -858,4 +858,15 @@
 
 .pd-submit-btn:active {
     transform: translateY(0);
+}
+
+/* Main Content Card Container */
+.pd-main-content-card {
+    background: white;
+    border: 1px solid var(--pd-slate-200);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--pd-shadow-sm);
+    max-width: 1150px;
+    margin: 0 auto;
 }

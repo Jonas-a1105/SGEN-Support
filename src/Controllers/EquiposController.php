@@ -8,6 +8,7 @@ use App\Models\Departamento;
 use App\Models\Empleado;
 use App\Models\Mantenimiento;
 use App\Models\Soporte;
+use App\Services\EquipoService;
 use PDOException;
 
 class EquiposController extends Controller
@@ -17,6 +18,7 @@ class EquiposController extends Controller
     private $empleadoModel;
     private $mantenimientoModel;
     private $soporteModel;
+    private $equipoService;
 
     public function __construct()
     {
@@ -28,6 +30,8 @@ class EquiposController extends Controller
         $this->empleadoModel = new Empleado();
         $this->mantenimientoModel = new Mantenimiento();
         $this->soporteModel = new Soporte();
+        
+        $this->equipoService = new EquipoService();
     }
 
     public function index()
@@ -137,8 +141,6 @@ class EquiposController extends Controller
 
         $fue_asignado = false;
         if (!empty($datos['departamento_id']) || !empty($datos['empleado_id'])) {
-            // Solo cambiar a 'en_uso' si se está creando o si el estado seleccionado es 'disponible'
-            // Esto permite poner un equipo asignado en 'en_reparacion' o 'fuera_de_servicio'
             if (!$es_edicion || $datos['estado'] === 'disponible') {
                 $datos['estado'] = 'en_uso';
             }
@@ -181,26 +183,41 @@ class EquiposController extends Controller
     {
         $this->restrictTo(['admin']);
         $equipo = $this->equipoModel->findById($id);
+        
+        // Setup default response
+        $success = false;
+        $message = '';
+        
         if (!$equipo) {
-            $this->setFlashMessage('error', "Error: Equipo no encontrado.");
-            header('Location: ' . BASE_URL . 'equipos');
+            $message = "Error: Equipo no encontrado.";
+        } else {
+            if ($this->equipoModel->delete($id)) {
+                $success = true;
+                $message = "Equipo eliminado correctamente.";
+                $this->logBitacora("Eliminó el equipo (Código: {$equipo->codigo_inventario})", 'equipo', $id);
+            } else {
+                $message = "Error: No se pudo eliminar el equipo.";
+            }
+        }
+
+        // Check for AJAX/JSON request
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') 
+                  || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false);
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => $success, 'message' => $message]);
             exit;
         }
 
-        if ($this->equipoModel->delete($id)) {
-            $this->setFlashMessage('success', "Equipo eliminado correctamente.");
-            $this->logBitacora("Eliminó el equipo (Código: {$equipo->codigo_inventario})", 'equipo', $id);
-        } else {
-            $this->setFlashMessage('error', "Error: No se pudo eliminar el equipo.");
-        }
+        // Fallback for standard request
+        $this->setFlashMessage($success ? 'success' : 'error', $message);
         header('Location: ' . BASE_URL . 'inventario');
         exit;
     }
+
     public function ver(int $id)
     {
-        // Allow access to admin, tecnico, consultor
-        // (Restriction is already in constructor, but we might want specific logic)
-        
         $equipo = $this->equipoModel->findById($id);
         if (!$equipo) {
             $this->setFlashMessage('error', 'Equipo no encontrado.');
@@ -208,12 +225,8 @@ class EquiposController extends Controller
             exit;
         }
 
-        // Load related data
         $departamento = $equipo->departamento_id ? $this->departamentoModel->findById($equipo->departamento_id) : null;
         $empleado = $equipo->empleado_id ? $this->empleadoModel->findById($equipo->empleado_id) : null;
-        
-        // Load history/maintenance/support if needed, or just basic details
-        // For now, let's assume we just need to render the view
         
         $this->render('equipos/ver', [
             'titulo' => "Detalle del Equipo: {$equipo->codigo_inventario}",
@@ -222,114 +235,27 @@ class EquiposController extends Controller
             'empleado' => $empleado
         ]);
     }
+
     public function apiBuscar()
     {
-        // Allow access to admin, tecnico, consultor
-        // (Restriction is already in constructor)
-        
         if (!isset($_GET['q'])) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Query parameter "q" required']);
-            exit;
+            $this->jsonResponse(['error' => 'Query parameter "q" required'], 400);
         }
 
         $query = trim($_GET['q']);
         
-        // First, try to find by serial or codigo (existing functionality)
-        $equipo = $this->equipoModel->findBySerialOrCodigo($query);
-
-        if ($equipo) {
-            // Check if user has permission to see this equipment (Consultor/Tecnico restriction)
-            if (($_SESSION['rol'] === 'tecnico' || $_SESSION['rol'] === 'consultor')) {
-                $userDeptId = $_SESSION['departamento_id'] ?? 0;
-                if ($equipo->departamento_id != $userDeptId) {
-                    // Found but not in their department
-                    echo json_encode(['found' => false, 'error' => 'Equipo no pertenece a su departamento']);
-                    exit;
-                }
-            }
-
-            header('Content-Type: application/json');
-            echo json_encode([
-                'found' => true,
-                'id' => $equipo->id,
-                'tipo' => $equipo->tipo,
-                'marca' => $equipo->marca,
-                'modelo' => $equipo->modelo,
-                'serial' => $equipo->numero_serie,
-                'departamento_id' => $equipo->departamento_id,
-                'departamento_nombre' => $equipo->departamento_nombre
-            ]);
-            exit;
+        // Determinar si hay restricción de departamento
+        $departamentoIdRestrict = null;
+        if (($_SESSION['rol'] === 'tecnico' || $_SESSION['rol'] === 'consultor')) {
+            $departamentoIdRestrict = $_SESSION['departamento_id'] ?? 0;
         }
+
+        // Usar el servicio para la búsqueda
+        $resultado = $this->equipoService->buscarEquipos($query, $departamentoIdRestrict);
         
-        // If not found by serial/codigo, try searching by employee cedula
-        $equipos = $this->equipoModel->findAllByEmpleadoCedula($query);
-        
-        if (!empty($equipos)) {
-            // Filter by department if user is tecnico/consultor
-            if (($_SESSION['rol'] === 'tecnico' || $_SESSION['rol'] === 'consultor')) {
-                $userDeptId = $_SESSION['departamento_id'] ?? 0;
-                $equipos = array_filter($equipos, function($eq) use ($userDeptId) {
-                    return $eq->departamento_id == $userDeptId;
-                });
-                
-                // Reindex array after filtering
-                $equipos = array_values($equipos);
-            }
-            
-            if (empty($equipos)) {
-                echo json_encode(['found' => false, 'error' => 'No se encontraron equipos asignados a esa cédula en su departamento']);
-                exit;
-            }
-            
-            header('Content-Type: application/json');
-            
-            // If only one equipment, return it directly (backward compatible)
-            if (count($equipos) === 1) {
-                $eq = $equipos[0];
-                echo json_encode([
-                    'found' => true,
-                    'id' => $eq->id,
-                    'tipo' => $eq->tipo,
-                    'marca' => $eq->marca,
-                    'modelo' => $eq->modelo,
-                    'serial' => $eq->numero_serie,
-                    'departamento_id' => $eq->departamento_id,
-                    'departamento_nombre' => $eq->departamento_nombre
-                ]);
-            } else {
-                // Multiple equipment found, return array
-                $equiposData = array_map(function($eq) {
-                    return [
-                        'id' => $eq->id,
-                        'tipo' => $eq->tipo,
-                        'marca' => $eq->marca,
-                        'modelo' => $eq->modelo,
-                        'serial' => $eq->numero_serie,
-                        'codigo_inventario' => $eq->codigo_inventario,
-                        'departamento_id' => $eq->departamento_id,
-                        'departamento_nombre' => $eq->departamento_nombre
-                    ];
-                }, $equipos);
-                
-                echo json_encode([
-                    'found' => true,
-                    'multiple' => true,
-                    'equipos' => $equiposData
-                ]);
-            }
-            exit;
-        }
-        
-        // Not found by any method
-        echo json_encode(['found' => false]);
-        exit;
+        $this->jsonResponse($resultado);
     }
 
-    /**
-     * Muestra el historial de cambios de un equipo
-     */
     public function historial(int $id)
     {
         $equipo = $this->equipoModel->findById($id);
@@ -339,7 +265,7 @@ class EquiposController extends Controller
             exit;
         }
 
-        $bitacoraModel = new \App\Models\BitacoraModel();
+        $bitacoraModel = new \App\Models\Bitacora();
         $historial = $bitacoraModel->findByEntity('equipo', $id);
 
         $this->render('equipos/historial', [
@@ -349,9 +275,6 @@ class EquiposController extends Controller
         ]);
     }
 
-    /**
-     * Muestra versión imprimible del equipo
-     */
     public function imprimir(int $id)
     {
         $equipo = $this->equipoModel->findById($id);
@@ -372,51 +295,20 @@ class EquiposController extends Controller
         ], 'blank');
     }
 
-    /**
-     * Duplica un equipo en el mismo departamento
-     */
     public function duplicar(int $id)
     {
         $this->restrictTo(['admin']);
         
-        $equipo = $this->equipoModel->findById($id);
-        if (!$equipo) {
-            $this->setFlashMessage('error', 'Equipo no encontrado.');
-            header('Location: ' . BASE_URL . 'equipos');
-            exit;
-        }
-
-        // Preparar datos para duplicar
-        $datos = [
-            'codigo_inventario' => $equipo->codigo_inventario . '-COPIA',
-            'numero_serie'      => $equipo->numero_serie . '-COPIA',
-            'tipo'              => $equipo->tipo,
-            'marca'             => $equipo->marca,
-            'modelo'            => $equipo->modelo,
-            'procesador'        => $equipo->procesador,
-            'memoria_ram'       => $equipo->memoria_ram,
-            'almacenamiento'    => $equipo->almacenamiento,
-            'sistema_operativo' => $equipo->sistema_operativo,
-            'direccion_ip'      => null, // No duplicar IP
-            'driver'            => $equipo->driver,
-            'toner'             => $equipo->toner,
-            'departamento_id'   => $equipo->departamento_id, // Mismo departamento
-            'empleado_id'       => null, // Sin asignar a empleado
-            'ubicacion_fisica'  => $equipo->ubicacion_fisica,
-            'estado'            => 'disponible',
-            'fecha_compra'      => $equipo->fecha_compra,
-            'proveedor'         => $equipo->proveedor,
-            'proveedor_rif'     => $equipo->proveedor_rif,
-            'garantia'          => $equipo->garantia,
-            'valor_compra'      => $equipo->valor_compra,
-        ];
-
         try {
-            if ($newId = $this->equipoModel->create($datos)) {
-                $this->setFlashMessage('success', "Equipo duplicado exitosamente. Nuevo código: {$datos['codigo_inventario']}");
-                $this->logBitacora("Duplicó el equipo (Original: {$equipo->codigo_inventario}, Nuevo: {$datos['codigo_inventario']})", 'equipo', $newId);
-                header('Location: ' . BASE_URL . 'equipos/editar/' . $newId);
+            $resultado = $this->equipoService->duplicarEquipo($id);
+            
+            if ($resultado) {
+                $this->setFlashMessage('success', "Equipo duplicado exitosamente. Nuevo código: {$resultado['codigo']}");
+                $this->logBitacora("Duplicó el equipo ID #$id al nuevo ID #{$resultado['id']}", 'equipo', $resultado['id']);
+                header('Location: ' . BASE_URL . 'equipos/editar/' . $resultado['id']);
                 exit;
+            } else {
+                $this->setFlashMessage('error', 'Equipo no encontrado.');
             }
         } catch (PDOException $e) {
             $this->setFlashMessage('error', 'Error al duplicar: ' . $e->getMessage());
@@ -426,4 +318,46 @@ class EquiposController extends Controller
         exit;
     }
 
+    /**
+     * Bulk delete equipment via AJAX
+     */
+    public function eliminar_masivo()
+    {
+        $this->restrictTo(['admin']);
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ids = $input['ids'] ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            echo json_encode(['success' => false, 'message' => 'No se proporcionaron IDs']);
+            exit;
+        }
+
+        $deletedCount = 0;
+
+        foreach ($ids as $id) {
+            $equipo = $this->equipoModel->findById((int)$id);
+            if ($equipo && $this->equipoModel->delete((int)$id)) {
+                $deletedCount++;
+                $this->logBitacora("Eliminó el equipo (Código: {$equipo->codigo_inventario}) (eliminación masiva)", 'equipo', $id);
+            }
+        }
+
+        if ($deletedCount > 0) {
+            echo json_encode([
+                'success' => true,
+                'message' => "Se eliminaron {$deletedCount} equipo(s) correctamente.",
+                'deleted' => $deletedCount
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No se pudo eliminar ningún equipo']);
+        }
+        exit;
+    }
 }

@@ -14,7 +14,7 @@ function isActive($link, $currentUri) {
         <a href="<?= BASE_URL ?>" class="ms-brand-group">
             <div class="ms-logo-box">
                 <!-- Logo SVG simple -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem; color: white;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-logo-svg">
                     <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
                 </svg>
             </div>
@@ -76,27 +76,6 @@ function isActive($link, $currentUri) {
                         </svg>
                     </div>
                     <span class="ms-link-text">Inventario General</span>
-                </a>
-                <!-- Inv. por Depto -->
-                <a href="<?= BASE_URL ?>inventario/departamento" class="ms-link <?= isActive('inventario/departamento', $currentUri) ? 'active' : '' ?>">
-                    <div class="ms-active-indicator"></div>
-                    <div class="ms-icon-box">
-                        <!-- icons/Building -->
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                            <path d="M9 22v-4h6v4"></path>
-                            <path d="M8 6h.01"></path>
-                            <path d="M16 6h.01"></path>
-                            <path d="M12 6h.01"></path>
-                            <path d="M12 10h.01"></path>
-                            <path d="M12 14h.01"></path>
-                            <path d="M16 10h.01"></path>
-                            <path d="M16 14h.01"></path>
-                            <path d="M8 10h.01"></path>
-                            <path d="M8 14h.01"></path>
-                        </svg>
-                    </div>
-                    <span class="ms-link-text">Inv. por Depto</span>
                 </a>
                 <?php endif; ?>
 
@@ -179,6 +158,37 @@ function isActive($link, $currentUri) {
                     </div>
                     <span class="ms-link-text">Usuarios</span>
                 </a>
+                
+                <a href="<?= BASE_URL ?>bitacora" class="ms-link <?= isActive('bitacora', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/ClipboardList -->
+                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                            <path d="M12 11h4"></path>
+                            <path d="M12 16h4"></path>
+                            <path d="M8 11h.01"></path>
+                            <path d="M8 16h.01"></path>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Bitácora</span>
+                </a>
+
+                <a href="<?= BASE_URL ?>logs" class="ms-link <?= isActive('logs', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/FileText -->
+                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Log Sesión</span>
+                </a>
                 <a href="<?= BASE_URL ?>reportes" class="ms-link <?= isActive('reportes', $currentUri) ?>">
                     <div class="ms-active-indicator"></div>
                     <div class="ms-icon-box">
@@ -205,11 +215,29 @@ function isActive($link, $currentUri) {
             </div>
         </div>
         <?php endif; ?>
+        <!-- INFORMACIÓN -->
+        <div class="ms-section">
+            <div class="ms-section-title">Información</div>
+            <div class="ms-nav-list">
+                <a href="<?= BASE_URL ?>about" class="ms-link <?= isActive('about', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Info -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Acerca de</span>
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- 3. Footer de Usuario -->
     <div class="ms-footer">
-        <button class="ms-user-btn" onclick="location.href='<?= BASE_URL ?>perfil'">
+        <a href="<?= BASE_URL ?>perfil" class="ms-user-btn text-decoration-none">
             <div class="ms-avatar">
                 <?= strtoupper(substr($_SESSION['usuario'] ?? 'U', 0, 1)) ?>
             </div>
@@ -220,6 +248,6 @@ function isActive($link, $currentUri) {
             <svg class="ms-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
-        </button>
+        </a>
     </div>
 </aside>

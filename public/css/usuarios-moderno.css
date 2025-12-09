@@ -4,9 +4,9 @@
 
 /* Container */
 .users-modern-container {
-    background: #f8fafc;
+    background: transparent;
     min-height: 100vh;
-    padding: 2rem;
+    padding: 0 2rem 2rem 2rem;
     width: 100vw;
     position: relative;
     left: 50%;
@@ -15,12 +15,11 @@
     /* Force dark text color */
 }
 
-.users-modern-container * {
-    color: inherit;
-}
+
 
 .users-modern-wrapper {
-    max-width: 1200px;
+    width: 100%;
+    max-width: 1350px;
     margin: 0 auto;
 }
 

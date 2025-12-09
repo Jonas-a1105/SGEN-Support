@@ -38,9 +38,13 @@ class LogController extends Controller
             $logs = $this->logModel->findByUsuarioId($_SESSION['user_id'], 200);
         }
 
+        // Leer preferencia de paginación
+        $perPage = isset($_COOKIE['sgen_pagination_per_page']) ? (int)$_COOKIE['sgen_pagination_per_page'] : 10;
+
         $this->render('logs/lista', [
             'titulo' => 'Logs de Sesión',
-            'logs'   => $logs
+            'logs'   => $logs,
+            'perPage' => $perPage
         ]);
     }
 }

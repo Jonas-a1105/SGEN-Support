@@ -1,38 +1,7 @@
 <?php
 /**
  * Configuración de Email para notificaciones del sistema
- * 
- * ================================
- * CONFIGURACIONES PREDEFINIDAS
- * ================================
- * 
- * 📧 GMAIL:
- *    smtp_host: 'smtp.gmail.com'
- *    smtp_port: 587
- *    smtp_secure: 'tls'
- *    smtp_user: 'tu-email@gmail.com'
- *    smtp_pass: 'contraseña de aplicación' (generar en: https://myaccount.google.com/apppasswords)
- * 
- * 📧 OUTLOOK / HOTMAIL:
- *    smtp_host: 'smtp-mail.outlook.com'
- *    smtp_port: 587
- *    smtp_secure: 'tls'
- *    smtp_user: 'tu-email@outlook.com'
- *    smtp_pass: 'tu-contraseña'
- * 
- * 📧 OFFICE 365:
- *    smtp_host: 'smtp.office365.com'
- *    smtp_port: 587
- *    smtp_secure: 'tls'
- *    smtp_user: 'tu-email@empresa.com'
- *    smtp_pass: 'tu-contraseña'
- * 
- * 📧 YAHOO:
- *    smtp_host: 'smtp.mail.yahoo.com'
- *    smtp_port: 465
- *    smtp_secure: 'ssl'
- *    smtp_user: 'tu-email@yahoo.com'
- *    smtp_pass: 'contraseña de aplicación'
+ * Lee las credenciales desde el archivo .env para mayor seguridad.
  */
 
 return [
@@ -40,31 +9,32 @@ return [
     // CONFIGURACIÓN SMTP
     // =============================
     
-    'smtp_host' => 'smtp.gmail.com',        // Servidor SMTP (ver opciones arriba)
-    'smtp_port' => 587,                      // Puerto (587 para TLS, 465 para SSL)
-    'smtp_user' => 'tu-email@gmail.com',    // Tu email completo
-    'smtp_pass' => 'tu-password-aqui',      // Contraseña o contraseña de aplicación
-    'smtp_secure' => 'tls',                  // 'tls' o 'ssl'
+    'smtp_host'   => $_ENV['MAIL_HOST'] ?? 'smtp.gmail.com',
+    'smtp_port'   => $_ENV['MAIL_PORT'] ?? 587,
+    'smtp_user'   => $_ENV['MAIL_USER'] ?? 'tu-email@gmail.com',
+    'smtp_pass'   => $_ENV['MAIL_PASS'] ?? '', // Contraseña de aplicación
+    'smtp_secure' => $_ENV['MAIL_ENCRYPTION'] ?? 'tls',
     
     // =============================
     // REMITENTE
     // =============================
     
-    'from_email' => 'soporte@empresa.com',
-    'from_name' => 'Sistema de Soporte SGEN',
+    'from_email' => $_ENV['MAIL_FROM_ADDRESS'] ?? $_ENV['MAIL_USER'] ?? 'soporte@sgen.com',
+    'from_name'  => $_ENV['MAIL_FROM_NAME'] ?? 'Sistema de Soporte SGEN',
     
     // =============================
     // DESTINATARIOS ADMINISTRATIVOS
     // =============================
     
     'admin_emails' => [
-        'admin@empresa.com'  // Emails que recibirán notificaciones críticas
+        // Puedes agregar emails fijos aquí, o cargarlos desde .env separados por coma si quisieras
+        'admin@empresa.com' 
     ],
     
     // =============================
     // ACTIVACIÓN
     // =============================
     
-    'enabled' => false,  // ⚠️ CAMBIAR A true CUANDO HAYAS CONFIGURADO LOS DATOS SMTP
+    // Solo habilitar si tenemos usuario y contraseña configurados
+    'enabled' => !empty($_ENV['MAIL_USER']) && !empty($_ENV['MAIL_PASS']),
 ];
-

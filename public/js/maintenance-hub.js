@@ -90,13 +90,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // 3. Search Filter
             const matchesSearch = text.includes(searchTerm);
 
+            // Store filter match status for pagination
             if (matchesStatus && matchesType && matchesSearch) {
-                item.style.display = 'flex';
+                item.dataset.filtered = 'true';
                 visibleCount++;
             } else {
+                item.dataset.filtered = 'false';
                 item.style.display = 'none';
             }
         });
+
+        // Apply pagination after filtering
+        mhUpdatePagination();
 
         // Toggle Empty State
         if (visibleCount === 0) {
@@ -105,4 +110,83 @@ document.addEventListener('DOMContentLoaded', () => {
             if (emptyState) emptyState.style.display = 'none';
         }
     }
+
+    // Initialize pagination on load
+    mhUpdatePagination();
 });
+
+// Pagination variables
+// Pagination variables
+if (typeof mhCurrentPage === 'undefined') window.mhCurrentPage = 1;
+if (typeof mhItemsPerPage === 'undefined') window.mhItemsPerPage = 10;
+
+function mhGetFilteredItems() {
+    const items = document.querySelectorAll('.mh-list-item');
+    return Array.from(items).filter(item => item.dataset.filtered !== 'false');
+}
+
+function mhUpdatePagination() {
+    const filteredItems = mhGetFilteredItems();
+    const totalFiltered = filteredItems.length;
+    const totalPages = Math.ceil(totalFiltered / mhItemsPerPage) || 1;
+
+    if (mhCurrentPage > totalPages) mhCurrentPage = totalPages;
+
+    // Update display
+    const currentPageEl = document.getElementById('mhCurrentPage');
+    const totalPagesEl = document.getElementById('mhTotalPages');
+    const visibleCountEl = document.getElementById('mhVisibleCount');
+
+    if (currentPageEl) currentPageEl.textContent = mhCurrentPage;
+    if (totalPagesEl) totalPagesEl.textContent = totalPages;
+
+    // Enable/disable buttons
+    const btnPrev = document.getElementById('mhBtnPrev');
+    const btnNext = document.getElementById('mhBtnNext');
+
+    if (btnPrev) btnPrev.disabled = mhCurrentPage === 1;
+    if (btnNext) btnNext.disabled = mhCurrentPage === totalPages;
+
+    // Show/hide items based on pagination
+    let visibleCount = 0;
+    const start = (mhCurrentPage - 1) * mhItemsPerPage;
+    const end = start + mhItemsPerPage;
+
+    let filteredIndex = 0;
+    filteredItems.forEach(item => {
+        if (filteredIndex >= start && filteredIndex < end) {
+            item.style.display = 'flex';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+        filteredIndex++;
+    });
+
+    if (visibleCountEl) visibleCountEl.textContent = visibleCount;
+}
+
+function mhPreviousPage() {
+    if (mhCurrentPage > 1) {
+        mhCurrentPage--;
+        mhUpdatePagination();
+    }
+}
+
+function mhNextPage() {
+    const filteredItems = mhGetFilteredItems();
+    const totalPages = Math.ceil(filteredItems.length / mhItemsPerPage);
+    if (mhCurrentPage < totalPages) {
+        mhCurrentPage++;
+        mhUpdatePagination();
+    }
+}
+
+function mhChangeItemsPerPage() {
+    const select = document.getElementById('mhItemsPerPage');
+    if (select) {
+        mhItemsPerPage = parseInt(select.value);
+        mhCurrentPage = 1;
+        mhUpdatePagination();
+    }
+}

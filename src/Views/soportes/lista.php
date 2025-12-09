@@ -59,13 +59,181 @@ function getCategoriaClass($cat) {
 }
 ?>
 
-<link rel="stylesheet" href="<?= BASE_URL ?>css/helpdesk-moderno.css?v=<?= time() ?>">
+
+
+
+<style>
+/* New styles for left-aligned checkboxes */
+.ticket-checkbox {
+    display: none;
+    position: absolute;
+    left: 15px; /* Position at left */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    z-index: 20;
+    background: white;
+    border-radius: 50%;
+    line-height: 1;
+    /* Box shadow to make it pop over content if needed, though padding handles space */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+}
+
+/* Icon Toggle Logic */
+.ticket-checkbox .icon-checked { display: none; color: #ef4444; }
+.ticket-checkbox .icon-unchecked { display: block; color: #cbd5e1; transition: color 0.2s; }
+.helpdesk-ticket:hover .ticket-checkbox .icon-unchecked { color: #94a3b8; }
+
+/* Show Checked icon when parent is selected */
+#ticketFeed.selection-active .helpdesk-ticket.selected .ticket-checkbox .icon-checked { display: block; }
+#ticketFeed.selection-active .helpdesk-ticket.selected .ticket-checkbox .icon-unchecked { display: none; }
+
+
+/* Fix: Target #ticketFeed explicitly since JS adds class there */
+#ticketFeed.selection-active .helpdesk-ticket { 
+    cursor: pointer; 
+    border: 1px solid var(--border-color, #e2e8f0);
+    padding-left: 60px !important; /* Shift content right */
+    transition: all 0.2s ease;
+}
+
+#ticketFeed.selection-active .helpdesk-ticket .ticket-checkbox {
+    display: block;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { opacity: 0; transform: translateY(-50%) scale(0.5); }
+    100% { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+
+#ticketFeed.selection-active .helpdesk-ticket.selected {
+    /* Border removed as requested */
+    background-color: #fef2f2 !important;
+}
+
+/* --- Custom Delete Modal Styles --- */
+.custom-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    width: 100%; 
+    height: 100%;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(0.75px);
+    z-index: 9999; /* Highest priority */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+.custom-modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.custom-modal-content {
+    background: white;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+}
+.custom-modal-backdrop.active .custom-modal-content {
+    transform: scale(1);
+}
+.modal-header-danger {
+    background-color: #fef2f2;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #fee2e2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.icon-danger-box {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 0.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-warning-box {
+    background-color: #fffbeb;
+    border: 1px solid #fef3c7;
+    color: #b45309;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+.security-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    outline: none;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+.security-input.match {
+    border-color: #ef4444;
+    color: #b91c1c;
+    background-color: #fef2f2;
+}
+.security-input:focus {
+    border-color: #94a3b8;
+}
+.btn-cancel-custom {
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    width: 100%;
+    transition: all 0.2s;
+}
+.btn-cancel-custom:hover { background: #f8fafc; color: #1e293b; }
+.btn-delete-custom {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: none;
+    font-weight: 700;
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: not-allowed;
+    transition: all 0.2s;
+    box-shadow: none;
+}
+.btn-delete-custom.active {
+    background: #dc2626;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3);
+}
+.btn-delete-custom.active:hover { background: #b91c1c; }
+.btn-delete-custom.active:active { transform: scale(0.98); }
+</style>
 
 <div class="helpdesk-container">
     
     <!-- Header Blanco -->
     <nav class="helpdesk-nav">
-        <div style="max-width: 1150px; margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center;">
+        <div class="helpdesk-header-container">
             <div class="helpdesk-brand">
                 <div class="helpdesk-brand-icon">
                     <i class="bi bi-ticket-perforated-fill text-white"></i>
@@ -78,20 +246,23 @@ function getCategoriaClass($cat) {
             
             <div class="d-flex align-items-center gap-3">
                 <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
-                    <a href="<?= BASE_URL ?>reportes/soportes" target="_blank" class="btn btn-sm btn-outline-secondary d-none d-md-inline-flex">
+                    <a href="<?= BASE_URL ?>reportes/soportes" target="_blank" class="btn btn-outline-secondary d-none d-md-inline-flex">
                         <i class="bi bi-download me-1"></i>Exportar
                     </a>
                 <?php endif; ?>
                 
                 <a href="<?= BASE_URL ?>soportes/crear" class="btn-nuevo-ticket">
                     <i class="bi bi-plus-lg"></i>
-                    <span class="d-none d-sm-inline">Nuevo Ticket</span>
+                    <span>Nuevo Ticket</span>
                 </a>
             </div>
         </div>
     </nav>
 
-    <main class="container-fluid px-4 py-4" style="max-width: 1200px; margin: 0 auto;">
+    <main class="container-fluid px-4 py-4 helpdesk-main-container">
+        
+        <!-- Main Content Card Container -->
+        <div class="helpdesk-content-card">
         
         <!-- KPI Cards -->
         <div class="helpdesk-kpis">
@@ -140,7 +311,28 @@ function getCategoriaClass($cat) {
         </div>
 
         <!-- Filters & Search -->
-        <div class="helpdesk-filters">
+        <div class="helpdesk-filters d-flex align-items-center gap-2 flex-wrap">
+            
+            <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
+            <div class="d-flex align-items-center gap-2" style="transition: all 0.3s ease;">
+                <!-- Toggle Switch (Standalone) -->
+                <div class="form-check form-switch mb-0" title="Activar selección múltiple">
+                    <input class="form-check-input" type="checkbox" id="checkBulkMode" style="cursor: pointer; width: 3em; height: 1.5em;">
+                </div>
+                <!-- Select All Checkbox (Hidden by default) -->
+                <div id="containerSelectAll" class="animate-fadeIn d-none" style="transition: all 0.3s ease;">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="checkSelectAll" style="cursor: pointer; border-color: #cbd5e1;">
+                        <label class="form-check-label text-muted fs-sm user-select-none" for="checkSelectAll" style="cursor: pointer;">Todo</label>
+                    </div>
+                </div>
+                <!-- Modern Delete Button -->
+                <button id="btnBulkTicketDelete" class="btn btn-danger d-none animate-bounceIn" style="border-radius: 50px; padding: 6px 16px; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.4); border: none; font-weight: 500; transition: all 0.3s ease;">
+                    <i class="bi bi-trash-fill"></i> <span id="ticketSelectedCount" class="bg-white text-danger badge rounded-pill ms-1">0</span>
+                </button>
+            </div>
+            <?php endif; ?>
+
             <div class="helpdesk-tabs">
                 <button class="helpdesk-tab active" data-filter="todos">Todos</button>
                 <button class="helpdesk-tab" data-filter="pendiente">Pendientes</button>
@@ -156,7 +348,7 @@ function getCategoriaClass($cat) {
 
         <!-- Ticket Feed -->
         <div class="helpdesk-feed">
-            <div id="ticketFeed">
+            <div id="ticketFeed" data-per-page="<?= $paginationPerPage ?>">
                 <?php foreach ($soportes as $s): 
                     $prioridad_class = strtolower($s->prioridad ?? 'media');
                     $estado_class = strtolower(str_replace(' ', '_', $s->estado ?? 'pendiente'));
@@ -166,9 +358,15 @@ function getCategoriaClass($cat) {
                     $tiempo = tiempoRelativo($s->fecha);
                 ?>
                     <div class="helpdesk-ticket priority-<?= $prioridad_class ?>" 
+                         data-ticket-id="<?= $s->id ?>"
                          data-estado="<?= $estado_class ?>"
                          data-tecnico="<?= $es_mi_ticket ? 'mio' : 'otro' ?>"
                          data-search="<?= htmlspecialchars(strtolower(($s->descripcion ?? '') . ' ' . ($s->equipo_serial ?? '') . ' ' . ($s->solicitante_nombre ?? ''))) ?>">
+                        
+                        <div class="ticket-checkbox">
+                            <i class="bi bi-check-circle-fill icon-checked"></i>
+                            <i class="bi bi-circle icon-unchecked"></i>
+                        </div>
                         
                         <!-- Status Icon -->
                         <div class="helpdesk-status-icon <?= $estado_class ?>" 
@@ -315,179 +513,322 @@ function getCategoriaClass($cat) {
                 </div>
             <?php endif; ?>
 
-            <!-- Modern Pagination Footer -->
-            <div id="paginationFooter" style="padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid #e2e8f0; margin-top: 1rem;">
-                <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <span style="font-size: 0.875rem; color: #64748b;">
-                        Mostrando <strong style="color: #0f172a;" id="visibleCountDisplay">0</strong> de <strong style="color: #0f172a;" id="totalCountDisplay">0</strong>
-                    </span>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 0.75rem; color: #94a3b8;">Mostrar:</span>
-                        <select id="itemsPerPageSelector" onchange="changeClientItemsPerPage(this.value)" style="padding: 0.25rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.75rem; color: #475569; background: white; cursor: pointer;">
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="-1">Todos</option>
-                        </select>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <button id="btnPrevPage" onclick="prevPage()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #64748b; font-size: 0.875rem; cursor: pointer; transition: all 0.2s;">
-                        <i class="bi bi-chevron-left"></i> Anterior
-                    </button>
-                    <span style="font-size: 0.875rem; color: #475569; font-weight: 500; padding: 0 0.5rem;">
-                        Página <span id="currentPageDisplay">1</span> / <span id="totalPagesDisplay">1</span>
-                    </span>
-                    <button id="btnNextPage" onclick="nextPage()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #64748b; font-size: 0.875rem; cursor: pointer; transition: all 0.2s;">
-                        Siguiente <i class="bi bi-chevron-right"></i>
-                    </button>
+        </div><!-- End helpdesk-feed -->
+
+        <!-- Modern Pagination Footer (outside feed, inside content-card) -->
+        <div id="paginationFooter" class="helpdesk-pagination-footer">
+            <div class="helpdesk-pagination-info">
+                <span class="text-slate-500 fs-sm">
+                    Mostrando <strong class="text-slate-900" id="visibleCountDisplay">0</strong> de <strong class="text-slate-900" id="totalCountDisplay">0</strong>
+                </span>
+                <div class="helpdesk-pagination-controls">
+                    <span class="text-slate-400 fs-xs">Mostrar:</span>
+                    <select id="itemsPerPageSelector" onchange="changeClientItemsPerPage(this.value)" class="pagination-select">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="-1">Todos</option>
+                    </select>
                 </div>
             </div>
+            <div class="helpdesk-pagination-controls">
+                <button id="btnPrevPage" onclick="prevPage()" class="pagination-btn">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </button>
+                <span class="pagination-page-info">
+                    Página <span id="currentPageDisplay">1</span> / <span id="totalPagesDisplay">1</span>
+                </span>
+                <button id="btnNextPage" onclick="nextPage()" class="pagination-btn">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
         </div>
+        
+        </div><!-- End helpdesk-content-card -->
 
     </main>
 </div>
 
+<!-- Custom Delete Modal Markup -->
+<div id="customDeleteModal" class="custom-modal-backdrop">
+    <div class="custom-modal-content">
+        <!-- Header -->
+        <div class="modal-header-danger">
+            <div class="d-flex align-items-center gap-3">
+                <div class="icon-danger-box">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div>
+                    <h3 class="m-0 fs-6 fw-bold text-danger-900" style="color: #7f1d1d;">Eliminar Selección</h3>
+                </div>
+            </div>
+            <button class="btn btn-link text-decoration-none p-0" id="closeModalBtn" style="color: #fca5a5;">
+                <i class="bi bi-x-lg" style="font-size: 1.2rem;"></i>
+            </button>
+        </div>
+
+        <div class="p-4">
+            <!-- Context -->
+            <p class="text-secondary fs-sm mb-0">
+                Estás a punto de eliminar permanentemente <strong id="deleteCountDisplay" class="text-dark bg-light px-1 rounded border">0 tickets</strong>.
+            </p>
+            
+            <div class="modal-warning-box">
+                <i class="bi bi-exclamation-circle-fill flex-shrink-0"></i>
+                <div>
+                    <strong>Advertencia:</strong> Se perderán comentarios, archivos y el historial completo. Esta acción no se puede deshacer.
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="mt-4 mb-4 position-relative">
+                <label class="d-block text-muted fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                    PARA CONFIRMAR, ESCRIBE "ELIMINAR" ABAJO
+                </label>
+                <div class="position-relative">
+                    <input type="text" id="deleteConfirmationInput" class="security-input" placeholder="ELIMINAR" autocomplete="off">
+                    <div id="unlockIcon" class="position-absolute d-none text-danger animate-pulse" style="right: 15px; top: 50%; transform: translateY(-50%);">
+                        <i class="bi bi-unlock-fill fs-5"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="d-flex gap-3">
+                <button id="cancelDeleteBtn" class="btn-cancel-custom">Cancelar</button>
+                <button id="confirmDeleteBtn" class="btn-delete-custom" disabled>
+                    <span class="normal-state"><i class="bi bi-trash"></i> Eliminar</span>
+                    <span class="loading-state d-none"><span class="spinner-border spinner-border-sm me-2"></span> Eliminando...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.helpdesk-tab');
-    const searchInput = document.getElementById('searchTickets');
-    const tickets = document.querySelectorAll('.helpdesk-ticket');
+    const checkBulkMode = document.getElementById('checkBulkMode');
+    const btnBulkDelete = document.getElementById('btnBulkTicketDelete');
+    const selectedCountSpan = document.getElementById('ticketSelectedCount');
+    const feed = document.getElementById('ticketFeed');
+    let isSelectionMode = false;
+    let selectedIds = new Set();
     
-    let currentFilter = 'todos';
-    let currentSearch = '';
-
-    // Variables de Paginación
-    let itemsPerPage = <?= $paginationPerPage ?>;
-    let currentPage = 1;
-    let filteredIndices = []; // Indices de items que coinciden con filtro
-    
-    // Init selector
-    const selector = document.getElementById('itemsPerPageSelector');
-    if(selector) selector.value = itemsPerPage;
-
-    window.changeClientItemsPerPage = function(val) {
-        itemsPerPage = parseInt(val);
-        if (window.PaginationPrefs) PaginationPrefs.set(itemsPerPage);
-        else {
-             const expires = new Date();
-             expires.setFullYear(expires.getFullYear() + 1);
-             document.cookie = 'sgen_pagination_per_page=' + itemsPerPage + ';expires=' + expires.toUTCString() + ';path=/';
-        }
-        currentPage = 1;
-        applyFilters();
-    };
-
-    window.prevPage = function() {
-        if (currentPage > 1) {
-            currentPage--;
-            applyFilters();
-        }
-    };
-    window.nextPage = function() {
-        const totalPages = Math.ceil(filteredIndices.length / itemsPerPage);
-        if ((itemsPerPage === -1 && currentPage === 1) || (itemsPerPage !== -1 && currentPage < totalPages)) {
-            currentPage++;
-            applyFilters();
-        }
-    };
-
-    // Filter tabs
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            currentFilter = this.getAttribute('data-filter');
-            currentPage = 1; 
-            applyFilters();
-        });
-    });
-
-    // Search
-    searchInput.addEventListener('input', function() {
-        currentSearch = this.value.toLowerCase();
-        currentPage = 1;
-        applyFilters();
-    });
-
-    function applyFilters() {
-        filteredIndices = [];
-
-        // 1. Filter
-        tickets.forEach((ticket, index) => {
-            const estado = ticket.getAttribute('data-estado');
-            const tecnico = ticket.getAttribute('data-tecnico');
-            const searchText = ticket.getAttribute('data-search');
-
-            let matchesFilter = false;
-            
-            if (currentFilter === 'todos') {
-                matchesFilter = true;
-            } else if (currentFilter === 'mis_tickets') {
-                matchesFilter = tecnico === 'mio';
-            } else {
-                matchesFilter = estado === currentFilter;
-            }
-
-            const matchesSearch = searchText.includes(currentSearch);
-            
-            // Hide initially
-            ticket.style.display = 'none';
-
-            if (matchesFilter && matchesSearch) {
-                 filteredIndices.push(index);
-            }
-        });
-
-        const totalVisible = filteredIndices.length;
-        const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalVisible / itemsPerPage) || 1;
-        
-        if (currentPage > totalPages) currentPage = 1;
-
-        // 2. Paginate
-        const start = itemsPerPage === -1 ? 0 : (currentPage - 1) * itemsPerPage;
-        const end = itemsPerPage === -1 ? totalVisible : start + itemsPerPage;
-        const visibleIndices = filteredIndices.slice(start, end);
-        
-        visibleIndices.forEach(idx => {
-            tickets[idx].style.display = 'flex';
-        });
-
-        // 3. UI
-        document.getElementById('visibleCountDisplay').textContent = visibleIndices.length;
-        document.getElementById('totalCountDisplay').textContent = tickets.length;
-
-        document.getElementById('currentPageDisplay').textContent = currentPage;
-        document.getElementById('totalPagesDisplay').textContent = totalPages;
-        
-        const btnPrev = document.getElementById('btnPrevPage');
-        const btnNext = document.getElementById('btnNextPage');
-        
-        btnPrev.disabled = currentPage === 1;
-        btnPrev.style.opacity = currentPage === 1 ? '0.5' : '1';
-        btnPrev.style.pointerEvents = currentPage === 1 ? 'none' : 'auto';
-        
-        btnNext.disabled = currentPage === totalPages;
-        btnNext.style.opacity = currentPage === totalPages ? '0.5' : '1';
-        btnNext.style.pointerEvents = currentPage === totalPages ? 'none' : 'auto';
-
-        // Hide pagination if no results?
-        const footer = document.getElementById('paginationFooter');
-        if (visibleIndices.length === 0 && totalVisible === 0) {
-             // If completely empty, maybe show empty state message handled by PHP or static HTML?
-             // Original PHP has a check for empty($soportes). 
-             // But if filtering returns 0, we should show empty state?
-             // There is no JS empty state element in the original code. 
-             // Logic: If visibleIndices.length == 0, footer will show "0 de 5".
-             // We can keep it or hide it. Keeping it is fine.
-             footer.style.display = 'flex'; 
-        } else {
-            footer.style.display = 'flex';
-        }
+    // Fix: Move Modal to Body to escape stacking context (sidebar/header blur)
+    const modalEl = document.getElementById('customDeleteModal');
+    if (modalEl && modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
     }
     
-    // Init
-    applyFilters();
+    if (checkBulkMode && feed) {
+        // Toggle Selection Mode via Checkbox
+        checkBulkMode.addEventListener('change', function() {
+            isSelectionMode = this.checked;
+            const containerSelectAll = document.getElementById('containerSelectAll');
+            
+            if (isSelectionMode) {
+                feed.classList.add('selection-active');
+                if (containerSelectAll) containerSelectAll.classList.remove('d-none');
+            } else {
+                feed.classList.remove('selection-active');
+                if (containerSelectAll) containerSelectAll.classList.add('d-none');
+                selectedIds.clear(); // Clear local set
+                
+                // Uncheck select all if active
+                const checkSelectAll = document.getElementById('checkSelectAll');
+                if(checkSelectAll) checkSelectAll.checked = false;
+
+                // Visual clear handled by class removal, but ensure checkboxes reset via UI update if needed
+                // Actually usually we just remove class 'selected' from tickets
+                const selectedTickets = feed.querySelectorAll('.helpdesk-ticket.selected');
+                selectedTickets.forEach(t => t.classList.remove('selected'));
+                
+                updateUI();
+            }
+        });
+
+        // Select All Logic
+        const checkSelectAll = document.getElementById('checkSelectAll');
+        if (checkSelectAll) {
+            checkSelectAll.addEventListener('change', function() {
+                const isChecked = this.checked;
+                // Only select visible tickets in current page
+                const visibleTickets = feed.querySelectorAll('.helpdesk-ticket');
+                visibleTickets.forEach(ticket => {
+                    const id = ticket.dataset.ticketId;
+                    if (isChecked) {
+                        selectedIds.add(id);
+                        ticket.classList.add('selected');
+                    } else {
+                        selectedIds.delete(id);
+                        ticket.classList.remove('selected');
+                    }
+                });
+                updateUI();
+            });
+        }
+
+        // Event Delegation for Clicks (Selection)
+        feed.addEventListener('click', function(e) {
+            if (!isSelectionMode) return;
+            
+            const ticket = e.target.closest('.helpdesk-ticket');
+            if (ticket) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const id = ticket.dataset.ticketId;
+                if (selectedIds.has(id)) {
+                    selectedIds.delete(id);
+                    ticket.classList.remove('selected');
+                } else {
+                    selectedIds.add(id);
+                    ticket.classList.add('selected');
+                }
+                updateUI();
+            }
+        });
+        
+        // Helper to Close Modal
+        function closeDeleteModal() {
+            document.getElementById('customDeleteModal').classList.remove('active');
+            document.getElementById('deleteConfirmationInput').value = '';
+            document.getElementById('confirmDeleteBtn').disabled = true;
+            document.getElementById('confirmDeleteBtn').classList.remove('active');
+            document.getElementById('unlockIcon').classList.add('d-none');
+            document.getElementById('deleteConfirmationInput').classList.remove('match');
+        }
+
+        // Close Modal Events
+        document.getElementById('closeModalBtn').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+        document.querySelector('.custom-modal-backdrop').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('customDeleteModal').classList.contains('active')) {
+                closeDeleteModal();
+            }
+        });
+
+        // Input Validation
+        const deleteInput = document.getElementById('deleteConfirmationInput');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const unlockIcon = document.getElementById('unlockIcon');
+
+        deleteInput.addEventListener('input', function() {
+            const val = this.value.toUpperCase();
+            // Force Update Value to Upper
+            // this.value = val; // Optional: Force upper visual? React does it via state. simpler to just check
+            
+            if (val === 'ELIMINAR') {
+                this.classList.add('match');
+                confirmBtn.classList.add('active');
+                confirmBtn.disabled = false;
+                unlockIcon.classList.remove('d-none');
+            } else {
+                this.classList.remove('match');
+                confirmBtn.classList.remove('active');
+                confirmBtn.disabled = true;
+                unlockIcon.classList.add('d-none');
+            }
+        });
+
+        // Bulk Delete Action (Open Modal)
+        if (btnBulkDelete) {
+            btnBulkDelete.addEventListener('click', function() {
+                if (selectedIds.size === 0) return;
+                
+                // Update Count
+                document.getElementById('deleteCountDisplay').textContent = `${selectedIds.size} tickets`;
+                
+                // Open Modal
+                document.getElementById('customDeleteModal').classList.add('active');
+                
+                // Focus Input
+                setTimeout(() => document.getElementById('deleteConfirmationInput').focus(), 100);
+            });
+        }
+
+        // Confirm Delete Action
+        confirmBtn.addEventListener('click', function() {
+            if (deleteInput.value.toUpperCase() !== 'ELIMINAR') return;
+
+            // UI Loading State
+            confirmBtn.disabled = true; // Prevent double click
+            confirmBtn.querySelector('.normal-state').classList.add('d-none');
+            confirmBtn.querySelector('.loading-state').classList.remove('d-none');
+            deleteInput.disabled = true;
+
+            // Execute Delete
+            fetch('<?= BASE_URL ?>soportes/eliminar_tickets_masivos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ ids: Array.from(selectedIds) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Animate Removal
+                    selectedIds.forEach(id => {
+                        const el = feed.querySelector(`.helpdesk-ticket[data-ticket-id="${id}"]`);
+                        if (el) {
+                            el.style.opacity = '0';
+                            el.style.transform = 'scale(0.9)';
+                            setTimeout(() => el.remove(), 300);
+                        }
+                    });
+                    
+                    // Reset Mode
+                    setTimeout(() => {
+                        closeDeleteModal();
+                        checkBulkMode.checked = false;
+                        document.getElementById('checkSelectAll').checked = false;
+                        document.getElementById('containerSelectAll').classList.add('d-none');
+                        feed.classList.remove('selection-active');
+                        selectedIds.clear();
+                        updateUI();
+                        
+                        // Reset Button State
+                        confirmBtn.querySelector('.normal-state').classList.remove('d-none');
+                        confirmBtn.querySelector('.loading-state').classList.add('d-none');
+                        deleteInput.disabled = false;
+
+                        if (window.Toast) Toast.show('success', data.message);
+                        else Swal.fire('Eliminados', data.message, 'success');
+                    }, 500); // Wait for API + Animation
+
+                } else {
+                    closeDeleteModal();
+                    confirmBtn.querySelector('.normal-state').classList.remove('d-none');
+                    confirmBtn.querySelector('.loading-state').classList.add('d-none');
+                    deleteInput.disabled = false;
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                closeDeleteModal();
+                confirmBtn.querySelector('.normal-state').classList.remove('d-none');
+                confirmBtn.querySelector('.loading-state').classList.add('d-none');
+                deleteInput.disabled = false;
+                Swal.fire('Error', 'Error de conexión', 'error');
+            });
+        });
+    }
+
+    function updateUI() {
+        if (selectedCountSpan) selectedCountSpan.textContent = selectedIds.size;
+        if (btnBulkDelete) {
+            if (selectedIds.size > 0) btnBulkDelete.classList.remove('d-none');
+            else btnBulkDelete.classList.add('d-none');
+        }
+    }
 });
 </script>
+<script src="<?= BASE_URL ?>js/soportes.js?v=<?= time() ?>"></script>
+

@@ -16,58 +16,64 @@
 
 <script>
     // Pasamos la URL base de PHP a JavaScript
-    const APP_BASE_URL = '<?= BASE_URL ?>';
+    if (!window.APP_BASE_URL) {
+        window.APP_BASE_URL = '<?= BASE_URL ?>';
+    }
 </script>
 
 <!-- Dark Mode Initialization -->
 <script>
     // Cargar tema guardado desde PHP session
-    const savedTheme = '<?= $_SESSION['tema'] ?? 'light' ?>';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (!window.savedTheme) {
+        window.savedTheme = '<?= $_SESSION['tema'] ?? 'light' ?>';
+        document.documentElement.setAttribute('data-theme', window.savedTheme);
+    }
 </script>
 
 <!-- Global Pagination Preferences (using cookies for PHP access) -->
 <script>
-    window.PaginationPrefs = {
-        KEY: 'sgen_pagination_per_page',
-        DEFAULT: 10,
-        
-        get: function() {
-            // Leer de cookie
-            const match = document.cookie.match(new RegExp('(^| )' + this.KEY + '=([^;]+)'));
-            return match ? parseInt(match[2]) : this.DEFAULT;
-        },
-        
-        set: function(value) {
-            // Guardar en cookie (expira en 1 año)
-            const expires = new Date();
-            expires.setFullYear(expires.getFullYear() + 1);
-            document.cookie = this.KEY + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
-        },
-        
-        // Aplica la preferencia a todos los selectores de paginación en la página
-        apply: function() {
-            const savedValue = this.get();
-            document.querySelectorAll('[data-pagination-selector], #itemsPerPage, #pageLength').forEach(select => {
-                if (select.tagName === 'SELECT') {
-                    const optionExists = Array.from(select.options).some(opt => opt.value == savedValue);
-                    if (optionExists) {
-                        select.value = savedValue;
-                    }
-                }
-            });
-        },
-        
-        init: function() {
-            this.apply();
+    if (!window.PaginationPrefs) {
+        window.PaginationPrefs = {
+            KEY: 'sgen_pagination_per_page',
+            DEFAULT: 10,
             
-            document.querySelectorAll('[data-pagination-selector], #itemsPerPage, #pageLength').forEach(select => {
-                select.addEventListener('change', (e) => {
-                    this.set(e.target.value);
+            get: function() {
+                // Leer de cookie
+                const match = document.cookie.match(new RegExp('(^| )' + this.KEY + '=([^;]+)'));
+                return match ? parseInt(match[2]) : this.DEFAULT;
+            },
+            
+            set: function(value) {
+                // Guardar en cookie (expira en 1 año)
+                const expires = new Date();
+                expires.setFullYear(expires.getFullYear() + 1);
+                document.cookie = this.KEY + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
+            },
+            
+            // Aplica la preferencia a todos los selectores de paginación en la página
+            apply: function() {
+                const savedValue = this.get();
+                document.querySelectorAll('[data-pagination-selector], #itemsPerPage, #pageLength').forEach(select => {
+                    if (select.tagName === 'SELECT') {
+                        const optionExists = Array.from(select.options).some(opt => opt.value == savedValue);
+                        if (optionExists) {
+                            select.value = savedValue;
+                        }
+                    }
                 });
-            });
-        }
-    };
+            },
+            
+            init: function() {
+                this.apply();
+                
+                document.querySelectorAll('[data-pagination-selector], #itemsPerPage, #pageLength').forEach(select => {
+                    select.addEventListener('change', (e) => {
+                        this.set(e.target.value);
+                    });
+                });
+            }
+        };
+    }
     
     document.addEventListener('DOMContentLoaded', () => PaginationPrefs.init());
 </script>
@@ -78,7 +84,7 @@
 <script src="<?= BASE_URL ?>js/toast.js?v=<?= time() ?>"></script>
 
 <!-- Delete Modal Assets -->
-<link rel="stylesheet" href="<?= BASE_URL ?>css/modal-delete-modern.css?v=<?= time() ?>">
+
 <script src="<?= BASE_URL ?>js/modal-delete.js?v=<?= time() ?>"></script>
 
 <!-- Global Delete Modal -->
@@ -150,8 +156,8 @@
 <!-- ========================================== -->
 <!-- MODERN INVENTORY WRITE-OFF MODAL           -->
 <!-- ========================================== -->
-<link rel="stylesheet" href="<?= BASE_URL ?>public/css/modal-inventory-modern.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>public/js/modal-inventory.js?v=<?= time() ?>"></script>
+
+<script src="<?= BASE_URL ?>js/modal-inventory.js?v=<?= time() ?>"></script>
 
 <div id="inventoryWriteOffModal" class="inventory-modal-overlay">
     <div class="inventory-modal-container">
@@ -251,7 +257,7 @@
 </div>
 
 <!-- Assign Technician Modal -->
-<link rel="stylesheet" href="<?= BASE_URL ?>public/css/modal-assign-tech.css?v=<?= time() ?>">
+
 <div id="assignTechOverlay" class="at-overlay">
     <div id="assignTechModal" class="at-modal">
         <!-- Header -->
@@ -345,7 +351,7 @@
         </div>
     </div>
 </div>
-<script src="<?= BASE_URL ?>public/js/modal-assign-tech.js?v=<?= time() ?>"></script>
+<script src="<?= BASE_URL ?>js/modal-assign-tech.js?v=FIX_CACHE_999"></script>
 
 </body>
 </html>
@@ -353,8 +359,8 @@
 <!-- ========================================== -->
 <!-- MODERN STOCK ADJUSTMENT MODAL (ENTRADA)    -->
 <!-- ========================================== -->
-<link rel="stylesheet" href="<?= BASE_URL ?>public/css/modal-stock-adjust.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>public/js/modal-stock-adjust.js?v=<?= time() ?>"></script>
+
+<script src="<?= BASE_URL ?>js/modal-stock-adjust.js?v=<?= time() ?>"></script>
 
 <div id="stockAdjustmentModal" class="stock-adjust-overlay">
     <div class="stock-adjust-container">

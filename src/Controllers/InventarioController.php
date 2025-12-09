@@ -6,13 +6,15 @@ use App\Models\Inventario;
 use App\Models\Departamento;
 use App\Models\Empleado;
 use App\Models\Equipo;
-use App\Core\Validator;
+use App\Services\InventarioService;
+use Exception;
 
 class InventarioController extends Controller {
     private $inventarioModel;
     private $departamentoModel;
     private $empleadoModel;
     private $equipoModel;
+    private $inventarioService;
 
     public function __construct() {
         parent::__construct();
@@ -20,6 +22,7 @@ class InventarioController extends Controller {
         $this->departamentoModel = new Departamento();
         $this->empleadoModel = new Empleado();
         $this->equipoModel = new Equipo();
+        $this->inventarioService = new InventarioService();
     }
 
     public function index() {
@@ -96,12 +99,15 @@ class InventarioController extends Controller {
                 'valor_compra' => !empty($_POST['valor_compra']) ? $_POST['valor_compra'] : 0.00
             ];
             
-            $itemId = $this->inventarioModel->registrarItem($datos);
-            if ($itemId > 0) {
-                $this->setFlashMessage('success', 'Ítem creado exitosamente.');
-                $this->logBitacora("Registró nuevo ítem '{$datos['nombre']}'", 'inventario', $itemId);
-                header('Location: ' . BASE_URL . 'inventario');
-                exit;
+            try {
+                $itemId = $this->inventarioService->registrarItem($datos, $_SESSION['user_id']);
+                if ($itemId > 0) {
+                    $this->setFlashMessage('success', 'Ítem creado exitosamente.');
+                    header('Location: ' . BASE_URL . 'inventario');
+                    exit;
+                }
+            } catch (Exception $e) {
+                $this->setFlashMessage('error', 'Error al crear: ' . $e->getMessage());
             }
         }
         $this->render('inventario/formulario', ['titulo' => 'Registrar Nuevo Ítem']);
@@ -110,17 +116,16 @@ class InventarioController extends Controller {
     public function movimiento() {
         $this->restrictTo(['admin']);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['item_id'];
-            $cantidad = $_POST['cantidad'];
+            $id = (int)$_POST['item_id'];
+            $cantidad = (int)$_POST['cantidad'];
             $tipo = $_POST['tipo'];
             $motivo = $_POST['motivo'];
-            $usuario = $_SESSION['user_id'];
+            $usuarioId = $_SESSION['user_id'];
 
             try {
-                $this->inventarioModel->actualizarStock($id, $cantidad, $tipo, $usuario, $motivo);
+                $this->inventarioService->registrarMovimiento($id, $cantidad, $tipo, $motivo, $usuarioId);
                 $this->setFlashMessage('success', 'Movimiento registrado exitosamente.');
-                $this->logBitacora("Registró movimiento {$tipo} de {$cantidad} unidades para ítem #{$id}", 'inventario', $id);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->setFlashMessage('error', 'Error al registrar movimiento: ' . $e->getMessage());
             }
             header('Location: ' . BASE_URL . 'inventario');
@@ -145,9 +150,6 @@ class InventarioController extends Controller {
         ]);
     }
 
-    /**
-     * Muestra el formulario de edición de un ítem del inventario.
-     */
     public function editar(int $id) {
         $this->restrictTo(['admin']);
         
@@ -165,9 +167,6 @@ class InventarioController extends Controller {
         ]);
     }
 
-    /**
-     * Actualiza un ítem del inventario.
-     */
     public function actualizar(int $id) {
         $this->restrictTo(['admin']);
         
@@ -200,10 +199,9 @@ class InventarioController extends Controller {
         ];
 
         try {
-            $this->inventarioModel->actualizarItem($datos);
+            $this->inventarioService->actualizarItem($id, $datos, $_SESSION['user_id']);
             $this->setFlashMessage('success', 'Artículo actualizado correctamente.');
-            $this->logBitacora("Actualizó el artículo #{$id} ({$datos['nombre']})", 'inventario', $id);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->setFlashMessage('error', 'Error al actualizar: ' . $e->getMessage());
         }
 
@@ -211,24 +209,15 @@ class InventarioController extends Controller {
         exit;
     }
 
-    /**
-     * Elimina un ítem del inventario.
-     */
     public function eliminar(int $id) {
         $this->restrictTo(['admin']);
         
-        $item = $this->inventarioModel->findById($id);
-        if (!$item) {
-            $this->setFlashMessage('error', 'Ítem no encontrado.');
-            header('Location: ' . BASE_URL . 'inventario');
-            exit;
-        }
-
+        // This is now handled by the 'baja' method with 'eliminar_completo' flag usually, 
+        // but if we want a direct delete route, we can use the service's registrarBaja with flag true
         try {
-            $this->inventarioModel->eliminarItem($id);
+            $this->inventarioService->registrarBaja($id, 0, 'Eliminación Directa', $_SESSION['user_id'], true);
             $this->setFlashMessage('success', 'Artículo eliminado correctamente.');
-            $this->logBitacora("Eliminó el artículo #{$id} ({$item->nombre})", 'inventario', $id);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->setFlashMessage('error', 'Error al eliminar: ' . $e->getMessage());
         }
 
@@ -262,24 +251,17 @@ class InventarioController extends Controller {
             exit;
         }
 
-        $itemId = $_POST['item_id'];
-        $origenId = empty($_POST['origen_id']) ? null : $_POST['origen_id'];
-        $destinoId = empty($_POST['destino_id']) ? null : $_POST['destino_id'];
+        $itemId = (int)$_POST['item_id'];
+        $origenId = empty($_POST['origen_id']) ? null : (int)$_POST['origen_id'];
+        $destinoId = empty($_POST['destino_id']) ? null : (int)$_POST['destino_id'];
         $cantidad = (int)$_POST['cantidad'];
         $motivo = $_POST['motivo'];
         $usuarioId = $_SESSION['user_id'];
 
-        if ($origenId == $destinoId) {
-            $this->setFlashMessage('error', 'El origen y el destino no pueden ser iguales.');
-            header('Location: ' . BASE_URL . 'inventario/distribucion/' . $itemId);
-            exit;
-        }
-
         try {
-            $this->inventarioModel->transferirStock($itemId, $origenId, $destinoId, $cantidad, $usuarioId, $motivo);
+            $this->inventarioService->transferirStock($itemId, $origenId, $destinoId, $cantidad, $usuarioId, $motivo);
             $this->setFlashMessage('success', 'Transferencia realizada exitosamente.');
-            $this->logBitacora("Transfirió {$cantidad} unidades del ítem #{$itemId}", 'inventario', $itemId);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->setFlashMessage('error', 'Error en la transferencia: ' . $e->getMessage());
         }
 
@@ -287,65 +269,12 @@ class InventarioController extends Controller {
         exit;
     }
     
-    public function por_departamento($id = null)
-    {
-        $this->restrictTo(['admin', 'tecnico']);
-        
-        if (!$id) {
-            if ($_SESSION['rol'] === 'admin') {
-                $departamentos = (new \App\Models\Departamento())->findAllWithStats();
-                $this->render('inventario/selector_departamento', [
-                    'titulo' => 'Inventario por Departamento',
-                    'departamentos' => $departamentos
-                ]);
-                return;
-            } else {
-                $deptId = $_SESSION['departamento_id'];
-                if ($deptId) {
-                    header('Location: ' . BASE_URL . 'inventario/departamento/' . $deptId);
-                    exit;
-                } else {
-                    $this->setFlashMessage('error', 'No tienes un departamento asignado.');
-                    header('Location: ' . BASE_URL . 'inventario');
-                    exit;
-                }
-            }
-        }
 
-        if ($_SESSION['rol'] === 'tecnico' && $id != $_SESSION['departamento_id']) {
-            $this->setFlashMessage('error', 'No tienes permiso para ver el inventario de otros departamentos.');
-            header('Location: ' . BASE_URL . 'inventario/departamento/' . $_SESSION['departamento_id']);
-            exit;
-        }
 
-        $departamento = (new \App\Models\Departamento())->findByIdWithStats($id);
-        if (!$departamento) {
-            $this->setFlashMessage('error', 'Departamento no encontrado.');
-            header('Location: ' . BASE_URL . 'inventario');
-            exit;
-        }
-
-        $items = $this->inventarioModel->obtenerItemsPorDepartamento($id);
-        
-        // Obtener historial de movimientos del departamento
-        $movimientos = $this->inventarioModel->obtenerMovimientosPorDepartamento($id, 20);
-
-        $this->render('inventario/por_departamento', [
-            'titulo' => 'Inventario: ' . $departamento->nombre,
-            'items' => $items,
-            'departamento' => $departamento,
-            'movimientos' => $movimientos
-        ]);
-    }
-
-    /**
-     * Muestra el historial de movimientos de un departamento específico.
-     */
     public function historial_departamento(int $id)
     {
         $this->restrictTo(['admin', 'tecnico']);
         
-        // Verificar permisos para técnicos
         if ($_SESSION['rol'] === 'tecnico' && $id != $_SESSION['departamento_id']) {
             $this->setFlashMessage('error', 'No tienes permiso para ver el historial de otros departamentos.');
             header('Location: ' . BASE_URL . 'inventario/departamento/' . $_SESSION['departamento_id']);
@@ -359,7 +288,6 @@ class InventarioController extends Controller {
             exit;
         }
 
-        // Obtener más movimientos para la página dedicada (50 en lugar de 20)
         $movimientos = $this->inventarioModel->obtenerMovimientosPorDepartamento($id, 50);
 
         $this->render('inventario/historial_departamento', [
@@ -386,38 +314,64 @@ class InventarioController extends Controller {
             exit;
         }
 
-        $itemId = $_POST['item_id'];
+        $itemId = (int)$_POST['item_id'];
         $cantidad = (int)$_POST['cantidad'];
         $motivo = $_POST['motivo'];
         $usuarioId = $_SESSION['user_id'];
-        
-        // Check for complete deletion flag
         $eliminarCompleto = isset($_POST['eliminar_completo']) && $_POST['eliminar_completo'] == '1';
 
-        if (!$eliminarCompleto && $cantidad <= 0) {
-            $this->setFlashMessage('error', 'La cantidad debe ser mayor a 0.');
-            header('Location: ' . BASE_URL . 'inventario');
-            exit;
-        }
-
         try {
-            if ($eliminarCompleto) {
-                if ($this->inventarioModel->eliminarItem($itemId)) {
-                    $this->setFlashMessage('success', 'Artículo eliminado completamente del inventario.');
-                    $this->logBitacora("Eliminó el artículo #{$itemId} del inventario", 'inventario', $itemId);
-                } else {
-                    throw new \Exception("No se pudo eliminar el artículo.");
-                }
-            } else {
-                $this->inventarioModel->registrarBaja($itemId, $cantidad, $motivo, $usuarioId);
-                $this->setFlashMessage('success', 'Baja registrada exitosamente.');
-                $this->logBitacora("Registró baja de {$cantidad} unidades del ítem #{$itemId}", 'inventario', $itemId);
-            }
-        } catch (\Exception $e) {
+            $this->inventarioService->registrarBaja($itemId, $cantidad, $motivo, $usuarioId, $eliminarCompleto);
+            $this->setFlashMessage('success', $eliminarCompleto ? 'Artículo eliminado completamente.' : 'Baja registrada exitosamente.');
+        } catch (Exception $e) {
             $this->setFlashMessage('error', 'Error: ' . $e->getMessage());
         }
 
         header('Location: ' . BASE_URL . 'inventario');
+        exit;
+    }
+
+    /**
+     * Bulk delete inventory items via AJAX
+     */
+    public function eliminar_masivo()
+    {
+        $this->restrictTo(['admin']);
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ids = $input['ids'] ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            echo json_encode(['success' => false, 'message' => 'No se proporcionaron IDs']);
+            exit;
+        }
+
+        $deletedCount = 0;
+
+        foreach ($ids as $id) {
+            try {
+                $this->inventarioService->registrarBaja((int)$id, 0, 'Eliminación Masiva', $_SESSION['user_id'], true);
+                $deletedCount++;
+            } catch (Exception $e) {
+                // Skip failed items
+            }
+        }
+
+        if ($deletedCount > 0) {
+            echo json_encode([
+                'success' => true,
+                'message' => "Se eliminaron {$deletedCount} artículo(s) correctamente.",
+                'deleted' => $deletedCount
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No se pudo eliminar ningún artículo']);
+        }
         exit;
     }
 }

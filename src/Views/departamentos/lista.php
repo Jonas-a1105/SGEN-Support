@@ -13,13 +13,13 @@ function getDeptColor($index, $colores) {
 }
 ?>
 
-<link rel="stylesheet" href="<?= BASE_URL ?>css/departamentos-moderno.css?v=<?= time() ?>">
+
 
 <div class="departamentos-container">
     
     <!-- Header -->
     <div class="departamentos-header">
-        <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="max-width: 1400px; margin: 0 auto;">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 p-3" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
@@ -40,10 +40,30 @@ function getDeptColor($index, $colores) {
         </div>
     </div>
 
-    <main class="container-fluid px-4 py-4" style="max-width: 1400px;">
+    <main id="departamentosMain" class="container-fluid px-4 py-4" style="max-width: 1400px; margin: 0 auto;">
+        
+        <!-- Main Content Card Container -->
+        <div class="departamentos-content-card">
         
         <!-- Toolbar -->
         <div class="departamentos-toolbar">
+            <!-- Bulk Delete Controls -->
+            <div class="bulk-controls">
+                <div class="form-check form-switch mb-0" title="Activar selección múltiple">
+                    <input class="form-check-input bulk-toggle" type="checkbox" id="bulkModeToggle" style="cursor: pointer; width: 3em; height: 1.5em;">
+                </div>
+                <div id="bulkSelectAllContainer" class="bulk-select-all">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="bulkSelectAll" style="cursor: pointer; border-color: #cbd5e1;">
+                        <label class="form-check-label text-muted fs-sm user-select-none" for="bulkSelectAll" style="cursor: pointer;">Todo</label>
+                    </div>
+                </div>
+                <button id="bulkDeleteBtn" class="bulk-delete-btn">
+                    <i class="bi bi-trash"></i>
+                    <span id="bulkSelectedCount">0</span> seleccionados
+                </button>
+            </div>
+            
             <!-- Search -->
             <div class="search-box-dept">
                 <input type="text" id="searchDepartamentos" placeholder="Buscar por nombre...">
@@ -72,7 +92,17 @@ function getDeptColor($index, $colores) {
                 $codigo = 'DEPT-' . str_pad($d->id, 2, '0', STR_PAD_LEFT);
                 $descripcion = $d->descripcion ?? 'Gestión y administración del área de ' . strtolower($d->nombre) . '.';
             ?>
-                <div class="dept-card" data-search="<?= htmlspecialchars(strtolower($d->nombre)) ?>">
+                <div class="dept-card" 
+                     data-bulk-item
+                     data-dept-id="<?= $d->id ?>"
+                     data-search="<?= htmlspecialchars(strtolower($d->nombre)) ?>"
+                     style="position: relative;">
+                    <!-- Bulk Checkbox -->
+                    <div class="bulk-checkbox">
+                        <i class="bi bi-check-circle-fill icon-checked"></i>
+                        <i class="bi bi-circle icon-unchecked"></i>
+                    </div>
+                    
                     <!-- Stripe de color -->
                     <div class="dept-card-stripe <?= $color ?>"></div>
 
@@ -95,7 +125,8 @@ function getDeptColor($index, $colores) {
                                     <li>
                                         <a class="dropdown-item text-danger" 
                                            href="<?= BASE_URL ?>departamentos/eliminar/<?= $d->id ?>"
-                                           onclick="return confirm('¿Eliminar este departamento?')">
+                                           data-no-global-delete="true"
+                                           onclick="return confirmDeleteDept(event, this.href, '<?= addslashes(htmlspecialchars($d->nombre)) ?>')">
                                             <i class="bi bi-trash me-2"></i>Eliminar
                                         </a>
                                     </li>
@@ -183,8 +214,15 @@ function getDeptColor($index, $colores) {
                         $activos_count = $d->equipos_count ?? 0;
                         $codigo = 'DEPT-' . str_pad($d->id, 2, '0', STR_PAD_LEFT);
                     ?>
-                        <tr data-search="<?= htmlspecialchars(strtolower($d->nombre)) ?>">
-                            <td>
+                        <tr data-bulk-item
+                            data-dept-id="<?= $d->id ?>"
+                            data-search="<?= htmlspecialchars(strtolower($d->nombre)) ?>">
+                            <td style="position: relative;">
+                                <!-- Bulk Checkbox -->
+                                <div class="bulk-checkbox">
+                                    <i class="bi bi-check-circle-fill icon-checked"></i>
+                                    <i class="bi bi-circle icon-unchecked"></i>
+                                </div>
                                 <div class="dept-table-info">
                                     <div class="dept-table-icon <?= $color ?>-light text-<?= $color ?>">
                                         <i class="bi bi-building"></i>
@@ -212,6 +250,13 @@ function getDeptColor($index, $colores) {
                                     <a href="<?= BASE_URL ?>departamentos/editar/<?= $d->id ?>" class="dept-table-action" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    <a href="<?= BASE_URL ?>departamentos/eliminar/<?= $d->id ?>" 
+                                       class="dept-table-action text-danger" 
+                                       title="Eliminar"
+                                       data-no-global-delete="true"
+                                       onclick="return confirmDeleteDept(event, this.href, '<?= addslashes(htmlspecialchars($d->nombre)) ?>')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -226,80 +271,47 @@ function getDeptColor($index, $colores) {
             <h3 class="mt-3">No se encontraron departamentos</h3>
             <p class="text-muted">Prueba cambiando el término de búsqueda.</p>
         </div>
+        
+        </div><!-- End departamentos-content-card -->
 
     </main>
 </div>
 
+<script src="<?= BASE_URL ?>js/departamentos.js?v=<?= time() ?>"></script>
+
+<!-- Bulk Delete Assets -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
+<script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
+
+<!-- Modern Simple Delete Modal Integration -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
+<script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const gridView = document.getElementById('gridViewDept');
-    const listView = document.getElementById('listViewDept');
-    const emptyState = document.getElementById('emptyStateDept');
-    const searchInput = document.getElementById('searchDepartamentos');
-    const btnViewGrid = document.getElementById('btnViewGridDept');
-    const btnViewList = document.getElementById('btnViewListDept');
-    
-    let currentView = 'grid';
-
-    // Toggle view
-    btnViewGrid.addEventListener('click', () => {
-        gridView.style.display = 'grid';
-        listView.style.display = 'none';
-        btnViewGrid.classList.add('active');
-        btnViewList.classList.remove('active');
-        currentView = 'grid';
-        filterItems();
-    });
-
-    btnViewList.addEventListener('click', () => {
-        gridView.style.display = 'none';
-        listView.style.display = 'block';
-        btnViewList.classList.add('active');
-        btnViewGrid.classList.remove('active');
-        currentView = 'list';
-        filterItems();
-    });
-
-    // Search
-    searchInput.addEventListener('input', filterItems);
-
-    function filterItems() {
-        const term = searchInput.value.toLowerCase();
-        let hasMatches = false;
-
-        if (currentView === 'grid') {
-            const cards = gridView.querySelectorAll('.dept-card');
-            cards.forEach(card => {
-                const name = card.getAttribute('data-search');
-                if (name.includes(term)) {
-                    card.style.display = 'flex';
-                    hasMatches = true;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        } else {
-            const rows = listView.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const name = row.getAttribute('data-search');
-                if (name.includes(term)) {
-                    row.style.display = 'table-row';
-                    hasMatches = true;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        if (!hasMatches) {
-            emptyState.style.display = 'block';
-            if(currentView === 'grid') gridView.style.display = 'none';
-            else listView.style.display = 'none';
-        } else {
-            emptyState.style.display = 'none';
-            if(currentView === 'grid') gridView.style.display = 'grid';
-            else listView.style.display = 'block';
-        }
+    function confirmDeleteDept(e, url, name) {
+        e.preventDefault();
+        SimpleDeleteModal.open(url, {
+            type: 'Departamento',
+            name: name,
+            warning: 'Eliminar un departamento afectará a todos los empleados y equipos asignados.'
+        });
+        return false;
     }
-});
+    
+    // Initialize Bulk Delete
+    document.addEventListener('DOMContentLoaded', function() {
+        BulkDelete.init({
+            containerId: 'departamentosMain',
+            itemSelector: '[data-bulk-item]',
+            itemIdAttribute: 'data-dept-id',
+            deleteUrl: BASE_URL + 'departamentos/eliminar_masivo',
+            entityName: 'departamentos',
+            entityNameSingular: 'departamento',
+            toggleId: 'bulkModeToggle',
+            selectAllId: 'bulkSelectAll',
+            selectAllContainerId: 'bulkSelectAllContainer',
+            deleteButtonId: 'bulkDeleteBtn',
+            countSpanId: 'bulkSelectedCount'
+        });
+    });
 </script>

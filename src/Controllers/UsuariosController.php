@@ -92,13 +92,43 @@ class UsuariosController extends Controller
         try {
             if ($es_edicion) {
                 if ($this->usuarioModel->update($id, $datos)) {
-                    $this->setFlashMessage('success', "Usuario #{$id} actualizado.");
+                    
+                    // --- SYNC LOGIC SGEN ---
+                    // 1. Desvincular usuario de cualquier empleado que lo tenga actualmente
+                    $this->empleadoModel->desvincularUsuario($id);
+
+                    // 2. Si se seleccionó un empleado, vincularlo a este usuario y departamento
+                    $empleado_id = $datos['empleado_id'];
+                    $departamento_id = $datos['departamento_id'];
+
+                    if (!empty($empleado_id)) {
+                        $this->empleadoModel->update($empleado_id, [
+                            'usuario_id' => $id,
+                            'departamento_id' => $departamento_id ?: null
+                        ]);
+                    }
+                    // -----------------------
+
+                    $this->setFlashMessage('success', "Usuario #{$id} actualizado. (Sincronizado con Empleado)");
                     // --- LOG ACTUALIZADO ---
                     $this->logBitacora("Actualizó al usuario {$datos['username']}", 'usuario', $id);
                 }
             } else {
                 if ($newId = $this->usuarioModel->create($datos)) {
-                    $this->setFlashMessage('success', 'Usuario creado exitosamente.');
+                    
+                    // --- SYNC LOGIC SGEN ---
+                    $empleado_id = $datos['empleado_id'];
+                    $departamento_id = $datos['departamento_id'];
+
+                    if (!empty($empleado_id)) {
+                        $this->empleadoModel->update($empleado_id, [
+                            'usuario_id' => $newId,
+                            'departamento_id' => $departamento_id ?: null
+                        ]);
+                    }
+                    // -----------------------
+
+                    $this->setFlashMessage('success', 'Usuario creado exitosamente. (Sincronizado con Empleado)');
                     // --- LOG ACTUALIZADO ---
                     $this->logBitacora("Creó al usuario {$datos['username']}", 'usuario', $newId);
                 }
@@ -139,6 +169,58 @@ class UsuariosController extends Controller
             $this->setFlashMessage('error', "Error al eliminar.");
         }
         header('Location: ' . BASE_URL . 'usuarios'); 
+        exit;
+    }
+
+    /**
+     * Bulk delete users via AJAX
+     */
+    public function eliminar_masivo()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ids = $input['ids'] ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            echo json_encode(['success' => false, 'message' => 'No se proporcionaron IDs']);
+            exit;
+        }
+
+        // Filter out admin (ID=1)
+        $ids = array_filter($ids, fn($id) => (int)$id !== 1);
+
+        if (empty($ids)) {
+            echo json_encode(['success' => false, 'message' => 'No se puede eliminar al administrador principal']);
+            exit;
+        }
+
+        $deletedCount = 0;
+        $deletedUsernames = [];
+
+        foreach ($ids as $id) {
+            $usuario = $this->usuarioModel->findById((int)$id);
+            if ($usuario && $this->usuarioModel->delete((int)$id)) {
+                $deletedCount++;
+                $deletedUsernames[] = $usuario->username;
+                $this->logBitacora("Eliminó al usuario {$usuario->username} (eliminación masiva)", 'usuario', $id);
+            }
+        }
+
+        if ($deletedCount > 0) {
+            echo json_encode([
+                'success' => true,
+                'message' => "Se eliminaron {$deletedCount} usuario(s) correctamente.",
+                'deleted' => $deletedCount
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No se pudo eliminar ningún usuario']);
+        }
         exit;
     }
 }

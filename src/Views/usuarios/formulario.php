@@ -39,9 +39,9 @@ if ($es_edicion && !empty($val_departamento_id) && !empty($departamentos)) {
 }
 ?>
 
-<div style="background: #f1f5f9; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 2rem;">
+<div style="min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 2rem;">
     
-    <div style="max-width: 1150px; width: 100%; background: white; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); overflow: hidden; display: flex; flex-wrap: wrap; min-height: 600px;">
+    <div style="max-width: 1150px; width: 100%; background: white; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); border: 1px solid #e2e8f0; overflow: hidden; display: flex; flex-wrap: wrap; min-height: 600px;">
         
         <!-- COLUMNA IZQUIERDA: FORMULARIO -->
         <div style="flex: 1; min-width: 400px; padding: 2.5rem; overflow-y: auto;">

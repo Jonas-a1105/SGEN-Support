@@ -37,7 +37,7 @@
     display: flex;
     flex-direction: column;
     min-height: 600px;
-    border: 1px solid var(--eq-slate-100);
+    border: 1px solid var(--eq-slate-200);
     width: 1150px;
     margin: 0 auto;
 }
@@ -68,6 +68,22 @@
 
 .eq-header {
     margin-bottom: 2.5rem;
+}
+
+.eq-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--eq-slate-500);
+    text-decoration: none;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+}
+
+.eq-back-link:hover {
+    color: var(--eq-slate-800);
 }
 
 .eq-title {

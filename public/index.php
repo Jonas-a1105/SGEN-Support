@@ -1,21 +1,34 @@
 <?php
-// ---- INICIO DE CÓDIGO DE DEPURACIÓN ----
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-// ---- FIN DE CÓDIGO DE DEPURACIÓN ----
+// 1. Cargar el autoloader de Composer
+require_once __DIR__ . '/../vendor/autoload.php';
 
-// Configurar zona horaria (Venezuela/Caracas = UTC-4)
-date_default_timezone_set('America/Caracas');
+// 2. Cargar variables de entorno (.env)
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->safeLoad();
 
-// Iniciar sesión
+// 3. Configuración de Depuración (basado en .env)
+if (isset($_ENV['APP_DEBUG']) && $_ENV['APP_DEBUG'] === 'true') {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    error_reporting(0);
+}
+
+// 4. Configurar zona horaria
+date_default_timezone_set($_ENV['TIMEZONE'] ?? 'America/Caracas');
+
+// 5. Iniciar Sesión (CRÍTICO: Debe ir antes de cualquier salida)
+// Configurar duración de sesión (8 horas = 28800 segundos)
+ini_set('session.gc_maxlifetime', 28800);
+ini_set('session.cookie_lifetime', 28800);
+
 session_start();
 
-// Archivo de configuración principal (para BASE_URL, etc.)
+// Archivo de configuración principal (ahora puede usar $_ENV)
 require_once __DIR__ . '/../config/config.php';
-
-// Cargar el autoloader de Composer
-require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Core\Router;
 

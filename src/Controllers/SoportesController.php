@@ -7,11 +7,13 @@ use App\Models\Equipo;
 use App\Models\Departamento;
 use App\Models\Usuario;
 use App\Models\Inventario;
+use App\Models\Empleado;
 use App\Models\Categoria;
 use App\Models\TicketArchivo;
 use App\Models\TicketComentario;
 use App\Models\Notificacion;
 use App\Services\TicketService;
+use App\Services\InventarioService;
 use App\Services\FileUploadService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -35,6 +37,7 @@ class SoportesController extends Controller
     // Services
     private $ticketService;
     private $fileUploadService;
+    private $inventarioService;
 
     public function __construct()
     {
@@ -54,6 +57,7 @@ class SoportesController extends Controller
         // Services
         $this->ticketService = new TicketService();
         $this->fileUploadService = new FileUploadService();
+        $this->inventarioService = new InventarioService();
     }
 
     /**
@@ -406,61 +410,18 @@ class SoportesController extends Controller
         }
 
         try {
-            $this->inventarioModel->consumirEnTicket($itemId, $soporteId, $cantidad, $usuarioId, $departamentoId);
+            $this->inventarioService->consumirEnTicket($itemId, $soporteId, $cantidad, $usuarioId, $departamentoId);
             $this->setFlashMessage('success', 'Consumo registrado exitosamente.');
             $this->logBitacora("Agregó consumo de inventario al ticket #{$soporteId}", 'soporte', $soporteId);
         } catch (\Exception $e) {
             $this->setFlashMessage('error', 'Error: ' . $e->getMessage());
         }
 
-        header('Location: ' . BASE_URL . "soportes/ver/{$soporteId}");
+        header('Location: ' . BASE_URL . "soportes/ver/{$soporteId}#info");
         exit;
     }
 
-    /**
-     * Guarda las observaciones técnicas de un ticket.
-     */
-    public function guardar_observaciones()
-    {
-        $this->restrictTo(['admin', 'tecnico']);
-        
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . 'soportes');
-            exit;
-        }
 
-        $soporteId = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
-        $observaciones = $_POST['observaciones'] ?? '';
-
-        if (!$soporteId) {
-            $this->setFlashMessage('error', 'ID de ticket inválido.');
-            header('Location: ' . BASE_URL . 'soportes');
-            exit;
-        }
-
-        $soporte = $this->soporteModel->findById($soporteId);
-        if (!$soporte) {
-            $this->setFlashMessage('error', 'Ticket no encontrado.');
-            header('Location: ' . BASE_URL . 'soportes');
-            exit;
-        }
-
-        if ($soporte->estado == 'resuelto' && $_SESSION['rol'] != 'admin') {
-            $this->setFlashMessage('error', 'No se pueden modificar observaciones de tickets cerrados.');
-            header("Location: " . BASE_URL . "soportes/ver/{$soporteId}");
-            exit;
-        }
-
-        if ($this->ticketService->guardarObservaciones($soporteId, $observaciones)) {
-            $this->setFlashMessage('success', 'Observaciones guardadas correctamente.');
-            $this->logBitacora("Guardó observaciones en Ticket #{$soporteId}", 'soporte', $soporteId);
-        } else {
-            $this->setFlashMessage('error', 'Error al guardar observaciones.');
-        }
-
-        header("Location: " . BASE_URL . "soportes/ver/{$soporteId}");
-        exit;
-    }
 
     /**
      * Actualiza la fecha de cierre de un ticket (solo admin).
@@ -523,10 +484,10 @@ class SoportesController extends Controller
 
         if ($resultado['success']) {
             $this->setFlashMessage('success', 'Archivo subido correctamente.');
-            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}");
+            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#files");
         } else {
             $this->setFlashMessage('error', $resultado['error']);
-            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}");
+            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#files");
         }
         exit;
     }
@@ -557,7 +518,9 @@ class SoportesController extends Controller
         }
 
         $ticketId = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
-        $comentario = filter_input(INPUT_POST, 'contenido', FILTER_SANITIZE_SPECIAL_CHARS);
+        // Use FILTER_DEFAULT to store raw HTML/text (PDO handles SQL injection).
+        // HTML escaping happens at the View layer (htmlspecialchars).
+        $comentario = filter_input(INPUT_POST, 'contenido', FILTER_DEFAULT);
         $esInterno = isset($_POST['es_interno']) ? 1 : 0;
 
         if (!$ticketId || empty($comentario)) {
@@ -577,7 +540,34 @@ class SoportesController extends Controller
             'es_interno' => $esInterno
         ];
 
-        if ($this->ticketComentarioModel->create($datosComentario)) {
+        $newId = $this->ticketComentarioModel->create($datosComentario);
+
+        if ($newId) {
+            // Check for AJAX request
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                header('Content-Type: application/json');
+                
+                // Fetch the created comment to return full data (like date, id)
+                // $newId is already the ID.
+                
+                // Let's return success and the data needed to build the UI
+                $user = $this->usuarioModel->findById($_SESSION['user_id']); // Need user name
+                
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Comentario agregado',
+                    'comentario' => [
+                        'id' => $newId, 
+                        'contenido' => htmlspecialchars($comentario), // Escape for JS consumption
+                        'author' => $user->username ?? 'Usuario',
+                        'initials' => strtoupper(substr($user->username ?? 'U', 0, 2)),
+                        'date' => 'Ahora mismo',
+                        'is_internal' => (bool)$esInterno
+                    ]
+                ]);
+                exit;
+            }
+
             $this->setFlashMessage('success', 'Comentario agregado correctamente.');
             
             if (!$esInterno && in_array($_SESSION['rol'], ['admin', 'tecnico'])) {
@@ -591,11 +581,183 @@ class SoportesController extends Controller
                 }
             }
         } else {
+             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Error al guardar el comentario.']);
+                exit;
+            }
             $this->setFlashMessage('error', 'Error al guardar el comentario.');
         }
 
-        header("Location: " . BASE_URL . "soportes/ver/{$ticketId}");
+        header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#comments");
         exit;
+    }
+
+    /**
+     * Edita un comentario existente.
+     */
+    public function editar_comentario()
+    {
+        if($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'soportes');
+            exit;
+        }
+
+        $comentarioId = filter_input(INPUT_POST, 'comentario_id', FILTER_SANITIZE_NUMBER_INT);
+        $ticketId = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
+        $nuevoContenido = filter_input(INPUT_POST, 'contenido', FILTER_DEFAULT);
+
+        if (!$comentarioId || !$ticketId || empty($nuevoContenido)) {
+            $this->setFlashMessage('error', 'Datos inválidos.');
+            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#comments");
+            exit;
+        }
+
+        $comentario = $this->ticketComentarioModel->findById($comentarioId);
+        
+        // Verificar permisos: dueño del comentario o admin, y que pertenezca al ticket
+        if (!$comentario || $comentario->ticket_id != $ticketId) {
+            $this->setFlashMessage('error', 'Comentario no encontrado.');
+            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#comments");
+            exit;
+        }
+
+        if ($comentario->usuario_id != $_SESSION['user_id'] && $_SESSION['rol'] !== 'admin') {
+            $this->setFlashMessage('error', 'No tienes permiso para editar este comentario.');
+            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#comments");
+            exit;
+        }
+
+        if ($this->ticketComentarioModel->update($comentarioId, ['comentario' => $nuevoContenido])) {
+            $this->setFlashMessage('success', 'Comentario actualizado.');
+        } else {
+            $this->setFlashMessage('error', 'Error al actualizar el comentario.');
+        }
+
+        header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#comments");
+        exit;
+    }
+
+    /**
+     * Elimina un comentario.
+     */
+    public function eliminar_comentario($id)
+    {
+        // En este caso el ID viene por URL, pero necesitamos el ticketId para redirigir
+        // Lo buscaremos primero
+        $comentario = $this->ticketComentarioModel->findById($id);
+
+        if (!$comentario) {
+            if ($this->isAjax()) {
+                $this->jsonResponse(['success' => false, 'message' => 'Comentario no encontrado.'], 404);
+            }
+            $this->setFlashMessage('error', 'Comentario no encontrado.');
+            header('Location: ' . BASE_URL . 'soportes');
+            exit;
+        }
+
+        $ticketId = $comentario->ticket_id;
+
+        // Verificar permisos: dueño o admin
+        if ($comentario->usuario_id != $_SESSION['user_id'] && $_SESSION['rol'] !== 'admin') {
+            if ($this->isAjax()) {
+                 $this->jsonResponse(['success' => false, 'message' => 'No tienes permiso para eliminar este comentario.'], 403);
+            }
+            $this->setFlashMessage('error', 'No tienes permiso para eliminar este comentario.');
+            header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#comments");
+            exit;
+        }
+
+        if ($this->ticketComentarioModel->delete($id)) {
+            if ($this->isAjax()) {
+                 $this->jsonResponse(['success' => true, 'message' => 'Comentario eliminado.']);
+            }
+            $this->setFlashMessage('success', 'Comentario eliminado.');
+        } else {
+             if ($this->isAjax()) {
+                 $this->jsonResponse(['success' => false, 'message' => 'Error al eliminar el comentario.'], 500);
+            }
+            $this->setFlashMessage('error', 'Error al eliminar el comentario.');
+        }
+
+        header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#comments");
+        exit;
+    }
+
+    public function eliminar_comentarios_masivos()
+    {
+        if (!$this->isAjax()) {
+             http_response_code(405);
+             exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ids = $input['ids'] ?? [];
+
+        if (empty($ids)) {
+            $this->jsonResponse(['success' => false, 'message' => 'No se seleccionaron comentarios.'], 400);
+        }
+
+        $deletedCount = 0;
+        $errors = 0;
+
+        foreach ($ids as $id) {
+            $comentario = $this->ticketComentarioModel->findById($id);
+            if ($comentario) {
+                // Check permissions for each
+                if ($comentario->usuario_id == $_SESSION['user_id'] || $_SESSION['rol'] === 'admin') {
+                    if ($this->ticketComentarioModel->delete($id)) {
+                        $deletedCount++;
+                    } else {
+                        $errors++;
+                    }
+                }
+            }
+        }
+
+        if ($deletedCount > 0) {
+            $this->jsonResponse(['success' => true, 'message' => "Se eliminaron $deletedCount comentarios.", 'deletedCount' => $deletedCount]);
+        } else {
+            $this->jsonResponse(['success' => false, 'message' => 'No se pudo eliminar ningún comentario (permisos o error).'], 500);
+        }
+    }
+
+    public function eliminar_tickets_masivos()
+    {
+        // Solo admin puede borrar masivamente tickets (por seguridad)
+        $this->restrictTo(['admin']);
+
+        if (!$this->isAjax()) {
+             http_response_code(405);
+             exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ids = $input['ids'] ?? [];
+
+        if (empty($ids)) {
+            $this->jsonResponse(['success' => false, 'message' => 'No se seleccionaron tickets.'], 400);
+        }
+
+        $deletedCount = 0;
+        $errors = 0;
+
+        foreach ($ids as $id) {
+            // Permission check handled inside eliminarTicket (service) or restrictTo above.
+            // ticketService->eliminarTicket handles logic.
+            if ($this->ticketService->eliminarTicket($id)) {
+                $deletedCount++;
+                 $this->logBitacora("Eliminó ticket #{$id} (Masivo)", 'soporte', $id);
+            } else {
+                $errors++;
+            }
+        }
+
+        if ($deletedCount > 0) {
+            $this->jsonResponse(['success' => true, 'message' => "Se eliminaron $deletedCount tickets.", 'deletedCount' => $deletedCount]);
+        } else {
+            $this->jsonResponse(['success' => false, 'message' => 'No se pudo eliminar ningún ticket.'], 500);
+        }
     }
 
     /**
@@ -647,7 +809,7 @@ class SoportesController extends Controller
             $this->setFlashMessage('error', 'Error al guardar la firma.');
         }
 
-        header("Location: " . BASE_URL . "soportes/ver/{$ticketId}");
+        header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#signature");
         exit;
     }
 
@@ -693,7 +855,7 @@ class SoportesController extends Controller
             $this->setFlashMessage('error', 'Error al guardar la valoración.');
         }
 
-        header("Location: " . BASE_URL . "soportes/ver/{$soporteId}");
+        header("Location: " . BASE_URL . "soportes/ver/{$soporteId}#signature");
         exit;
     }
 
@@ -730,5 +892,105 @@ class SoportesController extends Controller
         $dompdf->render();
 
         $dompdf->stream("ticket_{$id}.pdf", ["Attachment" => false]);
+    }
+    /**
+     * Guarda las observaciones técnicas (Bitácora).
+     */
+    public function guardar_observaciones()
+    {
+        $this->restrictTo(['admin', 'tecnico']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'soportes');
+            exit;
+        }
+
+        $soporteId = filter_input(INPUT_POST, 'soporte_id', FILTER_SANITIZE_NUMBER_INT);
+        $observaciones = filter_input(INPUT_POST, 'observaciones', FILTER_DEFAULT);
+
+        if (!$soporteId) {
+            $this->respondError('ID de soporte inválido', $soporteId);
+            exit;
+        }
+
+        $soporte = $this->soporteModel->findById($soporteId);
+        if (!$soporte) {
+            $this->respondError('Ticket no encontrado', $soporteId);
+            exit;
+        }
+
+        // Update observations
+        if ($this->soporteModel->update($soporteId, ['observaciones' => $observaciones])) {
+            $this->logBitacora("Actualizó bitácora técnica", 'soporte', $soporteId);
+            
+            if ($this->isAjax()) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => 'Bitácora actualizada correctamente']);
+                exit;
+            }
+            
+            $this->setFlashMessage('success', 'Bitácora actualizada correctamente.');
+        } else {
+            $this->respondError('Error al guardar la bitácora', $soporteId);
+            exit;
+        }
+
+        header("Location: " . BASE_URL . "soportes/ver/{$soporteId}#notes");
+        exit;
+    }
+
+    private function respondError($message, $ticketId) {
+        if ($this->isAjax()) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $message]);
+        } else {
+            $this->setFlashMessage('error', $message);
+            if ($ticketId) {
+                header("Location: " . BASE_URL . "soportes/ver/{$ticketId}#notes");
+            } else {
+                header('Location: ' . BASE_URL . 'soportes');
+            }
+        }
+    }
+
+    private function isAjax() {
+        return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+    }
+
+    /**
+     * API para buscar técnicos (JSON)
+     * Movido aquí para asegurar routing
+     */
+    public function buscarTecnicos() {
+        // Asegurar respuesta JSON
+        header('Content-Type: application/json');
+
+        try {
+            // Verificar sesión
+            if (!isset($_SESSION['usuario_id'])) {
+                echo json_encode(['error' => 'Unauthorized']);
+                exit;
+            }
+
+            // DEBUG MODE: Forzando respuesta para probar conexión
+            $results = [
+                [
+                    'id' => 888,
+                    'nombre' => 'CONEXION',
+                    'apellido' => 'SOPORTES',
+                    'status' => 'available',
+                    'active_tickets' => 0,
+                    'specialty' => 'Ruta Soportes OK'
+                ]
+            ];
+            
+            echo json_encode($results);
+            exit;
+
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Error: ' . $e->getMessage()]);
+            exit;
+        }
     }
 }

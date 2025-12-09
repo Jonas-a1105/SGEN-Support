@@ -41,13 +41,16 @@ if (!isset($estados_equipo)) {
 ?>
 
 <!-- Load Assets -->
-<link rel="stylesheet" href="<?= BASE_URL ?>public/css/equipment-form-modern.css?v=<?= time() ?>">
+<link rel="stylesheet" href="<?= BASE_URL ?>css/equipment-form-modern.css?v=<?= time() ?>">
 
 <div class="eq-wizard-wrapper">
     
     <!-- Sidebar -->
     <div class="eq-sidebar">
         <div class="eq-header">
+            <a href="<?= !empty($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER']) : BASE_URL . 'inventario' ?>" class="eq-back-link">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
             <h1 class="eq-title">
                 <div class="eq-icon-box">
                      <i class="bi bi-laptop"></i>
@@ -360,4 +363,4 @@ if (!isset($estados_equipo)) {
     </div>
 </div>
 
-<script src="<?= BASE_URL ?>public/js/equipment-form.js?v=<?= time() ?>"></script>
+<script src="<?= BASE_URL ?>js/equipment-form.js?v=<?= time() ?>"></script>

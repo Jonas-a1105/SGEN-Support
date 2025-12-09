@@ -9,9 +9,9 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(15, 23, 42, 0.4);
+    background-color: rgba(255, 255, 255, 0.6);
     /* slate-900/40 */
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(0.75px);
     z-index: 1060;
     display: none;
     /* Hidden by default */

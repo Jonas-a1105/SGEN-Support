@@ -2,7 +2,7 @@
 namespace App\Core;
 
 use App\Models\Notificacion;
-use App\Models\BitacoraModel;
+use App\Models\Bitacora;
 
 abstract class Controller {
 
@@ -34,7 +34,7 @@ abstract class Controller {
      */
     protected function logBitacora(string $accion, ?string $enlace_tipo = null, ?int $enlace_id = null) {
         if ($this->bitacoraLogger === null) {
-            $this->bitacoraLogger = new BitacoraModel();
+            $this->bitacoraLogger = new Bitacora();
         }
 
         try {
@@ -110,5 +110,12 @@ abstract class Controller {
                 $notificacionModel->createNotification($admin->id, $mensaje, $enlace);
             }
         }
+    }
+
+    protected function jsonResponse($data, int $statusCode = 200) {
+        http_response_code($statusCode);
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit;
     }
 }

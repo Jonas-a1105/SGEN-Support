@@ -146,6 +146,17 @@ class ReportesController extends Controller
         $this->generarPDF('reportes/mantenimientos_pdf', ['mantenimientos' => $mantenimientos], 'Reporte_Mantenimientos.pdf', 'landscape');
     }
 
+    public function rendimiento()
+    {
+        // For now, we will simulate some data or fetch real data if available
+        // Creating a basic PDF report for performance
+        $data = [
+            'fecha' => date('Y-m-d H:i:s'),
+            'usuario' => $_SESSION['usuario']['username'] ?? 'System'
+        ];
+        $this->generarPDF('reportes/rendimiento_pdf', $data, 'Reporte_Rendimiento.pdf', 'portrait');
+    }
+
     private function generarPDF(string $view, array $data, string $filename, string $orientation = 'portrait')
     {
         // Clean any existing output buffers

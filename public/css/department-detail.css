@@ -1,0 +1,734 @@
+/* =============================================
+   Department Detail View - Modern CSS
+   ============================================= */
+
+:root {
+    --dd-slate-50: #f8fafc;
+    --dd-slate-100: #f1f5f9;
+    --dd-slate-200: #e2e8f0;
+    --dd-slate-300: #cbd5e1;
+    --dd-slate-400: #94a3b8;
+    --dd-slate-500: #64748b;
+    --dd-slate-600: #475569;
+    --dd-slate-700: #334155;
+    --dd-slate-800: #1e293b;
+    --dd-slate-900: #0f172a;
+
+    --dd-blue-50: #eff6ff;
+    --dd-blue-100: #dbeafe;
+    --dd-blue-600: #2563eb;
+    --dd-blue-700: #1d4ed8;
+
+    --dd-indigo-50: #eef2ff;
+    --dd-indigo-100: #e0e7ff;
+    --dd-indigo-600: #4f46e5;
+    --dd-indigo-700: #4338ca;
+
+    --dd-emerald-50: #ecfdf5;
+    --dd-emerald-100: #d1fae5;
+    --dd-emerald-600: #059669;
+
+    --dd-amber-50: #fffbeb;
+    --dd-amber-100: #fef3c7;
+    --dd-amber-600: #d97706;
+
+    --dd-rose-50: #fff1f2;
+    --dd-rose-100: #ffe4e6;
+    --dd-rose-600: #e11d48;
+}
+
+/* Container */
+.dd-wrapper {
+    min-height: 100vh;
+    padding: 0rem 2.5rem;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--dd-slate-800);
+}
+
+.dd-max-w {
+    width: 1150px;
+    margin: 0 auto;
+}
+
+/* Header (outside container) */
+.dd-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .dd-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.dd-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--dd-slate-400);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    transition: color 0.2s;
+}
+
+.dd-back-btn:hover {
+    color: var(--dd-slate-600);
+}
+
+.dd-back-btn:hover i {
+    transform: translateX(-3px);
+}
+
+.dd-back-btn i {
+    transition: transform 0.2s;
+}
+
+.dd-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dd-title-icon {
+    padding: 0.5rem;
+    background: white;
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    color: var(--dd-blue-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dd-title-icon i {
+    font-size: 1.5rem;
+}
+
+.dd-title h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dd-slate-900);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.dd-location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--dd-slate-500);
+    margin-top: 0.25rem;
+}
+
+.dd-location i {
+    font-size: 0.875rem;
+}
+
+/* Header Actions */
+.dd-header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.dd-btn {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.dd-btn-secondary {
+    background: white;
+    border: 1px solid var(--dd-slate-200);
+    color: var(--dd-slate-600);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dd-btn-secondary:hover {
+    background: var(--dd-slate-50);
+    color: var(--dd-slate-700);
+}
+
+.dd-btn-primary {
+    background: var(--dd-blue-600);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.dd-btn-primary:hover {
+    background: var(--dd-blue-700);
+    color: white;
+}
+
+/* Main Container */
+.dd-main-card {
+    background: white;
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 600px;
+}
+
+/* Tab Bar */
+.dd-tab-bar {
+    display: flex;
+    gap: 2rem;
+    border-bottom: 1px solid var(--dd-slate-100);
+    padding: 0.5rem 1.5rem 0;
+    background: rgba(248, 250, 252, 0.5);
+}
+
+.dd-tab-btn {
+    padding: 1rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    position: relative;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--dd-slate-500);
+}
+
+.dd-tab-btn:hover {
+    color: var(--dd-slate-700);
+}
+
+.dd-tab-btn.active {
+    color: var(--dd-indigo-600);
+}
+
+.dd-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--dd-indigo-600);
+    border-radius: 2px 2px 0 0;
+}
+
+.dd-tab-count {
+    font-size: 0.625rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    margin-left: 0.25rem;
+}
+
+.dd-tab-btn.active .dd-tab-count {
+    background: var(--dd-indigo-100);
+    color: var(--dd-indigo-700);
+}
+
+.dd-tab-btn:not(.active) .dd-tab-count {
+    background: var(--dd-slate-100);
+    color: var(--dd-slate-500);
+}
+
+/* Tab Content */
+.dd-tab-content {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+.dd-tab-panel {
+    display: none;
+}
+
+.dd-tab-panel.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Overview Grid */
+.dd-overview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .dd-overview-grid {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+/* Info Card */
+.dd-info-card {
+    background: var(--dd-slate-50);
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    height: 100%;
+}
+
+.dd-info-header {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--dd-slate-200);
+    background: rgba(241, 245, 249, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dd-info-header i {
+    color: var(--dd-slate-400);
+}
+
+.dd-info-header h3 {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--dd-slate-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.dd-info-body {
+    padding: 1.5rem;
+}
+
+.dd-info-section {
+    margin-bottom: 1.5rem;
+}
+
+.dd-info-section:last-child {
+    margin-bottom: 0;
+}
+
+.dd-info-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--dd-slate-400);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.dd-info-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--dd-slate-700);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.dd-info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .dd-info-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Info Box - Bordered card container */
+.dd-info-box {
+    background: white;
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Head Avatar */
+.dd-head-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dd-head-avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid var(--dd-slate-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--dd-slate-600);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Contact Pills */
+.dd-contact-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--dd-slate-600);
+    background: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--dd-slate-200);
+    width: fit-content;
+    margin-bottom: 0.5rem;
+}
+
+.dd-contact-pill i {
+    color: var(--dd-slate-400);
+    font-size: 0.875rem;
+}
+
+/* Stats Card */
+.dd-stats-card {
+    background: var(--dd-slate-50);
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+}
+
+.dd-stats-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--dd-slate-200);
+}
+
+.dd-stats-header i {
+    color: var(--dd-slate-400);
+}
+
+.dd-stats-header h3 {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--dd-slate-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.dd-stat-item {
+    padding: 1rem;
+    background: white;
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dd-stat-item:last-child {
+    margin-bottom: 0;
+}
+
+.dd-stat-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--dd-slate-400);
+    text-transform: uppercase;
+}
+
+.dd-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dd-slate-800);
+}
+
+.dd-stat-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.dd-stat-icon.blue {
+    background: var(--dd-blue-50);
+    color: var(--dd-blue-600);
+}
+
+.dd-stat-icon.emerald {
+    background: var(--dd-emerald-50);
+    color: var(--dd-emerald-600);
+}
+
+.dd-stat-icon.amber {
+    background: var(--dd-amber-50);
+    color: var(--dd-amber-600);
+}
+
+/* Toolbar */
+.dd-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--dd-slate-50);
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--dd-slate-200);
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+    .dd-toolbar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.dd-search-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.dd-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dd-slate-400);
+    font-size: 1rem;
+}
+
+.dd-search-input {
+    width: 100%;
+    padding: 0.375rem 1rem 0.375rem 2.25rem;
+    font-size: 0.875rem;
+    background: white;
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 0.5rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.dd-search-input:focus {
+    border-color: var(--dd-indigo-600);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.dd-filter-btn {
+    padding: 0.5rem;
+    background: white;
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 0.5rem;
+    color: var(--dd-slate-500);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dd-filter-btn:hover {
+    color: var(--dd-slate-700);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* List */
+.dd-list {
+    border: 1px solid var(--dd-slate-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dd-list-item {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border-bottom: 1px solid var(--dd-slate-100);
+    transition: background 0.2s;
+}
+
+.dd-list-item:last-child {
+    border-bottom: none;
+}
+
+.dd-list-item:hover {
+    background: var(--dd-slate-50);
+}
+
+.dd-item-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dd-item-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.dd-item-avatar.indigo {
+    background: var(--dd-indigo-50);
+    color: var(--dd-indigo-600);
+    border: 1px solid var(--dd-indigo-100);
+}
+
+.dd-item-avatar.blue {
+    background: var(--dd-blue-50);
+    color: var(--dd-blue-600);
+    border: 1px solid var(--dd-blue-100);
+    border-radius: 0.5rem;
+}
+
+.dd-item-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--dd-slate-800);
+    margin: 0;
+}
+
+.dd-item-sub {
+    font-size: 0.75rem;
+    color: var(--dd-slate-500);
+    margin: 0.125rem 0 0;
+}
+
+.dd-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dd-serial-badge {
+    font-size: 0.625rem;
+    font-family: monospace;
+    background: var(--dd-slate-50);
+    color: var(--dd-slate-500);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--dd-slate-200);
+}
+
+.dd-user-badge {
+    font-size: 0.625rem;
+    color: var(--dd-slate-400);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Status Badges */
+.dd-status-badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid;
+}
+
+.dd-status-badge.active {
+    background: var(--dd-emerald-50);
+    color: var(--dd-emerald-600);
+    border-color: var(--dd-emerald-100);
+}
+
+.dd-status-badge.on_leave {
+    background: var(--dd-amber-50);
+    color: var(--dd-amber-600);
+    border-color: var(--dd-amber-100);
+}
+
+.dd-status-badge.maintenance {
+    background: var(--dd-rose-50);
+    color: var(--dd-rose-600);
+    border-color: var(--dd-rose-100);
+}
+
+.dd-action-btn {
+    color: var(--dd-slate-300);
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.dd-action-btn:hover {
+    color: var(--dd-slate-600);
+}
+
+/* Empty State */
+.dd-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.dd-empty-icon {
+    width: 4rem;
+    height: 4rem;
+    background: var(--dd-slate-50);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: var(--dd-slate-300);
+    font-size: 1.5rem;
+}
+
+.dd-empty-title {
+    font-weight: 600;
+    color: var(--dd-slate-700);
+    margin: 0 0 0.25rem;
+}
+
+.dd-empty-text {
+    font-size: 0.875rem;
+    color: var(--dd-slate-400);
+    margin: 0;
+}
+
+/* Divider */
+.dd-divider {
+    border: none;
+    border-top: 1px solid var(--dd-slate-200);
+    margin: 1.5rem 0;
+}

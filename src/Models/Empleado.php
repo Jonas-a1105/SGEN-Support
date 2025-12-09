@@ -14,6 +14,7 @@ class Empleado extends Model
             SELECT 
                 e.*, 
                 u.username AS usuario_username,
+                u.rol AS usuario_rol,
                 d.nombre AS departamento_nombre
             FROM {$this->table} e
             LEFT JOIN usuarios u ON e.usuario_id = u.id
@@ -96,5 +97,34 @@ class Empleado extends Model
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * Busca empleados sin departamento asignado
+     */
+    public function findWithoutDepartment()
+    {
+        $sql = "
+            SELECT 
+                e.*, 
+                u.username AS usuario_username
+            FROM {$this->table} e
+            LEFT JOIN usuarios u ON e.usuario_id = u.id
+            WHERE e.departamento_id IS NULL
+            ORDER BY e.nombre ASC
+        ";
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+    /**
+     * Desvincula un usuario de los empleados que lo tengan asignado.
+     * @param int $usuarioId
+     * @return bool
+     */
+    public function desvincularUsuario(int $usuarioId): bool
+    {
+        $sql = "UPDATE {$this->table} SET usuario_id = NULL WHERE usuario_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$usuarioId]);
     }
 }

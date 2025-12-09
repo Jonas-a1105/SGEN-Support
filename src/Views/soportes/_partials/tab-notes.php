@@ -235,5 +235,82 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // AJAX Submission
+    const form = document.querySelector('.td-obs-editor');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = form.querySelector('.td-obs-submit-btn');
+            const originalText = submitBtn.innerHTML;
+            const textarea = document.getElementById('obsTextarea');
+            const timelineContent = document.querySelector('.td-obs-entry-content');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Respuesta no válida del servidor. Posible sesión expirada.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Actualizado',
+                        text: 'Bitácora técnica registrada correctamente',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    
+                    // Update timeline content if it exists
+                    if (timelineContent) {
+                        // Simple nl2br equivalent
+                        timelineContent.innerHTML = textarea.value.replace(/\n/g, '<br>');
+                    } else {
+                        // If no timeline existed (empty state), we should ideally reload or inject.
+                        // For simplicity, reload if it was empty state, otherwise update text.
+                        if (document.querySelector('.td-materials-empty')) {
+                            location.reload(); 
+                        }
+                    }
+                } else {
+                    Swal.fire('Error', data.message || 'Error al guardar', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (error.message.includes('sesión expirada')) {
+                     Swal.fire({
+                        icon: 'warning',
+                        title: 'Sesión Expirada',
+                        text: 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
+                        confirmButtonText: 'Ir al Login'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', 'Ocurrió un error al procesar la solicitud.', 'error');
+                }
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        });
+    }
 });
 </script>
