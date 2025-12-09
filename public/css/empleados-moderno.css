@@ -26,24 +26,60 @@
 
 /* Container principal */
 .empleados-container {
-    background: var(--emp-slate-50);
+    background: transparent;
     min-height: 100vh;
-    padding-bottom: 3rem;
+    padding: 0rem;
+}
+
+/* Main Content Card - Bordered Container */
+.empleados-content-card {
+    background: white;
+    border: 1px solid var(--emp-slate-200);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Header con stats */
 .empleados-header {
-    background: white;
-    border-bottom: 1px solid var(--emp-slate-200);
-    padding: 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0rem;
+    width: 100%;
+    max-width: 1350px;
+    margin: 0 auto;
+}
+
+.empleados-logo {
+    background: var(--emp-indigo);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    display: inline-flex;
+}
+
+.empleados-logo i {
+    color: white;
+    font-size: 1.25rem;
+}
+
+.empleados-header-container {
+    width: 100%;
+    max-width: 1350px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.empleados-main-container {
+    width: 100%;
+    max-width: 1350px;
+    margin: 0 auto;
 }
 
 .empleados-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--emp-slate-900);
 }
@@ -111,12 +147,14 @@
 }
 
 .stat-card.emerald {
-    background: rgba(16, 185, 129, 0.05);
+    /* background: white; - let it inherit default or be white */
+    background: white;
     border-color: rgba(16, 185, 129, 0.2);
 }
 
 .stat-card.amber {
-    background: rgba(245, 158, 11, 0.05);
+    /* background: white; */
+    background: white;
     border-color: rgba(245, 158, 11, 0.2);
 }
 
@@ -172,11 +210,8 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding: 0.5rem 0;
-    background: rgba(248, 250, 252, 0.95);
-    backdrop-filter: blur(8px);
-    position: sticky;
-    top: 130px;
-    z-index: 50;
+    background: transparent !important;
+    backdrop-filter: none !important;
 }
 
 @media (min-width: 640px) {
@@ -192,7 +227,17 @@
     display: flex;
     gap: 0.5rem;
     overflow-x: auto;
-    padding-bottom: 0.25rem;
+    padding: 0.5rem;
+    /* More padding for scale effect */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE 10+ */
+}
+
+.dept-filters::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari/Webkit */
 }
 
 .dept-filter-btn {

@@ -28,7 +28,7 @@
 .item-form-wrapper {
     min-height: 100vh;
     background-color: var(--if-slate-50);
-    padding: 1.5rem;
+    padding: 0 1.5rem 1.5rem 1.5rem;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--if-slate-800);
     display: flex;

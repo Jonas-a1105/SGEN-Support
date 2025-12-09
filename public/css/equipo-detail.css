@@ -21,13 +21,22 @@
 /* Container */
 .ed-container {
     min-height: 100vh;
-    background: var(--ed-bg);
-    padding: 1.5rem;
+    background: transparent;
+    padding: 0 1.5rem 1.5rem 1.5rem;
 }
 
 .ed-max-w {
     max-width: 1150px;
     margin: 0 auto;
+}
+
+/* Main Content Card Container */
+.ed-main-content-card {
+    background: white;
+    border: 1px solid var(--ed-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
 /* Top Navigation */

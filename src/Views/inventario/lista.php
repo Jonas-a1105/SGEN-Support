@@ -1,7 +1,7 @@
 ﻿<?php require_once '../src/Views/layout/header.php'; ?>
 <?php require_once '../src/Views/layout/left-side-menu.php'; ?>
 
-<link rel="stylesheet" href="<?= BASE_URL ?>css/inventario-moderno.css?v=<?= time() ?>">
+
 
 <div class="inventario-container">
     <div class="inventario-wrapper">
@@ -40,6 +40,9 @@
                        autocomplete="off">
             </form>
         </div>
+
+        <!-- Main Content Card Container -->
+        <div id="inventarioMain" class="inventario-content-card">
 
         <!-- KPI Cards -->
         <?php 
@@ -88,8 +91,42 @@
             </div>
         </div>
 
-        <!-- View Toggle -->
+        <!-- Tab Navigation -->
+        <div class="inventario-tabs">
+            <button class="inventario-tab active" data-tab="articulos" onclick="switchInventarioTab('articulos')">
+                <i class="bi bi-box-seam"></i>
+                Artículos de Inventario
+                <span class="inventario-tab-badge"><?= $totalItemsCount ?? count($items) ?></span>
+            </button>
+            <button class="inventario-tab" data-tab="equipos" onclick="switchInventarioTab('equipos')">
+                <i class="bi bi-pc-display"></i>
+                Equipos en Stock
+                <span class="inventario-tab-badge"><?= count($equiposSinAsignar ?? []) ?></span>
+            </button>
+        </div>
+
+        <!-- TAB: Artículos de Inventario -->
+        <div id="tabArticulos" class="inventario-tab-content active">
+
+        <!-- View Toggle + Bulk Controls -->
         <div class="inventario-view-toggle">
+            <!-- Bulk Delete Controls -->
+            <div class="bulk-controls">
+                <div class="form-check form-switch mb-0" title="Activar selección múltiple">
+                    <input class="form-check-input bulk-toggle" type="checkbox" id="bulkModeToggle" style="cursor: pointer; width: 3em; height: 1.5em;">
+                </div>
+                <div id="bulkSelectAllContainer" class="bulk-select-all">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="bulkSelectAll" style="cursor: pointer; border-color: #cbd5e1;">
+                        <label class="form-check-label text-muted fs-sm user-select-none" for="bulkSelectAll" style="cursor: pointer;">Todo</label>
+                    </div>
+                </div>
+                <button id="bulkDeleteBtn" class="bulk-delete-btn">
+                    <i class="bi bi-trash"></i>
+                    <span id="bulkSelectedCount">0</span> seleccionados
+                </button>
+            </div>
+            
             <button class="inventario-toggle-btn active" data-view="table" data-target="items">
                 <i class="bi bi-list-ul"></i> Tabla
             </button>
@@ -113,8 +150,13 @@
                 </thead>
                 <tbody>
                     <?php foreach ($items as $item): ?>
-                    <tr>
-                        <td>
+                    <tr data-bulk-item data-item-id="<?= $item->id ?>">
+                        <td style="position: relative;">
+                            <!-- Bulk Checkbox -->
+                            <div class="bulk-checkbox">
+                                <i class="bi bi-check-circle-fill icon-checked"></i>
+                                <i class="bi bi-circle icon-unchecked"></i>
+                            </div>
                             <span class="inventario-code"><?= htmlspecialchars($item->codigo ?? $item->id) ?></span>
                         </td>
                         <td>
@@ -182,7 +224,12 @@
             </button>
             <div class="inventario-carousel" id="items-carousel">
                 <?php foreach ($items as $item): ?>
-                <div class="inventario-card">
+                <div class="inventario-card" data-bulk-item data-item-id="<?= $item->id ?>" style="position: relative;">
+                    <!-- Bulk Checkbox -->
+                    <div class="bulk-checkbox">
+                        <i class="bi bi-check-circle-fill icon-checked"></i>
+                        <i class="bi bi-circle icon-unchecked"></i>
+                    </div>
                     <div class="inventario-card-header">
                         <span class="inventario-card-code"><?= htmlspecialchars($item->codigo ?? $item->id) ?></span>
                         <?php if(($item->stock_actual ?? 0) <= ($item->stock_minimo ?? 0)): ?>
@@ -279,6 +326,11 @@
             </div>
             <?php endif; ?>
 
+        </div><!-- End TAB: Artículos de Inventario -->
+
+        <!-- TAB: Equipos en Stock -->
+        <div id="tabEquipos" class="inventario-tab-content">
+        
         <!-- Equipos Sin Asignar Section -->
         <div class="inventario-equipos-section">
             <div class="inventario-section-title">
@@ -362,12 +414,13 @@
                                        title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <button class="inventario-action-btn delete delete-equipo-btn" 
-                                            data-id="<?= $equipo->id ?>" 
-                                            data-tipo="<?= htmlspecialchars($equipo->tipo ?? '', ENT_QUOTES) ?>"
-                                            type="button">
+                                    <a href="<?= BASE_URL ?>equipos/eliminar/<?= $equipo->id ?>" 
+                                       class="inventario-action-btn delete"
+                                       data-no-global-delete="true"
+                                       title="Eliminar"
+                                       onclick="return confirmDeleteEquipoStock(event, this.href, '<?= addslashes(htmlspecialchars($equipo->marca . ' ' . $equipo->modelo)) ?>')">
                                         <i class="bi bi-trash"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                             <?php endif; ?>
@@ -408,11 +461,13 @@
                                class="inventario-action-btn view" title="Asignar">
                                 <i class="bi bi-person-plus"></i>
                             </a>
-                            <button class="inventario-action-btn delete delete-equipo-btn" 
-                                    data-id="<?= $equipo->id ?>" 
-                                    data-tipo="<?= htmlspecialchars($equipo->tipo ?? '', ENT_QUOTES) ?>">
+                            <a href="<?= BASE_URL ?>equipos/eliminar/<?= $equipo->id ?>" 
+                               class="inventario-action-btn delete"
+                               data-no-global-delete="true"
+                               title="Eliminar"
+                               onclick="return confirmDeleteEquipoStock(event, this.href, '<?= addslashes(htmlspecialchars($equipo->marca . ' ' . $equipo->modelo)) ?>')">
                                 <i class="bi bi-trash"></i>
-                            </button>
+                            </a>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -468,6 +523,10 @@
             <?php endif; ?>
         </div>
 
+        </div><!-- End TAB: Equipos en Stock -->
+
+        </div><!-- End inventario-content-card -->
+
     </div>
 </div>
 
@@ -479,205 +538,56 @@
 
 
 
-<!-- Modal de Confirmación para Eliminar Equipo -->
-<div class="modal fade" id="modalConfirmarEliminarEquipo" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    Confirmar Eliminación
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-circle-fill me-2"></i>
-                    <strong>¿Estás seguro de eliminar este equipo?</strong>
-                </div>
-                <p id="equipoDetalleEliminar" class="mb-0"></p>
-                <p class="text-muted mt-2 mb-0">
-                    <small><i class="bi bi-info-circle me-1"></i>Esta acción no se puede deshacer.</small>
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i>Cancelar
-                </button>
-                <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
-                    <i class="bi bi-trash-fill me-1"></i>Sí, Eliminar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Bulk Delete Assets -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
+<script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
+
+<!-- Modern Simple Delete Modal Integration -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
+<script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>"></script>
+
+<script src="<?= BASE_URL ?>js/inventario.js?v=<?= time() ?>"></script>
 
 <script>
-// Function to delete equipment (Global scope)
-window.eliminarEquipo = function(btn) {
-    const equipoId = btn.getAttribute('data-id');
-    const equipoTipo = btn.getAttribute('data-tipo');
-    
-    // Show equipment details in modal
-    const detalleElement = document.getElementById('equipoDetalleEliminar');
-    detalleElement.innerHTML = '<strong>Tipo:</strong> ' + (equipoTipo || 'Sin especificar');
-    
-    // Show the custom confirmation modal
-    const modal = new bootstrap.Modal(document.getElementById('modalConfirmarEliminarEquipo'));
-    modal.show();
-    
-    // Handle confirmation button click
-    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-    btnConfirmar.onclick = function() {
-        // Create a form and submit
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '<?= BASE_URL ?>public/index.php?url=equipos/eliminar/' + equipoId;
-        document.body.appendChild(form);
-        form.submit();
-    };
-};
-
-// Ajustes para el formulario dentro del modal
-document.addEventListener('DOMContentLoaded', function() {
-    // Attach event listeners to delete buttons
-    document.querySelectorAll('.delete-equipo-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            eliminarEquipo(this);
+    function confirmDeleteEquipoStock(e, url, name) {
+        e.preventDefault();
+        SimpleDeleteModal.open(url, {
+            type: 'Equipo',
+            name: name,
+            warning: 'Esta acción eliminará el equipo del inventario permanentemente.'
         });
-    });
-
-    // Modal styled tweaks removed.
-
-    // Auto-submit search with debounce
-    const searchInput = document.getElementById('searchInput');
-    const searchForm = document.getElementById('searchForm');
-    let timeout = null;
-
-    if (searchInput && searchForm) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(timeout);
-            timeout = setTimeout(function() {
-                searchForm.submit();
-            }, 500);
+        return false;
+    }
+    
+    // Tab Switching Function
+    function switchInventarioTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.inventario-tab').forEach(tab => {
+            tab.classList.remove('active');
         });
+        document.querySelector(`.inventario-tab[data-tab="${tabName}"]`).classList.add('active');
         
-        // Focus input if it has value (after reload)
-        if (searchInput.value.trim() !== '') {
-            searchInput.focus();
-            // Move cursor to end
-            const val = searchInput.value;
-            searchInput.value = '';
-            searchInput.value = val;
-        }
-    }
-});
-
-// Función para manejar el cambio de items por página
-// Función para manejar el cambio de items por página
-function changeItemsPerPage(perPage) {
-    if (!perPage) {
-        // Fallback si se llama sin argumentos (legacy)
-        const el = document.getElementById('itemsPerPage');
-        if (el) perPage = el.value;
-        else return;
-    }
-    
-    // Guardar preferencia globalmente via cookie (usando PaginationPrefs si existe, o manual)
-    if (window.PaginationPrefs) {
-        PaginationPrefs.set(perPage);
-    } else {
-        // Fallback manual si no cargó el footer aún
-        const expires = new Date();
-        expires.setFullYear(expires.getFullYear() + 1);
-        document.cookie = 'sgen_pagination_per_page=' + perPage + ';expires=' + expires.toUTCString() + ';path=/';
-    }
-    
-    // Recargar página manteniendo parámetros
-    const url = new URL(window.location.href);
-    url.searchParams.set('per_page', perPage);
-    url.searchParams.set('page_items', '1'); // Resetear página a 1
-    url.searchParams.set('page_equipos', '1');
-    window.location.href = url.toString();
-}
-
-    // Toggle fields for "Eliminar Artículo" in Baja modal (Event Delegation)
-    document.body.addEventListener('change', function(e) {
-        if (e.target && e.target.matches('input[name="eliminar_completo"]')) {
-            const checkbox = e.target;
-            const form = checkbox.closest('form');
-            const cantidadInput = form.querySelector('input[name="cantidad"]');
-            const motivoInput = form.querySelector('textarea[name="motivo"]');
-            const submitBtn = form.querySelector('button[type="submit"]');
-            
-            // Find the parent divs to hide/show
-            const divCantidad = cantidadInput.closest('.mb-3');
-            const divMotivo = motivoInput.closest('.mb-3');
-
-            if (checkbox.checked) {
-                // Hide fields and remove required
-                divCantidad.style.display = 'none';
-                divMotivo.style.display = 'none';
-                cantidadInput.removeAttribute('required');
-                motivoInput.removeAttribute('required');
-                
-                // Update button
-                submitBtn.textContent = 'Eliminar Artículo';
-                submitBtn.classList.remove('btn-danger');
-                submitBtn.classList.add('btn-dark'); // Visual cue
-            } else {
-                // Show fields and add required
-                divCantidad.style.display = 'block';
-                divMotivo.style.display = 'block';
-                cantidadInput.setAttribute('required', 'required');
-                motivoInput.setAttribute('required', 'required');
-                
-                // Update button
-                submitBtn.textContent = 'Confirmar Baja';
-                submitBtn.classList.remove('btn-dark');
-                submitBtn.classList.add('btn-danger');
-            }
-        }
-    });
-
-    // ===== VIEW TOGGLE =====
-    document.querySelectorAll('.inventario-toggle-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const view = this.dataset.view;
-            const target = this.dataset.target;
-            
-            // Toggle button active state
-            this.parentElement.querySelectorAll('.inventario-toggle-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Toggle view visibility
-            const tableView = document.getElementById(target + '-table');
-            const cardsView = document.getElementById(target + '-cards');
-            
-            if (view === 'table') {
-                if (tableView) tableView.classList.remove('hidden');
-                if (cardsView) cardsView.classList.remove('active');
-            } else {
-                if (tableView) tableView.classList.add('hidden');
-                if (cardsView) cardsView.classList.add('active');
-            }
+        // Update tab content
+        document.querySelectorAll('.inventario-tab-content').forEach(content => {
+            content.classList.remove('active');
         });
-    });
-
-    // ===== CAROUSEL NAVIGATION =====
-    document.querySelectorAll('.inventario-carousel-nav').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const carouselId = this.dataset.carousel;
-            const carousel = document.getElementById(carouselId);
-            const scrollAmount = 300;
-            
-            if (this.classList.contains('prev')) {
-                carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-            } else {
-                carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-            }
+        document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+    }
+    
+    // Initialize Bulk Delete for Items
+    document.addEventListener('DOMContentLoaded', function() {
+        BulkDelete.init({
+            containerId: 'inventarioMain',
+            itemSelector: '[data-bulk-item]',
+            itemIdAttribute: 'data-item-id',
+            deleteUrl: BASE_URL + 'inventario/eliminar_masivo',
+            entityName: 'artículos',
+            entityNameSingular: 'artículo',
+            toggleId: 'bulkModeToggle',
+            selectAllId: 'bulkSelectAll',
+            selectAllContainerId: 'bulkSelectAllContainer',
+            deleteButtonId: 'bulkDeleteBtn',
+            countSpanId: 'bulkSelectedCount'
         });
     });
 </script>

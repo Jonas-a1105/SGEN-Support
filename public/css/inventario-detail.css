@@ -19,7 +19,7 @@ html {
 .id-container {
     min-height: 100vh;
     background: var(--id-bg);
-    padding: 1.5rem;
+    padding: 0 1.5rem 1.5rem 1.5rem;
     font-family: 'Inter', sans-serif;
     color: var(--id-text-main);
 }

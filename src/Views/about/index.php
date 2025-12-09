@@ -97,13 +97,28 @@
                 </div>
 
                 <div class="status-box">
-                    <div>
-                        <h3 style="font-weight: 600; color: var(--blue-600); font-size: 1rem; margin: 0;">Estado del Sistema</h3>
-                        <p style="font-size: 0.875rem; color: var(--blue-500); margin: 0.25rem 0 0;">Todas las conexiones operativas</p>
+                    <div class="status-icon-wrapper">
+                        <div class="status-ping-dot"></div>
+                        <div class="status-icon-inner">
+                            <i class="bi bi-activity"></i>
+                        </div>
                     </div>
-                    <div class="status-badge">
-                        <div class="pulse-dot"></div>
-                        OPERATIVO
+                    <div class="status-content" style="margin-right: auto;">
+                        <span class="status-label-new">ESTADO GENERAL</span>
+                        <h3 class="status-value-new">100% Operativo</h3>
+                    </div>
+                    
+                    <div class="status-separator d-none d-md-block"></div>
+                    
+                    <div class="status-details d-none d-md-flex">
+                        <div class="status-detail-item">
+                            <span class="status-detail-label">Uptime</span>
+                            <span class="status-detail-value"><?= htmlspecialchars($techInfo['uptime'] ?? 'N/A') ?></span>
+                        </div>
+                        <div class="status-detail-item">
+                            <span class="status-detail-label">Latencia</span>
+                            <span class="status-detail-value"><?= htmlspecialchars($techInfo['latency'] ?? '0') ?>ms</span>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -9,42 +9,42 @@ El sistema gestiona el ciclo de vida completo de las solicitudes de soporte téc
 ## 🚀 Características Principales
 
 ### 🎨 Interfaz y Experiencia de Usuario (UX/UI)
-* **Diseño Glassmorphism:** Interfaz moderna con efectos de vidrio, desenfoque y sombras suaves.
-* **Tema Dinámico:** Selector de **Modo Claro / Modo Oscuro** persistente por usuario.
-* **Bootstrap 5:** Diseño totalmente responsivo y adaptable a móviles.
-* **Alertas Animadas:** Integración con **SweetAlert2** para confirmaciones de eliminación y cierre de sesión con animaciones personalizadas.
-* **Inactividad:** Cierre de sesión automático tras 2 minutos de inactividad por seguridad.
+*   **Diseño Glassmorphism:** Interfaz moderna con efectos de vidrio, desenfoque y sombras suaves.
+*   **Tema Dinámico:** Selector de **Modo Claro / Modo Oscuro** persistente por usuario.
+*   **Bootstrap 5:** Diseño totalmente responsivo y adaptable a móviles.
+*   **Alertas Animadas:** Integración con **SweetAlert2** para confirmaciones de eliminación y cierre de sesión con animaciones personalizadas.
+*   **Inactividad:** Cierre de sesión automático tras 2 minutos de inactividad por seguridad.
 
 ### 🛠️ Gestión Técnica (CRUD Avanzado)
-* **Tickets de Soporte:** Creación, asignación, seguimiento y resolución de incidencias.
-* **Inventario de Equipos:** Registro de activos con validación de seriales únicos y asociación a departamentos.
-* **Bitácora de Empleados:** Búsqueda y gestión de personal con validación de Cédula única.
-* **Gestión de Departamentos:** Administración de las áreas de la institución.
+*   **Tickets de Soporte:** Creación, asignación, seguimiento y resolución de incidencias.
+*   **Inventario de Equipos:** Registro de activos con validación de seriales únicos y asociación a departamentos.
+*   **Bitácora de Empleados:** Búsqueda y gestión de personal con validación de Cédula única.
+*   **Gestión de Departamentos:** Administración de las áreas de la institución.
 
 ### 🔒 Seguridad y Auditoría
-* **Arquitectura Segura:** Enrutador personalizado (`Router.php`), uso estricto de **PDO** para prevenir inyecciones SQL y saneamiento de datos XSS.
-* **Validación Robusta:** Clase `Validator` personalizada que garantiza la integridad de los datos antes de tocar la base de datos.
-* **Bitácora de Acciones:** Registro detallado de *quién hizo qué* (Crear, Editar, Eliminar) con enlaces directos al objeto afectado.
-* **Logs de Sesión:** Historial de inicios y cierres de sesión con cálculo de duración.
-* **Roles y Permisos:** Sistema de control de acceso (ACL) para Administradores, Técnicos y Consultores.
+*   **Arquitectura Segura:** Enrutador personalizado (`Router.php`), uso estricto de **PDO** para prevenir inyecciones SQL y saneamiento de datos XSS.
+*   **Validación Robusta:** Clase `Validator` personalizada que garantiza la integridad de los datos antes de tocar la base de datos.
+*   **Bitácora de Acciones:** Registro detallado de *quién hizo qué* (Crear, Editar, Eliminar) con enlaces directos al objeto afectado.
+*   **Logs de Sesión:** Historial de inicios y cierres de sesión con cálculo de duración.
+*   **Roles y Permisos:** Sistema de control de acceso (ACL) para Administradores, Técnicos y Consultores.
 
 ### 📄 Reportes y Notificaciones
-* **Reportes PDF:** Generación de reportes individuales y generales usando **Dompdf**, con campos para firmas y logotipos institucionales.
-* **Notificaciones:** Sistema de alertas internas (ej: "Te han asignado un ticket") visible en el panel superior.
+*   **Reportes PDF:** Generación de reportes individuales y generales usando **Dompdf**, con campos para firmas y logotipos institucionales.
+*   **Notificaciones:** Sistema de alertas internas (ej: "Te han asignado un ticket") visible en el panel superior.
 
 ---
 
 ## 💻 Tecnologías Utilizadas
 
-* **Backend:** PHP 8.1+
-* **Base de Datos:** MySQL / MariaDB
-* **Frontend:** Bootstrap 5, CSS3 (Variables & Animations), JavaScript (ES6).
-* **Gestor de Paquetes:** Composer.
-* **Librerías Clave:**
-    * `dompdf/dompdf`: Generación de reportes PDF.
-    * `vlucas/phpdotenv`: Gestión de variables de entorno (opcional).
-    * **SweetAlert2:** Alertas modales interactivas.
-    * **DataTables:** Tablas dinámicas con búsqueda y paginación.
+*   **Backend:** PHP 8.1+
+*   **Base de Datos:** MySQL / MariaDB
+*   **Frontend:** Bootstrap 5, CSS3 (Variables & Animations), JavaScript (ES6).
+*   **Gestor de Paquetes:** Composer.
+*   **Librerías Clave:**
+    *   `dompdf/dompdf`: Generación de reportes PDF.
+    *   `vlucas/phpdotenv`: Gestión de variables de entorno (opcional).
+    *   **SweetAlert2:** Alertas modales interactivas.
+    *   **DataTables:** Tablas dinámicas con búsqueda y paginación.
 
 ---
 
@@ -71,81 +71,41 @@ El sistema gestiona el ciclo de vida completo de las solicitudes de soporte téc
 |
 |-- /vendor/               # Dependencias de Composer
 |-- composer.json          # Configuración de dependencias
+```
 
-##  Instalación
+## 📦 Instalación
 
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone https://github.com/jm-1105/sgen-support.git
+    cd sgen-support
+    ```
 
+2.  **Instalar dependencias:**
+    ```bash
+    composer install
+    ```
 
-1. Clona el repositorio:
+3.  **Configuración:**
+    *   Crea una base de datos en MySQL.
+    *   Renombra `.env.example` a `.env` (o edita `config/database.php`) y configura tus credenciales.
 
-   bash
+4.  **Ejecutar:**
+    *   **Windows:** Doble clic en `SGEN-support.bat`.
+    *   **Linux/Mac:** Ejecuta `./SGEN-Support.sh` en la terminal.
+    *   **Manual:** Configura tu servidor web (Apache/Nginx) para apuntar a la carpeta `public/` o usa:
+        ```bash
+        php -S localhost:8000 -t public
+        ```
 
-   git clone https://github.com/jm-1105/sgen-support.git
+## 👥 Roles del Sistema
 
+*   **Consultor:** Crea y consulta sus tickets.
+*   **Técnico:** Atiende y actualiza tickets asignados.
+*   **Administrador:** Supervisa métricas, asigna técnicos y gestiona el sistema completo.
 
+---
 
-Configura tu entorno local (XAMPP, Laragon, etc.)
+### 🌟 Créditos
 
-
-
-Crea una base de datos y ajusta las credenciales en config/database.php
-
-
-
-Asegúrate de que el servidor apunte a la carpeta /public
-
-
-
-Accede desde http://localhost/sgen-support/public
-
-
-
-Roles del sistema
-
-
-
-Consultor: Crea y consulta sus tickets
-
-
-
-Técnico: Atiende y actualiza tickets asignados
-
-
-
-Administrador: Supervisa métricas, asigna técnicos y gestiona el sistema
-
-
-
-Seguridad y buenas prácticas
-
-Separación clara entre lógica, vistas y acceso público
-
-
-
-Uso de funciones reutilizables para blindar rutas y redirecciones
-
-
-
-Validación de sesiones y roles en cada controlador
-
-
-
-Integridad referencial en la base de datos
-
-
-
-Créditos
-
-Desarrollado por Jonás Mendoza, Víctor Daza, José Vásquez, José Gómez, Katherine Machado, técnicos. Con enfoque en funcionalidad, empatía institucional y escalabilidad técnica."
-
-Dar Permisos en LINUX:
-# Dar permisos al dueño (tú) y al grupo (www-data usualmente)
-sudo chown -R $USER:www-data .
-
-# Dar permisos de lectura a todos y escritura al dueño
-sudo find . -type f -exec chmod 644 {} \;
-sudo find . -type d -exec chmod 755 {} \;
-
-# Dar permisos de escritura a carpetas especiales (ajusta según tus carpetas reales)
-sudo chmod -R 775 public/img
-sudo chmod -R 775 storage/logs
+Desarrollado con ❤️ por **Jonás Mendoza**.

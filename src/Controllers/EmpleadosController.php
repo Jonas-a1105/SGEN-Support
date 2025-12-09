@@ -105,10 +105,25 @@ class EmpleadosController extends Controller {
         
         if ($id) {
             // Actualizar
-            $this->empleadoModel->update($id, $datos);
-            $this->setFlashMessage('success', 'Empleado actualizado correctamente.');
-            header('Location: ' . BASE_URL . 'empleados');
-            exit;
+            if ($this->empleadoModel->update($id, $datos)) {
+                
+                // --- SYNC LOGIC SGEN ---
+                // 1. Unlink this employee from any user currently holding it (to be safe/clean)
+                $this->usuarioModel->desvincularEmpleado($id);
+
+                // 2. If a user is selected, link it to this employee and department
+                if (!empty($usuario_id)) {
+                    $this->usuarioModel->update($usuario_id, [
+                        'empleado_id' => $id,
+                        'departamento_id' => $departamento_id ?: null
+                    ]);
+                }
+                // -----------------------
+
+                $this->setFlashMessage('success', 'Empleado actualizado correctamente. (Datos sincronizados con Usuario)');
+                header('Location: ' . BASE_URL . 'empleados');
+                exit;
+            }
         } else {
             // Check if duplicate emails are allowed via checkbox
             $permitir_duplicado = isset($_POST['permitir_email_compartido']) && $_POST['permitir_email_compartido'] == '1';
@@ -125,10 +140,22 @@ class EmpleadosController extends Controller {
             
             // Crear
             try {
-                $this->empleadoModel->create($datos);
-                $this->setFlashMessage('success', 'Empleado registrado correctamente.');
-                header('Location: ' . BASE_URL . 'empleados');
-                exit;
+                $newId = $this->empleadoModel->create($datos);
+                if ($newId) {
+                    
+                    // --- SYNC LOGIC SGEN ---
+                    if (!empty($usuario_id)) {
+                        $this->usuarioModel->update($usuario_id, [
+                            'empleado_id' => $newId,
+                            'departamento_id' => $departamento_id ?: null
+                        ]);
+                    }
+                    // -----------------------
+
+                    $this->setFlashMessage('success', 'Empleado registrado correctamente. (Datos sincronizados con Usuario)');
+                    header('Location: ' . BASE_URL . 'empleados');
+                    exit;
+                }
             } catch (\PDOException $e) {
                 $this->setFlashMessage('error', 'Error inesperado: ' . $e->getMessage());
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
@@ -149,5 +176,94 @@ class EmpleadosController extends Controller {
         header('Location: ' . BASE_URL . 'empleados');
         exit;
     }
+
+    /**
+     * Bulk delete employees via AJAX
+     */
+    public function eliminar_masivo()
+    {
+        $this->restrictTo(['admin']);
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ids = $input['ids'] ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            echo json_encode(['success' => false, 'message' => 'No se proporcionaron IDs']);
+            exit;
+        }
+
+        $deletedCount = 0;
+
+        foreach ($ids as $id) {
+            if ($this->empleadoModel->delete((int)$id)) {
+                $deletedCount++;
+            }
+        }
+
+        if ($deletedCount > 0) {
+            echo json_encode([
+                'success' => true,
+                'message' => "Se eliminaron {$deletedCount} empleado(s) correctamente.",
+                'deleted' => $deletedCount
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No se pudo eliminar ningún empleado']);
+        }
+        exit;
+    }
     
+
+    /**
+     * API para buscar técnicos (JSON)
+     * Utilizado por el modal de "Asignar Técnico"
+     */
+    public function buscarTecnicos() {
+        // Asegurar respuesta JSON
+        header('Content-Type: application/json');
+
+        try {
+            // Verificar sesión (opcional, pero recomendado)
+            if (!isset($_SESSION['usuario_id'])) {
+                echo json_encode(['error' => 'Unauthorized']);
+                exit;
+            }
+
+            $term = isset($_GET['q']) ? trim($_GET['q']) : '';
+            $empleados = $this->empleadoModel->findAllWithDetails();
+
+            $results = [];
+            
+            // **** DEBUG EXTREMO: Forzando respuesta manual ****
+            $results = [
+                [
+                    'id' => 999,
+                    'nombre' => 'PRUEBA',
+                    'apellido' => 'CONEXION',
+                    'status' => 'available',
+                    'active_tickets' => 0,
+                    'specialty' => 'SI SE VE ESTO, EL FRONTEND ESTA BIEN'
+                ]
+            ];
+            
+            echo json_encode($results);
+            exit;
+            
+            /*
+            foreach ($empleados as $emp) {
+                // ... código comentado ...
+            }
+            */
+
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Error al buscar técnicos: ' . $e->getMessage()]);
+            exit;
+        }
+    }
 }

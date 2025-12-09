@@ -172,11 +172,18 @@ class DepartamentosController extends Controller
         $empleadoModel = new \App\Models\Empleado();
         $empleados = $empleadoModel->findByDepartamentoId($id);
 
+        // Fetch Inventory Items (Consumables)
+        $inventarioModel = new \App\Models\Inventario();
+        $itemsInventario = $inventarioModel->obtenerItemsPorDepartamento($id);
+        $movimientosInventario = $inventarioModel->obtenerMovimientosPorDepartamento($id, 20);
+
         $this->render('departamentos/ver', [
             'titulo' => "Detalle Departamento: {$departamento->nombre}",
             'departamento' => $departamento,
             'equipos' => $equipos,
-            'empleados' => $empleados
+            'empleados' => $empleados,
+            'itemsInventario' => $itemsInventario,
+            'movimientosInventario' => $movimientosInventario
         ]);
     }
 
@@ -219,6 +226,150 @@ class DepartamentosController extends Controller
         }
 
         header('Location: ' . BASE_URL . 'departamentos/ver/' . $departamento_id);
+        exit;
+    }
+
+    /**
+     * API: Get available equipment (not assigned to any department)
+     */
+    public function apiEquiposDisponibles()
+    {
+        $this->restrictTo(['admin']);
+        header('Content-Type: application/json');
+        
+        $equipoModel = new \App\Models\Equipo();
+        $equipos = $equipoModel->findUnassigned();
+        
+        $result = [];
+        foreach ($equipos as $e) {
+            $result[] = [
+                'id' => $e->id,
+                'name' => trim(($e->marca ?? '') . ' ' . ($e->modelo ?? $e->tipo)),
+                'code' => $e->codigo_inventario ?? $e->numero_serie ?? '',
+                'serial' => $e->numero_serie ?? '',
+                'type' => $e->tipo ?? '',
+                'status' => $e->estado === 'disponible' ? 'available' : 'maintenance'
+            ];
+        }
+        
+        echo json_encode($result);
+        exit;
+    }
+
+    /**
+     * API: Get available employees (not assigned to any department)
+     */
+    public function apiEmpleadosDisponibles()
+    {
+        $this->restrictTo(['admin']);
+        header('Content-Type: application/json');
+        
+        $empleadoModel = new \App\Models\Empleado();
+        $empleados = $empleadoModel->findWithoutDepartment();
+        
+        $result = [];
+        foreach ($empleados as $emp) {
+            $initials = strtoupper(substr($emp->nombre, 0, 1) . substr($emp->apellido ?? '', 0, 1));
+            $result[] = [
+                'id' => $emp->id,
+                'name' => trim($emp->nombre . ' ' . ($emp->apellido ?? '')),
+                'role' => $emp->cargo ?? 'Sin cargo',
+                'avatar' => $initials,
+                'cedula' => $emp->cedula ?? '',
+                'status' => ($emp->activo ?? 1) ? 'active' : 'on_leave'
+            ];
+        }
+        
+        echo json_encode($result);
+        exit;
+    }
+
+    /**
+     * Assign an employee to a department
+     */
+    public function asignarEmpleado()
+    {
+        $this->restrictTo(['admin']);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'departamentos');
+            exit;
+        }
+
+        $validator = new Validator($_POST);
+        $departamento_id = $validator->getInt('departamento_id');
+        $empleado_id = $validator->getInt('empleado_id');
+
+        if (empty($departamento_id) || empty($empleado_id)) {
+            $this->setFlashMessage('error', 'Debe proporcionar el ID del departamento y del empleado.');
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+
+        $empleadoModel = new \App\Models\Empleado();
+        $empleado = $empleadoModel->findById($empleado_id);
+
+        if (!$empleado) {
+            $this->setFlashMessage('error', 'Empleado no encontrado.');
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+
+        if ($empleadoModel->update($empleado_id, ['departamento_id' => $departamento_id])) {
+            $this->setFlashMessage('success', "Empleado asignado correctamente al departamento.");
+            $this->logBitacora("Asignó empleado {$empleado->nombre} al departamento #{$departamento_id}", 'departamento', $departamento_id);
+        } else {
+            $this->setFlashMessage('error', 'Error al asignar el empleado.');
+        }
+
+        header('Location: ' . BASE_URL . 'departamentos/ver/' . $departamento_id);
+        exit;
+    }
+
+    /**
+     * Bulk delete departments via AJAX
+     */
+    public function eliminar_masivo()
+    {
+        $this->restrictTo(['admin']);
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ids = $input['ids'] ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            echo json_encode(['success' => false, 'message' => 'No se proporcionaron IDs']);
+            exit;
+        }
+
+        $deletedCount = 0;
+        $errors = [];
+
+        foreach ($ids as $id) {
+            try {
+                $dept = $this->departamentoModel->findById((int)$id);
+                if ($dept && $this->departamentoModel->delete((int)$id)) {
+                    $deletedCount++;
+                    $this->logBitacora("Eliminó el departamento {$dept->nombre} (eliminación masiva)", 'departamento', $id);
+                }
+            } catch (PDOException $e) {
+                $errors[] = "Departamento #{$id} tiene dependencias";
+            }
+        }
+
+        if ($deletedCount > 0) {
+            $message = "Se eliminaron {$deletedCount} departamento(s) correctamente.";
+            if (!empty($errors)) {
+                $message .= " " . count($errors) . " no se pudieron eliminar por dependencias.";
+            }
+            echo json_encode(['success' => true, 'message' => $message, 'deleted' => $deletedCount]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No se pudo eliminar ningún departamento. ' . implode(', ', $errors)]);
+        }
         exit;
     }
 }

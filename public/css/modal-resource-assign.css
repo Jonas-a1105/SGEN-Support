@@ -1,0 +1,440 @@
+/* =============================================
+   Resource Assignment Modal - Modern CSS
+   ============================================= */
+
+/* Modal Overlay */
+.ram-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(0.75px);
+    z-index: 1050;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.ram-overlay.active {
+    opacity: 1;
+}
+
+/* Modal Container */
+.ram-modal {
+    position: relative;
+    width: 100%;
+    max-width: 32rem;
+    max-height: 85vh;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ram-overlay.active .ram-modal {
+    transform: scale(1);
+}
+
+/* Header */
+.ram-header {
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.ram-header-top {
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.ram-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.ram-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0.25rem 0 0;
+}
+
+.ram-close-btn {
+    color: #94a3b8;
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ram-close-btn:hover {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+/* Tab Switcher */
+.ram-tab-container {
+    padding: 0 1.5rem 1rem;
+}
+
+.ram-tab-switcher {
+    display: flex;
+    background: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 0.75rem;
+}
+
+.ram-tab-btn {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.ram-tab-btn:hover:not(.active) {
+    color: #334155;
+    background: rgba(226, 232, 240, 0.5);
+}
+
+.ram-tab-btn.active {
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ram-tab-btn.active.equipment {
+    color: #2563eb;
+}
+
+.ram-tab-btn.active.employee {
+    color: #4f46e5;
+}
+
+/* Search */
+.ram-search-container {
+    padding: 0 1.5rem 1rem;
+}
+
+.ram-search-wrapper {
+    position: relative;
+}
+
+.ram-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.ram-search-input {
+    width: 100%;
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.ram-search-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.ram-search-input:focus+.ram-search-icon,
+.ram-search-wrapper:focus-within .ram-search-icon {
+    color: #2563eb;
+}
+
+/* List Container */
+.ram-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 1rem;
+    background: #f8fafc;
+}
+
+.ram-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* List Item */
+.ram-item {
+    position: relative;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+}
+
+.ram-item:hover:not(.unavailable) {
+    border-color: #93c5fd;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.ram-item.selected {
+    background: #eff6ff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 1px #2563eb;
+}
+
+.ram-item.unavailable {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f8fafc;
+}
+
+/* Item Avatar/Icon */
+.ram-item-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.25rem;
+}
+
+.ram-item-icon.equipment {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.ram-item-icon.employee {
+    background: #e0e7ff;
+    color: #4f46e5;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+/* Item Info */
+.ram-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ram-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.ram-item-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ram-item.selected .ram-item-name {
+    color: #1e3a8a;
+}
+
+.ram-item-status {
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.ram-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.ram-item-code {
+    font-family: monospace;
+    background: #f1f5f9;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    color: #475569;
+}
+
+/* Checkbox */
+.ram-item-check {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    color: transparent;
+}
+
+.ram-item.selected .ram-item-check {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+    transform: scale(1);
+}
+
+.ram-item:not(.selected) .ram-item-check {
+    transform: scale(0.9);
+}
+
+/* Empty State */
+.ram-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #94a3b8;
+}
+
+.ram-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Footer */
+.ram-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    background: white;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+.ram-btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ram-btn-cancel {
+    background: transparent;
+    color: #475569;
+}
+
+.ram-btn-cancel:hover {
+    background: #f1f5f9;
+}
+
+.ram-btn-confirm {
+    background: #2563eb;
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.ram-btn-confirm:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.ram-btn-confirm:disabled {
+    background: #cbd5e1;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.ram-btn-confirm:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* Loading state */
+.ram-btn-confirm.loading {
+    pointer-events: none;
+}
+
+.ram-btn-confirm.loading::after {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Scrollbar */
+.ram-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ram-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ram-list-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.ram-list-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

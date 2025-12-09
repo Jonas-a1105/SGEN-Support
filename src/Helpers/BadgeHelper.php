@@ -78,7 +78,7 @@ class BadgeHelper
         $nombre = htmlspecialchars($soporte->categoria_nombre);
         
         return <<<HTML
-        <span class="category-badge-light" style="background-color: {$variants['background']}; border: 1px solid {$variants['border']};">
+        <span class="category-badge-light" style="background-color: {$variants['background']}; border: 1px solid {$variants['border']}; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
             <i class="{$icon}" style="color: {$color}"></i>
             {$nombre}
         </span>

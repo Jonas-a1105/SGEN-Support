@@ -1,22 +1,47 @@
 @echo off
 TITLE Iniciando SGEN-Support...
-echo Verificando servicios de XAMPP...
+COLOR 0A
+cls
 
-:: 1. Ir a la ruta de XAMPP (Ajusta si tu XAMPP no está en C:\xampp)
-cd /d C:\xampp
+echo ====================================================
+echo      SGEN-Support - Iniciador Automatico
+echo ====================================================
+echo.
 
-:: 2. Iniciar Apache y MySQL de forma silenciosa
-:: El comando 'start /min' minimiza la ventana negra que se abre
+echo [1/4] Verificando instalacion de XAMPP...
+
+:: Intentar detectar XAMPP en rutas comunes
+if exist "C:\xampp\apache_start.bat" (
+    set XAMPP_PATH=C:\xampp
+) else (
+    echo [!] No se encontro XAMPP en C:\xampp.
+    echo Por favor, asegurese de tener XAMPP instalado.
+    pause
+    exit
+)
+
+echo [OK] XAMPP detectado en %XAMPP_PATH%
+echo.
+
+echo [2/4] Iniciando Apache y MySQL...
+cd /d %XAMPP_PATH%
 start /min apache_start.bat
 start /min mysql_start.bat
+echo [OK] Servicios iniciados en segundo plano.
+echo.
 
-echo Servicios iniciados. Abriendo el sistema...
+echo [3/4] Esperando a que la base de datos este lista...
+timeout /t 5 /nobreak >nul
+echo [OK] Servicios listos.
+echo.
 
-:: 3. Esperar 4 segundos para asegurar que la base de datos esté lista
-timeout /t 4 /nobreak >nul
-
-:: 4. Abrir el navegador predeterminado en tu sistema
-:: Nota: Ajusté la URL basándome en la carpeta que subiste
+echo [4/4] Abriendo el sistema en el navegador...
 start http://localhost/sgen-support/public
+echo.
 
+echo ====================================================
+echo      El sistema se ha iniciado correctamente.
+echo      Puede cerrar esta ventana si lo desea.
+echo ====================================================
+timeout /t 5
 exit

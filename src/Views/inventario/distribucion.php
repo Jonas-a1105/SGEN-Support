@@ -36,6 +36,9 @@
             </div>
         </div>
 
+        <!-- Main Content Card with Border -->
+        <div class="pd-main-content-card">
+
         <div class="pd-grid">
             
             <!-- --- COLUMNA IZQUIERDA: ESTADO ACTUAL (2/3) --- -->
@@ -222,6 +225,8 @@
             </div>
             <?php endif; ?>
         </div>
+
+        </div><!-- End pd-main-content-card -->
     </div>
 </div>
 

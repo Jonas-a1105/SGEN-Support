@@ -1,0 +1,428 @@
+/**
+ * Bulk Delete Shared Styles
+ * Reusable CSS for multi-select delete functionality
+ */
+
+/* ==========================================
+   Selection Mode Controls
+   ========================================== */
+.bulk-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bulk-toggle {
+    cursor: pointer;
+    width: 3em;
+    height: 1.5em;
+}
+
+.bulk-select-all {
+    display: none;
+    animation: bulkFadeIn 0.2s ease;
+}
+
+.bulk-select-all.visible {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bulk-delete-btn {
+    display: none;
+    border-radius: 50px;
+    padding: 6px 16px;
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.4);
+    border: none;
+    font-weight: 500;
+    background: #dc2626;
+    color: white;
+    cursor: pointer;
+    animation: bulkBounceIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.bulk-delete-btn.visible {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bulk-delete-btn:hover {
+    background: #b91c1c;
+}
+
+/* ==========================================
+   Item Checkbox Styles
+   ========================================== */
+.bulk-checkbox {
+    display: none;
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    z-index: 20;
+    background: white;
+    border-radius: 50%;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.bulk-checkbox .icon-checked {
+    display: none;
+    color: #ef4444;
+}
+
+.bulk-checkbox .icon-unchecked {
+    display: block;
+    color: #cbd5e1;
+    transition: color 0.2s;
+}
+
+/* ==========================================
+   Selection Active State
+   ========================================== */
+.bulk-container.selection-active [data-bulk-item] {
+    cursor: pointer;
+    position: relative;
+    padding-left: 55px !important;
+    transition: all 0.2s ease;
+}
+
+.bulk-container.selection-active [data-bulk-item] .bulk-checkbox {
+    display: block;
+    animation: bulkPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bulk-container.selection-active [data-bulk-item]:hover .bulk-checkbox .icon-unchecked {
+    color: #94a3b8;
+}
+
+/* Selected State */
+.bulk-container.selection-active [data-bulk-item].selected {
+    background-color: #fef2f2 !important;
+}
+
+.bulk-container.selection-active [data-bulk-item].selected .bulk-checkbox .icon-checked {
+    display: block;
+}
+
+.bulk-container.selection-active [data-bulk-item].selected .bulk-checkbox .icon-unchecked {
+    display: none;
+}
+
+/* ==========================================
+   Confirmation Modal
+   ========================================== */
+.bulk-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(0.75px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.bulk-modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.bulk-modal-content {
+    background: white;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+}
+
+.bulk-modal-backdrop.active .bulk-modal-content {
+    transform: scale(1);
+}
+
+/* Modal Header */
+.bulk-modal-header {
+    background-color: #fef2f2;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #fee2e2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bulk-modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.bulk-modal-icon-box {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 0.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bulk-modal-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #7f1d1d;
+}
+
+.bulk-modal-close {
+    background: none;
+    border: none;
+    color: #fca5a5;
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 1.2rem;
+    transition: color 0.2s;
+}
+
+.bulk-modal-close:hover {
+    color: #dc2626;
+}
+
+/* Modal Body */
+.bulk-modal-body {
+    padding: 1.5rem;
+}
+
+.bulk-modal-context {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0;
+}
+
+.bulk-modal-count {
+    font-weight: 700;
+    color: #0f172a;
+    background: #f1f5f9;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #e2e8f0;
+}
+
+.bulk-modal-warning {
+    background-color: #fffbeb;
+    border: 1px solid #fef3c7;
+    color: #b45309;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.bulk-modal-warning i {
+    flex-shrink: 0;
+}
+
+/* Security Input */
+.bulk-modal-input-group {
+    margin: 1.25rem 0;
+}
+
+.bulk-modal-input-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.bulk-modal-input-wrapper {
+    position: relative;
+}
+
+.bulk-modal-input {
+    width: 100%;
+    padding: 0.75rem 3rem 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    outline: none;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    font-size: 1rem;
+}
+
+.bulk-modal-input:focus {
+    border-color: #94a3b8;
+}
+
+.bulk-modal-input.match {
+    border-color: #ef4444;
+    color: #b91c1c;
+    background-color: #fef2f2;
+}
+
+.bulk-modal-unlock {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #dc2626;
+    display: none;
+    animation: bulkPulse 1s infinite;
+}
+
+.bulk-modal-unlock.visible {
+    display: block;
+}
+
+/* Modal Footer */
+.bulk-modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+}
+
+.bulk-modal-cancel {
+    flex: 1;
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bulk-modal-cancel:hover {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.bulk-modal-confirm {
+    flex: 1;
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: none;
+    font-weight: 700;
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: not-allowed;
+    transition: all 0.2s;
+}
+
+.bulk-modal-confirm.active {
+    background: #dc2626;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3);
+}
+
+.bulk-modal-confirm.active:hover {
+    background: #b91c1c;
+}
+
+.bulk-modal-confirm.active:active {
+    transform: scale(0.98);
+}
+
+.bulk-modal-confirm .loading-state {
+    display: none;
+}
+
+.bulk-modal-confirm.loading .normal-state {
+    display: none;
+}
+
+.bulk-modal-confirm.loading .loading-state {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ==========================================
+   Animations
+   ========================================== */
+@keyframes bulkFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bulkBounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bulkPopIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.5);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+@keyframes bulkPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ==========================================
+   Table View Adjustments
+   ========================================== */
+.bulk-container.selection-active table tr[data-bulk-item] td:first-child {
+    padding-left: 55px !important;
+    position: relative;
+}
+
+.bulk-container.selection-active table tr[data-bulk-item] .bulk-checkbox {
+    left: 12px;
+}

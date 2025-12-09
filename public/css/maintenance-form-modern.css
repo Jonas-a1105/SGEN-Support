@@ -39,13 +39,20 @@
     margin: 0 auto;
 }
 
+/* Main Content Card - Bordered Container */
+.mf-main-content-card {
+    background: white;
+    border: 1px solid var(--mf-slate-200);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin: 1.5rem auto;
+    max-width: 1200px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
 /* --- HEADER --- */
 .mf-header {
     background: white;
-    border-bottom: 1px solid var(--mf-slate-200);
-    position: sticky;
-    top: 0;
-    z-index: 20;
 }
 
 .mf-header-content {
@@ -183,7 +190,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 2rem;
-    padding: 2rem 1.5rem;
+    padding: 0 1.5rem 2rem 1.5rem;
 }
 
 @media(min-width: 1024px) {

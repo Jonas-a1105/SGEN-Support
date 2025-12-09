@@ -2,7 +2,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Models\BitacoraModel;
+use App\Models\Bitacora;
 
 class BitacoraController extends Controller
 {
@@ -13,7 +13,7 @@ class BitacoraController extends Controller
         parent::__construct();
         // Admin, Consultor y Tecnico pueden ver la bitácora (filtrada para no-admins)
         $this->restrictTo(['admin', 'consultor', 'tecnico']);
-        $this->bitacoraModel = new BitacoraModel();
+        $this->bitacoraModel = new Bitacora();
     }
 
     /**

@@ -65,6 +65,9 @@ $tituloPagina = $isEdit ? 'Editar Mantenimiento' : 'Programar Mantenimiento';
             </div>
         </header>
 
+        <!-- Main Content Container -->
+        <div class="mf-main-content-card">
+
         <!-- --- MAIN CONTENT --- -->
         <main class="mf-max-w-6xl mf-grid">
             
@@ -189,7 +192,7 @@ $tituloPagina = $isEdit ? 'Editar Mantenimiento' : 'Programar Mantenimiento';
             <div>
                 
                 <!-- SECTION 3: PLANNING -->
-                <section class="mf-section" style="position: sticky; top: 100px;">
+                <section class="mf-section">
                     <div class="mf-section-header">
                         <i class="bi bi-clock text-muted"></i>
                         <h3 class="mf-section-title">Planificación</h3>
@@ -252,6 +255,8 @@ $tituloPagina = $isEdit ? 'Editar Mantenimiento' : 'Programar Mantenimiento';
             </div>
 
         </main>
+
+        </div><!-- End mf-main-content-card -->
 
         <!-- Mobile Footer -->
         <div class="mf-mobile-footer">

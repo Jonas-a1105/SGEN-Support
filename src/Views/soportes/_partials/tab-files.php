@@ -10,7 +10,7 @@ use App\Helpers\ViewHelper;
 $archivos = $archivos ?? [];
 ?>
 
-<div class="td-card">
+<div>
     <div class="td-card-header">
         <div class="td-card-header-left">
             <div class="td-card-icon slate">
@@ -79,49 +79,4 @@ $archivos = $archivos ?? [];
     <?php endif; ?>
 </div>
 
-<!-- Modal Subir Archivo -->
-<div class="modal fade" id="modalSubirArchivo" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content" style="border-radius: 16px; border: none;">
-            <div class="modal-header" style="border-bottom: 1px solid #f1f5f9;">
-                <h5 class="modal-title fw-bold">
-                    <i class="bi bi-cloud-upload text-primary me-2"></i>
-                    Subir Archivo
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="<?= BASE_URL ?>soportes/subir_archivo" method="POST" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <input type="hidden" name="soporte_id" value="<?= $soporte->id ?>">
-                    
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold">Archivo</label>
-                        <input type="file" 
-                               name="archivo" 
-                               id="archivoInput"
-                               class="form-control" 
-                               accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx"
-                               required>
-                        <div class="form-text">
-                            Formatos permitidos: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (máx. 10MB)
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Descripción (opcional)</label>
-                        <input type="text" 
-                               name="descripcion" 
-                               class="form-control" 
-                               placeholder="Ej: Foto del daño, factura de repuesto...">
-                    </div>
-                </div>
-                <div class="modal-footer" style="border-top: 1px solid #f1f5f9;">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-cloud-upload me-1"></i> Subir
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+

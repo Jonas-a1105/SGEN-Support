@@ -249,8 +249,8 @@ $stockInicial = 0; // Solo para create
                         </div>
                     </section>
                     
-                    <!-- SECCIÓN 3: Proveedor (Opcional) -->
-                    <div class="form-row cols-2" style="margin-bottom: 0;">
+                    <!-- SECCIÓN 3: Proveedor y Compra (Opcional) -->
+                    <div class="form-row cols-2" style="margin-bottom: 1rem;">
                         <div class="form-group">
                             <label class="form-label">Proveedor</label>
                             <div class="input-wrapper">
@@ -259,6 +259,14 @@ $stockInicial = 0; // Solo para create
                                        placeholder="Ej: TecnoSupply C.A." value="<?= htmlspecialchars($proveedor) ?>">
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">Fecha de Compra</label>
+                            <div class="input-wrapper">
+                                <input type="date" name="fecha_compra" class="form-input-control" value="<?= $item->fecha_compra ?? '' ?>">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row cols-2" style="margin-bottom: 0;">
                         <div class="form-group">
                             <label class="form-label">Vencimiento Garantía</label>
                             <div class="input-wrapper">

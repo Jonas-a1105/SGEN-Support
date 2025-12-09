@@ -89,6 +89,9 @@ $tipoIcon = match(strtolower($equipo->tipo ?? 'computadora')) {
             </div>
         </div>
 
+        <!-- Main Content Card with Border -->
+        <div class="ed-main-content-card">
+
         <!-- MAIN GRID -->
         <div class="ed-grid">
             
@@ -424,6 +427,8 @@ $tipoIcon = match(strtolower($equipo->tipo ?? 'computadora')) {
             </div>
 
         </div>
+
+        </div><!-- End ed-main-content-card -->
     </div>
 </div>
 

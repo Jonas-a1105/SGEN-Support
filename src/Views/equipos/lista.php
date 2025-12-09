@@ -46,13 +46,13 @@ function getStatusBadge($estado) {
 }
 ?>
 
-<link rel="stylesheet" href="<?= BASE_URL ?>css/equipos-moderno.css?v=<?= time() ?>">
 
-<div class="equipos-container">
+
+<div class="equipos-container" data-per-page="<?= $paginationPerPage ?>">
     
     <!-- Header -->
     <div class="equipos-header">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="equipos-header-container">
             <div class="d-flex align-items-center gap-2">
                 <div class="equipos-logo">
                     <i class="bi bi-pc-display-horizontal"></i>
@@ -66,14 +66,17 @@ function getStatusBadge($estado) {
                 <?php if ($_SESSION['rol'] === 'admin'): ?>
                     <a href="<?= BASE_URL ?>equipos/crear" class="btn-nuevo-equipo">
                         <i class="bi bi-plus-lg"></i>
-                        <span class="d-none d-sm-inline">Nuevo Equipo</span>
+                        <span>Nuevo Equipo</span>
                     </a>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 
-    <main class="container-fluid px-4 py-4" style="max-width: 1400px;">
+    <main id="equiposMain" class="equipos-main-container">
+        
+        <!-- Main Content Card Container -->
+        <div class="equipos-content-card">
         
         <!-- KPI Cards -->
         <div class="kpi-grid mb-4">
@@ -104,13 +107,33 @@ function getStatusBadge($estado) {
 
         <!-- Toolbar -->
         <div class="equipos-toolbar">
-            <!-- Filter Tabs -->
-            <div class="filter-tabs">
-                <button class="filter-tab active" data-filter="todos">Todos</button>
-                <button class="filter-tab" data-filter="disponible">Disponible</button>
-                <button class="filter-tab" data-filter="en_uso">En Uso</button>
-                <button class="filter-tab" data-filter="en_reparacion">Reparación</button>
-                <button class="filter-tab" data-filter="fuera_de_servicio">Baja</button>
+            <!-- Left: Bulk Controls + Filter Tabs -->
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <!-- Bulk Delete Controls -->
+                <div class="bulk-controls">
+                    <div class="form-check form-switch mb-0" title="Activar selección múltiple">
+                        <input class="form-check-input bulk-toggle" type="checkbox" id="bulkModeToggle" style="cursor: pointer; width: 3em; height: 1.5em;">
+                    </div>
+                    <div id="bulkSelectAllContainer" class="bulk-select-all">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="bulkSelectAll" style="cursor: pointer; border-color: #cbd5e1;">
+                            <label class="form-check-label text-muted fs-sm user-select-none" for="bulkSelectAll" style="cursor: pointer;">Todo</label>
+                        </div>
+                    </div>
+                    <button id="bulkDeleteBtn" class="bulk-delete-btn">
+                        <i class="bi bi-trash"></i>
+                        <span id="bulkSelectedCount">0</span> seleccionados
+                    </button>
+                </div>
+                
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="todos">Todos</button>
+                    <button class="filter-tab" data-filter="disponible">Disponible</button>
+                    <button class="filter-tab" data-filter="en_uso">En Uso</button>
+                    <button class="filter-tab" data-filter="en_reparacion">Reparación</button>
+                    <button class="filter-tab" data-filter="fuera_de_servicio">Baja</button>
+                </div>
             </div>
 
             <div class="d-flex align-items-center gap-3 flex-wrap">
@@ -137,7 +160,15 @@ function getStatusBadge($estado) {
             <?php foreach ($equipos as $e): 
                 $statusInfo = getStatusBadge($e->estado);
             ?>
-                <div class="equipo-card" data-estado="<?= $e->estado ?>">
+                <div class="equipo-card" 
+                     data-bulk-item
+                     data-equipo-id="<?= $e->id ?>"
+                     data-estado="<?= $e->estado ?>">
+                    <!-- Bulk Checkbox -->
+                    <div class="bulk-checkbox">
+                        <i class="bi bi-check-circle-fill icon-checked"></i>
+                        <i class="bi bi-circle icon-unchecked"></i>
+                    </div>
                     <div class="equipo-card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="equipo-card-icon">
@@ -180,6 +211,13 @@ function getStatusBadge($estado) {
                                 <a href="<?= BASE_URL ?>equipos/editar/<?= $e->id ?>" class="equipo-action-btn edit" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                <a href="<?= BASE_URL ?>equipos/eliminar/<?= $e->id ?>" 
+                                   class="equipo-action-btn delete" 
+                                   data-no-global-delete="true"
+                                   title="Eliminar"
+                                   onclick="return confirmDeleteEquipo(event, this.href, '<?= addslashes(htmlspecialchars($e->marca . ' ' . $e->modelo)) ?>')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -203,8 +241,15 @@ function getStatusBadge($estado) {
                     <?php foreach ($equipos as $e): 
                         $statusInfo = getStatusBadge($e->estado);
                     ?>
-                        <tr data-estado="<?= $e->estado ?>">
-                            <td>
+                        <tr data-bulk-item
+                            data-equipo-id="<?= $e->id ?>"
+                            data-estado="<?= $e->estado ?>">
+                            <td style="position: relative;">
+                                <!-- Bulk Checkbox -->
+                                <div class="bulk-checkbox">
+                                    <i class="bi bi-check-circle-fill icon-checked"></i>
+                                    <i class="bi bi-circle icon-unchecked"></i>
+                                </div>
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="equipo-table-icon">
                                         <i class="bi <?= getEquipoIcon($e->tipo) ?>"></i>
@@ -237,9 +282,13 @@ function getStatusBadge($estado) {
                                 <a href="<?= BASE_URL ?>equipos/ver/<?= $e->id ?>" class="btn btn-sm btn-link text-primary"><i class="bi bi-eye"></i></a>
                                 <?php if ($_SESSION['rol'] === 'admin'): ?>
                                     <a href="<?= BASE_URL ?>equipos/editar/<?= $e->id ?>" class="btn btn-sm btn-link text-secondary"><i class="bi bi-pencil"></i></a>
-                                    <button class="btn btn-sm btn-link text-danger delete-equipo-btn" data-id="<?= $e->id ?>" data-tipo="<?= $e->tipo ?>">
+                                    <a href="<?= BASE_URL ?>equipos/eliminar/<?= $e->id ?>" 
+                                       class="btn btn-sm btn-link text-danger" 
+                                       data-no-global-delete="true"
+                                       title="Eliminar"
+                                       onclick="return confirmDeleteEquipo(event, this.href, '<?= addslashes(htmlspecialchars($e->marca . ' ' . $e->modelo)) ?>')">
                                         <i class="bi bi-trash"></i>
-                                    </button>
+                                    </a>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -249,14 +298,14 @@ function getStatusBadge($estado) {
         </div>
 
         <!-- Modern Pagination Footer -->
-        <div id="paginationFooter" style="padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid #e2e8f0; margin-top: 1rem;">
-            <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <span style="font-size: 0.875rem; color: #64748b;">
-                    Mostrando <strong style="color: #0f172a;" id="visibleCountDisplay">0</strong> de <strong style="color: #0f172a;" id="totalCountDisplay">0</strong>
+        <div id="paginationFooter" class="equipos-pagination-footer">
+            <div class="equipos-pagination-info">
+                <span class="text-slate-500 fs-sm">
+                    Mostrando <strong class="text-slate-900" id="visibleCountDisplay">0</strong> de <strong class="text-slate-900" id="totalCountDisplay">0</strong>
                 </span>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-size: 0.75rem; color: #94a3b8;">Mostrar:</span>
-                    <select id="itemsPerPageSelector" onchange="changeClientItemsPerPage(this.value)" style="padding: 0.25rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.75rem; color: #475569; background: white; cursor: pointer;">
+                <div class="equipos-pagination-controls">
+                    <span class="text-slate-400 fs-xs">Mostrar:</span>
+                    <select id="itemsPerPageSelector" onchange="changeClientItemsPerPage(this.value)" class="pagination-select">
                         <option value="5">5</option>
                         <option value="10">10</option>
                         <option value="25">25</option>
@@ -265,14 +314,14 @@ function getStatusBadge($estado) {
                     </select>
                 </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <button id="btnPrevPage" onclick="prevPage()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #64748b; font-size: 0.875rem; cursor: pointer; transition: all 0.2s;">
+            <div class="equipos-pagination-controls">
+                <button id="btnPrevPage" onclick="prevPage()" class="pagination-btn">
                     <i class="bi bi-chevron-left"></i> Anterior
                 </button>
-                <span style="font-size: 0.875rem; color: #475569; font-weight: 500; padding: 0 0.5rem;">
+                <span class="pagination-page-info">
                     Página <span id="currentPageDisplay">1</span> / <span id="totalPagesDisplay">1</span>
                 </span>
-                <button id="btnNextPage" onclick="nextPage()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #64748b; font-size: 0.875rem; cursor: pointer; transition: all 0.2s;">
+                <button id="btnNextPage" onclick="nextPage()" class="pagination-btn">
                     Siguiente <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
@@ -287,180 +336,48 @@ function getStatusBadge($estado) {
             <p>Prueba cambiando los filtros o el término de búsqueda.</p>
             <button onclick="clearFilters()">Limpiar filtros</button>
         </div>
+        
+        </div><!-- End equipos-content-card -->
 
     </main>
 </div>
 
+</div>
+
+<!-- Bulk Delete Assets -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
+<script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
+
+<!-- Modern Simple Delete Modal Integration -->
+<link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
+<script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>"></script>
+
+<script src="<?= BASE_URL ?>js/equipos.js?v=<?= time() ?>"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const gridView = document.getElementById('gridView');
-    const listView = document.getElementById('listView');
-    const emptyState = document.getElementById('emptyState');
-    const btnViewList = document.getElementById('btnViewList');
-    const btnViewGrid = document.getElementById('btnViewGrid');
-    const searchInput = document.getElementById('searchEquipos');
-    const filterTabs = document.querySelectorAll('.filter-tab');
-    
-    let currentFilter = 'todos';
-    let currentSearch = '';
-    let currentView = 'grid';
-
-    // Toggle de vista
-    btnViewGrid.addEventListener('click', function() {
-        currentView = 'grid';
-        gridView.style.display = 'grid';
-        listView.style.display = 'none';
-        btnViewGrid.classList.add('active');
-        btnViewList.classList.remove('active');
-        applyFilters();
-    });
-
-    btnViewList.addEventListener('click', function() {
-        currentView = 'list';
-        gridView.style.display = 'none';
-        listView.style.display = 'block';
-        btnViewList.classList.add('active');
-        btnViewGrid.classList.remove('active');
-        applyFilters();
-    });
-
-    // Filtros de estado
-    filterTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            filterTabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            currentFilter = this.getAttribute('data-filter');
-            applyFilters();
+    function confirmDeleteEquipo(e, url, name) {
+        e.preventDefault();
+        SimpleDeleteModal.open(url, {
+            type: 'Equipo',
+            name: name,
+            warning: 'Esta acción eliminará el equipo del inventario permanentemente.'
         });
-    });
-
-    // Variables de Paginación
-    let itemsPerPage = <?= $paginationPerPage ?>;
-    let currentPage = 1;
-    let filteredIndices = []; // Indices de items que coinciden con filtro
-    
-    // Init selector
-    const selector = document.getElementById('itemsPerPageSelector');
-    if(selector) selector.value = itemsPerPage;
-
-    window.changeClientItemsPerPage = function(val) {
-        itemsPerPage = parseInt(val);
-        if (window.PaginationPrefs) PaginationPrefs.set(itemsPerPage);
-        else {
-             const expires = new Date();
-             expires.setFullYear(expires.getFullYear() + 1);
-             document.cookie = 'sgen_pagination_per_page=' + itemsPerPage + ';expires=' + expires.toUTCString() + ';path=/';
-        }
-        currentPage = 1;
-        applyFilters();
-    };
-
-    window.prevPage = function() {
-        if (currentPage > 1) {
-            currentPage--;
-            applyFilters();
-        }
-    };
-    window.nextPage = function() {
-        const totalPages = Math.ceil(filteredIndices.length / itemsPerPage);
-        if ((itemsPerPage === -1 && currentPage === 1) || (itemsPerPage !== -1 && currentPage < totalPages)) {
-            currentPage++;
-            applyFilters();
-        }
-    };
-
-    // Aplicar filtros y paginación
-    function applyFilters() {
-        // Reset indices
-        filteredIndices = [];
-        const cards = gridView.querySelectorAll('.equipo-card');
-        const rows = listView.querySelectorAll('tbody tr');
-        
-        // 1. Filtrar
-        cards.forEach((card, index) => {
-            const estado = card.getAttribute('data-estado');
-            const text = card.textContent.toLowerCase();
-            const matchesFilter = currentFilter === 'todos' || estado === currentFilter;
-            const matchesSearch = text.includes(currentSearch);
-            
-            // Ocultar inicialmente
-            card.style.display = 'none';
-            if(rows[index]) rows[index].style.display = 'none';
-
-            if (matchesFilter && matchesSearch) {
-                filteredIndices.push(index);
-            }
-        });
-
-        const totalVisible = filteredIndices.length;
-        const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalVisible / itemsPerPage) || 1;
-        
-        // Validar página actual
-        if (currentPage > totalPages) currentPage = 1;
-
-        // 2. Paginar
-        const start = itemsPerPage === -1 ? 0 : (currentPage - 1) * itemsPerPage;
-        const end = itemsPerPage === -1 ? totalVisible : start + itemsPerPage;
-        const visibleIndices = filteredIndices.slice(start, end);
-        
-        visibleIndices.forEach(idx => {
-            cards[idx].style.display = 'flex';
-            if(rows[idx]) rows[idx].style.display = '';
-        });
-
-        // 3. Actualizar UI Footer
-        document.getElementById('visibleCountDisplay').textContent = visibleIndices.length; // O totalVisible? Logs muestra "Showing X of Y". X usually items on page? No, "Showing 1-10 of 50". My UI says "Showing [count] of [total]". I'll use totalVisible.
-        // Wait, "Mostrando X de Y" usually matches standard tables.
-        // I will set visibleCountDisplay to totalVisible (filtered count) 
-        // and totalCountDisplay to... total records?
-        // Let's stick to "Mostrando [filtered] de [total]" logic or "Mostrando [filtered]"
-        // The logs ui says: Mostrando <span id="visibleCount">10</span> ...
-        // Logs logic: updates #visibleCount with `rows.length` (which is visible on page).
-        
-        // Let's update visibleCountDisplay with total matching the filter.
-        document.getElementById('visibleCountDisplay').textContent = totalVisible;
-        document.getElementById('totalCountDisplay').textContent = cards.length;
-
-        document.getElementById('currentPageDisplay').textContent = currentPage;
-        document.getElementById('totalPagesDisplay').textContent = totalPages;
-        
-        const btnPrev = document.getElementById('btnPrevPage');
-        const btnNext = document.getElementById('btnNextPage');
-        
-        btnPrev.disabled = currentPage === 1;
-        btnPrev.style.opacity = currentPage === 1 ? '0.5' : '1';
-        btnPrev.style.pointerEvents = currentPage === 1 ? 'none' : 'auto';
-        
-        btnNext.disabled = currentPage === totalPages;
-        btnNext.style.opacity = currentPage === totalPages ? '0.5' : '1';
-        btnNext.style.pointerEvents = currentPage === totalPages ? 'none' : 'auto';
-
-        // Mostrar/ocultar empty state
-        if (totalVisible === 0) {
-            emptyState.style.display = 'block';
-            if (currentView === 'grid') gridView.style.display = 'none';
-            else listView.style.display = 'none';
-            document.getElementById('paginationFooter').style.display = 'none';
-        } else {
-            emptyState.style.display = 'none';
-            if (currentView === 'grid') gridView.style.display = 'grid';
-            else listView.style.display = 'block';
-             document.getElementById('paginationFooter').style.display = 'flex';
-        }
+        return false;
     }
-
-    // Limpiar filtros
-    window.clearFilters = function() {
-        currentFilter = 'todos';
-        currentSearch = '';
-        searchInput.value = '';
-        filterTabs.forEach(t => t.classList.remove('active'));
-        if(filterTabs[0]) filterTabs[0].classList.add('active');
-        currentPage = 1;
-        applyFilters();
-    };
     
-    // Initial call
-    applyFilters();
-});
+    // Initialize Bulk Delete
+    document.addEventListener('DOMContentLoaded', function() {
+        BulkDelete.init({
+            containerId: 'equiposMain',
+            itemSelector: '[data-bulk-item]',
+            itemIdAttribute: 'data-equipo-id',
+            deleteUrl: BASE_URL + 'equipos/eliminar_masivo',
+            entityName: 'equipos',
+            entityNameSingular: 'equipo',
+            toggleId: 'bulkModeToggle',
+            selectAllId: 'bulkSelectAll',
+            selectAllContainerId: 'bulkSelectAllContainer',
+            deleteButtonId: 'bulkDeleteBtn',
+            countSpanId: 'bulkSelectedCount'
+        });
+    });
 </script>

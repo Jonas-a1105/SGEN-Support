@@ -4,12 +4,13 @@ $colorActual = $_SESSION['color_acento'] ?? 'indigo';
 $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
 ?>
 
-<div style="background: #f8fafc; padding: 2rem; display: flex; justify-content: center; width: 100vw; position: relative; left: 50%; margin-left: -50vw;">
+
+<div class="config-layout-wrapper">
     
-    <div style="max-width: 1150px; min-width: 1150px; width: 100%; background: white; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; overflow: hidden; display: flex;">
+    <div class="config-card">
         
         <!-- SIDEBAR DE NAVEGACIÓN -->
-        <aside style="width: 280px; background: #f8fafc; border-right: 1px solid #f1f5f9; display: flex; flex-direction: column;">
+        <aside style="width: 280px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;">
             
             <!-- Header del Sidebar -->
             <div style="padding: 1.5rem; border-bottom: 1px solid #f1f5f9;">
@@ -103,7 +104,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
             </div>
 
             <!-- Contenido Scrolleable -->
-            <div style="flex: 1; padding: 2rem; overflow-y: auto;">
+            <div class="config-content-scroll">
                 
                 <form id="configForm" action="<?= BASE_URL ?>configuracion/guardar" method="POST">
                 
@@ -245,161 +246,624 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
 
                 </div>
 
-                <!-- PANEL: General (placeholder) -->
+                <!-- PANEL: General -->
                 <div id="panel-general" class="config-panel" style="display: none;">
-                    <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
-                        <i class="bi bi-globe" style="font-size: 3rem; color: #cbd5e1;"></i>
-                        <h3 style="margin: 1rem 0 0.5rem; color: #0f172a; font-weight: 600;">Configuración General</h3>
-                        <p style="font-size: 0.875rem;">Opciones de idioma y región. <br>Próximamente disponible.</p>
-                    </div>
-                </div>
+                    
+                    <div class="account-container">
+                        
+                        <!-- Header & Intro -->
+                        <div style="margin-bottom: 2rem;">
+                            <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 0;">Configuración General</h2>
+                            <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;">Define los parámetros globales del sistema y preferencias regionales.</p>
+                        </div>
 
-                <!-- PANEL: Notificaciones (placeholder) -->
+                        <div class="account-form-grid">
+                            
+                            <!-- SECCIÓN: REGIONAL -->
+                            <div class="col-span-md-2">
+                                <h4 class="account-subtitle"><i class="bi bi-globe" style="margin-right: 0.5rem; color: #6366f1;"></i> Regionalización</h4>
+                            </div>
+
+                            <!-- Idioma -->
+                            <div>
+                                <label class="sec-label">Idioma del Sistema</label>
+                                <div class="sec-input-wrapper">
+                                    <div class="sec-input-icon"><i class="bi bi-translate"></i></div>
+                                    <select class="sec-input" name="app_lang">
+                                        <option value="es" selected>Español (Latinoamérica)</option>
+                                        <option value="en">English (US)</option>
+                                        <option value="pt">Português (Brasil)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Zona Horaria -->
+                            <div>
+                                <label class="sec-label">Zona Horaria</label>
+                                <div class="sec-input-wrapper">
+                                    <div class="sec-input-icon"><i class="bi bi-clock"></i></div>
+                                    <select class="sec-input" name="app_timezone">
+                                        <option value="America/Caracas" selected>America/Caracas (GMT-4)</option>
+                                        <option value="America/Bogota">America/Bogota (GMT-5)</option>
+                                        <option value="America/New_York">America/New_York (GMT-5)</option>
+                                        <option value="UTC">UTC (GMT+0)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="height: 1px; background: #f1f5f9; margin: 1rem 0;" class="col-span-md-2"></div>
+
+                            <!-- SECCIÓN: SISTEMA -->
+                            <div class="col-span-md-2">
+                                <h4 class="account-subtitle"><i class="bi bi-cpu" style="margin-right: 0.5rem; color: #6366f1;"></i> Sistema</h4>
+                            </div>
+
+                            <!-- Paginación -->
+                            <div>
+                                <label class="sec-label">Registros por Página</label>
+                                <div class="sec-input-wrapper">
+                                    <div class="sec-input-icon"><i class="bi bi-list-ol"></i></div>
+                                    <select class="sec-input" name="app_pagination">
+                                        <option value="10">10 registros</option>
+                                        <option value="25" selected>25 registros</option>
+                                        <option value="50">50 registros</option>
+                                        <option value="100">100 registros</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Timeout -->
+                            <div>
+                                <label class="sec-label">Tiempo de Sesión (Minutos)</label>
+                                <div class="sec-input-wrapper">
+                                    <div class="sec-input-icon"><i class="bi bi-hourglass-split"></i></div>
+                                    <input type="number" class="sec-input" value="120" min="5" max="1440">
+                                </div>
+                            </div>
+
+                            <!-- Modo Mantenimiento -->
+                            <div class="col-span-md-2">
+                                <div style="background: #fff; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+                                    <div style="display: flex; gap: 1rem; align-items: center;">
+                                        <div style="width: 3rem; height: 3rem; background: #fee2e2; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; color: #ef4444;">
+                                            <i class="bi bi-cone-striped" style="font-size: 1.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h4 style="font-size: 0.875rem; font-weight: 700; color: #0f172a; margin: 0;">Modo Mantenimiento</h4>
+                                            <p style="font-size: 0.75rem; color: #64748b; margin: 0.25rem 0 0;">
+                                                Impide el acceso a usuarios no administradores.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" name="app_maintenance">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                <!-- PANEL: Notificaciones -->
                 <div id="panel-notifications" class="config-panel" style="display: none;">
-                    <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
-                        <i class="bi bi-bell" style="font-size: 3rem; color: #cbd5e1;"></i>
-                        <h3 style="margin: 1rem 0 0.5rem; color: #0f172a; font-weight: 600;">Notificaciones</h3>
-                        <p style="font-size: 0.875rem;">Configura alertas y notificaciones por correo. <br>Próximamente disponible.</p>
+                    
+                    <!-- Tabs: Bandeja / Configuración -->
+                    <div style="display: flex; gap: 1.5rem; border-bottom: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+                        <button type="button" onclick="switchNotifTab('inbox')" id="notif-tab-inbox" class="notif-tab" style="padding-bottom: 0.75rem; padding-left: 0.5rem; padding-right: 0.5rem; font-size: 0.875rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; border: none; background: transparent; cursor: pointer; position: relative; color: #6366f1;">
+                            <span style="position: relative;">
+                                <i class="bi bi-envelope" style="font-size: 1rem;"></i>
+                                <span id="inbox-unread-dot" style="position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid white;"></span>
+                            </span>
+                            Bandeja de Entrada
+                            <div id="inbox-tab-indicator" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #6366f1; border-radius: 2px 2px 0 0;"></div>
+                        </button>
+                        
+                        <button type="button" onclick="switchNotifTab('settings')" id="notif-tab-settings" class="notif-tab" style="padding-bottom: 0.75rem; padding-left: 0.5rem; padding-right: 0.5rem; font-size: 0.875rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; border: none; background: transparent; cursor: pointer; position: relative; color: #64748b;">
+                            <i class="bi bi-gear" style="font-size: 1rem;"></i>
+                            Configuración y Canales
+                            <div id="settings-tab-indicator" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #6366f1; border-radius: 2px 2px 0 0; display: none;"></div>
+                        </button>
                     </div>
+
+                    <!-- INBOX VIEW -->
+                    <div id="notif-inbox-view">
+                        
+                        <!-- Toolbar -->
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; background: white; padding: 0.5rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
+                            
+                            <!-- Filters -->
+                            <div style="display: flex; background: #f1f5f9; padding: 0.25rem; border-radius: 0.5rem;">
+                                <button type="button" onclick="filterNotifications('all')" id="filter-all" class="notif-filter-btn active" style="padding: 0.375rem 1rem; font-size: 0.75rem; font-weight: 700; border-radius: 0.375rem; border: none; cursor: pointer; background: white; color: #1e293b; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    Todas
+                                </button>
+                                <button type="button" onclick="filterNotifications('unread')" id="filter-unread" class="notif-filter-btn" style="padding: 0.375rem 1rem; font-size: 0.75rem; font-weight: 700; border-radius: 0.375rem; border: none; cursor: pointer; background: transparent; color: #64748b;">
+                                    No Leídas
+                                </button>
+                                <button type="button" onclick="filterNotifications('alert')" id="filter-alert" class="notif-filter-btn" style="padding: 0.375rem 1rem; font-size: 0.75rem; font-weight: 700; border-radius: 0.375rem; border: none; cursor: pointer; background: transparent; color: #64748b;">
+                                    Solo Alertas
+                                </button>
+                            </div>
+                            
+                            <!-- Search + Mark All -->
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="position: relative;">
+                                    <i class="bi bi-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.875rem;"></i>
+                                    <input type="text" id="notif-search" placeholder="Buscar..." oninput="searchNotifications(this.value)" style="padding: 0.375rem 1rem 0.375rem 2.25rem; font-size: 0.875rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; width: 200px; outline: none;">
+                                </div>
+                                <button type="button" onclick="markAllNotificationsRead()" title="Marcar todo como leído" style="padding: 0.5rem; color: #64748b; background: transparent; border: none; cursor: pointer; border-radius: 0.5rem; display: flex;">
+                                    <i class="bi bi-check2-all" style="font-size: 1.125rem;"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Notification List -->
+                        <div id="notification-list" style="background: white; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
+                            <!-- Populated by JS -->
+                        </div>
+                        
+                    </div>
+
+                    <!-- SETTINGS VIEW -->
+                    <div id="notif-settings-view" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                            
+                            <!-- LEFT COLUMN -->
+                            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                                
+                                <!-- Canales de Comunicación -->
+                                <section style="background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <h2 style="font-weight: 700; color: #1e293b; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                                        <i class="bi bi-gear" style="color: #94a3b8;"></i> Canales de Comunicación
+                                    </h2>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        
+                                        <!-- Email -->
+                                        <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 0.75rem; border-radius: 0.75rem; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                            <div style="display: flex; gap: 1rem;">
+                                                <div style="padding: 0.625rem; background: #f1f5f9; color: #64748b; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="bi bi-envelope" style="font-size: 1.25rem;"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #1e293b; margin: 0;">Notificaciones por Email</h4>
+                                                    <p style="font-size: 0.75rem; color: #64748b; margin: 0.25rem 0 0; max-width: 280px; line-height: 1.4;">Recibe resúmenes y alertas críticas.</p>
+                                                </div>
+                                            </div>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" name="email_notifications" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+
+                                        <!-- Push -->
+                                        <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 0.75rem; border-radius: 0.75rem; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                            <div style="display: flex; gap: 1rem;">
+                                                <div style="padding: 0.625rem; background: #f1f5f9; color: #64748b; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="bi bi-phone" style="font-size: 1.25rem;"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #1e293b; margin: 0;">Notificaciones Push</h4>
+                                                    <p style="font-size: 0.75rem; color: #64748b; margin: 0.25rem 0 0; max-width: 280px; line-height: 1.4;">Alertas instantáneas en tu dispositivo.</p>
+                                                </div>
+                                            </div>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" name="push_notifications" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+
+                                        <!-- Desktop -->
+                                        <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 0.75rem; border-radius: 0.75rem; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                            <div style="display: flex; gap: 1rem;">
+                                                <div style="padding: 0.625rem; background: #f1f5f9; color: #64748b; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="bi bi-display" style="font-size: 1.25rem;"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #1e293b; margin: 0;">Alertas de Escritorio</h4>
+                                                    <p style="font-size: 0.75rem; color: #64748b; margin: 0.25rem 0 0; max-width: 280px; line-height: 1.4;">Pop-ups del navegador.</p>
+                                                </div>
+                                            </div>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" name="desktop_notifications">
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        
+                                    </div>
+                                </section>
+
+                                <!-- Categorías Suscritas -->
+                                <section style="background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <h2 style="font-weight: 700; color: #1e293b; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                                        <i class="bi bi-funnel" style="color: #94a3b8;"></i> Categorías Suscritas
+                                    </h2>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        
+                                        <!-- Tickets -->
+                                        <label class="category-card checked">
+                                            <input type="checkbox" name="cat_tickets" checked style="display: none;">
+                                            <div class="category-content">
+                                                <div>
+                                                    <h4>Tickets de Soporte</h4>
+                                                    <p>Asignaciones, respuestas...</p>
+                                                </div>
+                                                <div class="category-check"><i class="bi bi-check"></i></div>
+                                            </div>
+                                        </label>
+
+                                        <!-- Inventario -->
+                                        <label class="category-card checked">
+                                            <input type="checkbox" name="cat_inventario" checked style="display: none;">
+                                            <div class="category-content">
+                                                <div>
+                                                    <h4>Inventario y Stock</h4>
+                                                    <p>Bajos stocks, movimientos...</p>
+                                                </div>
+                                                <div class="category-check"><i class="bi bi-check"></i></div>
+                                            </div>
+                                        </label>
+
+                                        <!-- Mantenimientos -->
+                                        <label class="category-card">
+                                            <input type="checkbox" name="cat_mantenimientos" style="display: none;">
+                                            <div class="category-content">
+                                                <div>
+                                                    <h4>Mantenimientos</h4>
+                                                    <p>Recordatorios preventivos...</p>
+                                                </div>
+                                                <div class="category-check"><i class="bi bi-check"></i></div>
+                                            </div>
+                                        </label>
+
+                                        <!-- Sistema -->
+                                        <label class="category-card checked">
+                                            <input type="checkbox" name="cat_sistema" checked style="display: none;">
+                                            <div class="category-content">
+                                                <div>
+                                                    <h4>Sistema y Seguridad</h4>
+                                                    <p>Inicios de sesión, backups...</p>
+                                                </div>
+                                                <div class="category-check"><i class="bi bi-check"></i></div>
+                                            </div>
+                                        </label>
+                                        
+                                    </div>
+                                </section>
+                                
+                            </div>
+
+                            <!-- RIGHT COLUMN -->
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                
+                                <!-- Modo No Molestar -->
+                                <div style="background: linear-gradient(135deg, #312e81 0%, #4338ca 100%); color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.4); position: relative; overflow: hidden;">
+                                    <div style="position: absolute; top: 0; right: 0; width: 8rem; height: 8rem; background: white; opacity: 0.05; border-radius: 50%; transform: translate(50%, -50%);"></div>
+                                    
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                        <h3 style="font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin: 0; font-size: 0.9375rem;">
+                                            <i class="bi bi-moon"></i> Modo No Molestar
+                                        </h3>
+                                        <label class="toggle-switch dnd">
+                                            <input type="checkbox" name="dnd_mode" checked>
+                                            <span class="toggle-slider dnd"></span>
+                                        </label>
+                                    </div>
+                                    
+                                    <p style="font-size: 0.75rem; color: rgba(199, 210, 254, 0.9); margin: 0 0 1rem; line-height: 1.4;">Pausa todas las notificaciones (excepto críticas) durante este horario.</p>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                        <div>
+                                            <label style="display: block; font-size: 0.6875rem; color: #a5b4fc; margin-bottom: 0.25rem;">Desde</label>
+                                            <div style="background: rgba(49, 46, 129, 0.5); border-radius: 0.5rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(99, 102, 241, 0.5);">
+                                                <i class="bi bi-clock" style="font-size: 0.875rem; color: #a5b4fc;"></i>
+                                                <span style="font-size: 0.875rem;">22:00</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 0.6875rem; color: #a5b4fc; margin-bottom: 0.25rem;">Hasta</label>
+                                            <div style="background: rgba(49, 46, 129, 0.5); border-radius: 0.5rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(99, 102, 241, 0.5);">
+                                                <i class="bi bi-clock" style="font-size: 0.875rem; color: #a5b4fc;"></i>
+                                                <span style="font-size: 0.875rem;">07:00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sonidos -->
+                                <div style="background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <h3 style="font-weight: 700; color: #1e293b; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem;">
+                                        <i class="bi bi-volume-up" style="color: #94a3b8;"></i> Sonidos
+                                    </h3>
+                                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                                            <div class="radio-dot selected"></div>
+                                            <span style="font-size: 0.875rem; color: #334155; font-weight: 500;">Predeterminado (Ding)</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; opacity: 0.5;">
+                                            <div class="radio-dot"></div>
+                                            <span style="font-size: 0.875rem; color: #475569;">Sutil</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; opacity: 0.5;">
+                                            <div class="radio-dot"></div>
+                                            <span style="font-size: 0.875rem; color: #475569;">Silencio</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Guardar -->
+                                <button type="button" onclick="saveNotificationPreferences()" style="width: 100%; padding: 0.875rem; background: #1e293b; color: white; font-weight: 700; border: none; border-radius: 0.75rem; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transition: all 0.2s; font-size: 0.9375rem;" onmouseover="this.style.background='#0f172a'" onmouseout="this.style.background='#1e293b'">
+                                    Guardar Preferencias
+                                </button>
+                                
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
                 </div>
 
-                <!-- PANEL: Seguridad (placeholder) -->
+                <!-- PANEL: Seguridad -->
                 <div id="panel-security" class="config-panel" style="display: none;">
-                    <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
-                        <i class="bi bi-shield-lock" style="font-size: 3rem; color: #cbd5e1;"></i>
-                        <h3 style="margin: 1rem 0 0.5rem; color: #0f172a; font-weight: 600;">Seguridad</h3>
-                        <p style="font-size: 0.875rem;">Configuración de contraseña y autenticación. <br>Próximamente disponible.</p>
-                    </div>
-                </div>
+                    
+                    <div class="security-container">
+                        
+                        <!-- Header -->
+                        <div class="security-header">
+                            <div class="security-icon-box">
+                                <i class="bi bi-shield-check" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div>
+                                <h2 style="font-size: 1.125rem; font-weight: 700; color: #0f172a; margin: 0;">Seguridad de la Cuenta</h2>
+                                <p style="font-size: 0.875rem; color: #64748b; margin: 0.25rem 0 0;">
+                                    Actualiza tu contraseña periódicamente para mantener tu cuenta segura.
+                                </p>
+                            </div>
+                        </div>
 
-                <!-- PANEL: Mi Cuenta (placeholder) -->
+                        <div class="security-content">
+                            
+                            <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+                            <div class="security-form">
+                                
+                                <!-- Contraseña Actual -->
+                                <div class="sec-form-group">
+                                    <label class="sec-label">Contraseña Actual</label>
+                                    <div class="sec-input-wrapper">
+                                        <div class="sec-input-icon">
+                                            <i class="bi bi-key" style="font-size: 1.125rem;"></i>
+                                        </div>
+                                        <input type="password" id="currentPassword" class="sec-input" placeholder="••••••••••••">
+                                        <button type="button" class="sec-toggle-btn" onclick="ConfigSecurity.toggleVisibility('currentPassword', this)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <a href="#" style="font-size: 0.75rem; font-weight: 700; color: #2563eb; text-decoration: none;">¿Olvidaste tu contraseña?</a>
+                                    </div>
+                                </div>
+
+                                <div style="height: 1px; background: #f1f5f9; margin: 1.5rem 0;"></div>
+
+                                <!-- Nueva Contraseña -->
+                                <div class="sec-form-group">
+                                    <label class="sec-label">Nueva Contraseña</label>
+                                    <div class="sec-input-wrapper">
+                                        <div class="sec-input-icon">
+                                            <i class="bi bi-lock" style="font-size: 1.125rem;"></i>
+                                        </div>
+                                        <input type="password" id="newPassword" class="sec-input" placeholder="Nueva contraseña segura" oninput="ConfigSecurity.checkPasswordStrength(this.value)">
+                                        <button type="button" class="sec-toggle-btn" onclick="ConfigSecurity.toggleVisibility('newPassword', this)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Barra de Fuerza -->
+                                    <div class="sec-strength-bar-bg">
+                                        <div id="strength-bar" class="sec-strength-bar"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Confirmar Contraseña -->
+                                <div class="sec-form-group">
+                                    <label class="sec-label">Confirmar Contraseña</label>
+                                    <div class="sec-input-wrapper">
+                                        <div class="sec-input-icon">
+                                            <i class="bi bi-lock" style="font-size: 1.125rem;"></i>
+                                        </div>
+                                        <input type="password" id="confirmPassword" class="sec-input" placeholder="Repite la nueva contraseña" oninput="ConfigSecurity.checkMatch()">
+                                        <div id="match-icon" class="sec-input-icon-right" style="display: none;">
+                                            <i class="bi bi-check" style="font-size: 1.25rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Botón de Acción -->
+                                <div style="padding-top: 0.5rem;">
+                                    <button type="button" id="btn-update-pass" class="sec-btn-submit" onclick="ConfigSecurity.handleSubmit()" disabled>
+                                        <i class="bi bi-save"></i> Actualizar Contraseña
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            <!-- COLUMNA DERECHA: REQUISITOS -->
+                            <div class="sec-requirements-box">
+                                <h3 style="font-size: 0.875rem; font-weight: 700; color: #1e293b; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="bi bi-exclamation-circle" style="color: #3b82f6;"></i>
+                                    Requisitos de seguridad
+                                </h3>
+                                
+                                <ul class="sec-req-list">
+                                    <li class="sec-req-item" id="req-length">
+                                        <div class="sec-req-dot"><i class="bi bi-dot"></i></div>
+                                        Mínimo 8 caracteres
+                                    </li>
+                                    <li class="sec-req-item" id="req-number">
+                                        <div class="sec-req-dot"><i class="bi bi-dot"></i></div>
+                                        Al menos un número (0-9)
+                                    </li>
+                                    <li class="sec-req-item" id="req-special">
+                                        <div class="sec-req-dot"><i class="bi bi-dot"></i></div>
+                                        Un carácter especial (!@#$)
+                                    </li>
+                                    <li class="sec-req-item" id="req-match">
+                                        <div class="sec-req-dot"><i class="bi bi-dot"></i></div>
+                                        Las contraseñas coinciden
+                                    </li>
+                                </ul>
+
+                                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b; line-height: 1.5;">
+                                    <p style="font-weight: 700; color: #475569; margin: 0 0 0.25rem;">Nota de Seguridad:</p>
+                                    Al cambiar tu contraseña, tu sesión se mantendrá activa en este dispositivo, pero podrías ser desconectado de otros.
+                                </div>
+                            </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- PANEL: Mi Cuenta -->
                 <div id="panel-account" class="config-panel" style="display: none;">
-                    <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
-                        <i class="bi bi-person" style="font-size: 3rem; color: #cbd5e1;"></i>
-                        <h3 style="margin: 1rem 0 0.5rem; color: #0f172a; font-weight: 600;">Mi Cuenta</h3>
-                        <p style="font-size: 0.875rem;">Gestiona tu perfil y datos personales. <br>Próximamente disponible.</p>
+                    
+                    <div class="account-container">
+                        
+                        <!-- 1. Tarjeta de Identidad -->
+                        <div class="profile-header">
+                            <div class="profile-avatar-wrapper">
+                                <div class="profile-avatar">UA</div>
+                                <div class="profile-edit-btn">
+                                    <i class="bi bi-camera" style="font-size: 1rem;"></i>
+                                </div>
+                            </div>
+                            <div class="profile-info">
+                                <h3 class="profile-name">Usuario Administrador</h3>
+                                <p class="profile-role">IT Manager • Nivel 1</p>
+                                <div class="profile-badges">
+                                    <span class="badge badge-active">
+                                        <div class="pulse-dot"></div>
+                                        Activo
+                                    </span>
+                                    <span class="badge badge-member">
+                                        <i class="bi bi-calendar3" style="font-size: 0.75rem;"></i>
+                                        Miembro desde 2023
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="height: 1px; background: #f1f5f9; margin-bottom: 2rem;"></div>
+
+                        <!-- 2. Formulario de Datos Personales -->
+                        <div class="account-form-grid">
+                            <div class="col-span-md-2">
+                                <h4 class="account-subtitle">Información Personal</h4>
+                            </div>
+
+                            <!-- Nombre Completo -->
+                            <div>
+                                <label class="sec-label">Nombre Completo</label>
+                                <input type="text" value="Jonas Mendoza" class="sec-input" style="padding-left: 1rem;">
+                            </div>
+
+                            <!-- Cargo / Título -->
+                            <div>
+                                <label class="sec-label">Cargo / Título</label>
+                                <div class="sec-input-wrapper">
+                                    <div class="sec-input-icon">
+                                        <i class="bi bi-briefcase"></i>
+                                    </div>
+                                    <input type="text" value="IT Manager" class="sec-input">
+                                </div>
+                            </div>
+
+                            <!-- Correo -->
+                            <div>
+                                <label class="sec-label">Correo Electrónico</label>
+                                <div class="sec-input-wrapper">
+                                    <div class="sec-input-icon">
+                                        <i class="bi bi-envelope"></i>
+                                    </div>
+                                    <input type="email" value="admin@sgen.com" class="sec-input">
+                                </div>
+                            </div>
+
+                            <!-- Teléfono -->
+                            <div>
+                                <label class="sec-label">Teléfono</label>
+                                <div class="sec-input-wrapper">
+                                    <div class="sec-input-icon">
+                                        <i class="bi bi-telephone"></i>
+                                    </div>
+                                    <input type="tel" value="+58 (412) 555-0199" class="sec-input">
+                                </div>
+                            </div>
+
+                            <!-- Bio -->
+                            <div class="col-span-md-2">
+                                <label class="sec-label">Bio / Notas</label>
+                                <textarea rows="3" class="account-textarea">Administrador principal del sistema SGEN. Encargado de la supervisión de infraestructura y soporte técnico.</textarea>
+                            </div>
+
+                            <!-- Detalles Corporativos -->
+                            <div class="col-span-md-2" style="border-top: 1px solid #f1f5f9; padding-top: 1.5rem; margin-top: 0.5rem;">
+                                <h4 class="account-subtitle" style="margin-bottom: 1.5rem;">Detalles Corporativos</h4>
+                                
+                                <div class="corporate-box">
+                                    
+                                    <!-- ID -->
+                                    <div class="corp-item">
+                                        <label class="corp-label">ID de Empleado</label>
+                                        <div class="corp-value" style="font-family: monospace;">
+                                            <i class="bi bi-hash"></i>
+                                            SGEN-001
+                                        </div>
+                                    </div>
+
+                                    <!-- Departamento -->
+                                    <div class="corp-item">
+                                        <label class="corp-label">Departamento</label>
+                                        <div class="corp-value">
+                                            <i class="bi bi-building"></i>
+                                            Tecnología e Informática
+                                        </div>
+                                    </div>
+
+                                    <!-- Ubicación -->
+                                    <div class="corp-item">
+                                        <label class="corp-label">Ubicación / Sede</label>
+                                        <div class="corp-value">
+                                            <i class="bi bi-geo-alt"></i>
+                                            Edificio Central, Piso 2
+                                        </div>
+                                    </div>
+
+                                    <!-- Firma -->
+                                    <div class="corp-item">
+                                        <label class="corp-label">Firma para Tickets</label>
+                                        <div class="corp-value corp-link">
+                                            <i class="bi bi-pen-fill" style="color: inherit;"></i>
+                                            Configurar Firma Digital
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
                     </div>
                 </div>
 
                 </form>
-            </div>
-
         </main>
 
     </div>
 </div>
 
-<style>
-.config-tab:hover {
-    background: #f1f5f9 !important;
-}
-.theme-card:hover {
-    border-color: #c7d2fe !important;
-}
-</style>
 
-<script>
-const tabTitles = {
-    'general': { title: 'General', desc: 'Configuración de idioma y región.' },
-    'appearance': { title: 'Apariencia', desc: 'Personaliza cómo se ve y se siente la aplicación.' },
-    'notifications': { title: 'Notificaciones', desc: 'Configura alertas y notificaciones del sistema.' },
-    'security': { title: 'Seguridad', desc: 'Gestiona contraseña y opciones de acceso.' },
-    'account': { title: 'Mi Cuenta', desc: 'Administra tu perfil y datos personales.' }
-};
 
-function switchConfigTab(tab) {
-    // Hide all panels
-    document.querySelectorAll('.config-panel').forEach(el => el.style.display = 'none');
-    
-    // Reset all tabs
-    document.querySelectorAll('.config-tab').forEach(el => {
-        el.style.background = 'transparent';
-        el.style.color = '#475569';
-        el.style.border = 'none';
-        el.style.boxShadow = 'none';
-        el.querySelector('div:first-child').style.background = 'transparent';
-    });
-    
-    // Show selected panel
-    document.getElementById('panel-' + tab).style.display = 'block';
-    
-    // Activate selected tab
-    const selectedTab = document.getElementById('tab-' + tab);
-    selectedTab.style.background = 'white';
-    selectedTab.style.color = '#6366f1';
-    selectedTab.style.border = '1px solid #e2e8f0';
-    selectedTab.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-    selectedTab.querySelector('div:first-child').style.background = '#eef2ff';
-    
-    // Update header
-    document.getElementById('content-title').textContent = tabTitles[tab].title;
-    document.getElementById('content-desc').textContent = tabTitles[tab].desc;
-}
+<script src="<?= BASE_URL ?>js/configuracion.js?v=<?= time() ?>"></script>
 
-function selectTheme(input) {
-    const value = input.value;
-    
-    // Reset all theme cards
-    ['light', 'dark', 'system'].forEach(theme => {
-        const card = document.getElementById('theme-' + theme);
-        const check = document.getElementById('check-' + theme);
-        card.style.borderColor = '#e2e8f0';
-        check.style.borderColor = '#e2e8f0';
-        check.style.background = 'white';
-        check.innerHTML = '';
-    });
-    
-    // Activate selected
-    const card = document.getElementById('theme-' + value);
-    const check = document.getElementById('check-' + value);
-    card.style.borderColor = '#6366f1';
-    check.style.borderColor = '#6366f1';
-    check.style.background = '#eef2ff';
-    check.innerHTML = '<div style="width: 10px; height: 10px; border-radius: 50%; background: #6366f1;"></div>';
-    
-    // Apply theme immediately
-    document.documentElement.setAttribute('data-theme', value);
-}
-
-function selectColor(color) {
-    const colors = {
-        'indigo': '#6366f1',
-        'blue': '#3b82f6',
-        'emerald': '#10b981',
-        'rose': '#f43f5e',
-        'amber': '#f59e0b',
-        'slate': '#475569',
-    };
-    
-    // Reset all
-    Object.keys(colors).forEach(c => {
-        const el = document.getElementById('color-' + c);
-        el.style.boxShadow = 'none';
-        el.innerHTML = '';
-    });
-    
-    // Activate selected
-    const el = document.getElementById('color-' + color);
-    el.style.boxShadow = '0 0 0 4px white, 0 0 0 6px ' + colors[color];
-    el.innerHTML = '<i class="bi bi-check-lg" style="color: white; font-size: 1.25rem; font-weight: bold;"></i>';
-    
-    // Check radio
-    document.querySelector('input[name="color_acento"][value="' + color + '"]').checked = true;
-}
-
-function selectDensity(density) {
-    ['compacta', 'comfortable', 'amplia'].forEach(d => {
-        const btn = document.getElementById('density-' + d);
-        if (d === density) {
-            btn.style.background = 'white';
-            btn.style.color = '#0f172a';
-            btn.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-        } else {
-            btn.style.background = 'transparent';
-            btn.style.color = '#64748b';
-            btn.style.boxShadow = 'none';
-        }
-    });
-    document.getElementById('densidad').value = density;
-}
-</script>

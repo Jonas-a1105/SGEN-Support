@@ -31,7 +31,7 @@
     min-height: 80vh;
     display: flex;
     justify-content: center;
-    padding: 1.5rem;
+    padding: 0 1.5rem 1.5rem 1.5rem;
 }
 
 .about-card {
@@ -235,12 +235,24 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    transition: all 0.2s;
+    cursor: default;
+}
+
+.tech-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-color: #e2e8f0;
+}
+
+.tech-card:hover .tech-icon-box {
+    transform: scale(1.1);
 }
 
 .tech-icon-box {
     padding: 0.75rem;
     border-radius: 0.5rem;
     display: flex;
+    transition: transform 0.2s;
 }
 
 .tech-icon-box.indigo {
@@ -286,57 +298,117 @@
     color: var(--text-secondary);
 }
 
-/* Status Box */
+/* Status Box - New Design */
 .status-box {
-    background-color: var(--blue-50);
-    border: 1px solid var(--blue-100);
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    /* Darker border by default */
     border-radius: 0.75rem;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-@media (min-width: 640px) {
-    .status-box {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
-}
-
-.status-badge {
+    padding: 1.25rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: white;
-    border-radius: 0.5rem;
-    color: var(--emerald-600);
-    font-weight: 700;
+    gap: 1.25rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.status-box:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+    /* Even darker on hover */
+}
+
+.status-separator {
+    width: 1px;
+    height: 40px;
+    background-color: #e2e8f0;
+    margin: 0 0.5rem;
+}
+
+.status-details {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.status-detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-detail-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-detail-value {
     font-size: 0.875rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--blue-100);
+    font-weight: 700;
+    color: #475569;
 }
 
-.pulse-dot {
-    width: 0.625rem;
-    height: 0.625rem;
-    border-radius: 50%;
+.status-icon-wrapper {
+    position: relative;
+    display: flex;
+}
+
+.status-ping-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0.75rem;
+    height: 0.75rem;
     background-color: var(--emerald-500);
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    border-radius: 50%;
+    animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-@keyframes pulse {
+@keyframes ping {
 
-    0%,
+    75%,
     100% {
-        opacity: 1;
+        transform: scale(2);
+        opacity: 0;
     }
+}
 
-    50% {
-        opacity: .5;
-    }
+.status-icon-inner {
+    padding: 0.75rem;
+    background-color: var(--emerald-50);
+    color: var(--emerald-600);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-icon-inner i {
+    font-size: 1.5rem;
+}
+
+.status-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-label-new {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.status-value-new {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #065f46;
+    /* emerald-800 */
+    margin: 0;
+    line-height: 1;
 }
 
 /* Module Cards */

@@ -43,14 +43,27 @@
 .mh-container {
     background-color: var(--mh-bg);
     min-height: 100vh;
-    padding: 2.5rem;
+    padding: 0rem;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: var(--mh-slate-800);
+    width: 100%;
+    max-width: 1350px;
+    margin: 0 auto;
 }
 
 .mh-max-w-6xl {
-    width: 1150px;
+    width: 100%;
+    max-width: 1350px;
     margin: 0 auto;
+}
+
+/* Main Content Card - Bordered Container */
+.mh-main-content-card {
+    background: white;
+    border: 1px solid var(--mh-slate-200);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* --- HEADER --- */
@@ -136,7 +149,7 @@
     background: white;
     padding: 1.25rem;
     border-radius: 0.75rem;
-    border: 1px solid var(--mh-slate-100);
+    border: 1px solid var(--mh-slate-200);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -599,4 +612,83 @@
 .mh-page-btn:hover {
     background: var(--mh-slate-50);
     color: var(--mh-slate-700);
+}
+
+/* Utilities Refactoring */
+.text-rose-600 {
+    color: var(--mh-rose-600);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.d-none {
+    display: none !important;
+}
+
+.pos-relative {
+    position: relative;
+}
+
+.mh-item-type {
+    font-weight: 600;
+    color: var(--mh-slate-600);
+}
+
+/* Footer Refactoring */
+.mh-footer.transparent {
+    background: transparent;
+    border-top: 1px solid var(--mh-slate-200);
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+}
+
+.mh-footer-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mh-footer-text {
+    font-size: 0.875rem;
+    color: var(--mh-slate-500);
+}
+
+.mh-text-dark {
+    color: var(--mh-slate-900);
+}
+
+.mh-footer-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mh-footer-label {
+    font-size: 0.75rem;
+    color: var(--mh-slate-400);
+}
+
+.mh-footer-select {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--mh-slate-200);
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    color: var(--mh-slate-600);
+    background: white;
+    cursor: pointer;
+}
+
+.mh-current-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--mh-slate-600);
+}
+
+.mh-text-slate-300 {
+    color: var(--mh-slate-300);
 }

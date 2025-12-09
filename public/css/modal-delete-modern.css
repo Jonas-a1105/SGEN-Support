@@ -1,7 +1,7 @@
 /* Modern Delete Modal Styles */
 
 :root {
-    --modal-overlay-bg: rgba(15, 23, 42, 0.2);
+    --modal-overlay-bg: rgba(255, 255, 255, 0.6);
     /* slate-900/20 */
     --modal-bg: #ffffff;
     --modal-border: #f1f5f9;
@@ -18,8 +18,8 @@
 .delete-modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: var(--modal-overlay-bg);
-    backdrop-filter: blur(2px);
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(0.75px);
     display: flex;
     align-items: center;
     justify-content: center;
