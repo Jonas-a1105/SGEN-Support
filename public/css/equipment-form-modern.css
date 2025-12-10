@@ -4,16 +4,16 @@
 
 /* Variables matching the design palette */
 :root {
-    --eq-slate-50: #f8fafc;
-    --eq-slate-100: #f1f5f9;
-    --eq-slate-200: #e2e8f0;
-    --eq-slate-300: #cbd5e1;
-    --eq-slate-400: #94a3b8;
-    --eq-slate-500: #64748b;
-    --eq-slate-600: #475569;
-    --eq-slate-700: #334155;
-    --eq-slate-800: #1e293b;
-    --eq-slate-900: #0f172a;
+    --eq-slate-50: var(--bg-hover);
+    --eq-slate-100: var(--border-light);
+    --eq-slate-200: var(--border-color);
+    --eq-slate-300: var(--text-light);
+    --eq-slate-400: var(--text-muted);
+    --eq-slate-500: var(--text-muted);
+    --eq-slate-600: var(--text-secondary);
+    --eq-slate-700: var(--text-main);
+    --eq-slate-800: var(--text-main);
+    --eq-slate-900: var(--text-main);
 
     --eq-blue-50: #eff6ff;
     --eq-blue-100: #dbeafe;
@@ -154,7 +154,7 @@
 }
 
 .eq-step-btn.active {
-    background-color: white;
+    background-color: var(--bg-card);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     /* shadow-md */
     border-color: var(--eq-slate-100);
@@ -186,7 +186,7 @@
     flex-shrink: 0;
     transition: all 0.2s;
     border: 2px solid var(--eq-slate-300);
-    background-color: white;
+    background-color: var(--bg-card);
     color: var(--eq-slate-400);
     z-index: 10;
 }
@@ -235,7 +235,7 @@
 /* Photo Upload Box */
 .eq-photo-box {
     margin-top: 2rem;
-    background-color: white;
+    background-color: var(--bg-card);
     padding: 1rem;
     border-radius: 0.75rem;
     border: 1px dashed var(--eq-slate-200);
@@ -270,7 +270,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: white;
+    background-color: var(--bg-card);
 }
 
 .eq-form-container {
@@ -401,7 +401,7 @@
     padding-right: 2rem;
     border: 1px solid var(--eq-slate-300);
     border-radius: 0.5rem;
-    background-color: white;
+    background-color: var(--bg-card);
     appearance: none;
     outline: none;
     cursor: pointer;
@@ -449,7 +449,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: white;
+    background-color: var(--bg-card);
 }
 
 .btn-nav-prev {
@@ -459,7 +459,7 @@
     font-size: 0.875rem;
     color: var(--eq-slate-600);
     border: 1px solid var(--eq-slate-200);
-    background-color: white;
+    background-color: var(--bg-card);
     transition: all 0.2s;
 }
 

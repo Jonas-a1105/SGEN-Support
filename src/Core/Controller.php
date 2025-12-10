@@ -16,6 +16,20 @@ abstract class Controller {
 
     protected function checkAuth() {
         if (!isset($_SESSION['user_id'])) {
+            // Check if this is an AJAX request
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+                      strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+            $isJson = isset($_SERVER['CONTENT_TYPE']) && 
+                      strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false;
+            
+            if ($isAjax || $isJson) {
+                // Return JSON error for AJAX requests
+                http_response_code(401);
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Sesión expirada. Por favor, recarga la página.']);
+                exit;
+            }
+            
             header('Location: ' . BASE_URL . 'auth/login');
             exit;
         }

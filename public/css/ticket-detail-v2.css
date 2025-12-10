@@ -10,16 +10,26 @@
     --td-primary: #6366f1;
     --td-primary-dark: #4f46e5;
     --td-primary-light: #eef2ff;
-    --td-slate-50: #f8fafc;
-    --td-slate-100: #f1f5f9;
+
+    /* Map to Global Semantic Vars */
+    --td-slate-50: var(--bg-hover);
+    --td-slate-100: var(--border-light);
     --td-slate-200: #e2e8f0;
-    --td-slate-300: #cbd5e1;
-    --td-slate-400: #94a3b8;
-    --td-slate-500: #64748b;
-    --td-slate-600: #475569;
-    --td-slate-700: #334155;
-    --td-slate-800: #1e293b;
-    --td-slate-900: #0f172a;
+    --td-slate-300: var(--text-light);
+    /* was cbd5e1 */
+    --td-slate-400: var(--text-muted);
+    /* was 94a3b8 */
+    --td-slate-500: var(--text-muted);
+    /* was 64748b */
+    --td-slate-600: var(--text-light);
+    /* was 475569 */
+    --td-slate-700: var(--text-main);
+    /* was 334155 */
+    --td-slate-800: var(--text-main);
+    /* was 1e293b */
+    --td-slate-900: var(--text-main);
+    /* was 0f172a */
+
     --td-cyan: #06b6d4;
     --td-cyan-light: #ecfeff;
     --td-emerald: #10b981;
@@ -32,6 +42,15 @@
     --td-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --td-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
     --td-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+    --td-primary-light: rgba(99, 102, 241, 0.1);
+    --td-cyan-light: rgba(6, 182, 212, 0.1);
+    --td-emerald-light: rgba(16, 185, 129, 0.1);
+    --td-amber-light: rgba(245, 158, 11, 0.1);
+    --td-rose-light: rgba(244, 63, 94, 0.1);
+    --td-slate-200: var(--border-color);
 }
 
 /* Fix: Ensure Bootstrap modals appear above all elements */
@@ -75,7 +94,7 @@
    HEADER STICKY MODERNO
    ============================================================================ */
 .td-header {
-    background: white;
+    background: var(--bg-card);
     padding: 1.25rem;
     border-radius: var(--td-border-radius);
     border: 1px solid var(--td-slate-200);
@@ -227,7 +246,7 @@
 }
 
 .td-action-btn:hover {
-    background: var(--td-slate-100);
+    background: var(--bg-hover);
     color: var(--td-slate-600);
     border-color: var(--td-slate-200);
 }
@@ -236,7 +255,7 @@
    TAB BAR MODERNO
    ============================================================================ */
 .td-tab-bar {
-    background: white;
+    background: var(--bg-card);
     padding: 0.375rem;
     border-radius: 12px;
     border: 1px solid var(--td-slate-200);
@@ -300,7 +319,7 @@
 
 /* Compatibilidad con Bootstrap Tabs */
 .nav-tabs.td-nav-tabs {
-    background: white;
+    background: var(--bg-card);
     padding: 0.375rem;
     border-radius: 12px;
     border: 1px solid var(--td-slate-200) !important;
@@ -351,7 +370,7 @@
    CARD MODERNO
    ============================================================================ */
 .td-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: var(--td-border-radius);
     border: 1px solid var(--td-slate-200);
     box-shadow: var(--td-shadow-sm);
@@ -365,7 +384,7 @@
     justify-content: space-between;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--td-slate-100);
-    background: white;
+    background: var(--bg-card);
 }
 
 .td-card-header-left {
@@ -534,7 +553,7 @@
 }
 
 .td-description-box {
-    background: var(--td-slate-50);
+    background: var(--bg-card);
     padding: 1.25rem;
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.05);
@@ -706,7 +725,7 @@
 .td-materials-empty-icon {
     width: 3rem;
     height: 3rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--td-slate-200);
     border-radius: 50%;
     display: flex;
@@ -751,7 +770,7 @@
     letter-spacing: 0.05em;
     color: var(--td-slate-500);
     padding: 0.75rem 1rem;
-    background: var(--td-slate-50);
+    background: var(--bg-hover);
     text-align: left;
 }
 
@@ -2158,6 +2177,7 @@
 .swal2-container {
     z-index: 1070 !important;
 }
+
 /* ============================================================================
    REPORTER & ASSIGNED TECH CARDS
    ============================================================================ */

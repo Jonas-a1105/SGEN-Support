@@ -1,5 +1,14 @@
 /* Configuration View Styles */
 
+:root {
+    --config-bg: var(--bg-body);
+    --config-card: var(--bg-card);
+    --config-border: #e2e8f0;
+    --config-text-main: var(--text-main);
+    --config-text-muted: var(--text-muted);
+}
+
+
 /* Main Layout Wrapper (Reduced top padding) */
 .config-layout-wrapper {
     background: transparent;
@@ -16,10 +25,10 @@
     max-width: 1150px;
     min-width: 1150px;
     width: 100%;
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     overflow: hidden;
     display: flex;
     height: 85vh;
@@ -150,13 +159,13 @@ aside nav::-webkit-scrollbar-thumb:hover {
 
 .category-content {
     padding: 1.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     border-radius: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     transition: all 0.2s;
-    background: white;
+    background: var(--bg-card);
 }
 
 .category-card:not(.checked) .category-content {
@@ -171,7 +180,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .category-content h4 {
     font-size: 0.875rem;
     font-weight: 700;
-    color: #64748b;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -181,7 +190,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 
 .category-content p {
     font-size: 0.625rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0.125rem 0 0;
 }
 
@@ -193,7 +202,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: white;
+    background: var(--bg-card);
     color: transparent;
     transition: all 0.2s;
 }
@@ -235,9 +244,9 @@ aside nav::-webkit-scrollbar-thumb:hover {
    ====================================================== */
 
 .security-container {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     overflow: hidden;
     margin: 0 auto;
     max-width: 100%;
@@ -286,7 +295,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .sec-label {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #64748b;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.025em;
     margin-left: 0.25rem;
@@ -305,7 +314,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .sec-input-icon {
     position: absolute;
     left: 0.75rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     pointer-events: none;
     transition: color 0.15s;
     display: flex;
@@ -316,13 +325,13 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .sec-input {
     width: 100%;
     padding: 0.625rem 2.5rem 0.625rem 2.5rem;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 0.75rem;
     font-size: 0.875rem;
     outline: none;
     transition: all 0.15s;
-    color: #0f172a;
+    color: var(--text-main);
 }
 
 .sec-input:focus {
@@ -344,7 +353,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .sec-toggle-btn {
     position: absolute;
     right: 0.75rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     background: none;
     border: none;
     cursor: pointer;
@@ -431,10 +440,10 @@ aside nav::-webkit-scrollbar-thumb:hover {
 }
 
 .sec-requirements-box {
-    background: #f8fafc;
+    background: var(--bg-hover);
     border-radius: 0.75rem;
     padding: 1.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     height: fit-content;
 }
 
@@ -470,7 +479,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
     align-items: center;
     justify-content: center;
     background: #e2e8f0;
-    color: #94a3b8;
+    color: var(--text-muted);
     transition: all 0.3s;
 }
 
@@ -546,7 +555,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
     overflow: hidden;
     font-size: 2rem;
     font-weight: 700;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .profile-edit-btn {
@@ -577,14 +586,14 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .profile-name {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-main);
     margin: 0;
 }
 
 .profile-role {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--text-muted);
     margin: 0.25rem 0 1rem;
 }
 
@@ -612,7 +621,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .badge-member {
     background: #f1f5f9;
     color: #475569;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
 }
 
 .pulse-dot {
@@ -662,7 +671,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .account-subtitle {
     font-size: 0.875rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-main);
     text-transform: uppercase;
     letter-spacing: 0.025em;
     margin-bottom: 0.5rem;
@@ -671,8 +680,8 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .account-textarea {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
@@ -684,15 +693,15 @@ aside nav::-webkit-scrollbar-thumb:hover {
 }
 
 .account-textarea:focus {
-    background: white;
+    background: var(--bg-card);
     border-color: #3b82f6;
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
 /* Corporate Details */
 .corporate-box {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
     border-radius: 0.75rem;
     padding: 1.5rem;
     display: grid;
@@ -715,7 +724,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .corp-label {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #94a3b8;
+    color: var(--text-muted);
     text-transform: uppercase;
 }
 
@@ -729,7 +738,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 }
 
 .corp-value i {
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 1rem;
 }
 
@@ -742,4 +751,348 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .corp-link:hover {
     text-decoration: underline;
     color: #1d4ed8;
+}
+
+[data-theme='dark'] {
+    --config-border: var(--border-color);
+}
+
+[data-theme='dark'] .config-card {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color);
+}
+
+/* Dynamic Classes for Config */
+.config-sidebar {
+    background-color: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+}
+
+.config-content-header {
+    background-color: white;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.config-tab {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.config-tab-active {
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    color: #6366f1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.config-tab-icon {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: transparent;
+}
+
+.config-tab-icon.active {
+    background-color: #eef2ff;
+}
+
+.config-btn-secondary {
+    padding: 0.5rem 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.config-btn-primary {
+    padding: 0.5rem 1rem;
+    background: #0f172a;
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] .config-sidebar {
+    background-color: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+[data-theme='dark'] .config-content-header {
+    background-color: var(--bg-card);
+    border-color: var(--border-light);
+}
+
+[data-theme='dark'] .config-tab {
+    color: var(--text-muted);
+}
+
+[data-theme='dark'] .config-tab:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+}
+
+[data-theme='dark'] .config-tab-active {
+    background-color: var(--bg-hover);
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+[data-theme='dark'] .config-tab-icon.active {
+    background-color: rgba(99, 102, 241, 0.2);
+}
+
+[data-theme='dark'] .config-btn-primary {
+    background-color: #6366f1;
+}
+
+[data-theme='dark'] .config-btn-primary:hover {
+    background-color: #4f46e5;
+}
+
+/* New Config Sections Refactor */
+.config-maintenance-box {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.config-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+.config-filter-btn {
+    padding: 0.375rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 0.375rem;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    color: #64748b;
+}
+
+.config-filter-btn.active {
+    background: white;
+    color: #1e293b;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.config-list-container {
+    background: white;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.config-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'] .config-maintenance-box {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .config-maintenance-box h4 {
+    color: var(--text-main) !important;
+}
+
+[data-theme='dark'] .config-maintenance-box p {
+    color: var(--text-muted) !important;
+}
+
+[data-theme='dark'] .config-toolbar {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .config-filter-btn {
+    color: var(--text-muted);
+}
+
+[data-theme='dark'] .config-filter-btn.active {
+    background: var(--bg-hover);
+    color: var(--text-main);
+}
+
+[data-theme='dark'] .config-list-container {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .config-section {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .config-section h2 {
+    color: var(--text-main) !important;
+}
+
+/* Appended Sidebar Styles */
+.config-sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.config-sidebar-footer {
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #f1f5f9;
+}
+
+[data-theme='dark'] .config-sidebar-header {
+    border-color: var(--border-light);
+}
+
+[data-theme='dark'] .config-sidebar-header h2 {
+    color: var(--text-main) !important;
+}
+
+[data-theme='dark'] .config-sidebar-footer {
+    border-color: var(--border-light);
+}
+
+.config-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+}
+
+/* Notification Tabs */
+.notif-tab {
+    padding-bottom: 0.75rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.notif-tab:hover {
+    color: var(--text-main);
+}
+
+.notif-tab.active {
+    color: #6366f1;
+}
+
+[data-theme='dark'] .notif-tab {
+    color: var(--text-muted);
+}
+
+[data-theme='dark'] .notif-tab:hover,
+[data-theme='dark'] .notif-tab.active {
+    color: #818cf8;
+}
+
+/* DND Card */
+.dnd-card {
+    background: linear-gradient(135deg, #312e81 0%, #4338ca 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.dnd-bg-decoration {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8rem;
+    height: 8rem;
+    background: white;
+    opacity: 0.05;
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+}
+
+.dnd-time-box {
+    background: rgba(49, 46, 129, 0.5);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(99, 102, 241, 0.5);
+}
+
+.dnd-time-text {
+    font-size: 0.875rem;
+    color: white;
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+}
+
+.dnd-time-text::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Inbox Actions */
+.inbox-actions {
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.notification-item:hover .inbox-actions {
+    opacity: 1;
 }

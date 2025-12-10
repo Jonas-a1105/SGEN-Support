@@ -8,7 +8,6 @@ use App\Controllers\DepartamentosController;
 use App\Controllers\EmpleadosController;
 use App\Controllers\UsuariosController;
 use App\Controllers\LogController;
-use App\Controllers\PerfilController;
 use App\Controllers\ConfiguracionController;
 use App\Controllers\ReportesController;
 use App\Controllers\NotificacionesController;
@@ -111,11 +110,10 @@ $router->post('/usuarios/eliminar_masivo', [UsuariosController::class, 'eliminar
 // Logs
 $router->get('/logs', [LogController::class, 'index']);
 
-// Perfil y Configuración
-$router->get('/perfil', [PerfilController::class, 'index']);
-$router->post('/perfil/actualizar', [PerfilController::class, 'actualizar']);
+// Configuración
 $router->get('/configuracion', [ConfiguracionController::class, 'index']);
 $router->post('/configuracion/guardar', [ConfiguracionController::class, 'guardar']);
+$router->post('/configuracion/cambiarPassword', [ConfiguracionController::class, 'cambiarPassword']);
 
 // Reportes (sistema info moved to /about)
 $router->get('/reportes', [ReportesController::class, 'index']);
@@ -129,6 +127,10 @@ $router->get('/reportes/rendimiento', [ReportesController::class, 'rendimiento']
 // Notificaciones
 $router->get('/notificaciones/marcar-todas-leidas', [NotificacionesController::class, 'marcarTodasLeidas']);
 $router->get('/notificaciones/leer/{id}', [NotificacionesController::class, 'leer']);
+
+// API Notificaciones
+$router->get('/api/notifications', [NotificacionesController::class, 'api']);
+$router->post('/api/notifications/mark-read', [NotificacionesController::class, 'apiMarcarLeida']);
 
 // Bitácora
 $router->get('/bitacora', [BitacoraController::class, 'index']);

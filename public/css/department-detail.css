@@ -3,16 +3,16 @@
    ============================================= */
 
 :root {
-    --dd-slate-50: #f8fafc;
-    --dd-slate-100: #f1f5f9;
+    --dd-slate-50: var(--bg-hover);
+    --dd-slate-100: var(--border-light);
     --dd-slate-200: #e2e8f0;
-    --dd-slate-300: #cbd5e1;
-    --dd-slate-400: #94a3b8;
-    --dd-slate-500: #64748b;
-    --dd-slate-600: #475569;
-    --dd-slate-700: #334155;
-    --dd-slate-800: #1e293b;
-    --dd-slate-900: #0f172a;
+    --dd-slate-300: var(--text-light);
+    --dd-slate-400: var(--text-muted);
+    --dd-slate-500: var(--text-muted);
+    --dd-slate-600: var(--text-light);
+    --dd-slate-700: var(--text-main);
+    --dd-slate-800: var(--text-main);
+    --dd-slate-900: var(--text-main);
 
     --dd-blue-50: #eff6ff;
     --dd-blue-100: #dbeafe;
@@ -98,7 +98,7 @@
 
 .dd-title-icon {
     padding: 0.5rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--dd-slate-200);
     border-radius: 0.5rem;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -154,7 +154,7 @@
 }
 
 .dd-btn-secondary {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--dd-slate-200);
     color: var(--dd-slate-600);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -178,7 +178,7 @@
 
 /* Main Container */
 .dd-main-card {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--dd-slate-200);
     border-radius: 1rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -362,7 +362,7 @@
 
 /* Info Box - Bordered card container */
 .dd-info-box {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--dd-slate-200);
     border-radius: 0.75rem;
     padding: 1rem;
@@ -381,7 +381,7 @@
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--dd-slate-200);
     display: flex;
     align-items: center;
@@ -398,7 +398,7 @@
     gap: 0.5rem;
     font-size: 0.875rem;
     color: var(--dd-slate-600);
-    background: white;
+    background: var(--bg-card);
     padding: 0.375rem 0.75rem;
     border-radius: 0.375rem;
     border: 1px solid var(--dd-slate-200);
@@ -443,7 +443,7 @@
 
 .dd-stat-item {
     padding: 1rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--dd-slate-200);
     border-radius: 0.5rem;
     display: flex;
@@ -533,7 +533,7 @@
     width: 100%;
     padding: 0.375rem 1rem 0.375rem 2.25rem;
     font-size: 0.875rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--dd-slate-200);
     border-radius: 0.5rem;
     outline: none;
@@ -547,7 +547,7 @@
 
 .dd-filter-btn {
     padding: 0.5rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--dd-slate-200);
     border-radius: 0.5rem;
     color: var(--dd-slate-500);
@@ -573,7 +573,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: white;
+    background: var(--bg-card);
     border-bottom: 1px solid var(--dd-slate-100);
     transition: background 0.2s;
 }
@@ -732,3 +732,4 @@
     border-top: 1px solid var(--dd-slate-200);
     margin: 1.5rem 0;
 }
+[data-theme='dark'] { --dd-slate-200: var(--border-color); }

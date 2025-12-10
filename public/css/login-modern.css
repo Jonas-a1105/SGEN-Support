@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
 
 :root {
+    /* Mapping to Global/Semantic Variables (matches main.css somewhat but standalone) */
     --slate-50: #f8fafc;
     --slate-100: #f1f5f9;
     --slate-200: #e2e8f0;
@@ -21,6 +22,12 @@
     --blue-700: #1d4ed8;
 
     --white: #ffffff;
+    --bg-page: var(--bg-body);
+    --bg-card: var(--bg-card);
+    --text-main: var(--text-main);
+    --text-muted: var(--text-muted);
+    --border-color: #e2e8f0;
+    --input-bg: var(--bg-input);
 
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -28,6 +35,11 @@
     --shadow-custom: 0 20px 60px -15px rgba(0, 0, 0, 0.1);
 
     --font-sans: 'Inter', sans-serif;
+}
+
+[data-theme="dark"] {
+    /* Variables are already mapped to global ones, but we can override specific shadows if needed */
+    --shadow-custom: 0 20px 60px -15px rgba(0, 0, 0, 0.5);
 }
 
 body,
@@ -153,7 +165,7 @@ html {
     /* text-2xl */
     font-weight: 900;
     /* font-black */
-    color: var(--slate-800);
+    color: var(--text-main);
     letter-spacing: -0.025em;
     /* tracking-tight */
     margin-bottom: 0.5rem;
@@ -197,7 +209,7 @@ html {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     /* tracking-wider */
-    color: var(--slate-500);
+    color: var(--text-muted);
     display: flex;
     justify-content: space-between;
 }
@@ -250,8 +262,8 @@ html {
     /* text-sm */
     font-weight: 500;
     /* font-medium */
-    color: var(--slate-900);
-    background-color: var(--slate-50);
+    color: var(--text-main);
+    background-color: var(--input-bg);
     outline: none;
     transition: all 0.15s ease;
     box-sizing: border-box;
@@ -336,14 +348,14 @@ html {
     margin-top: 2rem;
     /* mt-8 */
     text-align: center;
-    border-top: 1px solid var(--slate-50);
+    border-top: 1px solid var(--border-color);
     padding-top: 1.5rem;
     /* pt-6 */
 }
 
 .footer-text {
     font-size: 10px;
-    color: var(--slate-300);
+    color: var(--text-muted);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -387,3 +399,4 @@ html {
 .animate-spin {
     animation: spin 1s linear infinite;
 }
+[data-theme='dark'] { --border-color: var(--border-color); }

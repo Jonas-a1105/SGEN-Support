@@ -1,24 +1,21 @@
 /* Header Modern CSS */
 
 /* Glassmorphism Header */
+/* Glassmorphism Header */
 .glass-opaque {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--glass-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-    /* Slate 200 */
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border-bottom: var(--glass-border);
+    box-shadow: var(--glass-shadow);
     height: 4rem;
-    /* 64px */
     padding-top: 0 !important;
     padding-bottom: 0 !important;
 }
 
 [data-theme="dark"] .glass-opaque {
-    background: rgba(15, 23, 42, 0.9);
-    /* Slate 900 */
-    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-    /* Slate 700 */
+    /* Variables handle the change automatically now */
+    border-bottom-color: var(--border-color);
 }
 
 /* Navbar Brand adjustment */
@@ -111,7 +108,7 @@
 }
 
 .header-search-input:focus {
-    background: white;
+    background: var(--bg-card);
     border-color: #6366f1;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
@@ -139,7 +136,7 @@
     left: 0;
     right: 0;
     margin-top: 0.5rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid #e2e8f0;
     border-radius: 0.75rem;
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
@@ -221,29 +218,37 @@
 }
 
 /* Dark mode support */
+/* Dark mode support - Now leveraging global vars but keeping specific overrides where needed */
 [data-theme="dark"] .header-search-input {
-    background: rgba(30, 41, 59, 0.8);
-    border-color: #334155;
-    color: #f1f5f9;
+    background: var(--bg-input);
+    border-color: var(--border-color);
+    color: var(--text-main);
 }
 
 [data-theme="dark"] .header-search-input:focus {
-    background: #1e293b;
-    border-color: #6366f1;
+    background: var(--bg-card);
+    /* was 1e293b */
+    border-color: var(--info);
 }
 
 [data-theme="dark"] .header-search-kbd {
-    background: #1e293b;
-    border-color: #334155;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-muted);
 }
 
 [data-theme="dark"] .header-search-results {
-    background: #1e293b;
-    border-color: #334155;
+    background: var(--bg-card);
+    border-color: var(--border-color);
 }
 
 [data-theme="dark"] .hs-result-item:hover {
-    background: #334155;
+    background: var(--bg-hover);
+}
+
+[data-theme="dark"] .hs-result-icon {
+    background: var(--bg-hover);
+    color: var(--text-muted);
 }
 
 /* Responsive */
@@ -281,12 +286,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--bs-primary);
+    background-color: #0f172a;
+    /* Same as sidebar: var(--ms-slate-900) */
     color: white;
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
 }
 
 .icon-md {

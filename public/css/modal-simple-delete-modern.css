@@ -279,3 +279,4 @@
         transform: rotate(360deg);
     }
 }
+[data-theme='dark'] { --sdm-slate-200: var(--border-color); --sdm-bg-white: var(--bg-card); --sdm-slate-50: var(--bg-hover); --sdm-slate-100: var(--border-light); }

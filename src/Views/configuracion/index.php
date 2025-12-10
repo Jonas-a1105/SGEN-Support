@@ -10,11 +10,11 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
     <div class="config-card">
         
         <!-- SIDEBAR DE NAVEGACIÓN -->
-        <aside style="width: 280px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+        <aside class="config-sidebar" style="width: 280px; display: flex; flex-direction: column;">
             
             <!-- Header del Sidebar -->
-            <div style="padding: 1.5rem; border-bottom: 1px solid #f1f5f9;">
-                <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <div class="config-sidebar-header">
+                <h2 style="font-size: 1.25rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="bi bi-gear-fill" style="color: #6366f1;"></i>
                     Configuración
                 </h2>
@@ -34,7 +34,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                     </div>
                 </button>
 
-                <button onclick="switchConfigTab('appearance')" id="tab-appearance" class="config-tab config-tab-active" style="width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; text-align: left; cursor: pointer; background: white; color: #6366f1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <button onclick="switchConfigTab('appearance')" id="tab-appearance" class="config-tab config-tab-active" style="width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; text-align: left; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                     <div style="padding: 0.5rem; border-radius: 0.5rem; background: #eef2ff;">
                         <i class="bi bi-palette" style="font-size: 1rem;"></i>
                     </div>
@@ -77,26 +77,26 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
             </nav>
             
             <!-- Footer del Sidebar -->
-            <div style="padding: 1rem; text-align: center; border-top: 1px solid #f1f5f9;">
+            <div class="config-sidebar-footer">
                 <p style="font-size: 0.625rem; color: #94a3b8; margin: 0;">Versión del Sistema v2.4.0</p>
             </div>
         </aside>
 
         <!-- CONTENIDO PRINCIPAL -->
-        <main style="flex: 1; display: flex; flex-direction: column;">
+        <main class="config-main">
             
             <!-- Header del Contenido -->
-            <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: white;">
+            <div class="config-content-header">
                 <div>
-                    <h1 id="content-title" style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0;">Apariencia</h1>
+                    <h1 id="content-title" style="font-size: 1.5rem; font-weight: 700; margin: 0;">Apariencia</h1>
                     <p id="content-desc" style="color: #64748b; font-size: 0.875rem; margin: 0.25rem 0 0 0;">Personaliza cómo se ve y se siente la aplicación.</p>
                 </div>
                 <div style="display: flex; gap: 0.75rem;">
-                    <button type="button" onclick="location.reload()" style="padding: 0.5rem 1rem; color: #64748b; font-weight: 500; background: transparent; border: none; cursor: pointer; border-radius: 0.5rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.375rem;">
+                    <button type="button" onclick="location.reload()" class="config-btn-secondary">
                         <i class="bi bi-arrow-counterclockwise"></i>
                         Restaurar
                     </button>
-                    <button type="submit" form="configForm" style="padding: 0.5rem 1rem; background: #0f172a; color: white; font-weight: 700; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; gap: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <button type="submit" form="configForm" class="config-btn-primary">
                         <i class="bi bi-check2"></i>
                         Guardar
                     </button>
@@ -323,7 +323,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
 
                             <!-- Modo Mantenimiento -->
                             <div class="col-span-md-2">
-                                <div style="background: #fff; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+                                <div class="config-maintenance-box">
                                     <div style="display: flex; gap: 1rem; align-items: center;">
                                         <div style="width: 3rem; height: 3rem; background: #fee2e2; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; color: #ef4444;">
                                             <i class="bi bi-cone-striped" style="font-size: 1.5rem;"></i>
@@ -372,17 +372,17 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                     <div id="notif-inbox-view">
                         
                         <!-- Toolbar -->
-                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; background: white; padding: 0.5rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
+                        <div class="config-toolbar">
                             
                             <!-- Filters -->
                             <div style="display: flex; background: #f1f5f9; padding: 0.25rem; border-radius: 0.5rem;">
-                                <button type="button" onclick="filterNotifications('all')" id="filter-all" class="notif-filter-btn active" style="padding: 0.375rem 1rem; font-size: 0.75rem; font-weight: 700; border-radius: 0.375rem; border: none; cursor: pointer; background: white; color: #1e293b; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                <button type="button" onclick="filterNotifications('all')" id="filter-all" class="notif-filter-btn config-filter-btn active">
                                     Todas
                                 </button>
-                                <button type="button" onclick="filterNotifications('unread')" id="filter-unread" class="notif-filter-btn" style="padding: 0.375rem 1rem; font-size: 0.75rem; font-weight: 700; border-radius: 0.375rem; border: none; cursor: pointer; background: transparent; color: #64748b;">
+                                <button type="button" onclick="filterNotifications('unread')" id="filter-unread" class="notif-filter-btn config-filter-btn">
                                     No Leídas
                                 </button>
-                                <button type="button" onclick="filterNotifications('alert')" id="filter-alert" class="notif-filter-btn" style="padding: 0.375rem 1rem; font-size: 0.75rem; font-weight: 700; border-radius: 0.375rem; border: none; cursor: pointer; background: transparent; color: #64748b;">
+                                <button type="button" onclick="filterNotifications('alert')" id="filter-alert" class="notif-filter-btn config-filter-btn">
                                     Solo Alertas
                                 </button>
                             </div>
@@ -400,7 +400,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                         </div>
 
                         <!-- Notification List -->
-                        <div id="notification-list" style="background: white; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
+                        <div id="notification-list" class="config-list-container">
                             <!-- Populated by JS -->
                         </div>
                         
@@ -414,7 +414,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                             <div style="display: flex; flex-direction: column; gap: 2rem;">
                                 
                                 <!-- Canales de Comunicación -->
-                                <section style="background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                <section class="config-section">
                                     <h2 style="font-weight: 700; color: #1e293b; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
                                         <i class="bi bi-gear" style="color: #94a3b8;"></i> Canales de Comunicación
                                     </h2>
@@ -432,7 +432,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                                                 </div>
                                             </div>
                                             <label class="toggle-switch">
-                                                <input type="checkbox" name="email_notifications" checked>
+                                                <input type="checkbox" data-pref="email_notifications" checked>
                                                 <span class="toggle-slider"></span>
                                             </label>
                                         </div>
@@ -449,7 +449,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                                                 </div>
                                             </div>
                                             <label class="toggle-switch">
-                                                <input type="checkbox" name="push_notifications" checked>
+                                                <input type="checkbox" data-pref="push_notifications" checked>
                                                 <span class="toggle-slider"></span>
                                             </label>
                                         </div>
@@ -466,7 +466,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                                                 </div>
                                             </div>
                                             <label class="toggle-switch">
-                                                <input type="checkbox" name="desktop_notifications">
+                                                <input type="checkbox" data-pref="desktop_notifications">
                                                 <span class="toggle-slider"></span>
                                             </label>
                                         </div>
@@ -475,7 +475,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                                 </section>
 
                                 <!-- Categorías Suscritas -->
-                                <section style="background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                <section class="config-section">
                                     <h2 style="font-weight: 700; color: #1e293b; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
                                         <i class="bi bi-funnel" style="color: #94a3b8;"></i> Categorías Suscritas
                                     </h2>
@@ -483,7 +483,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                                         
                                         <!-- Tickets -->
                                         <label class="category-card checked">
-                                            <input type="checkbox" name="cat_tickets" checked style="display: none;">
+                                            <input type="checkbox" data-pref="cat_tickets" checked style="display: none;">
                                             <div class="category-content">
                                                 <div>
                                                     <h4>Tickets de Soporte</h4>
@@ -495,7 +495,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
 
                                         <!-- Inventario -->
                                         <label class="category-card checked">
-                                            <input type="checkbox" name="cat_inventario" checked style="display: none;">
+                                            <input type="checkbox" data-pref="cat_inventario" checked style="display: none;">
                                             <div class="category-content">
                                                 <div>
                                                     <h4>Inventario y Stock</h4>
@@ -507,7 +507,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
 
                                         <!-- Mantenimientos -->
                                         <label class="category-card">
-                                            <input type="checkbox" name="cat_mantenimientos" style="display: none;">
+                                            <input type="checkbox" data-pref="cat_mantenimientos" style="display: none;">
                                             <div class="category-content">
                                                 <div>
                                                     <h4>Mantenimientos</h4>
@@ -519,7 +519,7 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
 
                                         <!-- Sistema -->
                                         <label class="category-card checked">
-                                            <input type="checkbox" name="cat_sistema" checked style="display: none;">
+                                            <input type="checkbox" data-pref="cat_sistema" checked style="display: none;">
                                             <div class="category-content">
                                                 <div>
                                                     <h4>Sistema y Seguridad</h4>
@@ -538,15 +538,15 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                                 
                                 <!-- Modo No Molestar -->
-                                <div style="background: linear-gradient(135deg, #312e81 0%, #4338ca 100%); color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.4); position: relative; overflow: hidden;">
-                                    <div style="position: absolute; top: 0; right: 0; width: 8rem; height: 8rem; background: white; opacity: 0.05; border-radius: 50%; transform: translate(50%, -50%);"></div>
+                                <div class="dnd-card">
+                                    <div class="dnd-bg-decoration"></div>
                                     
                                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
                                         <h3 style="font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin: 0; font-size: 0.9375rem;">
                                             <i class="bi bi-moon"></i> Modo No Molestar
                                         </h3>
                                         <label class="toggle-switch dnd">
-                                            <input type="checkbox" name="dnd_mode" checked>
+                                            <input type="checkbox" data-pref="dnd_mode" checked>
                                             <span class="toggle-slider dnd"></span>
                                         </label>
                                     </div>
@@ -556,23 +556,23 @@ $densidadActual = $_SESSION['densidad'] ?? 'comfortable';
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                                         <div>
                                             <label style="display: block; font-size: 0.6875rem; color: #a5b4fc; margin-bottom: 0.25rem;">Desde</label>
-                                            <div style="background: rgba(49, 46, 129, 0.5); border-radius: 0.5rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(99, 102, 241, 0.5);">
+                                            <div class="dnd-time-box">
                                                 <i class="bi bi-clock" style="font-size: 0.875rem; color: #a5b4fc;"></i>
-                                                <span style="font-size: 0.875rem;">22:00</span>
+                                                <input type="time" data-pref="dnd_start" value="22:00" class="dnd-time-text">
                                             </div>
                                         </div>
                                         <div>
                                             <label style="display: block; font-size: 0.6875rem; color: #a5b4fc; margin-bottom: 0.25rem;">Hasta</label>
-                                            <div style="background: rgba(49, 46, 129, 0.5); border-radius: 0.5rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(99, 102, 241, 0.5);">
+                                            <div class="dnd-time-box">
                                                 <i class="bi bi-clock" style="font-size: 0.875rem; color: #a5b4fc;"></i>
-                                                <span style="font-size: 0.875rem;">07:00</span>
+                                                <input type="time" data-pref="dnd_end" value="07:00" class="dnd-time-text">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Sonidos -->
-                                <div style="background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                <div class="config-section">
                                     <h3 style="font-weight: 700; color: #1e293b; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem;">
                                         <i class="bi bi-volume-up" style="color: #94a3b8;"></i> Sonidos
                                     </h3>

@@ -270,7 +270,7 @@
                 <div class="category-bar-item">
                     <div class="cat-header">
                         <div class="cat-label">
-                            <i class="bi bi-tag-fill icon-muted"></i> <?= htmlspecialchars($cat->nombre) ?>
+                            <i class="bi bi-tag-fill icon-muted"></i> <?= htmlspecialchars($cat->nombre ?? '') ?>
                         </div>
                         <span class="text-muted-custom"><?= $pct ?>%</span>
                     </div>
@@ -316,7 +316,7 @@
                     <ul class="tech-list">
                         <?php foreach($topTecnicos as $tech): ?>
                         <li class="tech-list-item">
-                            <span class="tech-name"><?= htmlspecialchars($tech->username) ?></span>
+                            <span class="tech-name"><?= htmlspecialchars($tech->username ?? '') ?></span>
                             <span class="tech-count"><?= $tech->total ?></span>
                         </li>
                         <?php endforeach; ?>

@@ -39,12 +39,12 @@ if ($es_edicion && !empty($val_departamento_id) && !empty($departamentos)) {
 }
 ?>
 
-<div style="min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 2rem;">
+<div class="users-form-wrapper">
     
-    <div style="max-width: 1150px; width: 100%; background: white; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); border: 1px solid #e2e8f0; overflow: hidden; display: flex; flex-wrap: wrap; min-height: 600px;">
+    <div class="users-form-card">
         
         <!-- COLUMNA IZQUIERDA: FORMULARIO -->
-        <div style="flex: 1; min-width: 400px; padding: 2.5rem; overflow-y: auto;">
+        <div class="users-form-col-left">
             
             <!-- Header -->
             <div style="margin-bottom: 2rem;">
@@ -197,7 +197,7 @@ if ($es_edicion && !empty($val_departamento_id) && !empty($departamentos)) {
         </div>
 
         <!-- COLUMNA DERECHA: VISTA PREVIA -->
-        <div style="width: 380px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+        <div class="users-form-col-right">
             
             <div style="position: absolute; top: 1.5rem; right: 1.5rem; padding: 0.375rem 0.75rem; background: white; border: 1px solid #e2e8f0; border-radius: 9999px; font-size: 0.625rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">
                 Vista Previa

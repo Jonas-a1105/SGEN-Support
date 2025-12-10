@@ -1,16 +1,16 @@
 /* Maintenance Schedule Form Modern Styles */
 :root {
-    --mf-bg: #f8fafc;
-    --mf-slate-50: #f8fafc;
-    --mf-slate-100: #f1f5f9;
+    --mf-bg: var(--bg-body);
+    --mf-slate-50: var(--bg-hover);
+    --mf-slate-100: var(--border-light);
     --mf-slate-200: #e2e8f0;
-    --mf-slate-300: #cbd5e1;
-    --mf-slate-400: #94a3b8;
-    --mf-slate-500: #64748b;
-    --mf-slate-600: #475569;
-    --mf-slate-700: #334155;
-    --mf-slate-800: #1e293b;
-    --mf-slate-900: #0f172a;
+    --mf-slate-300: var(--text-light);
+    --mf-slate-400: var(--text-muted);
+    --mf-slate-500: var(--text-muted);
+    --mf-slate-600: var(--text-secondary);
+    --mf-slate-700: var(--text-main);
+    --mf-slate-800: var(--text-main);
+    --mf-slate-900: var(--text-main);
 
     --mf-blue-50: #eff6ff;
     --mf-blue-100: #dbeafe;
@@ -41,7 +41,7 @@
 
 /* Main Content Card - Bordered Container */
 .mf-main-content-card {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--mf-slate-200);
     border-radius: 1rem;
     padding: 1.5rem;
@@ -52,7 +52,7 @@
 
 /* --- HEADER --- */
 .mf-header {
-    background: white;
+    background: var(--bg-card);
 }
 
 .mf-header-content {
@@ -135,7 +135,7 @@
 .mf-btn-cancel {
     padding: 0.5rem 1rem;
     color: var(--mf-slate-600);
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--mf-slate-200);
     border-radius: 0.5rem;
     font-weight: 500;
@@ -201,7 +201,7 @@
 
 /* --- SECTIONS/CARDS --- */
 .mf-section {
-    background: white;
+    background: var(--bg-card);
     border-radius: 0.75rem;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     border: 1px solid var(--mf-slate-200);
@@ -261,7 +261,7 @@
 .mf-input:focus,
 .mf-select:focus,
 .mf-textarea:focus {
-    background: white;
+    background: var(--bg-card);
     border-color: var(--mf-blue-500);
     box-shadow: 0 0 0 2px var(--mf-blue-100);
 }
@@ -289,13 +289,13 @@
 }
 
 .mf-toggle-btn.active.preventive {
-    background: white;
+    background: var(--bg-card);
     color: var(--mf-blue-700);
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .mf-toggle-btn.active.corrective {
-    background: white;
+    background: var(--bg-card);
     color: var(--mf-orange-700);
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
@@ -312,7 +312,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background: white;
+    background: var(--bg-card);
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
     border: 1px solid var(--mf-slate-100);
@@ -366,7 +366,7 @@
 .mf-input-add-task {
     width: 100%;
     padding: 0.625rem 1rem 0.625rem 2.25rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--mf-slate-200);
     border-radius: 0.5rem;
     font-size: 0.875rem;
@@ -428,7 +428,7 @@
     left: 0;
     right: 0;
     padding: 1rem;
-    background: white;
+    background: var(--bg-card);
     border-top: 1px solid var(--mf-slate-200);
     z-index: 50;
 }
@@ -482,7 +482,7 @@
     top: 100%;
     left: 0;
     width: 100%;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--mf-slate-200);
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -536,3 +536,4 @@
     color: var(--mf-slate-400);
     font-size: 0.875rem;
 }
+[data-theme='dark'] { --mf-slate-200: var(--border-color); }

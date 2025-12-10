@@ -36,7 +36,7 @@ if ($val_departamento_id && isset($departamentos)) {
                     <p class="empleados-subtitle mb-0">Registra el talento humano de tu organización.</p>
                 </div>
             </div>
-            <a href="<?= BASE_URL ?>empleados" class="btn btn-outline-secondary d-flex align-items-center gap-2" style="border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.5rem 1rem; color: #64748b; background: white; text-decoration: none;">
+            <a href="<?= BASE_URL ?>empleados" class="emp-back-btn">
                 <i class="bi bi-arrow-left"></i> Volver al Directorio
             </a>
         </div>
@@ -46,7 +46,7 @@ if ($val_departamento_id && isset($departamentos)) {
         <div class="empleados-content-card" style="display: flex; flex-wrap: wrap; gap: 0; padding: 0; overflow: hidden;">
             
             <!-- COLUMNA IZQUIERDA: FORMULARIO -->
-            <div style="flex: 1; min-width: 400px; padding: 2.5rem 3rem; background: white;">
+            <div class="emp-form-card">
                 
                 <form action="<?= BASE_URL ?>empleados/guardar" method="POST" id="formEmpleado">
                     
@@ -103,7 +103,8 @@ if ($val_departamento_id && isset($departamentos)) {
                     </div>
 
                     <!-- Checkbox: Permitir correo compartido -->
-                    <div onclick="toggleSharedEmail()" style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.875rem; background: #eef2ff; border-radius: 0.75rem; border: 1px solid #c7d2fe; cursor: pointer; margin-bottom: 1.5rem;">
+                    <!-- Checkbox: Permitir correo compartido -->
+                    <div onclick="toggleSharedEmail()" class="emp-shared-email-box">
                         <div id="checkboxContainer" style="margin-top: 0.125rem; width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; border: 2px solid #cbd5e1; background: white; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
                             <i class="bi bi-check" id="checkIcon" style="display: none; color: white; font-size: 0.875rem;"></i>
                         </div>
@@ -177,7 +178,7 @@ if ($val_departamento_id && isset($departamentos)) {
             </div>
 
             <!-- COLUMNA DERECHA: VISTA PREVIA -->
-            <div style="width: 380px; background: #f8fafc; padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; position: relative; border-left: 1px solid #e2e8f0;">
+            <div class="emp-preview-col">
                 
                 <!-- Header -->
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
@@ -189,10 +190,10 @@ if ($val_departamento_id && isset($departamentos)) {
 
                 <!-- Tarjeta Preview del Empleado -->
                 <div style="position: relative; margin: 2rem 0;">
-                    <div style="background: white; border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 1rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <div class="emp-preview-card">
                         
                         <!-- Avatar -->
-                        <div id="avatarPreview" style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 50%; margin: 0 auto 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; font-weight: 700; box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.3); border: 4px solid white;">
+                        <div id="avatarPreview" class="emp-preview-avatar">
                             <i class="bi bi-person" style="font-size: 2rem;"></i>
                         </div>
                         
@@ -205,7 +206,7 @@ if ($val_departamento_id && isset($departamentos)) {
                         </p>
                         
                         <!-- Info Box -->
-                        <div style="background: #f1f5f9; padding: 0.75rem; border-radius: 0.5rem; text-align: left;">
+                        <div class="emp-preview-info-box">
                             <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem;">
                                 <span>ID:</span>
                                 <span id="previewCedula" style="font-family: monospace; color: #0f172a; font-weight: 600;"><?= $val_cedula ?: '---' ?></span>
@@ -218,7 +219,7 @@ if ($val_departamento_id && isset($departamentos)) {
                     </div>
                     
                     <!-- Floating Badge -->
-                    <div style="position: absolute; top: -8px; right: -8px; background: #10b981; color: white; padding: 0.375rem; border-radius: 50%; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <div class="emp-preview-badge">
                         <i class="bi bi-patch-check-fill" style="font-size: 0.875rem;"></i>
                     </div>
                 </div>

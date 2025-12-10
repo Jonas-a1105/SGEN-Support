@@ -6,9 +6,9 @@
 /* Variables */
 :root {
     --id-primary: #4f46e5;
-    --id-bg: #f9fafb;
-    --id-text-main: #1e293b;
-    --id-text-muted: #64748b;
+    --id-bg: var(--bg-body);
+    --id-text-main: var(--text-main);
+    --id-text-muted: var(--text-muted);
     --id-border: #e2e8f0;
 }
 
@@ -71,7 +71,7 @@ html {
 
 /* Header Workspace */
 .id-header {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     border: 1px solid var(--id-border);
     padding: 2rem;
@@ -240,7 +240,7 @@ html {
 .id-search-input {
     width: 100%;
     padding: 0.625rem 1rem 0.625rem 2.5rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid #e2e8f0;
     border-radius: 0.75rem;
     font-size: 0.875rem;
@@ -268,7 +268,7 @@ html {
 
 .id-view-toggle {
     display: flex;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
     padding: 0.25rem;
@@ -302,7 +302,7 @@ html {
     align-items: center;
     gap: 0.5rem;
     padding: 0.625rem 1rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid #e2e8f0;
     color: #475569;
     font-weight: 500;
@@ -347,7 +347,7 @@ html {
     align-items: center;
     gap: 0.5rem;
     padding: 0.625rem 1rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid #e2e8f0;
     color: #475569;
     font-weight: 500;
@@ -378,7 +378,7 @@ html {
 
 /* Table View */
 .id-table-container {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
@@ -572,7 +572,7 @@ html {
 }
 
 .id-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     border: 1px solid #e2e8f0;
     padding: 1rem;
@@ -665,7 +665,7 @@ html {
     top: 100%;
     right: 0;
     margin-top: 0.5rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid #e2e8f0;
     border-radius: 0.75rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -733,7 +733,7 @@ html {
 
 /* History Section */
 .id-history-section {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     border: 1px solid #e2e8f0;
     padding: 1.5rem;
@@ -1012,3 +1012,4 @@ html {
     font-size: 0.875rem;
     font-weight: 600;
 }
+[data-theme='dark'] { --id-border: var(--border-color); }
