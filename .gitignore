@@ -1,25 +1,97 @@
+# =============================================
+# SGEN-Support - Git Ignore File
+# =============================================
+
 # Composer
 /vendor/
 
-# Environment files
+# =============================================
+# SECURITY - NEVER COMMIT THESE
+# =============================================
+# Environment files (contain credentials)
 .env
 .env.backup
 .env.local
+.env.production
+.env.*.local
 
-# IDEs
+# Database dumps and backups
+*.sql
+!database/schema.sql
+/backups/
+/dumps/
+
+# Credential files
+*password*
+*secret*
+*credentials*
+*.key
+*.pem
+*.p12
+
+# =============================================
+# IDEs & Editors
+# =============================================
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-workspace
+*.sublime-project
+.project
+.settings/
+nbproject/
 
-# OS Files
+# =============================================
+# Operating System
+# =============================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Logs & Debug
+# =============================================
+# Logs, Debug & Temp Files
+# =============================================
 *.log
 /logs/
 debug_*.txt
+/tmp/
+/temp/
+*.tmp
+*.cache
 
-# Storage
-/storage/*.key
+# =============================================
+# Uploads & User Generated Content
+# =============================================
+/public/uploads/*
+!/public/uploads/.gitkeep
+/storage/*
+!/storage/.gitkeep
+
+# =============================================
+# Build & Cache
+# =============================================
+/cache/
+*.cache
+.php_cs.cache
+.phpunit.result.cache
+
+# =============================================
+# Testing
+# =============================================
+/coverage/
+.phpunit.result.cache
+phpunit.xml
+
+# =============================================
+# Miscellaneous
+# =============================================
+*.bak
+*.orig
+*.old
+.htaccess.bak
