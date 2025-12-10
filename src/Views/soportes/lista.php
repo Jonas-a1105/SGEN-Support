@@ -443,6 +443,7 @@ function getCategoriaClass($cat) {
                                         <p class="helpdesk-assignee-name"><?= htmlspecialchars($s->tecnico_asignado) ?></p>
                                     </div>
                                 <?php else: ?>
+                                    <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
                                     <a href="#" 
                                        class="helpdesk-assign-btn"
                                        onclick="event.preventDefault(); AssignTechModal.open({
@@ -457,6 +458,9 @@ function getCategoriaClass($cat) {
                                         <i class="bi bi-person-plus"></i>
                                         <span>Asignar</span>
                                     </a>
+                                    <?php else: ?>
+                                    <span class="text-muted small">Sin asignar</span>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
 

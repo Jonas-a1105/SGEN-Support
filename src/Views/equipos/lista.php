@@ -109,7 +109,8 @@ function getStatusBadge($estado) {
         <div class="equipos-toolbar">
             <!-- Left: Bulk Controls + Filter Tabs -->
             <div class="d-flex align-items-center gap-3 flex-wrap">
-                <!-- Bulk Delete Controls -->
+                <?php if ($_SESSION['rol'] === 'admin'): ?>
+                <!-- Bulk Delete Controls - Solo Admin -->
                 <div class="bulk-controls">
                     <div class="form-check form-switch mb-0" title="Activar selección múltiple">
                         <input class="form-check-input bulk-toggle" type="checkbox" id="bulkModeToggle" style="cursor: pointer; width: 3em; height: 1.5em;">
@@ -125,6 +126,7 @@ function getStatusBadge($estado) {
                         <span id="bulkSelectedCount">0</span> seleccionados
                     </button>
                 </div>
+                <?php endif; ?>
                 
                 <!-- Filter Tabs -->
                 <div class="filter-tabs">
@@ -344,9 +346,11 @@ function getStatusBadge($estado) {
 
 </div>
 
-<!-- Bulk Delete Assets -->
+<!-- Bulk Delete Assets - Solo Admin -->
+<?php if ($_SESSION['rol'] === 'admin'): ?>
 <link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
 <script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
+<?php endif; ?>
 
 <!-- Modern Simple Delete Modal Integration -->
 <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
@@ -364,7 +368,8 @@ function getStatusBadge($estado) {
         return false;
     }
     
-    // Initialize Bulk Delete
+    <?php if ($_SESSION['rol'] === 'admin'): ?>
+    // Initialize Bulk Delete - Solo Admin
     document.addEventListener('DOMContentLoaded', function() {
         BulkDelete.init({
             containerId: 'equiposMain',
@@ -380,4 +385,5 @@ function getStatusBadge($estado) {
             countSpanId: 'bulkSelectedCount'
         });
     });
+    <?php endif; ?>
 </script>

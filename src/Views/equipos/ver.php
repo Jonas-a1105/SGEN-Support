@@ -398,10 +398,12 @@ $tipoIcon = match(strtolower($equipo->tipo ?? 'computadora')) {
                             </div>
                             <h3 class="ed-empty-title">Sin historial de mantenimiento</h3>
                             <p class="ed-empty-text">No hay mantenimientos registrados para este equipo.</p>
+                            <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
                             <a href="<?= BASE_URL ?>mantenimientos/crear?equipo_id=<?= $equipo->id ?>" class="ed-btn-dark">
                                 <i class="bi bi-plus-lg"></i>
                                 Nuevo Mantenimiento
                             </a>
+                            <?php endif; ?>
                         </div>
                         <?php else: ?>
                         <div class="ed-timeline">
@@ -423,10 +425,12 @@ $tipoIcon = match(strtolower($equipo->tipo ?? 'computadora')) {
                             <?php endforeach; ?>
                         </div>
                         <div class="ed-maint-footer">
+                            <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
                             <a href="<?= BASE_URL ?>mantenimientos/crear?equipo_id=<?= $equipo->id ?>" class="ed-btn-dark">
                                 <i class="bi bi-plus-lg"></i>
                                 Nuevo Mantenimiento
                             </a>
+                            <?php endif; ?>
                         </div>
                         <?php endif; ?>
                     </div>
