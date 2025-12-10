@@ -18,7 +18,7 @@ function isActive($link, $currentUri) {
                     <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
                 </svg>
             </div>
-            <span class="ms-brand-text">SGEN</span>
+            <span class="ms-brand-text">SGEN-Support</span>
         </a>
     </div>
 
@@ -201,10 +201,10 @@ function isActive($link, $currentUri) {
                     </div>
                     <span class="ms-link-text">Reportes</span>
                 </a>
+                <!-- Configuración HIDDEN - functionality not complete
                 <a href="<?= BASE_URL ?>configuracion" class="ms-link <?= isActive('configuracion', $currentUri) ?>">
                     <div class="ms-active-indicator"></div>
                     <div class="ms-icon-box">
-                        <!-- icons/Settings -->
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12.22 2h-.44a2 2 0 0 1-2 1.08l-.68.61a2 2 0 0 1-2.48.54l-.84-.44a2 2 0 0 0-2.22.46l-.54.54a2 2 0 0 0-.46 2.22l.44.84a2 2 0 0 1-.54 2.48l-.61.68a2 2 0 0 1-1.08 2v.44a2 2 0 0 1 1.08 2l.61.68a2 2 0 0 1 .54 2.48l-.44.84a2 2 0 0 0 .46 2.22l.54.54a2 2 0 0 0 2.22-.46l.84-.44a2 2 0 0 1 2.48.54l.68.61a2 2 0 0 1 2 1.08h.44a2 2 0 0 1 2-1.08l.68-.61a2 2 0 0 1 2.48-.54l.84.44a2 2 0 0 0 2.22-.46l.54-.54a2 2 0 0 0 .46-2.22l-.44-.84a2 2 0 0 1 .54-2.48l.61-.68a2 2 0 0 1 1.08-2v-.44a2 2 0 0 1-1.08-2l-.61-.68a2 2 0 0 1-.54-2.48l.44-.84a2 2 0 0 0-.46-2.22l-.54-.54a2 2 0 0 0-2.22.46l-.84.44a2 2 0 0 1-2.48-.54l-.68-.61a2 2 0 0 1-2-1.08z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
@@ -212,6 +212,7 @@ function isActive($link, $currentUri) {
                     </div>
                     <span class="ms-link-text">Configuración</span>
                 </a>
+                -->
             </div>
         </div>
         <?php endif; ?>
@@ -235,9 +236,9 @@ function isActive($link, $currentUri) {
         </div>
     </div>
 
-    <!-- 3. Footer de Usuario -->
+    <!-- 3. Footer de Usuario (Solo muestra nombre, sin enlace) -->
     <div class="ms-footer">
-        <a href="<?= BASE_URL ?>perfil" class="ms-user-btn text-decoration-none">
+        <div class="ms-user-btn">
             <div class="ms-avatar">
                 <?= strtoupper(substr($_SESSION['usuario'] ?? 'U', 0, 1)) ?>
             </div>
@@ -245,9 +246,6 @@ function isActive($link, $currentUri) {
                 <p class="ms-user-name"><?= htmlspecialchars($_SESSION['usuario'] ?? 'Usuario') ?></p>
                 <p class="ms-user-role"><?= ucfirst($_SESSION['rol'] ?? 'Invitado') ?></p>
             </div>
-            <svg class="ms-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-        </a>
+        </div>
     </div>
 </aside>

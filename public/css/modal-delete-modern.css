@@ -1,10 +1,10 @@
 /* Modern Delete Modal Styles */
 
 :root {
-    --modal-overlay-bg: rgba(255, 255, 255, 0.6);
+    --modal-overlay-bg: var(--bg-overlay);
     /* slate-900/20 */
-    --modal-bg: #ffffff;
-    --modal-border: #f1f5f9;
+    --modal-bg: var(--bg-card);
+    --modal-border: #e2e8f0;
     /* slate-100 */
     --text-primary: #1e293b;
     --text-secondary: #64748b;
@@ -18,8 +18,8 @@
 .delete-modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(0.75px);
+    background-color: var(--bg-overlay);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,7 +64,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: var(--bg-card);
 }
 
 .delete-modal-title {
@@ -129,7 +129,7 @@
 }
 
 .context-icon {
-    background: white;
+    background: var(--bg-card);
     padding: 0.5rem;
     border-radius: 0.25rem;
     border: 1px solid #f1f5f9;
@@ -186,7 +186,7 @@
 
 .btn-cancel {
     padding: 0.5rem 1rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid #cbd5e1;
     /* slate-300 */
     color: #334155;
@@ -246,3 +246,4 @@
         transform: rotate(360deg);
     }
 }
+[data-theme='dark'] { --modal-border: var(--border-color); }

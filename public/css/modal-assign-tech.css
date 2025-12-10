@@ -524,3 +524,4 @@
     cursor: not-allowed;
     box-shadow: none;
 }
+[data-theme='dark'] { --at-slate-200: var(--border-color); --at-slate-50: var(--bg-hover); --at-slate-100: var(--border-light); } [data-theme='dark'] .at-modal, [data-theme='dark'] .at-col-right { background-color: var(--bg-card); }

@@ -375,3 +375,4 @@
         transform: rotate(360deg);
     }
 }
+[data-theme='dark'] .stock-adjust-container { background-color: var(--bg-card); border-color: var(--border-color); } [data-theme='dark'] .stock-adjust-header { background-color: rgba(16, 185, 129, 0.1); border-color: var(--border-light); } [data-theme='dark'] .type-btn { background-color: var(--bg-card); border-color: var(--border-color); }

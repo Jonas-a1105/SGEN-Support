@@ -31,11 +31,11 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
         </div>
 
         <!-- Main Content Card Container -->
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
+        <div class="users-main-content-wrapper">
         
         <!-- Stats Cards -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-            <div style="background: #f8fafc; padding: 1.25rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem;">
+        <div class="users-stats">
+            <div class="users-stat-card">
                 <div style="width: 48px; height: 48px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; background: #e0e7ff; color: #6366f1; font-size: 1.25rem;">
                     <i class="bi bi-people"></i>
                 </div>
@@ -44,7 +44,7 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
                     <h3 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0;"><?= $totalUsers ?></h3>
                 </div>
             </div>
-            <div style="background: #f8fafc; padding: 1.25rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem;">
+            <div class="users-stat-card">
                 <div style="width: 48px; height: 48px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; background: #ede9fe; color: #8b5cf6; font-size: 1.25rem;">
                     <i class="bi bi-shield"></i>
                 </div>
@@ -53,7 +53,7 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
                     <h3 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0;"><?= $adminCount ?></h3>
                 </div>
             </div>
-            <div style="background: #f8fafc; padding: 1.25rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem;">
+            <div class="users-stat-card">
                 <div style="width: 48px; height: 48px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; background: #d1fae5; color: #10b981; font-size: 1.25rem;">
                     <i class="bi bi-wrench"></i>
                 </div>
@@ -65,7 +65,7 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
         </div>
         
         <!-- Main Card -->
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; overflow: hidden;">
+        <div class="users-main-card">
             
             <!-- Toolbar -->
             <div style="padding: 1rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -109,13 +109,13 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
 
             <!-- Table View -->
             <div id="tableView" style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; background: white; table-layout: fixed;">
+                <table class="users-table">
                     <thead>
-                        <tr style="background: #f8fafc;">
-                            <th style="padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0;">Usuario</th>
-                            <th style="padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0;">Rol & Depto</th>
-                            <th style="padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0;">Estado</th>
-                            <th style="padding: 0.875rem 1rem; text-align: right; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0;">Acciones</th>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Rol & Depto</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>

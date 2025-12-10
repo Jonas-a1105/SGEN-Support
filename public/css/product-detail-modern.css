@@ -1,15 +1,15 @@
 :root {
     /* Color Palette - Slate */
-    --pd-slate-50: #f8fafc;
-    --pd-slate-100: #f1f5f9;
+    --pd-slate-50: var(--bg-hover);
+    --pd-slate-100: var(--border-light);
     --pd-slate-200: #e2e8f0;
-    --pd-slate-300: #cbd5e1;
-    --pd-slate-400: #94a3b8;
-    --pd-slate-500: #64748b;
-    --pd-slate-600: #475569;
-    --pd-slate-700: #334155;
-    --pd-slate-800: #1e293b;
-    --pd-slate-900: #0f172a;
+    --pd-slate-300: var(--text-light);
+    --pd-slate-400: var(--text-muted);
+    --pd-slate-500: var(--text-muted);
+    --pd-slate-600: var(--text-secondary);
+    --pd-slate-700: var(--text-main);
+    --pd-slate-800: var(--text-main);
+    --pd-slate-900: var(--text-main);
 
     /* Semantic Colors */
     --pd-blue-50: #eff6ff;
@@ -149,7 +149,7 @@
 }
 
 .pd-btn-white {
-    background-color: white;
+    background-color: var(--bg-card);
     border-color: var(--pd-slate-300);
     color: var(--pd-slate-700);
     box-shadow: var(--pd-shadow-sm);
@@ -172,7 +172,7 @@
 
 /* Header KPI Card */
 .pd-kpi-card {
-    background-color: white;
+    background-color: var(--bg-card);
     padding: 0.75rem 1.25rem;
     border-radius: 0.5rem;
     border: 1px solid var(--pd-slate-200);
@@ -266,7 +266,7 @@
 
 /* Cards */
 .pd-card {
-    background-color: white;
+    background-color: var(--bg-card);
     border-radius: var(--pd-radius-lg);
     box-shadow: var(--pd-shadow-sm);
     border: 1px solid var(--pd-slate-200);
@@ -791,7 +791,7 @@
 .pd-form-textarea {
     width: 100%;
     padding: 0.625rem 1rem;
-    background-color: white;
+    background-color: var(--bg-card);
     border: 1px solid var(--pd-slate-300);
     border-radius: 0.5rem;
     color: var(--pd-slate-700);
@@ -876,3 +876,4 @@
     max-width: 1150px;
     margin: 0 auto;
 }
+[data-theme='dark'] { --pd-slate-200: var(--border-color); }

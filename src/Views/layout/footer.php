@@ -21,14 +21,9 @@
     }
 </script>
 
-<!-- Dark Mode Initialization -->
-<script>
-    // Cargar tema guardado desde PHP session
-    if (!window.savedTheme) {
-        window.savedTheme = '<?= $_SESSION['tema'] ?? 'light' ?>';
-        document.documentElement.setAttribute('data-theme', window.savedTheme);
-    }
-</script>
+<!-- Dark Mode Initialization REMOVED - Now handled exclusively in header.php to prevent flicker -->
+<!-- The theme script in header.php reads from localStorage (client-side) which is more reliable -->
+
 
 <!-- Global Pagination Preferences (using cookies for PHP access) -->
 <script>

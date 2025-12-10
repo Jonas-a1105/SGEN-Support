@@ -2,6 +2,14 @@
    LOGS MODERNO CSS
    ========================================= */
 
+:root {
+    --log-bg: var(--bg-body);
+    --log-card: var(--bg-card);
+    --log-border: #e2e8f0;
+    --log-text-main: var(--text-main);
+    --log-text-muted: var(--text-muted);
+}
+
 /* Layout Isolation */
 .logs-layout-container {
     width: 100%;
@@ -12,8 +20,8 @@
 
 /* Main Content Card - Bordered Container */
 .logs-content-card {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-card);
+    border: 1px solid var(--log-border);
     border-radius: 1rem;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -32,7 +40,7 @@
 .logs-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-main);
     margin: 0;
     display: flex;
     align-items: center;
@@ -40,7 +48,7 @@
 }
 
 .logs-subtitle {
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.875rem;
     margin: 0.25rem 0 0 0;
 }
@@ -55,8 +63,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     color: #475569;
     font-weight: 500;
     border-radius: 0.75rem;
@@ -94,8 +102,8 @@
     top: 100%;
     right: 0;
     margin-top: 0.25rem;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
@@ -108,7 +116,7 @@
     padding: 0.5rem 1rem;
     text-align: left;
     border: none;
-    background: white;
+    background: var(--bg-card);
     cursor: pointer;
     font-size: 0.875rem;
     color: #475569;
@@ -127,10 +135,10 @@
 }
 
 .logs-stat-card {
-    background: white;
+    background: var(--bg-card);
     padding: 1rem;
     border-radius: 0.75rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -163,13 +171,13 @@
 .logs-stat-info h3 {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-main);
     margin: 0;
 }
 
 .logs-stat-info p {
     font-size: 0.625rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 700;
     text-transform: uppercase;
     margin: 0;
@@ -177,9 +185,9 @@
 
 /* Main Card */
 .logs-main-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     overflow: hidden;
 }
 
@@ -211,8 +219,8 @@
 .logs-search-input {
     width: 100%;
     padding: 0.5rem 1rem 0.5rem 2.25rem;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.875rem;
     outline: none;
@@ -227,14 +235,14 @@
 .logs-filter-label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .logs-filter-pills {
     display: flex;
-    background: white;
+    background: var(--bg-card);
     border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     padding: 0.25rem;
 }
 
@@ -246,7 +254,7 @@
     border: none;
     cursor: pointer;
     background: transparent;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .logs-pill:hover {
@@ -292,13 +300,13 @@
 
 .log-avatar.inactive {
     background: #f1f5f9;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .log-username {
     font-size: 0.875rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-main);
     margin: 0;
 }
 
@@ -344,17 +352,17 @@
 }
 
 .log-status-icon.closed {
-    background: #f8fafc;
+    background: var(--bg-hover);
     color: #94a3b8;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
 }
 
 .btn-view-detail {
     padding: 0.5rem;
-    background: white;
+    background: var(--bg-card);
     color: #6366f1;
     border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -372,7 +380,7 @@
 /* Footer & Pagination */
 .logs-footer {
     padding: 1rem 1.5rem;
-    background: #f8fafc;
+    background: var(--bg-hover);
     border-top: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
@@ -389,7 +397,7 @@
 
 .logs-footer-text {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .logs-per-page {
@@ -400,11 +408,11 @@
 
 .logs-per-page-select {
     padding: 0.375rem 0.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     border-radius: 0.375rem;
     font-size: 0.75rem;
     color: #475569;
-    background: white;
+    background: var(--bg-card);
     cursor: pointer;
 }
 
@@ -422,7 +430,7 @@
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--text-muted);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -462,7 +470,7 @@
 }
 
 .logs-modal-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     max-width: 450px;
     width: 100%;
@@ -481,7 +489,7 @@
 .logs-modal-title {
     font-size: 1.125rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-main);
     margin: 0;
     display: flex;
     align-items: center;
@@ -531,7 +539,7 @@
 
 .logs-modal-label {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -540,12 +548,12 @@
 .logs-modal-value {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-main);
 }
 
 .logs-modal-footer {
     padding: 1rem 1.5rem;
-    background: #f8fafc;
+    background: var(--bg-hover);
     border-top: 1px solid #f1f5f9;
     display: flex;
     justify-content: flex-end;
@@ -575,7 +583,7 @@
 }
 
 .logs-modal-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     max-width: 450px;
     width: 100%;
@@ -600,7 +608,7 @@
 .logs-modal-title {
     font-size: 1.125rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-main);
     margin: 0;
     display: flex;
     align-items: center;
@@ -650,7 +658,7 @@
 
 .logs-modal-label {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -659,12 +667,12 @@
 .logs-modal-value {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-main);
 }
 
 .logs-modal-footer {
     padding: 1rem 1.5rem;
-    background: #f8fafc;
+    background: var(--bg-hover);
     border-top: 1px solid #f1f5f9;
     display: flex;
     justify-content: flex-end;
@@ -696,3 +704,6 @@
 .logs-modal-overlay.active {
     display: flex;
 }
+[data-theme='dark'] { --log-border: var(--border-color); }
+
+[data-theme='dark'] .logs-content-card { background-color: var(--bg-card) !important; border-color: var(--border-color); }

@@ -7,7 +7,20 @@
     <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>img/favicon.ico">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/login-modern.css">
     <!-- Preload JS -->
+    <!-- Preload JS -->
     <script src="<?= BASE_URL ?>js/login-modern.js" defer></script>
+    
+    <!-- Theme Script -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'system';
+            let themeToApply = savedTheme;
+            if (savedTheme === 'system') {
+                themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', themeToApply);
+        })();
+    </script>
 </head>
 <body>
     <div class="login-page">
@@ -19,25 +32,16 @@
             
             <!-- Header -->
             <div class="login-header">
-                <!-- NanoLogo -->
+                <!-- NanoLogo - Same as sidebar -->
                 <div class="logo-container">
-                    <div class="logo-icon">
-                        <!-- Icon Background -->
-                        <svg viewBox="0 0 40 40" style="width: 100%; height: 100%; color: var(--blue-600);" fill="currentColor">
-                            <rect width="40" height="40" rx="8" />
-                        </svg>
-                        <!-- 'S' Graphic -->
-                        <svg viewBox="0 0 24 24" style="position: absolute; width: 50%; height: 50%; color: white;" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M7 17l4.5-9 5 9" stroke-opacity="0.5" /> 
-                            <path d="M12 17v-5" />       
-                            <circle cx="12" cy="7" r="2" fill="currentColor" stroke="none" />
-                            <circle cx="7" cy="17" r="2" fill="currentColor" stroke="none" />
-                            <circle cx="17" cy="17" r="2" fill="currentColor" stroke="none" />
+                    <div class="logo-icon" style="background-color: #0f172a;">
+                        <!-- Same logo as sidebar -->
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
                         </svg>
                     </div>
                     <div class="logo-text-wrapper">
-                        <h1 class="logo-title">SGEN</h1>
-                        <p class="logo-subtitle">Support</p>
+                        <h1 class="logo-title">SGEN-Support</h1>
                     </div>
                 </div>
                 
@@ -108,7 +112,7 @@
 
             <!-- Footer -->
             <div class="login-footer">
-                <p class="footer-text">SGEN Systems v2.0</p>
+                <p class="footer-text">SGEN-Support v1.0.2</p>
             </div>
         </div>
     </div>

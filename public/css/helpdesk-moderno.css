@@ -7,15 +7,24 @@
     --help-rose: #e11d48;
     --help-rose-light: #ffe4e6;
     --help-rose-dark: #be123c;
-    --help-slate-50: #f8fafc;
-    --help-slate-100: #f1f5f9;
+
+    /* Map to Global Semantic Vars */
+    --help-slate-50: var(--bg-hover);
+    --help-slate-100: var(--border-light);
     --help-slate-200: #e2e8f0;
-    --help-slate-300: #cbd5e1;
-    --help-slate-400: #94a3b8;
-    --help-slate-500: #64748b;
-    --help-slate-600: #475569;
-    --help-slate-800: #1e293b;
-    --help-slate-900: #0f172a;
+    --help-slate-300: var(--text-light);
+    /* was cbd5e1 */
+    --help-slate-400: var(--text-muted);
+    /* was 94a3b8 */
+    --help-slate-500: var(--text-muted);
+    /* was 64748b */
+    --help-slate-600: var(--text-light);
+    /* was 475569 */
+    --help-slate-800: var(--text-main);
+    /* was 1e293b */
+    --help-slate-900: var(--text-main);
+    /* was 0f172a */
+
     --help-emerald: #10b981;
     --help-emerald-light: #d1fae5;
     --help-amber: #f59e0b;
@@ -26,6 +35,16 @@
     --help-indigo-light: #e0e7ff;
     --help-cyan: #06b6d4;
     --help-cyan-light: #ecfeff;
+}
+
+[data-theme="dark"] {
+    --help-rose-light: rgba(225, 29, 72, 0.1);
+    --help-emerald-light: rgba(16, 185, 129, 0.1);
+    --help-amber-light: rgba(245, 158, 11, 0.1);
+    --help-blue-light: rgba(59, 130, 246, 0.1);
+    --help-indigo-light: rgba(99, 102, 241, 0.1);
+    --help-cyan-light: rgba(6, 182, 212, 0.1);
+    --help-slate-200: var(--border-color);
 }
 
 /* Container - Full Width */
@@ -44,7 +63,7 @@
 
 /* Main Content Card - Bordered Container */
 .helpdesk-content-card {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--help-slate-200);
     border-radius: 1rem;
     padding: 1.5rem;
@@ -176,7 +195,7 @@
 }
 
 .helpdesk-kpi {
-    background: white;
+    background: var(--bg-card);
     padding: 1.25rem;
     border-radius: 0.75rem;
     border: 1px solid var(--help-slate-200);
@@ -304,7 +323,7 @@
     font-size: 0.875rem;
     font-weight: 500;
     border: 1px solid var(--help-slate-200);
-    background: white;
+    background: var(--bg-card);
     color: var(--help-slate-600);
     cursor: pointer;
     transition: all 0.2s;
@@ -347,7 +366,7 @@
 .helpdesk-search input {
     width: 100%;
     padding: 0.625rem 1rem 0.625rem 2.5rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--help-slate-200);
     border-radius: 0.5rem;
     font-size: 0.875rem;
@@ -367,7 +386,7 @@
 
 /* Ticket Feed */
 .helpdesk-feed {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--help-slate-200);
     border-radius: 0.75rem;
     overflow: hidden;

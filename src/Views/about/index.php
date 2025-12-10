@@ -11,7 +11,10 @@
         <div class="about-sidebar">
             <div class="sidebar-header">
                 <div class="logo-box">
-                    <i class="bi bi-lightning-charge-fill" style="font-size: 1.2rem;"></i>
+                    <!-- Same logo as sidebar -->
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
+                    </svg>
                 </div>
                 <div>
                     <h1 class="app-title"><?= htmlspecialchars($systemInfo['nombre']) ?></h1>
@@ -253,12 +256,7 @@
                     </div>
                 </div>
 
-                <div style="border: 1px solid #f1f5f9; background: #f8fafc; padding: 2rem; border-radius: 1rem; text-align: center;">
-                    <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1rem;">¿Necesitas soporte personalizado o reportar un bug?</p>
-                    <a href="<?= BASE_URL ?>soportes/crear" style="background: white; border: 1px solid #cbd5e1; color: #334155; padding: 0.5rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: 500; font-size: 0.875rem; display: inline-block;">
-                        Contactar Soporte
-                    </a>
-                </div>
+
             </div>
 
         </div>

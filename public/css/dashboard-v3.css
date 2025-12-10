@@ -1,26 +1,27 @@
 /* Modern Dashboard Styles */
 :root {
-    --dashboard-bg: #f8fafc;
-    --card-bg: #ffffff;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
+    --dashboard-bg: var(--bg-body);
+    --card-bg: var(--bg-card);
+    --text-primary: var(--text-main);
+    --text-secondary: var(--text-muted);
     --border-color: #e2e8f0;
 
     /* Colors */
     --blue-50: #eff6ff;
     --blue-100: #dbeafe;
     --blue-500: #3b82f6;
-    --blue-600: #2563eb;
+    --blue-600: var(--info);
+    /* Use global info */
 
     --emerald-50: #ecfdf5;
     --emerald-100: #d1fae5;
     --emerald-500: #10b981;
-    --emerald-600: #059669;
+    --emerald-600: var(--success);
 
     --amber-50: #fffbeb;
     --amber-100: #fef3c7;
     --amber-500: #f59e0b;
-    --amber-600: #d97706;
+    --amber-600: var(--warning);
 
     --indigo-50: #eef2ff;
     --indigo-100: #e0e7ff;
@@ -30,7 +31,15 @@
     --rose-50: #fff1f2;
     --rose-100: #ffe4e6;
     --rose-500: #f43f5e;
-    --rose-600: #e11d48;
+    --rose-600: var(--danger);
+}
+
+[data-theme="dark"] {
+    --blue-50: rgba(59, 130, 246, 0.1);
+    --emerald-50: rgba(16, 185, 129, 0.1);
+    --amber-50: rgba(245, 158, 11, 0.1);
+    --indigo-50: rgba(99, 102, 241, 0.1);
+    --rose-50: rgba(225, 29, 72, 0.1);
 }
 
 
@@ -45,7 +54,7 @@
 
 /* Main Content Card - Bordered Container */
 .dashboard-content-card {
-    background: white;
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 1rem;
     padding: 1.5rem;
@@ -279,7 +288,7 @@ a.stat-card:hover {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--dashboard-bg);
     /* slate-100 logic */
-    background-color: rgba(248, 250, 252, 0.5);
+    background-color: var(--bg-hover);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -371,7 +380,7 @@ a.stat-card:hover {
 }
 
 .dashboard-table tr:hover {
-    background-color: rgba(248, 250, 252, 0.8);
+    background-color: var(--bg-hover);
 }
 
 .table-subtext {
@@ -433,7 +442,7 @@ a.stat-card:hover {
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
-    background: #e2e8f0;
+    background: var(--bg-input);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -680,3 +689,4 @@ a.stat-card:hover {
 .p-panel {
     padding: 1.5rem;
 }
+[data-theme='dark'] { --border-color: #334155; }

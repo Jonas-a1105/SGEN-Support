@@ -1,15 +1,15 @@
 /* Department Form Modern Styles */
 :root {
-    --df-slate-50: #f8fafc;
-    --df-slate-100: #f1f5f9;
+    --df-slate-50: var(--bg-hover);
+    --df-slate-100: var(--border-light);
     --df-slate-200: #e2e8f0;
-    --df-slate-300: #cbd5e1;
-    --df-slate-400: #94a3b8;
-    --df-slate-500: #64748b;
-    --df-slate-600: #475569;
-    --df-slate-700: #334155;
-    --df-slate-800: #1e293b;
-    --df-slate-900: #0f172a;
+    --df-slate-300: var(--text-light);
+    --df-slate-400: var(--text-muted);
+    --df-slate-500: var(--text-muted);
+    --df-slate-600: var(--text-secondary);
+    --df-slate-700: var(--text-main);
+    --df-slate-800: var(--text-main);
+    --df-slate-900: var(--text-main);
 
     --df-blue-50: #eff6ff;
     --df-blue-100: #dbeafe;
@@ -29,7 +29,7 @@
 
 .dept-form-wrapper {
     min-height: 100vh;
-    background-color: var(--df-slate-50);
+    background-color: var(--bg-body);
     padding: 0 1.5rem 1.5rem 1.5rem;
     font-family: 'Inter', sans-serif;
     color: var(--df-slate-800);
@@ -116,7 +116,7 @@
 
 /* Main Card */
 .dept-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     box-shadow: var(--df-shadow);
     border: 1px solid var(--df-slate-100);
@@ -201,7 +201,7 @@
     border: 1px solid var(--df-slate-300);
     font-size: 0.875rem;
     color: var(--df-slate-800);
-    background: white;
+    background: var(--bg-card);
     transition: all 0.2s;
     outline: none;
 }
@@ -319,7 +319,7 @@
 
 .btn-toggle-search {
     padding: 0.625rem 1.25rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--df-slate-300);
     color: var(--df-slate-700);
     font-weight: 500;
@@ -397,7 +397,7 @@
     padding: 0.75rem;
     border-radius: 0.5rem;
     border: 1px solid var(--df-slate-200);
-    background: white;
+    background: var(--bg-card);
     text-align: left;
     transition: all 0.2s;
     cursor: pointer;
@@ -520,3 +520,4 @@
 .btn-footer-save:active {
     transform: translateY(0);
 }
+[data-theme='dark'] { --df-slate-200: var(--border-color); }

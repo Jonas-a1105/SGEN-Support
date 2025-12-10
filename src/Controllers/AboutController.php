@@ -15,7 +15,7 @@ class AboutController extends Controller
         // Información del sistema
         $systemInfo = [
             'nombre' => 'SGEN-Support',
-            'version' => '1.0.1',
+            'version' => '1.0.2',
             'descripcion' => 'Sistema de Gestión de Soporte Técnico y Mantenimiento',
             'year' => date('Y'),
             'stack' => [
@@ -78,7 +78,6 @@ class AboutController extends Controller
                     'Sistema de mantenimientos preventivos',
                     'Reportes en PDF de soportes, inventario y mantenimientos',
                     'Dashboard con estadísticas en tiempo real',
-                    'Sistema de notificaciones integrado'
                 ]
             ],
             [
@@ -88,8 +87,20 @@ class AboutController extends Controller
                 'changes' => [
                     'Mejoras en el diseño glassmorphism',
                     'Optimización de rendimiento en consultas de base de datos',
-                    'Corrección de errores en notificaciones',
+                    'Corrección de errores y bugs',
                     'Mejoras en la bitácora de auditoría'
+                ]
+            ],
+            [
+                'version' => '1.0.2',
+                'date' => '2025-12-10',
+                'type' => 'update',
+                'changes' => [
+                    'Modernización de interfaces de usuario',
+                    'Corrección del de errores y bugs',
+                    'Mejoras en el sistema',
+                    'Optimización del menú lateral',
+                    'Mejoras en de las interfaces del sistema',
                 ]
             ]
         ];

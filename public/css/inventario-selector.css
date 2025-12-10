@@ -5,11 +5,11 @@
 
 /* Variables de colores */
 :root {
-    --ds-bg: #f9fafb;
+    --ds-bg: var(--bg-body);
     /* gray-50 */
-    --ds-text-main: #1e293b;
+    --ds-text-main: var(--text-main);
     /* slate-800 */
-    --ds-text-muted: #64748b;
+    --ds-text-muted: var(--text-muted);
     /* slate-500 */
     --ds-primary: #4f46e5;
     /* indigo-600 */
@@ -48,7 +48,7 @@
     align-items: center;
     justify-content: center;
     padding: 0.75rem;
-    background: white;
+    background: var(--bg-card);
     border-radius: 1rem;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     border: 1px solid #f1f5f9;
@@ -92,7 +92,7 @@
     display: block;
     width: 100%;
     padding: 1rem 1rem 1rem 3rem;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid #e2e8f0;
     border-radius: 1rem;
     color: #0f172a;
@@ -130,7 +130,7 @@
 /* Department Card */
 .ds-card {
     position: relative;
-    background: white;
+    background: var(--bg-card);
     border-radius: 1.5rem;
     border: 1px solid #e2e8f0;
     padding: 1.5rem;
@@ -320,7 +320,7 @@
 }
 
 .ds-btn-back:hover {
-    background: white;
+    background: var(--bg-card);
     color: #1e293b;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }

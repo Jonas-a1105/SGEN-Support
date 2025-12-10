@@ -2,16 +2,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-    --ms-slate-50: #f8fafc;
-    --ms-slate-100: #f1f5f9;
+    /* Mapping to Global Semantics */
+    --ms-slate-50: var(--bg-hover);
+    --ms-slate-100: var(--border-light);
     --ms-slate-200: #e2e8f0;
-    --ms-slate-400: #94a3b8;
-    --ms-slate-500: #64748b;
-    --ms-slate-800: #1e293b;
-    --ms-slate-900: #0f172a;
+    --ms-slate-400: var(--text-light);
+    /* was 94a3b8 */
+    --ms-slate-500: var(--text-muted);
+    /* was 64748b */
+    --ms-slate-800: var(--text-main);
+    /* was 1e293b */
+    --ms-slate-900: var(--primary);
+    /* was 0f172a */
     --ms-blue-50: #eff6ff;
-    --ms-blue-600: #2563eb;
-    --ms-white: #ffffff;
+    /* Keep specific highlight color or map to something else */
+    --ms-blue-600: var(--info);
+    --ms-white: var(--bg-card);
+}
+
+[data-theme="dark"] {
+    --ms-blue-50: rgba(59, 130, 246, 0.1);
+    /* Darker blue highlight */
 }
 
 /* Main Sidebar Container */
@@ -572,3 +583,6 @@
     height: 1.25rem;
     color: white;
 }
+[data-theme='dark'] { --ms-slate-200: var(--border-color); }
+
+[data-theme='dark'] { --ms-white: var(--bg-card); }

@@ -80,7 +80,15 @@ function selectTheme(input) {
     }
 
     // Apply theme immediately
-    document.documentElement.setAttribute('data-theme', value);
+    if (value === 'system') {
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', systemDark ? 'dark' : 'light');
+    } else {
+        document.documentElement.setAttribute('data-theme', value);
+    }
+
+    // Save to LocalStorage
+    localStorage.setItem('theme', value);
 }
 
 function selectColor(color) {
@@ -499,47 +507,107 @@ if (!window.ConfigSecurity) {
             if (!btn || btn.disabled) return;
 
             const originalContent = btn.innerHTML;
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
 
             // Loading state
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-arrow-repeat sec-spin"></i> Actualizando...';
 
-            // Simulate API call
-            setTimeout(() => {
-                // Success state
-                btn.innerHTML = '<i class="bi bi-check-lg"></i> ¡Contraseña Actualizada!';
-                btn.classList.add('success');
+            // Real API call
+            fetch(window.BASE_URL + 'configuracion/cambiarPassword', {
+                method: 'POST',
+                credentials: 'same-origin', // IMPORTANT: Send session cookies
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    password_actual: currentPassword,
+                    password_nuevo: newPassword,
+                    password_confirmar: confirmPassword
+                })
+            })
+                .then(response => {
+                    // First check if response is ok
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            console.error('Server error response:', text.substring(0, 500));
+                            throw new Error('Server returned ' + response.status);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Success state
+                        btn.innerHTML = '<i class="bi bi-check-lg"></i> ¡Contraseña Actualizada!';
+                        btn.classList.add('success');
 
-                // Reset form after delay
-                setTimeout(() => {
-                    btn.classList.remove('success');
-                    btn.innerHTML = originalContent;
-                    btn.disabled = true; // Disable until valid input again
+                        // Show toast if available
+                        if (window.Toast) {
+                            window.Toast.show('success', data.message);
+                        }
 
-                    // Clear inputs
-                    document.getElementById('currentPassword').value = '';
-                    document.getElementById('newPassword').value = '';
-                    document.getElementById('confirmPassword').value = '';
+                        // Reset form after delay
+                        setTimeout(() => {
+                            btn.classList.remove('success');
+                            btn.innerHTML = originalContent;
+                            btn.disabled = true;
 
-                    // Reset UI
-                    this.requirements = {
-                        length: false,
-                        number: false,
-                        special: false,
-                        match: false
-                    };
-                    this.updateStrengthBar();
-                    this.updateRequirementsUI();
+                            // Clear inputs
+                            document.getElementById('currentPassword').value = '';
+                            document.getElementById('newPassword').value = '';
+                            document.getElementById('confirmPassword').value = '';
 
-                    document.getElementById('strength-bar').style.width = '0%';
-                    const confirmInput = document.getElementById('confirmPassword');
-                    const matchIcon = document.getElementById('match-icon');
-                    confirmInput.classList.remove('match-success');
-                    matchIcon.style.display = 'none';
+                            // Reset UI
+                            this.requirements = {
+                                length: false,
+                                number: false,
+                                special: false,
+                                match: false
+                            };
+                            this.updateStrengthBar();
+                            this.updateRequirementsUI();
 
-                }, 3000);
+                            document.getElementById('strength-bar').style.width = '0%';
+                            const confirmInput = document.getElementById('confirmPassword');
+                            const matchIcon = document.getElementById('match-icon');
+                            confirmInput.classList.remove('match-success');
+                            if (matchIcon) matchIcon.style.display = 'none';
 
-            }, 1500);
+                        }, 2000);
+                    } else {
+                        // Error state
+                        btn.innerHTML = '<i class="bi bi-x-lg"></i> Error';
+                        btn.style.background = '#ef4444';
+
+                        if (window.Toast) {
+                            window.Toast.show('error', data.message);
+                        }
+
+                        setTimeout(() => {
+                            btn.innerHTML = originalContent;
+                            btn.style.background = '';
+                            btn.disabled = false;
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    btn.innerHTML = '<i class="bi bi-x-lg"></i> Error';
+                    btn.style.background = '#ef4444';
+
+                    if (window.Toast) {
+                        window.Toast.show('error', 'Error de conexión. Intenta de nuevo.');
+                    }
+
+                    setTimeout(() => {
+                        btn.innerHTML = originalContent;
+                        btn.style.background = '';
+                        btn.disabled = false;
+                    }, 2000);
+                });
         }
     };
 }
