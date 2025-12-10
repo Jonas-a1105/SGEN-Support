@@ -61,7 +61,7 @@ class EquiposController extends Controller
             'departamentos' => $this->departamentoModel->findAll(),
             'empleados' => $this->empleadoModel->findAll(),
             'estados_equipo' => ['nuevo', 'usado', 'en_uso', 'fuera_de_servicio', 'en_reparacion', 'disponible'],
-            'tipos_equipo' => ['computadora', 'impresora', 'escaner', 'servidor', 'monitor', 'teclado', 'raton', 'otro']
+            'tipos_equipo' => ['computadora', 'laptop', 'impresora', 'escaner', 'servidor', 'monitor', 'teclado', 'raton', 'switch', 'router', 'ups', 'otro']
         ]);
     }
 
@@ -81,7 +81,7 @@ class EquiposController extends Controller
             'departamentos' => $this->departamentoModel->findAll(),
             'empleados' => $this->empleadoModel->findAll(),
             'estados_equipo' => ['nuevo', 'usado', 'en_uso', 'fuera_de_servicio', 'en_reparacion', 'disponible'],
-            'tipos_equipo' => ['computadora', 'impresora', 'escaner', 'servidor', 'monitor', 'teclado', 'raton', 'otro']
+            'tipos_equipo' => ['computadora', 'laptop', 'impresora', 'escaner', 'servidor', 'monitor', 'teclado', 'raton', 'switch', 'router', 'ups', 'otro']
         ]);
     }
 
@@ -140,11 +140,17 @@ class EquiposController extends Controller
         ];
 
         $fue_asignado = false;
-        if (!empty($datos['departamento_id']) || !empty($datos['empleado_id'])) {
-            if (!$es_edicion || $datos['estado'] === 'disponible') {
+        
+        // Si tiene EMPLEADO asignado -> "En Uso" (si estaba disponible o nuevo)
+        if (!empty($datos['empleado_id'])) {
+            if ($datos['estado'] === 'disponible' || $datos['estado'] === 'nuevo') {
                 $datos['estado'] = 'en_uso';
             }
             $fue_asignado = true;
+        } elseif ($datos['estado'] === 'en_uso') {
+            // Si NO tiene empleado pero sigue "En Uso" -> liberar a "Disponible"
+            // (Esto corrige el caso de desasignar usuario)
+            $datos['estado'] = 'disponible';
         }
 
         try {
@@ -228,11 +234,17 @@ class EquiposController extends Controller
         $departamento = $equipo->departamento_id ? $this->departamentoModel->findById($equipo->departamento_id) : null;
         $empleado = $equipo->empleado_id ? $this->empleadoModel->findById($equipo->empleado_id) : null;
         
+        // Fetch related data for tabs
+        $soportes = $this->soporteModel->getSoportesByEquipoId($id);
+        $mantenimientos = $this->mantenimientoModel->getByEquipoId($id);
+        
         $this->render('equipos/ver', [
             'titulo' => "Detalle del Equipo: {$equipo->codigo_inventario}",
             'equipo' => $equipo,
             'departamento' => $departamento,
-            'empleado' => $empleado
+            'empleado' => $empleado,
+            'soportes' => $soportes,
+            'mantenimientos' => $mantenimientos
         ]);
     }
 

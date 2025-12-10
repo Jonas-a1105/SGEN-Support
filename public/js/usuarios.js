@@ -1,6 +1,9 @@
 /**
  * Logic for Usuarios View
+ * With User Preferences Persistence
  */
+
+const MODULE_NAME = 'usuarios';
 
 function showTableView() {
     document.getElementById('tableView').style.display = 'block';
@@ -11,6 +14,9 @@ function showTableView() {
     document.getElementById('btnCardsView').style.background = 'white';
     document.getElementById('btnCardsView').style.color = '#64748b';
     document.getElementById('btnCardsView').style.borderColor = '#e2e8f0';
+
+    // Save preference
+    if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'table');
 }
 
 function showCardsView() {
@@ -22,6 +28,9 @@ function showCardsView() {
     document.getElementById('btnTableView').style.background = 'white';
     document.getElementById('btnTableView').style.color = '#64748b';
     document.getElementById('btnTableView').style.borderColor = '#e2e8f0';
+
+    // Save preference
+    if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'cards');
 }
 
 function scrollCarousel(amount) {
@@ -32,6 +41,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('userSearchInput');
     const container = document.getElementById('usuariosContainer');
 
+    // Apply saved view preference
+    const savedView = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'view', 'table') : 'table';
+    if (savedView === 'cards') {
+        showCardsView();
+    } else {
+        showTableView();
+    }
+
     // Variables de Paginación
     let itemsPerPage = 10;
     if (container && container.dataset.perPage) {
@@ -39,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let currentPage = 1;
-    let filteredIndices = []; // Indices de items que coinciden con filtro
+    let filteredIndices = [];
 
     // Init selector
     const selector = document.getElementById('itemsPerPageSelector');
@@ -73,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (searchInput) {
         searchInput.addEventListener('input', function () {
-            currentPage = 1; // Reset page on search
+            currentPage = 1;
             applyFilters();
         });
     }
@@ -87,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function () {
         filteredIndices = [];
 
         // 1. Filtrar (Identify matches)
-        // Usamos rows como referencia para indices, cards deben coincidir en cantidad
         rows.forEach((row, index) => {
             const card = cards[index];
             const text = row.textContent.toLowerCase();
@@ -152,11 +168,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (footer) {
             if (visibleIndices.length === 0) footer.style.display = 'none';
             else footer.style.display = 'flex';
-
-            // Also update the empty state if needed, though this view doesn't have an explicit one, just hides table rows
         }
     }
 
     // Initial call
     applyFilters();
 });
+

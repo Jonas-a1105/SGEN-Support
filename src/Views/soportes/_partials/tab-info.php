@@ -82,12 +82,24 @@ if (strpos($deviceType, 'laptop') !== false || strpos($deviceType, 'portatil') !
                         </p>
                     </div>
                     
+                    <!-- Reportado Por -->
+                    <div class="td-reporter-card">
+                        <h3 class="td-reporter-card-title">Reportado Por</h3>
+                        <div class="td-reporter-info">
+                            <div class="td-reporter-avatar">
+                                <?= strtoupper(substr($soporte->usuario_nombre ?? 'U', 0, 2)) ?>
+                            </div>
+                            <div class="td-reporter-details">
+                                <p class="td-reporter-name"><?= htmlspecialchars($soporte->usuario_nombre ?? 'Usuario') ?></p>
+                                <p class="td-reporter-role"><?= htmlspecialchars($soporte->departamento_nombre ?? '') ?></p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Técnico Asignado -->
-                    <div class="td-info-item">
-                        <label class="td-info-label">
-                            <i class="bi bi-person"></i> Técnico Asignado
-                        </label>
-                        <p class="td-info-value">
+                    <div class="td-reporter-card">
+                        <h3 class="td-reporter-card-title">Técnico Asignado</h3>
+                        <div class="td-reporter-info">
                             <?php 
                             // Prepare Data for Modal
                             $ticketJson = json_encode([
@@ -97,35 +109,41 @@ if (strpos($deviceType, 'laptop') !== false || strpos($deviceType, 'portatil') !
                                 'location' => $soporte->departamento_nombre ?? 'General',
                                 'category' => $soporte->categoria_nombre ?? 'General',
                                 'priority' => strtolower($soporte->prioridad ?? 'media'),
-                                'timeElapsed' => ViewHelper::formatDate($soporte->fecha, 'd/m/Y h:i A') // Simplifying for detail view
+                                'timeElapsed' => ViewHelper::formatDate($soporte->fecha, 'd/m/Y h:i A')
                             ]);
                             $ticketJsonAttr = htmlspecialchars($ticketJson, ENT_QUOTES, 'UTF-8');
                             ?>
 
                             <?php if ($techName): ?>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <span class="td-tech-avatar">
-                                    <span class="avatar"><?= $techInitials ?></span>
-                                    <span><?= htmlspecialchars($techName) ?></span>
-                                </span>
-                                <?php if (in_array($_SESSION['rol'], ['admin'])): ?>
-                                <button class="btn btn-link btn-sm p-0 ms-2" onclick='AssignTechModal.open(<?= $ticketJsonAttr ?>)'>
-                                    <i class="bi bi-pencil-square text-primary"></i>
-                                </button>
-                                <?php endif; ?>
-                            </div>
+                                <div class="td-reporter-avatar tech">
+                                    <?= $techInitials ?>
+                                </div>
+                                <div class="td-reporter-details">
+                                    <p class="td-reporter-name">
+                                        <?= htmlspecialchars($techName) ?>
+                                        <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin'])): ?>
+                                        <button type="button" class="btn btn-link btn-sm p-0 ms-1" onclick='AssignTechModal.open(<?= $ticketJsonAttr ?>)'>
+                                            <i class="bi bi-pencil-square" style="font-size: 0.8rem;"></i>
+                                        </button>
+                                        <?php endif; ?>
+                                    </p>
+                                    <p class="td-reporter-role">Soporte Técnico</p>
+                                </div>
                             <?php else: ?>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-muted fst-italic">Sin asignar</span>
-                                <?php if (in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
-                                <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;" 
-                                    onclick='AssignTechModal.open(<?= $ticketJsonAttr ?>)'>
-                                    <i class="bi bi-person-plus"></i> Asignar
-                                </button>
-                                <?php endif; ?>
-                            </div>
+                                <div class="td-reporter-avatar unassigned">
+                                    <i class="bi bi-person-x"></i>
+                                </div>
+                                <div class="td-reporter-details">
+                                    <p class="td-reporter-name text-muted">Sin asignar</p>
+                                    <?php if (in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
+                                    <button class="btn btn-sm btn-outline-primary py-0 px-2 mt-1" style="font-size: 0.75rem;" 
+                                        onclick='AssignTechModal.open(<?= $ticketJsonAttr ?>)'>
+                                        <i class="bi bi-person-plus"></i> Asignar
+                                    </button>
+                                    <?php endif; ?>
+                                </div>
                             <?php endif; ?>
-                        </p>
+                        </div>
                     </div>
                     
                     <!-- Estado Actual -->
@@ -152,7 +170,7 @@ if (strpos($deviceType, 'laptop') !== false || strpos($deviceType, 'portatil') !
                             <?php else: ?>
                             <span class="text-muted" id="fechaCierreDisplay">Pendiente</span>
                             <?php endif; ?>
-                            <?php if ($_SESSION['rol'] === 'admin'): ?>
+                            <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
                             <button type="button" class="btn btn-link btn-sm p-0 ms-2" onclick="abrirModalFechaCierre()">
                                 <i class="bi bi-pencil-square text-primary"></i>
                             </button>
@@ -313,7 +331,7 @@ if (strpos($deviceType, 'laptop') !== false || strpos($deviceType, 'portatil') !
                 
                 <?php if ($soporte->estado == 'en_proceso' && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
                 <div class="p-3 border-top">
-                    <button type="button" class="td-materials-add-btn w-100" data-bs-toggle="modal" data-bs-target="#modalAgregarConsumo">
+                    <button type="button" class="td-materials-add-btn w-100" onclick="MaterialesModal.open()">
                         <i class="bi bi-plus-circle me-1"></i> Agregar Repuesto
                     </button>
                 </div>
@@ -326,7 +344,7 @@ if (strpos($deviceType, 'laptop') !== false || strpos($deviceType, 'portatil') !
                 </div>
                 <p>No se han registrado consumos.</p>
                 <?php if ($soporte->estado == 'en_proceso' && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
-                <button type="button" class="td-materials-add-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarConsumo">
+                <button type="button" class="td-materials-add-btn" onclick="MaterialesModal.open()">
                     <i class="bi bi-plus-circle me-1"></i> Agregar Repuesto
                 </button>
                 <?php endif; ?>
@@ -337,45 +355,99 @@ if (strpos($deviceType, 'laptop') !== false || strpos($deviceType, 'portatil') !
     </div>
 </div>
 
-<!-- Modal para agregar consumo -->
-<div class="modal fade" id="modalAgregarConsumo" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content" style="border-radius: 16px; border: none;">
-            <div class="modal-header" style="border-bottom: 1px solid #f1f5f9;">
-                <h5 class="modal-title fw-bold">
-                    <i class="bi bi-tools text-primary me-2"></i>
-                    Agregar Repuesto
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- ===================================================================
+     MODAL AGREGAR REPUESTO/CONSUMO
+     Usando overlay personalizado como el modal de Asignar Técnico
+     =================================================================== -->
+<div id="materialesOverlay" class="mr-overlay" style="display: none;">
+    <div class="mr-modal">
+        <!-- Header -->
+        <div class="mr-header">
+            <div class="mr-header-content">
+                <div class="mr-icon-box">
+                    <i class="bi bi-tools"></i>
+                </div>
+                <div class="mr-title-box">
+                    <h3 class="mr-title">Agregar Repuesto</h3>
+                    <p class="mr-subtitle">Registrar consumo de materiales para este ticket</p>
+                </div>
             </div>
-            <form action="<?= BASE_URL ?>soportes/agregar_consumo" method="POST">
-                <div class="modal-body">
-                    <input type="hidden" name="soporte_id" value="<?= $soporte->id ?>">
-                    
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Repuesto</label>
-                        <select name="item_id" class="form-select" required>
-                            <option value="">Seleccionar...</option>
-                            <?php foreach ($items as $item): ?>
-                            <option value="<?= $item->id ?>">
-                                <?= htmlspecialchars($item->nombre) ?> (Stock: <?= $item->stock_departamento ?>)
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Cantidad</label>
-                        <input type="number" name="cantidad" class="form-control" min="1" value="1" required>
-                    </div>
-                </div>
-                <div class="modal-footer" style="border-top: 1px solid #f1f5f9;">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-plus-circle me-1"></i> Agregar
-                    </button>
-                </div>
-            </form>
+            <button type="button" class="mr-close-btn" onclick="MaterialesModal.close()">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
+
+        <!-- Body -->
+        <form action="<?= BASE_URL ?>soportes/agregar_consumo" method="POST">
+            <div class="mr-body">
+                <input type="hidden" name="soporte_id" value="<?= $soporte->id ?>">
+                
+                <!-- Select Repuesto -->
+                <div class="mr-input-group">
+                    <label class="mr-label">Repuesto <span style="color: #ef4444;">*</span></label>
+                    <select name="item_id" class="mr-select" required>
+                        <option value="">Seleccionar repuesto...</option>
+                        <?php foreach ($items as $item): ?>
+                        <option value="<?= $item->id ?>">
+                            <?= htmlspecialchars($item->nombre) ?> (Stock: <?= $item->stock_departamento ?>)
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <!-- Cantidad -->
+                <div class="mr-input-group">
+                    <label class="mr-label">Cantidad <span style="color: #ef4444;">*</span></label>
+                    <input type="number" name="cantidad" class="mr-input" min="1" value="1" required>
+                    <p class="mr-hint">Ingrese la cantidad de unidades a consumir</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mr-footer">
+                <button type="button" class="mr-btn mr-btn-cancel" onclick="MaterialesModal.close()">
+                    Cancelar
+                </button>
+                <button type="submit" class="mr-btn mr-btn-confirm">
+                    <i class="bi bi-plus-circle"></i> Agregar Repuesto
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+
+<!-- JavaScript para Modal Materiales -->
+<script>
+window.MaterialesModal = {
+    overlay: null,
+    
+    init() {
+        this.overlay = document.getElementById('materialesOverlay');
+        if (this.overlay && this.overlay.parentNode !== document.body) {
+            document.body.appendChild(this.overlay);
+        }
+    },
+
+    open() {
+        if (!this.overlay) this.init();
+        if (!this.overlay) return;
+
+        this.overlay.style.display = 'flex';
+        this.overlay.offsetHeight; // Force reflow
+        this.overlay.classList.add('show');
+    },
+
+    close() {
+        if (!this.overlay) return;
+        this.overlay.classList.remove('show');
+        setTimeout(() => {
+            this.overlay.style.display = 'none';
+        }, 300);
+    }
+};
+
+// Auto-init
+document.addEventListener('DOMContentLoaded', () => {
+    MaterialesModal.init();
+});
+</script>

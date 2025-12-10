@@ -33,7 +33,7 @@ $val_valor        = $es_edicion ? ($equipo->valor_compra ?? '') : '';
 
 // Arrays de opciones
 if (!isset($tipos_equipo)) {
-    $tipos_equipo = ['computadora', 'impresora', 'escaner', 'servidor', 'monitor', 'teclado', 'raton', 'otro'];
+    $tipos_equipo = ['computadora', 'laptop', 'impresora', 'escaner', 'servidor', 'monitor', 'teclado', 'raton', 'switch', 'router', 'ups', 'otro'];
 }
 if (!isset($estados_equipo)) {
     $estados_equipo = ['nuevo', 'usado', 'en_uso', 'fuera_de_servicio', 'en_reparacion', 'disponible', 'en_reserva'];

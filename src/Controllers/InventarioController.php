@@ -81,10 +81,15 @@ class InventarioController extends Controller {
     public function crear() {
         $this->restrictTo(['admin']);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $categoria = $_POST['categoria'] ?? '';
+            if ($categoria === 'Otros' && !empty($_POST['categoria_otra'])) {
+                $categoria = trim($_POST['categoria_otra']);
+            }
+
             $datos = [
                 'codigo' => $_POST['codigo'] ?? '',
                 'nombre' => $_POST['nombre'] ?? '',
-                'categoria' => $_POST['categoria'] ?? '',
+                'categoria' => $categoria,
                 'descripcion' => $_POST['descripcion'] ?? '',
                 'marca' => $_POST['marca'] ?? '',
                 'modelo' => $_POST['modelo'] ?? '',
@@ -182,11 +187,16 @@ class InventarioController extends Controller {
             exit;
         }
 
+        $categoria = $_POST['categoria'] ?? $item->categoria;
+        if ($categoria === 'Otros' && !empty($_POST['categoria_otra'])) {
+            $categoria = trim($_POST['categoria_otra']);
+        }
+
         $datos = [
             'id' => $id,
             'codigo' => $_POST['codigo'] ?? $item->codigo,
             'nombre' => $_POST['nombre'] ?? $item->nombre,
-            'categoria' => $_POST['categoria'] ?? $item->categoria,
+            'categoria' => $categoria,
             'descripcion' => $_POST['descripcion'] ?? $item->descripcion,
             'marca' => $_POST['marca'] ?? $item->marca,
             'modelo' => $_POST['modelo'] ?? $item->modelo,
@@ -304,6 +314,37 @@ class InventarioController extends Controller {
         $this->render('inventario/historial', [
             'titulo' => 'Historial de Movimientos de Inventario',
             'movimientos' => $movimientos
+        ]);
+    }
+
+    public function historial_item(int $id)
+    {
+        $this->restrictTo(['admin']);
+        $item = $this->inventarioModel->findById($id);
+        if (!$item) {
+            $this->setFlashMessage('error', 'Ítem no encontrado.');
+            header('Location: ' . BASE_URL . 'inventario');
+            exit;
+        }
+
+        // Pagination
+        $cookiePerPage = isset($_COOKIE['sgen_pagination_per_page']) ? (int)$_COOKIE['sgen_pagination_per_page'] : 10;
+        $perPage = isset($_GET['per_page']) ? max(1, (int)$_GET['per_page']) : $cookiePerPage;
+        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $offset = ($page - 1) * $perPage;
+
+        $movimientos = $this->inventarioModel->obtenerMovimientosPaginated($id, $perPage, $offset);
+        $totalItems = $this->inventarioModel->countMovimientos($id);
+        $totalPages = ceil($totalItems / $perPage);
+
+        $this->render('inventario/historial_item', [
+            'titulo' => 'Historial: ' . $item->nombre,
+            'item' => $item,
+            'movimientos' => $movimientos,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems
         ]);
     }
 

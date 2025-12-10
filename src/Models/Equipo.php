@@ -14,8 +14,7 @@ class Equipo extends Model
             SELECT 
                 e.*, 
                 d.nombre AS departamento_nombre,
-                emp.nombre AS empleado_nombre,
-                emp.apellido AS empleado_apellido
+                CONCAT(emp.nombre, ' ', IFNULL(emp.apellido, '')) AS empleado_nombre
             FROM {$this->table} e
             LEFT JOIN departamentos d ON e.departamento_id = d.id
             LEFT JOIN empleados emp ON e.empleado_id = emp.id

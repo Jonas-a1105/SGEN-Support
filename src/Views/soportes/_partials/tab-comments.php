@@ -7,44 +7,61 @@
 use App\Helpers\ViewHelper;
 
 $comentarios = $comentarios ?? [];
-$canComment = in_array($_SESSION['rol'], ['admin', 'tecnico', 'consultor']);
+$canComment = isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico', 'consultor']);
 ?>
 
 <style>
+/* Estilos de selección mejorados - sin borde rojo */
 .td-comment {
     position: relative;
     transition: all 0.2s ease;
-    border: 1px solid transparent; /* Prevent jump */
 }
 .td-comments-list.selection-active .td-comment {
     cursor: pointer;
-    border: 1px solid var(--border-color, #e2e8f0);
 }
-.td-comments-list.selection-active .td-comment:hover {
-    transform: scale(1.005);
-    background-color: var(--bg-hover, #f8fafc);
+.td-comments-list.selection-active .td-comment:hover .td-comment-text {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
 }
-.td-comments-list.selection-active .td-comment.selected {
-    border-color: #ef4444 !important;
-    background-color: #fef2f2 !important;
+/* Selección sutil - resaltado en la burbuja, sin borde rojo */
+.td-comments-list.selection-active .td-comment.selected .td-comment-text {
+    background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%) !important;
+    border-color: #818cf8 !important;
 }
 .td-comments-list.selection-active .td-comment.selected::after {
     content: '\F26B'; /* bi-check-circle-fill */
     font-family: 'bootstrap-icons';
     position: absolute;
-    top: -8px;
-    right: -8px;
-    color: #ef4444;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6366f1;
     background: white;
     border-radius: 50%;
     font-size: 1.1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
     z-index: 10;
 }
+.td-comments-list.selection-active .td-comment:not(.own).selected::after { right: -8px; }
+.td-comments-list.selection-active .td-comment.own.selected::after { left: -8px; }
 /* Disable interactions when selecting */
 .td-comments-list.selection-active .td-comment a,
 .td-comments-list.selection-active .td-comment button {
     pointer-events: none;
+}
+
+/* Botón eliminar moderno */
+#btnBulkDelete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    transition: all 0.2s;
+}
+#btnBulkDelete:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
 }
 </style>
 
@@ -61,10 +78,10 @@ $canComment = in_array($_SESSION['rol'], ['admin', 'tecnico', 'consultor']);
         
         <?php if ($canComment): ?>
         <div class="td-comments-actions">
-             <button id="btnBulkDelete" class="btn btn-danger btn-sm me-2 animate-fadeIn" style="display: none;">
-                 <i class="bi bi-trash-fill"></i> Eliminar (<span id="selectedCount">0</span>)
+             <button id="btnBulkDelete" style="display: none;">
+                 <i class="bi bi-trash3"></i> Eliminar (<span id="selectedCount">0</span>)
              </button>
-             <button id="btnToggleSelection" class="btn btn-outline-secondary btn-sm" title="Seleccionar varios">
+             <button id="btnToggleSelection" class="btn btn-outline-secondary btn-sm ms-2" title="Seleccionar varios">
                  <i class="bi bi-check2-square"></i>
              </button>
         </div>
@@ -84,8 +101,9 @@ $canComment = in_array($_SESSION['rol'], ['admin', 'tecnico', 'consultor']);
                 
                 $isInternal = !empty($comentario->es_interno) && $comentario->es_interno;
                 $timeAgo = ViewHelper::timeAgo($comentario->fecha_creacion ?? $comentario->fecha);
+                $isOwn = ($comentario->usuario_id ?? null) == ($_SESSION['user_id'] ?? null);
             ?>
-            <div class="td-comment <?= $isInternal ? 'internal' : '' ?>" data-comment-id="<?= $comentario->id ?>">
+            <div class="td-comment <?= $isInternal ? 'internal' : '' ?> <?= $isOwn ? 'own' : '' ?>" data-comment-id="<?= $comentario->id ?>">
                 <div class="td-comment-avatar"><?= $initials ?></div>
                 <div class="td-comment-content">
                     <div class="td-comment-meta">
@@ -254,52 +272,44 @@ document.addEventListener('DOMContentLoaded', function() {
         btnBulkDelete.addEventListener('click', function() {
             if (selectedIds.size === 0) return;
 
-            Swal.fire({
-                title: `¿Eliminar ${selectedIds.size} comentarios?`,
-                text: "Esta acción no se puede deshacer.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, eliminar todos'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    
-                    fetch(CONFIG.urls.bulkDelete, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({ ids: Array.from(selectedIds) })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Find and remove elements
-                            selectedIds.forEach(id => {
-                                const el = commentsList.querySelector(`[data-comment-id="${id}"]`);
-                                if (el) {
-                                    el.style.opacity = '0';
-                                    setTimeout(() => el.remove(), 300);
-                                }
-                            });
-                            
-                            // Reset mode
-                            btnToggleSelection.click(); // Exit selection mode
-                            
-                            if (window.Toast) Toast.show('success', data.message);
-                            else Swal.fire('Eliminados', data.message, 'success');
-                            
-                        } else {
-                            Swal.fire('Error', data.message || 'Error al eliminar', 'error');
+            // Abrir modal de confirmación moderno
+            showBulkDeleteModal(selectedIds.size, function() {
+                fetch(CONFIG.urls.bulkDelete, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ ids: Array.from(selectedIds) })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Find and remove elements
+                        selectedIds.forEach(id => {
+                            const el = commentsList.querySelector(`[data-comment-id="${id}"]`);
+                            if (el) {
+                                el.style.opacity = '0';
+                                setTimeout(() => el.remove(), 300);
+                            }
+                        });
+                        
+                        // Reset mode
+                        btnToggleSelection.click(); // Exit selection mode
+                        
+                        // Mostrar éxito con overlay moderno
+                        if (typeof showSuccessOverlay === 'function') {
+                            showSuccessOverlay('¡Eliminados!', data.message || 'Comentarios eliminados');
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire('Error', 'Error de conexión', 'error');
-                    });
-                }
+                        
+                    } else {
+                        alert(data.message || 'Error al eliminar');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión');
+                });
             });
         });
     }
@@ -391,7 +401,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function appendComment(data) {
         const commentDiv = document.createElement('div');
-        commentDiv.className = `td-comment ${data.is_internal ? 'internal' : ''} animate-fadeIn`;
+        // Nuevos comentarios siempre son del usuario actual, agregar clase 'own'
+        commentDiv.className = `td-comment own ${data.is_internal ? 'internal' : ''} animate-fadeIn`;
         commentDiv.setAttribute('data-comment-id', data.id); // Set ID for removal
         
         let internalBadge = '';
@@ -533,19 +544,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 const url = deleteBtn.dataset.url;
                 
-                Swal.fire({
-                    title: '¿Eliminar comentario?',
-                    text: 'Esta acción no se puede deshacer.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                showModernDeleteModal(
+                    '¿Eliminar comentario?', 
+                    'Esta acción no se puede deshacer.', 
+                    function() {
                         fetch(url, {
-                            method: 'GET', // Or convert to POST/DELETE if route supported it, but Controller supports GET
+                            method: 'GET',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest'
                             }
@@ -563,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                                 
                                 if (window.Toast) Toast.show('success', 'Comentario eliminado.');
-                                else Swal.fire('Eliminado', 'Comentario eliminado.', 'success');
+                                else if (window.Swal) Swal.fire('Eliminado', 'Comentario eliminado.', 'success');
                                 
                             } else {
                                 Swal.fire('Error', data.message || 'Error al eliminar', 'error');
@@ -574,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             Swal.fire('Error', 'Error de conexión', 'error');
                         });
                     }
-                });
+                );
             }
         });
     }
@@ -593,4 +597,141 @@ document.addEventListener('DOMContentLoaded', function() {
         if (cancelBtn) cancelBtn.remove();
     }
 });
+</script>
+
+<!-- Modal de Eliminación Moderno (Genérico) -->
+<div id="modernDeleteModal" class="bdm-overlay" style="display: none;">
+    <div class="bdm-modal">
+        <div class="bdm-body">
+            <div class="bdm-icon">
+                <i class="bi bi-trash3"></i>
+            </div>
+            <h3 class="bdm-title" id="mdmTitle">¿Eliminar?</h3>
+            <p class="bdm-message" id="mdmMessage">Esta acción no se puede deshacer</p>
+        </div>
+        <div class="bdm-footer">
+            <button type="button" class="bdm-btn bdm-btn-cancel" onclick="ModernDeleteModal.close()">
+                Cancelar
+            </button>
+            <button type="button" class="bdm-btn bdm-btn-delete" id="mdmConfirmBtn">
+                <i class="bi bi-trash3"></i> Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal Eliminación Masiva - Mismo estilo que otros modales */
+.bdm-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(0.75px);
+    -webkit-backdrop-filter: blur(0.75px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.bdm-overlay.show { opacity: 1; }
+.bdm-modal {
+    background: white;
+    width: 100%;
+    max-width: 360px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bdm-overlay.show .bdm-modal { transform: scale(1) translateY(0); }
+.bdm-body { padding: 2rem 1.5rem 1.5rem; text-align: center; }
+.bdm-icon {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem; color: #ef4444; font-size: 1.5rem;
+    border: 3px solid #fecaca;
+}
+.bdm-title { margin: 0 0 0.5rem; font-size: 1.125rem; font-weight: 700; color: #0f172a; }
+.bdm-message { margin: 0; font-size: 0.875rem; color: #64748b; }
+.bdm-footer {
+    padding: 1rem 1.5rem; background: #f8fafc;
+    display: flex; gap: 0.75rem; justify-content: center;
+}
+.bdm-btn {
+    padding: 0.625rem 1.25rem; border-radius: 10px;
+    font-size: 0.875rem; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.2s;
+}
+.bdm-btn-cancel {
+    background: white; color: #475569; border: 1px solid #e2e8f0;
+}
+.bdm-btn-cancel:hover { background: #f1f5f9; }
+.bdm-btn-delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+.bdm-btn-delete:hover {
+    transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+</style>
+
+<script>
+window.ModernDeleteModal = {
+    overlay: null,
+    callback: null,
+    
+    init() {
+        this.overlay = document.getElementById('modernDeleteModal');
+        if (this.overlay && this.overlay.parentNode !== document.body) {
+            document.body.appendChild(this.overlay);
+        }
+    },
+    
+    close() {
+        if (!this.overlay) return;
+        this.overlay.classList.remove('show');
+        setTimeout(() => { this.overlay.style.display = 'none'; }, 300);
+    },
+    
+    confirm() {
+        if (this.callback) this.callback();
+        this.close();
+    }
+};
+
+function showModernDeleteModal(title, message, callback) {
+    let overlay = document.getElementById('modernDeleteModal');
+    if (!overlay) {
+        ModernDeleteModal.init();
+        overlay = ModernDeleteModal.overlay;
+    }
+    if (overlay && overlay.parentNode !== document.body) {
+        document.body.appendChild(overlay);
+    }
+    
+    document.getElementById('mdmTitle').textContent = title;
+    document.getElementById('mdmMessage').textContent = message;
+    
+    ModernDeleteModal.callback = callback;
+    document.getElementById('mdmConfirmBtn').onclick = () => ModernDeleteModal.confirm();
+    
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('show');
+}
+
+// Wrapper for Bulk Delete to maintain compatibility if needed, or simply update call site
+function showBulkDeleteModal(count, callback) {
+    const title = `¿Eliminar ${count} comentario${count > 1 ? 's' : ''}?`;
+    showModernDeleteModal(title, 'Esta acción no se puede deshacer', callback);
+}
+
+document.addEventListener('DOMContentLoaded', () => { ModernDeleteModal.init(); });
 </script>

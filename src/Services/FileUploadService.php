@@ -129,9 +129,22 @@ class FileUploadService
      */
     public function servirArchivo(object $archivo, string $rutaAbsoluta): void
     {
+        // Usar nombre original si existe, sino usar el nombre del archivo
+        $nombreDescarga = $archivo->nombre_original ?? $archivo->nombre_archivo ?? 'archivo';
+        
+        // Si el nombre es un UUID o está vacío, crear un nombre más descriptivo
+        if (empty($nombreDescarga) || preg_match('/^[a-f0-9\-]{36}$/i', $nombreDescarga)) {
+            // Generar nombre basado en tipo y fecha
+            $ext = pathinfo($archivo->nombre_archivo ?? '', PATHINFO_EXTENSION) ?: 'dat';
+            $nombreDescarga = 'archivo_ticket_' . ($archivo->ticket_id ?? 'unknown') . '_' . date('Y-m-d') . '.' . $ext;
+        }
+        
+        // Sanitizar nombre para evitar problemas con caracteres especiales
+        $nombreDescarga = preg_replace('/[^\w\.\-]/', '_', $nombreDescarga);
+        
         header('Content-Description: File Transfer');
-        header('Content-Type: ' . $archivo->tipo_mime);
-        header('Content-Disposition: attachment; filename="' . $archivo->nombre_original . '"');
+        header('Content-Type: ' . ($archivo->tipo_mime ?? 'application/octet-stream'));
+        header('Content-Disposition: attachment; filename="' . $nombreDescarga . '"');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');

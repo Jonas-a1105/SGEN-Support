@@ -53,9 +53,8 @@ function setEntityFilter(entity) {
 function changeItemsPerPage() {
     const perPage = document.querySelector('.per-page-select').value;
     // Guardar preferencia globalmente
-    if (window.PaginationPrefs) {
-        PaginationPrefs.set(perPage);
-    }
+    // Guardar preferencia específica para bitácora
+    document.cookie = "sgen_bitacora_per_page=" + perPage + "; path=/; max-age=31536000";
 
     // Get base URL from existing window location or define it globally if needed
     // Assuming BASE_URL is handled via PHP echo in the view, we might need to pass it or use current path

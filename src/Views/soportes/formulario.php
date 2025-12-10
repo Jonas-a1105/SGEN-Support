@@ -93,6 +93,8 @@ $estados = [
             <input type="hidden" id="equipo_id" name="equipo_id" value="<?= htmlspecialchars($valor_equipo_id) ?>" required>
             <input type="hidden" id="departamento_id" name="departamento_id" value="">
 
+            <!-- Contenedor principal con bordes -->
+            <div class="tf-main-container">
             <div class="tf-grid">
                 
                 <!-- LEFT COLUMN: DEVICE CONTEXT -->
@@ -173,6 +175,30 @@ $estados = [
                                 <p class="tf-reporter-name"><?= htmlspecialchars($soporte->usuario_nombre ?? 'Usuario') ?></p>
                                 <p class="tf-reporter-role"><?= htmlspecialchars($soporte->departamento_nombre ?? '') ?></p>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Technician Info Card (Edit Mode Only) -->
+                     <div class="tf-info-card" style="margin-top: 1rem;">
+                        <h3 class="tf-info-card-label">Técnico Asignado</h3>
+                        <div class="tf-reporter-info">
+                            <?php if (!empty($soporte->tecnico_asignado)): ?>
+                                <div class="tf-reporter-avatar" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                                    <?= strtoupper(substr($soporte->tecnico_username ?? 'T', 0, 2)) ?>
+                                </div>
+                                <div class="tf-reporter-details">
+                                    <p class="tf-reporter-name"><?= htmlspecialchars($soporte->tecnico_asignado) ?></p>
+                                    <p class="tf-reporter-role">Soporte Técnico</p>
+                                </div>
+                            <?php else: ?>
+                                <div class="tf-reporter-avatar" style="background: #f1f5f9; color: #94a3b8;">
+                                    <i class="bi bi-person-x-fill"></i>
+                                </div>
+                                <div class="tf-reporter-details">
+                                    <p class="tf-reporter-name" style="color: #94a3b8;">Sin asignar</p>
+                                    <p class="tf-reporter-role">Pendiente</p>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     
@@ -337,13 +363,45 @@ $estados = [
 
                     <div class="tf-divider"></div>
 
-                    <!-- Section: Description -->
+                    <!-- Section: Description + Resolution (side by side when applicable) -->
                     <div class="tf-section">
                         <div class="tf-section-header">
                             <span class="tf-section-number"><?= $es_edicion ? '' : '2' ?></span>
-                            <h3 class="tf-section-title">Descripción</h3>
+                            <h3 class="tf-section-title">Descripción<?= ($es_edicion && in_array($valor_estado, ['resuelto', 'cerrado'])) ? ' y Resolución' : '' ?></h3>
                         </div>
                         
+                        <?php if ($es_edicion && in_array($valor_estado, ['resuelto', 'cerrado'])): ?>
+                        <!-- Two column layout for Description + Resolution -->
+                        <div class="tf-description-resolution-grid">
+                            <div class="tf-description-col">
+                                <label class="tf-inline-label">Problema Reportado</label>
+                                <div class="tf-textarea-wrapper">
+                                    <textarea 
+                                        id="descripcion" 
+                                        name="descripcion" 
+                                        class="tf-textarea tf-textarea-compact" 
+                                        placeholder="Describe detalladamente qué está fallando..."
+                                        required
+                                    ><?= htmlspecialchars($valor_descripcion) ?></textarea>
+                                </div>
+                            </div>
+                            <div class="tf-resolution-col">
+                                <label class="tf-inline-label tf-resolution-inline-label">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Nota de Resolución
+                                </label>
+                                <div class="tf-textarea-wrapper">
+                                    <textarea 
+                                        id="resolucion" 
+                                        name="resolucion" 
+                                        class="tf-textarea tf-textarea-compact tf-textarea-resolution"
+                                        placeholder="Describe cómo se solucionó..."
+                                    ><?= htmlspecialchars($soporte->observaciones ?? '') ?></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <?php else: ?>
+                        <!-- Single column for Description only -->
                         <div class="tf-textarea-wrapper">
                             <textarea 
                                 id="descripcion" 
@@ -355,23 +413,8 @@ $estados = [
                             <i class="bi bi-chat-square-text tf-textarea-icon"></i>
                         </div>
                         <p class="tf-textarea-hint">Mínimo 20 caracteres.</p>
+                        <?php endif; ?>
                     </div>
-
-                    <?php if ($es_edicion && in_array($valor_estado, ['resuelto', 'cerrado'])): ?>
-                    <!-- Resolution Note (Edit Mode, Resolved/Closed) -->
-                    <div class="tf-resolution-section">
-                        <label class="tf-resolution-label">
-                            <i class="bi bi-check-circle-fill"></i>
-                            Nota de Resolución
-                        </label>
-                        <textarea 
-                            id="resolucion" 
-                            name="resolucion" 
-                            class="tf-resolution-textarea"
-                            placeholder="Describe cómo se solucionó el problema..."
-                        ><?= htmlspecialchars($soporte->observaciones ?? '') ?></textarea>
-                    </div>
-                    <?php endif; ?>
 
                     <!-- Actions -->
                     <div class="tf-actions">
@@ -387,6 +430,7 @@ $estados = [
                 </div>
 
             </div>
+            </div><!-- Cierre tf-main-container -->
         </form>
 
     </div>

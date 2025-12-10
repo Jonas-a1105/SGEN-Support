@@ -258,6 +258,40 @@ class Inventario extends Model {
     /**
      * Obtiene el historial de movimientos de un ítem específico.
      */
+    /**
+     * Obtiene el historial de movimientos de un ítem específico con paginación.
+     */
+    public function obtenerMovimientosPaginated(int $itemId, int $limit, int $offset): array
+    {
+        $sql = "SELECT m.*, u.username 
+                FROM inventario_movimientos m
+                LEFT JOIN usuarios u ON m.usuario_id = u.id
+                WHERE m.item_id = :item_id
+                ORDER BY m.fecha DESC
+                LIMIT :limit OFFSET :offset";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':item_id', $itemId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * Cuenta el total de movimientos de un ítem.
+     */
+    public function countMovimientos(int $itemId): int
+    {
+        $sql = "SELECT COUNT(*) as total FROM inventario_movimientos WHERE item_id = :item_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['item_id' => $itemId]);
+        $result = $stmt->fetch(PDO::FETCH_OBJ);
+        return $result ? (int)$result->total : 0;
+    }
+
+    /**
+     * Obtiene el historial de movimientos de un ítem específico (Legacy).
+     */
     public function obtenerMovimientos(int $itemId): array
     {
         $sql = "SELECT m.*, u.username 

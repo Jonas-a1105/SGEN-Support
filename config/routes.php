@@ -23,6 +23,7 @@ use App\Controllers\AboutController;
 $router->get('/auth/login',    [AuthController::class, 'login']);
 $router->post('/auth/procesar', [AuthController::class, 'procesar']);
 $router->get('/auth/logout',   [AuthController::class, 'logout']);
+$router->get('/api/check-session', [AuthController::class, 'checkSession']);
 
 // Dashboard
 $router->get('/', [HomeController::class, 'index']); 
@@ -51,6 +52,7 @@ $router->post('/soportes/guardar_valoracion', [SoportesController::class, 'guard
 $router->get('/soportes/eliminar_comentario/{id}', [SoportesController::class, 'eliminar_comentario']);
 $router->post('/soportes/editar_comentario', [SoportesController::class, 'editar_comentario']);
 $router->post('/soportes/eliminar_comentarios_masivos', [SoportesController::class, 'eliminar_comentarios_masivos']);
+$router->get('/soportes/eliminar_archivo/{id}', [SoportesController::class, 'eliminar_archivo']);
 
 $router->post('/soportes/eliminar_tickets_masivos', [SoportesController::class, 'eliminar_tickets_masivos']);
 
@@ -146,6 +148,7 @@ $router->post('/inventario/transferir', [InventarioController::class, 'transferi
 $router->get('/inventario/departamento', [InventarioController::class, 'por_departamento']);
 $router->get('/inventario/departamento/{id}', [InventarioController::class, 'por_departamento']);
 $router->get('/inventario/historial-departamento/{id}', [InventarioController::class, 'historial_departamento']);
+$router->get('/inventario/historial_item/{id}', [InventarioController::class, 'historial_item']);
 $router->post('/inventario/eliminar_masivo', [InventarioController::class, 'eliminar_masivo']);
 
 // API Routes
@@ -159,6 +162,8 @@ $router->get('/mantenimientos/editar/{id}', [MantenimientosController::class, 'e
 $router->get('/mantenimientos/ver/{id}', [MantenimientosController::class, 'ver']);
 $router->post('/mantenimientos/guardar', [MantenimientosController::class, 'guardar']);
 $router->get('/mantenimientos/eliminar/{id}', [MantenimientosController::class, 'eliminar']);
+$router->post('/mantenimientos/eliminar_masivo', [MantenimientosController::class, 'eliminar_masivo']);
+$router->get('/mantenimientos/completar/{id}', [MantenimientosController::class, 'completar']);
 
 // Acerca de
 $router->get('/about', [AboutController::class, 'index']);

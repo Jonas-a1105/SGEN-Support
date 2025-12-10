@@ -59,8 +59,7 @@ function getCategoriaClass($cat) {
 }
 ?>
 
-
-
+<link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css">
 
 <style>
 /* New styles for left-aligned checkboxes */
@@ -92,7 +91,6 @@ function getCategoriaClass($cat) {
 /* Fix: Target #ticketFeed explicitly since JS adds class there */
 #ticketFeed.selection-active .helpdesk-ticket { 
     cursor: pointer; 
-    border: 1px solid var(--border-color, #e2e8f0);
     padding-left: 60px !important; /* Shift content right */
     transition: all 0.2s ease;
 }
@@ -327,8 +325,9 @@ function getCategoriaClass($cat) {
                     </div>
                 </div>
                 <!-- Modern Delete Button -->
-                <button id="btnBulkTicketDelete" class="btn btn-danger d-none animate-bounceIn" style="border-radius: 50px; padding: 6px 16px; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.4); border: none; font-weight: 500; transition: all 0.3s ease;">
-                    <i class="bi bi-trash-fill"></i> <span id="ticketSelectedCount" class="bg-white text-danger badge rounded-pill ms-1">0</span>
+                <button id="btnBulkTicketDelete" class="bulk-delete-btn">
+                    <i class="bi bi-trash"></i>
+                    <span id="ticketSelectedCount">0</span> seleccionados
                 </button>
             </div>
             <?php endif; ?>
@@ -436,12 +435,12 @@ function getCategoriaClass($cat) {
                             <!-- Assignee -->
                             <div class="helpdesk-assignee">
                                 <?php if ($tiene_tecnico): ?>
+                                    <div class="helpdesk-assignee-avatar" title="<?= htmlspecialchars($s->tecnico_asignado) ?>">
+                                        <?= strtoupper(substr($s->tecnico_asignado, 0, 1)) ?>
+                                    </div>
                                     <div class="helpdesk-assignee-info">
                                         <p class="helpdesk-assignee-label">Técnico</p>
                                         <p class="helpdesk-assignee-name"><?= htmlspecialchars($s->tecnico_asignado) ?></p>
-                                    </div>
-                                    <div class="helpdesk-assignee-avatar" title="<?= htmlspecialchars($s->tecnico_asignado) ?>">
-                                        <?= strtoupper(substr($s->tecnico_asignado, 0, 1)) ?>
                                     </div>
                                 <?php else: ?>
                                     <a href="#" 
@@ -824,8 +823,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateUI() {
         if (selectedCountSpan) selectedCountSpan.textContent = selectedIds.size;
         if (btnBulkDelete) {
-            if (selectedIds.size > 0) btnBulkDelete.classList.remove('d-none');
-            else btnBulkDelete.classList.add('d-none');
+            if (selectedIds.size > 0) btnBulkDelete.classList.add('visible');
+            else btnBulkDelete.classList.remove('visible');
         }
     }
 });

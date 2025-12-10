@@ -210,14 +210,9 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
 
             <!-- Cards View -->
             <div id="cardsView" style="display: none; padding: 1.5rem;">
-                <div style="position: relative;">
-                    <!-- Carousel Nav Prev -->
-                    <button onclick="scrollCarousel(-300)" style="position: absolute; left: -20px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); color: #64748b;">
-                        <i class="bi bi-chevron-left"></i>
-                    </button>
-                    
+                <div>
                     <!-- Cards Grid -->
-                    <div id="cardsGrid" style="display: flex; gap: 1rem; overflow-x: auto; scroll-behavior: smooth; padding: 0.5rem; scrollbar-width: none;">
+                    <div id="cardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; padding: 0.5rem;">
                         <?php foreach ($usuarios as $u): ?>
                         <?php
                             $avatarBg = match($u->rol) {
@@ -297,11 +292,6 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
                         </div>
                         <?php endforeach; ?>
                     </div>
-                    
-                    <!-- Carousel Nav Next -->
-                    <button onclick="scrollCarousel(300)" style="position: absolute; right: -20px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); color: #64748b;">
-                        <i class="bi bi-chevron-right"></i>
-                    </button>
                 </div>
             </div>
 

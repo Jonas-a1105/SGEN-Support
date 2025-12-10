@@ -90,31 +90,95 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    if (selectDevice) {
-        selectDevice.addEventListener('change', (e) => {
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            if (!selectedOption.value) return;
 
-            const deviceId = selectedOption.value;
-            const deviceName = selectedOption.text;
-            const deviceCode = selectedOption.getAttribute('data-code');
-            const deviceLoc = selectedOption.getAttribute('data-location');
-            const deviceType = selectedOption.getAttribute('data-type'); // Not used currently but available
+    // --- Device Search Logic ---
+    const searchInput = document.getElementById('deviceSearchInput');
+    const searchResults = document.getElementById('deviceSearchResults');
+    const hiddenSelect = document.getElementById('selectDevice');
 
-            updateDeviceUI(deviceId, deviceName, deviceCode, deviceLoc);
+    // Load all devices from hidden select
+    let cachedDevices = [];
+    if (hiddenSelect) {
+        Array.from(hiddenSelect.options).forEach(opt => {
+            if (opt.value) {
+                cachedDevices.push({
+                    id: opt.value,
+                    name: opt.text,
+                    code: opt.getAttribute('data-code') || '',
+                    serial: opt.getAttribute('data-serial') || '',
+                    brand: opt.getAttribute('data-brand') || '',
+                    model: opt.getAttribute('data-model') || '',
+                    location: opt.getAttribute('data-location') || '',
+                    searchString: `${opt.text} ${opt.getAttribute('data-code')} ${opt.getAttribute('data-serial')} ${opt.getAttribute('data-brand')}`.toLowerCase()
+                });
+            }
         });
     }
 
-    // Expose global functions
-    window.removeTask = function (id) {
-        state.checklist = state.checklist.filter(t => t.id !== id);
-        renderChecklist();
-        updateHiddenInput();
-    };
+    if (searchInput) {
+        // Filter on input
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length < 1) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            const matches = cachedDevices.filter(d => d.searchString.includes(query));
+            renderSearchResults(matches);
+        });
+
+        // Focus show all (optional, or just placeholder)
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim().length > 0) {
+                searchResults.style.display = 'block';
+            }
+        });
+    }
+
+    // Render results
+    function renderSearchResults(devices) {
+        if (!devices.length) {
+            searchResults.innerHTML = '<div class="mf-no-results">No se encontraron equipos</div>';
+            searchResults.style.display = 'block';
+            return;
+        }
+
+        searchResults.innerHTML = '';
+        devices.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'mf-search-item';
+            div.innerHTML = `
+                <div>
+                    <div class="mf-item-main">${escapeHtml(d.name)}</div>
+                    <div class="mf-item-sub">S/N: ${escapeHtml(d.serial)} • Código: ${escapeHtml(d.code)}</div>
+                </div>
+                <div class="mf-item-sub">${escapeHtml(d.location)}</div>
+            `;
+            div.onclick = () => selectDeviceFromSearch(d);
+            searchResults.appendChild(div);
+        });
+        searchResults.style.display = 'block';
+    }
+
+    // Select Device
+    function selectDeviceFromSearch(device) {
+        searchInput.value = '';
+        searchResults.style.display = 'none';
+
+        updateDeviceUI(device.id, device.name, device.code, device.location);
+    }
+
+    // Click outside to close
+    document.addEventListener('click', (e) => {
+        if (searchResults && searchInput && !searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
 
     window.clearDeviceSelection = function () {
         if (inputDeviceID) inputDeviceID.value = '';
-        if (selectDevice) selectDevice.value = '';
+        if (selectDevice) selectDevice.value = ''; // Reset hidden select too
         toggleDeviceView('search');
     };
 

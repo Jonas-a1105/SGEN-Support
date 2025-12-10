@@ -486,12 +486,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 3. Arreglar backdrop cuando se abre
         modalArchivo.addEventListener('show.bs.modal', function () {
-            // Esperar un momento a que Bootstrap cree el backdrop
             setTimeout(() => {
                 const backdrops = document.querySelectorAll('.modal-backdrop');
                 backdrops.forEach(backdrop => {
-                    document.body.appendChild(backdrop); // Mover backdrop al body
-                    backdrop.style.zIndex = '9999998'; // Justo debajo del modal
+                    document.body.appendChild(backdrop);
+                    backdrop.style.zIndex = '9999998';
                 });
             }, 10);
         });
@@ -506,14 +505,8 @@ document.addEventListener('DOMContentLoaded', function() {
             tab.show();
         }
     }
-});        const tabButton = document.querySelector(`[data-bs-target="${hash}"]`);
-        if (tabButton) {
-            const tab = new bootstrap.Tab(tabButton);
-            tab.show();
-        }
-    }
 
-    // Event listeners para botones de confirmación (Delegación de eventos para elementos dinámicos)
+    // Event listeners para botones de confirmación (Delegación de eventos)
     document.body.addEventListener('click', function(e) {
         const btn = e.target.closest('.btn-confirmar');
         if (!btn) return;
@@ -526,29 +519,244 @@ document.addEventListener('DOMContentLoaded', function() {
         const icono = btn.getAttribute('data-icono');
         const boton = btn.getAttribute('data-boton');
         
-        Swal.fire({
-            title: titulo,
-            text: texto,
-            icon: icono,
-            showCancelButton: true,
-            confirmButtonColor: '#6366f1',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: boton,
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = url;
-            }
-        });
+        // Usar modal de confirmación moderno
+        showConfirmOverlay(titulo, texto, icono, boton, url);
     });
-});
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ... code ...
 });
 </script>
 
-<!-- CSS HOTFIX FOR MODALS (Bypasses Cache) -->
+<!-- Overlay de Confirmación Moderno -->
+<div id="confirmOverlay" class="co-overlay" style="display: none;">
+    <div class="co-modal">
+        <div class="co-body">
+            <div class="co-icon-container">
+                <div class="co-icon" id="confirmIcon">
+                    <i class="bi bi-question-lg"></i>
+                </div>
+            </div>
+            <h3 class="co-title" id="confirmTitle">¿Confirmar acción?</h3>
+            <p class="co-message" id="confirmMessage">¿Estás seguro de realizar esta acción?</p>
+        </div>
+        <div class="co-footer">
+            <button type="button" class="co-btn co-btn-cancel" onclick="ConfirmModal.close()">
+                Cancelar
+            </button>
+            <button type="button" class="co-btn co-btn-confirm" id="confirmActionBtn">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Overlay de Confirmación - Mismo estilo que otros modales */
+.co-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(0.75px);
+    -webkit-backdrop-filter: blur(0.75px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.co-overlay.show {
+    opacity: 1;
+}
+.co-modal {
+    background: white;
+    width: 100%;
+    max-width: 380px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.co-overlay.show .co-modal {
+    transform: scale(1) translateY(0);
+}
+.co-body {
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+}
+.co-icon-container {
+    margin-bottom: 1rem;
+}
+.co-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 1.5rem;
+    border: 3px solid;
+}
+.co-icon.warning {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #d97706;
+    border-color: #fcd34d;
+}
+.co-icon.success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #059669;
+    border-color: #6ee7b7;
+}
+.co-icon.info {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #2563eb;
+    border-color: #93c5fd;
+}
+.co-icon.error {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    color: #ef4444;
+    border-color: #fecaca;
+}
+.co-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+.co-message {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+.co-footer {
+    padding: 1rem 1.5rem;
+    background: #f8fafc;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+.co-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+.co-btn-cancel {
+    background: white;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+.co-btn-cancel:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+.co-btn-confirm {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+.co-btn-confirm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+.co-btn-confirm.warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.co-btn-confirm.warning:hover {
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+.co-btn-confirm.success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.co-btn-confirm.success:hover {
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+</style>
+
+<script>
+window.ConfirmModal = {
+    overlay: null,
+    actionUrl: null,
+
+    init() {
+        this.overlay = document.getElementById('confirmOverlay');
+        if (this.overlay && this.overlay.parentNode !== document.body) {
+            document.body.appendChild(this.overlay);
+        }
+    },
+
+    close() {
+        if (!this.overlay) return;
+        this.overlay.classList.remove('show');
+        setTimeout(() => {
+            this.overlay.style.display = 'none';
+        }, 300);
+    },
+
+    confirm() {
+        if (this.actionUrl) {
+            window.location.href = this.actionUrl;
+        }
+    }
+};
+
+function showConfirmOverlay(titulo, mensaje, tipo, botonTexto, url) {
+    let overlay = document.getElementById('confirmOverlay');
+    if (!overlay) {
+        ConfirmModal.init();
+        overlay = ConfirmModal.overlay;
+    }
+    
+    if (overlay.parentNode !== document.body) {
+        document.body.appendChild(overlay);
+    }
+
+    // Actualizar contenido
+    document.getElementById('confirmTitle').textContent = titulo;
+    document.getElementById('confirmMessage').textContent = mensaje;
+    
+    // Configurar icono según tipo
+    const iconDiv = document.getElementById('confirmIcon');
+    iconDiv.className = 'co-icon ' + (tipo || 'info');
+    
+    const iconMap = {
+        'warning': 'bi-exclamation-triangle',
+        'success': 'bi-check-circle',
+        'info': 'bi-info-circle',
+        'error': 'bi-x-circle'
+    };
+    iconDiv.innerHTML = '<i class="bi ' + (iconMap[tipo] || 'bi-question-circle') + '"></i>';
+    
+    // Configurar botón
+    const confirmBtn = document.getElementById('confirmActionBtn');
+    confirmBtn.textContent = botonTexto || 'Confirmar';
+    confirmBtn.className = 'co-btn co-btn-confirm ' + (tipo || 'info');
+    
+    // Guardar URL y configurar click
+    ConfirmModal.actionUrl = url;
+    confirmBtn.onclick = () => ConfirmModal.confirm();
+    
+    // Mostrar modal
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('show');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    ConfirmModal.init();
+});
+</script>
+
+<!-- CSS HOTFIX FOR MODALS -->
 <style>
 .modal {
     z-index: 99999 !important;

@@ -112,7 +112,9 @@ function confirmarAccion(url, titulo, texto, icono, botonTexto) {
 }
 
 function abrirModalFechaCierre() {
-    const modal = new bootstrap.Modal(document.getElementById('modalEditarFechaCierre'));
-    modal.show();
+    // Usar el nuevo modal personalizado en lugar de Bootstrap
+    if (window.FechaCierreModal) {
+        window.FechaCierreModal.open();
+    }
 }
 </script>

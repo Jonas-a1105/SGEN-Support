@@ -1,8 +1,11 @@
 /**
  * Equipos View Logic
+ * With User Preferences Persistence
  */
 
 (function () {
+    const MODULE_NAME = 'equipos';
+
     const init = () => {
         const gridView = document.getElementById('gridView');
         const listView = document.getElementById('listView');
@@ -13,29 +16,51 @@
         const filterTabs = document.querySelectorAll('.filter-tab');
 
         // Pagination specific vars are initialized in data attributes usually
-        // but here we might need to read them or set default
         let itemsPerPage = 10;
-        // Check if we passed it via data attribute in main container or script
-        // Since we are decoupling, let's look for a data attribute
         const mainContainer = document.querySelector('.equipos-container');
         if (mainContainer && mainContainer.dataset.perPage) {
             itemsPerPage = parseInt(mainContainer.dataset.perPage);
         }
 
-        let currentFilter = 'todos';
+        // Load saved preferences
+        let currentFilter = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'filter', 'todos') : 'todos';
         let currentSearch = '';
-        let currentView = 'grid'; // Default
+        let currentView = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'view', 'grid') : 'grid';
         let currentPage = 1;
-        let filteredIndices = []; // Indices de items que coinciden con filtro
+        let filteredIndices = [];
 
         // Init selector
         const selector = document.getElementById('itemsPerPageSelector');
         if (selector) selector.value = itemsPerPage;
 
+        // Apply saved filter tab
+        if (currentFilter !== 'todos') {
+            filterTabs.forEach(t => {
+                t.classList.remove('active');
+                if (t.getAttribute('data-filter') === currentFilter) {
+                    t.classList.add('active');
+                }
+            });
+        }
+
+        // Apply saved view
+        if (currentView === 'list') {
+            if (gridView) gridView.style.display = 'none';
+            if (listView) listView.style.display = 'block';
+            if (btnViewList) btnViewList.classList.add('active');
+            if (btnViewGrid) btnViewGrid.classList.remove('active');
+        } else {
+            if (gridView) gridView.style.display = 'grid';
+            if (listView) listView.style.display = 'none';
+            if (btnViewGrid) btnViewGrid.classList.add('active');
+            if (btnViewList) btnViewList.classList.remove('active');
+        }
+
         // Toggle de vista
         if (btnViewGrid) {
             btnViewGrid.addEventListener('click', function () {
                 currentView = 'grid';
+                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'grid');
                 if (gridView) gridView.style.display = 'grid';
                 if (listView) listView.style.display = 'none';
                 btnViewGrid.classList.add('active');
@@ -47,6 +72,7 @@
         if (btnViewList) {
             btnViewList.addEventListener('click', function () {
                 currentView = 'list';
+                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'list');
                 if (gridView) gridView.style.display = 'none';
                 if (listView) listView.style.display = 'block';
                 btnViewList.classList.add('active');
@@ -61,6 +87,7 @@
                 filterTabs.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
                 currentFilter = this.getAttribute('data-filter');
+                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', currentFilter);
                 currentPage = 1;
                 applyFilters();
             });
@@ -191,6 +218,7 @@
         window.clearFilters = function () {
             currentFilter = 'todos';
             currentSearch = '';
+            if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', 'todos');
             if (searchInput) searchInput.value = '';
             filterTabs.forEach(t => t.classList.remove('active'));
             if (filterTabs[0]) filterTabs[0].classList.add('active');
@@ -206,3 +234,4 @@
     };
     init();
 })();
+

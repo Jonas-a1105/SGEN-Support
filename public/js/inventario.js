@@ -136,27 +136,49 @@ function changeItemsPerPage(perPage) {
         });
 
         // ===== VIEW TOGGLE =====
+        const setView = (view, target) => {
+            const tableView = document.getElementById(target + '-table');
+            const cardsView = document.getElementById(target + '-cards');
+
+            // Find buttons for this target
+            const container = document.querySelector(`.inventario-toggle-btn[data-target="${target}"]`).parentElement;
+
+            // Update buttons
+            container.querySelectorAll('.inventario-toggle-btn').forEach(b => {
+                if (b.dataset.view === view) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+
+            // Update visibility
+            if (view === 'table') {
+                if (tableView) tableView.classList.remove('hidden');
+                if (cardsView) cardsView.classList.remove('active');
+            } else {
+                if (tableView) tableView.classList.add('hidden');
+                if (cardsView) cardsView.classList.add('active');
+            }
+
+            // Persist
+            localStorage.setItem('sgen_view_' + target, view);
+        };
+
         document.querySelectorAll('.inventario-toggle-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 const view = this.dataset.view;
                 const target = this.dataset.target;
-
-                // Toggle button active state
-                this.parentElement.querySelectorAll('.inventario-toggle-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-
-                // Toggle view visibility
-                const tableView = document.getElementById(target + '-table');
-                const cardsView = document.getElementById(target + '-cards');
-
-                if (view === 'table') {
-                    if (tableView) tableView.classList.remove('hidden');
-                    if (cardsView) cardsView.classList.remove('active');
-                } else {
-                    if (tableView) tableView.classList.add('hidden');
-                    if (cardsView) cardsView.classList.add('active');
-                }
+                setView(view, target);
             });
+        });
+
+        // Restore View Preferences
+        ['articulos', 'equipos'].forEach(target => {
+            const savedView = localStorage.getItem('sgen_view_' + target);
+            if (savedView) {
+                // Check if elements exist before setting
+                if (document.querySelector(`.inventario-toggle-btn[data-target="${target}"]`)) {
+                    setView(savedView, target);
+                }
+            }
         });
 
         // ===== CAROUSEL NAVIGATION =====

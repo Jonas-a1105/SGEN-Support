@@ -99,107 +99,101 @@ $totalLogs = count($logs);
             <div class="logs-list-toolbar">
                 <div class="logs-search-wrapper">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" class="logs-search-input" placeholder="Buscar por usuario..." oninput="filterLogs()">
+                    <input type="text" id="searchInput" class="logs-search-input" 
+                           placeholder="Buscar por usuario (Enter)..." 
+                           value="<?= htmlspecialchars($filters['username'] ?? '') ?>">
                 </div>
-                <div class="logs-filter-group">
-                    <span class="logs-filter-label">Filtrar:</span>
-                    <div class="logs-filter-pills">
-                        <button onclick="setFilter('all')" id="btn-all" class="logs-pill" style="background: #f1f5f9; color: #0f172a;">
-                            Todos
-                        </button>
-                        <button onclick="setFilter('active')" id="btn-active" class="logs-pill">
-                            Activos
-                        </button>
-                    </div>
-                </div>
+                <!-- Filter Pills removed for now as backend doesn't support state filtering yet -->
             </div>
 
             <!-- Listado -->
             <div id="logsList">
-                <?php
-                $renderIndex = 0;
-                foreach ($logs as $log): 
-                    $shouldHide = $renderIndex >= $paginationPerPage;
-                    $renderIndex++;
-                ?>
-                <?php
-                // Calcular duración
-                $duracion = 'N/A';
-                $esActiva = !$log->fecha_fin;
-                if ($log->fecha_fin) {
-                    try {
-                        $inicio = new \DateTime($log->fecha_inicio);
-                        $fin = new \DateTime($log->fecha_fin);
-                        $intervalo = $inicio->diff($fin);
-                        $horas = $intervalo->h;
-                        $minutos = $intervalo->i;
-                        if ($horas > 0) {
-                            $duracion = $horas . 'h ' . $minutos . 'm';
-                        } else {
-                            $duracion = $minutos . ' min';
+                <?php if (empty($logs)): ?>
+                    <div style="padding: 3rem; text-align: center; color: #64748b;">
+                        <i class="bi bi-search" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                        No se encontraron registros con los filtros seleccionados.
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($logs as $log): ?>
+                    <?php
+                    // Calcular duración
+                    $duracion = 'N/A';
+                    $esActiva = !$log->fecha_fin;
+                    if ($log->fecha_fin) {
+                        try {
+                            $inicio = new \DateTime($log->fecha_inicio);
+                            $fin = new \DateTime($log->fecha_fin);
+                            $intervalo = $inicio->diff($fin);
+                            $horas = $intervalo->h;
+                            $minutos = $intervalo->i;
+                            if ($horas > 0) {
+                                $duracion = $horas . 'h ' . $minutos . 'm';
+                            } else {
+                                $duracion = $minutos . ' min';
+                            }
+                        } catch (Exception $e) {
+                            $duracion = 'Error';
                         }
-                    } catch (Exception $e) {
-                        $duracion = 'Error';
                     }
-                }
-                
-                // Formatear fecha
-                $fechaInicio = date('d/m/Y H:i', strtotime($log->fecha_inicio));
-                
-                // Iniciales del avatar
-                $iniciales = strtoupper(substr($log->username, 0, 2));
-                ?>
-                <div class="log-row <?= $esActiva ? 'active-session' : 'closed-session' ?>" data-fecha="<?= $log->fecha_inicio ?>" style="<?= $shouldHide ? 'display: none;' : '' ?>">
                     
-                    <!-- User Info -->
-                    <div class="log-user-col">
-                        <div class="log-avatar <?= $esActiva ? 'active' : 'inactive' ?>">
-                            <?= $iniciales ?>
-                        </div>
-                        <div>
-                            <h4 class="log-username"><?= htmlspecialchars($log->username) ?></h4>
-                            <p class="log-userid">ID: <?= $log->usuario_id ?></p>
-                        </div>
-                    </div>
-
-                    <!-- Session Info -->
-                    <div class="log-details-grid">
-                        <div class="log-detail-item">
-                            <i class="bi bi-calendar3" style="color: #94a3b8;"></i>
-                            <span><?= $fechaInicio ?></span>
-                        </div>
-                        <div class="log-detail-item">
-                            <i class="bi bi-clock" style="color: #94a3b8;"></i>
-                            <?php if ($esActiva): ?>
-                                <span style="color: #059669; font-weight: 600;">● En curso</span>
-                            <?php else: ?>
-                                <span>Duración: <?= $duracion ?></span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <!-- Status Badge -->
-                    <div class="log-actions">
-                        <?php if ($esActiva): ?>
-                        <div class="log-status-icon active" title="Sesión Activa">
-                            <i class="bi bi-check-circle-fill" style="font-size: 1rem;"></i>
-                        </div>
-                        <?php else: ?>
-                        <div class="log-status-icon closed" title="Sesión Finalizada">
-                            <i class="bi bi-box-arrow-right" style="font-size: 1rem;"></i>
-                        </div>
-                        <?php endif; ?>
+                    // Formatear fecha
+                    $fechaInicio = date('d/m/Y H:i', strtotime($log->fecha_inicio));
+                    
+                    // Iniciales del avatar
+                    $iniciales = strtoupper(substr($log->username, 0, 2));
+                    ?>
+                    <div class="log-row <?= $esActiva ? 'active-session' : 'closed-session' ?>">
                         
-                        <!-- Botón Ver -->
-                        <button onclick="verDetalle('<?= htmlspecialchars($log->username) ?>', '<?= $log->usuario_id ?>', '<?= $log->fecha_inicio ?>', '<?= $log->fecha_fin ?? '' ?>', '<?= $duracion ?>', '<?= $esActiva ? 'Activa' : 'Cerrada' ?>')" 
-                                class="btn-view-detail">
-                            <i class="bi bi-eye"></i>
-                            Ver
-                        </button>
-                    </div>
+                        <!-- User Info -->
+                        <div class="log-user-col">
+                            <div class="log-avatar <?= $esActiva ? 'active' : 'inactive' ?>">
+                                <?= $iniciales ?>
+                            </div>
+                            <div>
+                                <h4 class="log-username"><?= htmlspecialchars($log->username) ?></h4>
+                                <p class="log-userid">ID: <?= $log->usuario_id ?></p>
+                            </div>
+                        </div>
 
-                </div>
-                <?php endforeach; ?>
+                        <!-- Session Info -->
+                        <div class="log-details-grid">
+                            <div class="log-detail-item">
+                                <i class="bi bi-calendar3" style="color: #94a3b8;"></i>
+                                <span><?= $fechaInicio ?></span>
+                            </div>
+                            <div class="log-detail-item">
+                                <i class="bi bi-clock" style="color: #94a3b8;"></i>
+                                <?php if ($esActiva): ?>
+                                    <span class="active-status" style="color: #059669; font-weight: 600;">● En curso</span>
+                                <?php else: ?>
+                                    <span>Duración: <?= $duracion ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- Status Badge -->
+                        <div class="log-actions">
+                            <?php if ($esActiva): ?>
+                            <div class="log-status-icon active" title="Sesión Activa">
+                                <i class="bi bi-check-circle-fill" style="font-size: 1rem;"></i>
+                            </div>
+                            <?php else: ?>
+                            <div class="log-status-icon closed" title="Sesión Finalizada">
+                                <i class="bi bi-box-arrow-right" style="font-size: 1rem;"></i>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <!-- Botón Ver -->
+                            <button onclick="verDetalle('<?= htmlspecialchars($log->username) ?>', '<?= $log->usuario_id ?>', '<?= $log->fecha_inicio ?>', '<?= $log->fecha_fin ?? '' ?>', '<?= $duracion ?>', '<?= $esActiva ? 'Activa' : 'Cerrada' ?>')" 
+                                    class="btn-view-detail">
+                                <i class="bi bi-eye"></i>
+                                Ver
+                            </button>
+                        </div>
+
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
             
             <!-- Footer con Paginación -->
@@ -208,36 +202,49 @@ $totalLogs = count($logs);
                 <!-- Izquierda: Info y selector de items por página -->
                 <div class="logs-footer-info">
                     <span class="logs-footer-text">
-                        Mostrando <strong style="color: #0f172a;" id="visibleCount"><?= min($paginationPerPage, $totalLogs) ?></strong> de <strong style="color: #0f172a;"><?= $totalLogs ?></strong> registros
+                        Mostrando <strong style="color: #0f172a;"><?= count($logs) ?></strong> de <strong style="color: #0f172a;"><?= $totalItems ?></strong> registros
                     </span>
                     <div class="logs-per-page">
                         <span style="font-size: 0.75rem; color: #94a3b8;">Mostrar:</span>
                         <select id="itemsPerPage" onchange="changeItemsPerPage()" class="logs-per-page-select">
-                            <option value="5" <?= $paginationPerPage == 5 ? 'selected' : '' ?>>5</option>
-                            <option value="10" <?= $paginationPerPage == 10 ? 'selected' : '' ?>>10</option>
-                            <option value="25" <?= $paginationPerPage == 25 ? 'selected' : '' ?>>25</option>
-                            <option value="50" <?= $paginationPerPage == 50 ? 'selected' : '' ?>>50</option>
+                            <option value="5" <?= $perPage == 5 ? 'selected' : '' ?>>5</option>
+                            <option value="10" <?= $perPage == 10 ? 'selected' : '' ?>>10</option>
+                            <option value="20" <?= $perPage == 20 ? 'selected' : '' ?>>20</option>
+                            <option value="50" <?= $perPage == 50 ? 'selected' : '' ?>>50</option>
+                            <option value="100" <?= $perPage == 100 ? 'selected' : '' ?>>100</option>
                         </select>
                     </div>
                 </div>
                 
-                <!-- Derecha: Paginación Minimal Ghost -->
+                <!-- Derecha: Paginación Real -->
                 <div class="logs-pagination">
-                    <button onclick="previousPage()" id="btnPrev" class="logs-page-btn" disabled>
+                    <?php
+                        $queryParams = $_GET;
+                        $prevPage = max(1, $page - 1);
+                        $nextPage = min($totalPages, $page + 1);
+                        
+                        $queryParams['page'] = $prevPage;
+                        $prevUrl = BASE_URL . 'logs?' . http_build_query($queryParams);
+                        
+                        $queryParams['page'] = $nextPage;
+                        $nextUrl = BASE_URL . 'logs?' . http_build_query($queryParams);
+                    ?>
+                    
+                    <a href="<?= $prevUrl ?>" class="logs-page-btn <?= $page <= 1 ? 'disabled-link' : '' ?>" <?= $page <= 1 ? 'onclick="return false;"' : '' ?>>
                         <i class="bi bi-arrow-left"></i>
                         Anterior
-                    </button>
+                    </a>
 
                     <div style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; font-weight: 500; color: #475569;">
-                        <span style="color: #0f172a;">Página <span id="currentPage">1</span></span>
+                        <span style="color: #0f172a;">Página <?= $page ?></span>
                         <span style="color: #cbd5e1;">/</span>
-                        <span id="totalPages">1</span>
+                        <span><?= $totalPages ?></span>
                     </div>
 
-                    <button onclick="nextPage()" id="btnNext" class="logs-page-btn">
+                    <a href="<?= $nextUrl ?>" class="logs-page-btn <?= $page >= $totalPages ? 'disabled-link' : '' ?>" <?= $page >= $totalPages ? 'onclick="return false;"' : '' ?>>
                         Siguiente
                         <i class="bi bi-arrow-right"></i>
-                    </button>
+                    </a>
                 </div>
             </div>
 
@@ -245,11 +252,9 @@ $totalLogs = count($logs);
 
 </div><!-- End logs-content-card -->
 
-<div class="container-fluid">
-
 <script src="<?= BASE_URL ?>js/logs.js?v=<?= time() ?>"></script>
 
-<!-- Modal de Detalle -->
+<!-- Modal de Detalle (fuera de cualquier contenedor) -->
 <div id="detalleModal" class="logs-modal-overlay">
     <div class="logs-modal-card">
         

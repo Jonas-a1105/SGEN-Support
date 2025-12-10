@@ -18,6 +18,17 @@ class AuthController extends Controller
 
     public function login()
     {
+        // Si el usuario ya está autenticado, redirigir al dashboard
+        if (isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+        
+        // Evitar que el navegador cachee esta página
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: Sat, 01 Jan 2000 00:00:00 GMT');
+        
         $this->renderSimple('auth/login');
     }
 
@@ -91,6 +102,24 @@ class AuthController extends Controller
         
         $this->setFlashMessage('success', 'Has cerrado sesión correctamente.');
         header('Location: ' . BASE_URL . 'auth/login');
+        exit;
+    }
+
+    /**
+     * API endpoint para verificar si hay una sesión activa.
+     * Usado por JavaScript para validar sesión en páginas cacheadas.
+     */
+    public function checkSession()
+    {
+        header('Content-Type: text/plain');
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        
+        if (isset($_SESSION['user_id'])) {
+            echo 'true';
+        } else {
+            http_response_code(401);
+            echo 'false';
+        }
         exit;
     }
 }

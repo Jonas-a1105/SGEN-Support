@@ -65,7 +65,7 @@ class SoportesController extends Controller
      */
     public function index()
     {
-        if ($_SESSION['rol'] === 'consultor') {
+        if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'consultor') {
             $departamentoId = $_SESSION['departamento_id'] ?? 0;
             $soportes = $this->soporteModel->findAllByDepartment($departamentoId);
         } else {
@@ -109,7 +109,7 @@ class SoportesController extends Controller
         
         $items = $departamentoId ? $this->inventarioModel->obtenerItemsPorDepartamento($departamentoId) : [];
         
-        $includeInternos = in_array($_SESSION['rol'], ['admin', 'tecnico']);
+        $includeInternos = isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico']);
         $comentarios = $this->ticketComentarioModel->findByTicketId($id, $includeInternos);
         
         // Cargar archivos adjuntos
@@ -137,7 +137,7 @@ class SoportesController extends Controller
             $departamentos = $this->departamentoModel->findById($departamentoId);
             $departamentos = $departamentos ? [$departamentos] : [];
         } else {
-            $equipos = $this->equipoModel->findAll();
+            $equipos = $this->equipoModel->findAllWithDetails();
             $departamentos = $this->departamentoModel->findAll();
         }
 
@@ -159,7 +159,7 @@ class SoportesController extends Controller
     {
         $this->restrictTo(['admin', 'tecnico', 'consultor']);
 
-        $soporte = $this->soporteModel->findById($id);
+        $soporte = $this->soporteModel->findByIdWithDetails($id);
         if (!$soporte) {
             die("Ticket de soporte no encontrado.");
         }
@@ -177,7 +177,7 @@ class SoportesController extends Controller
             $departamentos = $this->departamentoModel->findById($departamentoId);
             $departamentos = $departamentos ? [$departamentos] : [];
         } else {
-            $equipos = $this->equipoModel->findAll();
+            $equipos = $this->equipoModel->findAllWithDetails();
             $departamentos = $this->departamentoModel->findAll();
         }
 
@@ -504,6 +504,36 @@ class SoportesController extends Controller
         }
 
         $this->fileUploadService->servirArchivo($resultado['archivo'], $resultado['ruta']);
+        exit;
+    }
+
+    /**
+     * Elimina un archivo adjunto.
+     */
+    public function eliminar_archivo($id)
+    {
+        $this->restrictTo(['admin', 'tecnico']);
+        
+        // Obtener info del archivo antes de eliminar para saber a qué ticket pertenece
+        $archivo = (new \App\Models\TicketArchivo())->findById($id);
+        
+        if (!$archivo) {
+            $_SESSION['flash_error'] = 'Archivo no encontrado.';
+            header('Location: ' . BASE_URL . 'soportes');
+            exit;
+        }
+        
+        $ticketId = $archivo->ticket_id;
+        
+        // Eliminar archivo
+        if ($this->fileUploadService->eliminarArchivo($id)) {
+            $_SESSION['flash_success'] = 'Archivo eliminado correctamente.';
+        } else {
+            $_SESSION['flash_error'] = 'Error al eliminar el archivo.';
+        }
+        
+        // Redirigir al ticket
+        header('Location: ' . BASE_URL . 'soportes/ver/' . $ticketId . '#files');
         exit;
     }
 
@@ -959,37 +989,48 @@ class SoportesController extends Controller
 
     /**
      * API para buscar técnicos (JSON)
-     * Movido aquí para asegurar routing
+     * Utilizado por el modal de "Asignar Técnico"
      */
     public function buscarTecnicos() {
         // Asegurar respuesta JSON
         header('Content-Type: application/json');
 
         try {
-            // Verificar sesión
-            if (!isset($_SESSION['usuario_id'])) {
+            // Verificar sesión (user_id es la variable correcta en este sistema)
+            if (!isset($_SESSION['user_id'])) {
                 echo json_encode(['error' => 'Unauthorized']);
                 exit;
             }
 
-            // DEBUG MODE: Forzando respuesta para probar conexión
-            $results = [
-                [
-                    'id' => 888,
-                    'nombre' => 'CONEXION',
-                    'apellido' => 'SOPORTES',
-                    'status' => 'available',
-                    'active_tickets' => 0,
-                    'specialty' => 'Ruta Soportes OK'
-                ]
-            ];
+            // Obtener técnicos de la base de datos
+            $tecnicos = $this->usuarioModel->findAllTechnicians();
+            
+            $results = [];
+            foreach ($tecnicos as $tecnico) {
+                // Contar tickets activos (en_proceso o pendiente) asignados a este empleado
+                $activeTickets = $this->soporteModel->countActiveByEmpleado($tecnico->empleado_id ?? 0);
+                
+                // Parsear nombre completo si viene concatenado
+                $nombreParts = explode(' ', $tecnico->nombre_completo ?? '', 2);
+                $nombre = $nombreParts[0] ?? 'Técnico';
+                $apellido = $nombreParts[1] ?? '';
+                
+                $results[] = [
+                    'id' => $tecnico->empleado_id,
+                    'nombre' => $nombre,
+                    'apellido' => $apellido,
+                    'status' => $activeTickets > 3 ? 'busy' : 'available',
+                    'active_tickets' => $activeTickets,
+                    'specialty' => 'Soporte Técnico' // Puedes agregar campo de especialidad si existe
+                ];
+            }
             
             echo json_encode($results);
             exit;
 
         } catch (\Exception $e) {
             http_response_code(500);
-            echo json_encode(['error' => 'Error: ' . $e->getMessage()]);
+            echo json_encode(['error' => 'Error al buscar técnicos: ' . $e->getMessage()]);
             exit;
         }
     }

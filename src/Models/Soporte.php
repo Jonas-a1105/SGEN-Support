@@ -29,7 +29,7 @@ class Soporte extends Model
                 e.numero_serie AS equipo_serial, 
                 e.tipo AS equipo_tipo,
                 d.nombre AS departamento_nombre,
-                u.username AS tecnico_asignado,
+                CONCAT(emp.nombre, ' ', emp.apellido) AS tecnico_asignado,
                 c.nombre AS categoria_nombre,
                 c.color AS categoria_color,
                 c.icono AS categoria_icono,
@@ -79,13 +79,15 @@ class Soporte extends Model
                 eq.empleado_id AS equipo_empleado_id,
                 d.nombre AS departamento_nombre,
                 d.ubicacion AS departamento_ubicacion,
-                CONCAT(emp.nombre, ' ', emp.apellido) AS nombre_tecnico,
-                u.username AS tecnico_asignado,
+                CONCAT(emp.nombre, ' ', IFNULL(emp.apellido, '')) AS tecnico_asignado,
+                u.username AS tecnico_username,
                 s.observaciones AS soporte_observaciones,
                 c.nombre AS categoria_nombre,
                 c.color AS categoria_color,
                 c.icono AS categoria_icono,
-                CONCAT(emp_equipo.nombre, ' ', IFNULL(emp_equipo.apellido, '')) AS equipo_empleado_nombre
+                CONCAT(emp_equipo.nombre, ' ', IFNULL(emp_equipo.apellido, '')) AS equipo_empleado_nombre,
+                u_creador.username AS usuario_nombre,
+                u_creador.id AS usuario_creador_id
             FROM {$this->table} s
             LEFT JOIN equipos eq ON s.equipo_id = eq.id
             LEFT JOIN departamentos d ON eq.departamento_id = d.id
@@ -93,6 +95,7 @@ class Soporte extends Model
             LEFT JOIN usuarios u ON emp.usuario_id = u.id
             LEFT JOIN categorias c ON s.categoria_id = c.id
             LEFT JOIN empleados emp_equipo ON eq.empleado_id = emp_equipo.id
+            LEFT JOIN usuarios u_creador ON s.usuario_creacion_id = u_creador.id
             WHERE s.id = ?
         ";
         $stmt = $this->pdo->prepare($sql);
@@ -419,6 +422,22 @@ class Soporte extends Model
         $stmt->bindValue(2, $limit, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * Cuenta tickets activos asignados a un empleado
+     * Estados activos: pendiente, en_proceso, en_espera
+     * @param int $empleadoId
+     * @return int
+     */
+    public function countActiveByEmpleado(int $empleadoId): int
+    {
+        $sql = "SELECT COUNT(*) FROM {$this->table} 
+                WHERE empleado_id = ? 
+                AND estado IN ('pendiente', 'en_proceso', 'en_espera')";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$empleadoId]);
+        return (int) $stmt->fetchColumn();
     }
 
     public function delete(int $id)
