@@ -238,9 +238,11 @@ if (isset($itemsInventario) && is_array($itemsInventario)) {
                                         <span class="dd-status-badge <?= $empStatus ?>">
                                             <?= $empStatus === 'active' ? 'Activo' : 'Permiso' ?>
                                         </span>
+                                        <?php if ($_SESSION['rol'] === 'admin'): ?>
                                         <a href="<?= BASE_URL ?>empleados/editar/<?= $emp->id ?>" class="dd-action-btn" title="Editar">
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </a>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -270,11 +272,24 @@ if (isset($itemsInventario) && is_array($itemsInventario)) {
                         </div>
                     <?php else: ?>
                         <div class="dd-list" id="assetList">
+                            <?php 
+                                // Configuración de estados de equipo
+                                $estadoConfig = [
+                                    'disponible' => ['class' => 'active', 'text' => 'Disponible'],
+                                    'en_uso' => ['class' => 'active', 'text' => 'En Uso'],
+                                    'nuevo' => ['class' => 'active', 'text' => 'Nuevo'],
+                                    'usado' => ['class' => 'maintenance', 'text' => 'Usado'],
+                                    'en_reparacion' => ['class' => 'maintenance', 'text' => 'En Reparación'],
+                                    'fuera_de_servicio' => ['class' => 'retired', 'text' => 'Fuera de Servicio'],
+                                    'en_reserva' => ['class' => 'maintenance', 'text' => 'En Reserva'],
+                                ];
+                            ?>
                             <?php foreach ($equipos as $e): 
                                 $assetName = htmlspecialchars(($e->marca ?? '') . ' ' . ($e->modelo ?? $e->tipo));
                                 $assetSerial = htmlspecialchars($e->codigo_inventario);
                                 $assetUser = htmlspecialchars($e->usuario_asignado ?? 'Sin asignar');
-                                $assetStatus = $e->estado === 'disponible' || $e->estado === 'en_uso' ? 'active' : 'maintenance';
+                                $estado = $e->estado ?? 'disponible';
+                                $estadoInfo = $estadoConfig[$estado] ?? ['class' => 'maintenance', 'text' => ucfirst(str_replace('_', ' ', $estado))];
                                 $assetIcon = in_array($e->tipo, ['laptop', 'notebook']) ? 'bi-laptop' : ($e->tipo === 'impresora' ? 'bi-printer' : 'bi-pc-display');
                             ?>
                                 <div class="dd-list-item" data-name="<?= strtolower($assetName . ' ' . $assetSerial) ?>">
@@ -289,8 +304,8 @@ if (isset($itemsInventario) && is_array($itemsInventario)) {
                                         </div>
                                     </div>
                                     <div class="dd-item-meta">
-                                        <span class="dd-status-badge <?= $assetStatus ?>">
-                                            <?= $assetStatus === 'active' ? 'En Uso' : 'Mant.' ?>
+                                        <span class="dd-status-badge <?= $estadoInfo['class'] ?>">
+                                            <?= $estadoInfo['text'] ?>
                                         </span>
                                         <a href="<?= BASE_URL ?>equipos/ver/<?= $e->id ?>" class="dd-action-btn" title="Ver">
                                             <i class="bi bi-three-dots-vertical"></i>

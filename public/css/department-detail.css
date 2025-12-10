@@ -682,6 +682,12 @@
     border-color: var(--dd-rose-100);
 }
 
+.dd-status-badge.retired {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
 .dd-action-btn {
     color: var(--dd-slate-300);
     background: transparent;
@@ -732,4 +738,7 @@
     border-top: 1px solid var(--dd-slate-200);
     margin: 1.5rem 0;
 }
-[data-theme='dark'] { --dd-slate-200: var(--border-color); }
+
+[data-theme='dark'] {
+    --dd-slate-200: var(--border-color);
+}

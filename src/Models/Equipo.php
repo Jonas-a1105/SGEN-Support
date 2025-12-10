@@ -85,7 +85,7 @@ class Equipo extends Model
     public function findByDepartamentoId($departamento_id)
     {
         $sql = "SELECT e.*, d.nombre AS departamento_nombre,
-                       CONCAT(emp.nombre, ' ', IFNULL(emp.apellido, '')) AS empleado_nombre
+                       CONCAT(emp.nombre, ' ', IFNULL(emp.apellido, '')) AS usuario_asignado
                 FROM {$this->table} e 
                 LEFT JOIN departamentos d ON e.departamento_id = d.id 
                 LEFT JOIN empleados emp ON e.empleado_id = emp.id

@@ -114,6 +114,8 @@ function isActive($link, $currentUri) {
         <div class="ms-section">
             <div class="ms-section-title">Organización</div>
             <div class="ms-nav-list">
+                <?php if ($_SESSION['rol'] === 'admin'): ?>
+                <!-- Empleados - Solo Admin -->
                 <a href="<?= BASE_URL ?>empleados" class="ms-link <?= isActive('empleados', $currentUri) ?>">
                     <div class="ms-active-indicator"></div>
                     <div class="ms-icon-box">
@@ -127,6 +129,7 @@ function isActive($link, $currentUri) {
                     </div>
                     <span class="ms-link-text">Empleados</span>
                 </a>
+                <?php endif; ?>
                 <a href="<?= BASE_URL ?>departamentos" class="ms-link <?= isActive('departamentos', $currentUri) ?>">
                     <div class="ms-active-indicator"></div>
                     <div class="ms-icon-box">
