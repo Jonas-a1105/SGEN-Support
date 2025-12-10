@@ -16,6 +16,11 @@ const ItemForm = {
         this.previewContainer = document.getElementById('imagePreviewContainer');
         this.uploadPlaceholder = document.getElementById('uploadPlaceholder');
 
+        // Category Elements
+        this.categorySelect = document.getElementById('categoriaSelect');
+        this.customCategoryContainer = document.getElementById('customCategoryContainer');
+        this.customCategoryInput = document.getElementById('customCategoryInput');
+
         this.stockInput = document.getElementById('stock_inicial');
         this.costInput = document.getElementById('valor_compra');
         this.valueContainer = document.getElementById('inventoryValueContainer');
@@ -32,6 +37,23 @@ const ItemForm = {
             this.imageInput.addEventListener('change', (e) => this.handleImageUpload(e));
         }
 
+        // Remove Image Button
+        const btnRemoveImage = document.getElementById('btnRemoveImage');
+        if (btnRemoveImage) {
+            btnRemoveImage.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.removeImage();
+            });
+        }
+
+        // Category Change
+        if (this.categorySelect) {
+            this.categorySelect.addEventListener('change', () => this.handleCategoryChange());
+            // Intial check in case of reload
+            this.handleCategoryChange();
+        }
+
         // Value Calculation
         if (this.stockInput) {
             this.stockInput.addEventListener('input', () => this.calculateValue());
@@ -43,6 +65,22 @@ const ItemForm = {
         // Form Submit
         if (this.form) {
             this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
+    },
+
+    handleCategoryChange() {
+        if (!this.categorySelect || !this.customCategoryContainer || !this.customCategoryInput) return;
+
+        if (this.categorySelect.value === 'Otros') {
+            this.customCategoryContainer.style.display = 'block';
+            this.customCategoryInput.disabled = false;
+            this.customCategoryInput.required = true;
+            this.customCategoryInput.focus();
+        } else {
+            this.customCategoryContainer.style.display = 'none';
+            this.customCategoryInput.disabled = true;
+            this.customCategoryInput.required = false;
+            this.customCategoryInput.value = ''; // Clear value
         }
     },
 
@@ -64,11 +102,43 @@ const ItemForm = {
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            this.uploadPlaceholder.style.display = 'none';
-            this.previewContainer.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Vista previa">`;
-            this.previewContainer.style.display = 'block';
+            this.showImagePreview(e.target.result);
         };
         reader.readAsDataURL(file);
+    },
+
+    showImagePreview(src) {
+        const previewImg = document.getElementById('imagePreview');
+        if (previewImg) {
+            previewImg.src = src;
+        }
+        this.uploadPlaceholder.style.display = 'none';
+        this.previewContainer.style.display = 'block';
+
+        // Reset eliminar flag
+        const eliminarInput = document.getElementById('eliminarImagen');
+        if (eliminarInput) eliminarInput.value = '0';
+    },
+
+    removeImage() {
+        // Clear file input
+        if (this.imageInput) {
+            this.imageInput.value = '';
+        }
+
+        // Reset preview
+        const previewImg = document.getElementById('imagePreview');
+        if (previewImg) {
+            previewImg.src = '';
+        }
+
+        // Show placeholder, hide preview
+        this.previewContainer.style.display = 'none';
+        this.uploadPlaceholder.style.display = 'flex';
+
+        // Set eliminar flag for backend
+        const eliminarInput = document.getElementById('eliminarImagen');
+        if (eliminarInput) eliminarInput.value = '1';
     },
 
     calculateValue() {

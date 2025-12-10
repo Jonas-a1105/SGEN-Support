@@ -84,19 +84,30 @@ $tituloPagina = $isEdit ? 'Editar Mantenimiento' : 'Programar Mantenimiento';
                         
                         <!-- Search View -->
                         <div id="deviceSearchView" style="<?= ($isEdit || isset($equipo_preseleccionado)) ? 'display:none' : '' ?>">
-                            <label class="mf-label">Buscar Equipo</label>
-                            <select id="selectDevice" class="mf-select">
-                                <option value="">Seleccione un equipo...</option>
-                                <?php foreach($equipos as $eq): ?>
-                                    <option value="<?= $eq->id ?>" 
-                                            data-code="<?= $eq->codigo_inventario ?>"
-                                            data-location="<?= $eq->departamento_nombre ?? '' ?>"
-                                            data-type="<?= $eq->tipo ?>">
-                                        <?= $eq->nombre ?? $eq->tipo . ' ' . $eq->marca . ' ' . $eq->modelo ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <p class="text-muted small mt-2">Puede buscar por nombre, marca o código de inventario.</p>
+                            <div class="mf-search-wrapper pos-relative">
+                                <i class="bi bi-search mf-search-icon"></i>
+                                <input type="text" id="deviceSearchInput" class="mf-input mf-search-input" placeholder="Buscar por serial, nombre o código..." autocomplete="off">
+                                
+                                <!-- Hidden select for data storage -->
+                                <select id="selectDevice" style="display:none;">
+                                    <option value="">Seleccione un equipo...</option>
+                                    <?php foreach($equipos as $eq): ?>
+                                        <option value="<?= $eq->id ?>" 
+                                                data-code="<?= $eq->codigo_inventario ?>"
+                                                data-location="<?= $eq->departamento_nombre ?? '' ?>"
+                                                data-serial="<?= $eq->serial ?? '' ?>"
+                                                data-brand="<?= $eq->marca ?? '' ?>"
+                                                data-model="<?= $eq->modelo ?? '' ?>"
+                                                data-type="<?= $eq->tipo ?>">
+                                            <?= $eq->nombre ?? $eq->tipo . ' ' . $eq->marca . ' ' . $eq->modelo ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+
+                                <!-- Results Dropdown -->
+                                <div id="deviceSearchResults" class="mf-search-results"></div>
+                            </div>
+                            <p class="text-muted small mt-2">Ingrese el serial, código de activo o nombre para buscar.</p>
                         </div>
 
                         <!-- Selected View -->
@@ -200,8 +211,16 @@ $tituloPagina = $isEdit ? 'Editar Mantenimiento' : 'Programar Mantenimiento';
                     <div class="mf-section-body">
                         
                         <div class="mf-form-group">
-                            <label class="mf-label">Fecha Programada</label>
-                            <input type="date" name="fecha" required class="mf-input" value="<?= $isEdit ? date('Y-m-d', strtotime($mantenimiento->fecha)) : date('Y-m-d') ?>">
+                            <label class="mf-label">Fecha y Hora Programada</label>
+                            <input type="datetime-local" name="fecha" required class="mf-input" 
+                                   value="<?= $isEdit ? date('Y-m-d\TH:i', strtotime($mantenimiento->fecha)) : date('Y-m-d\TH:i') ?>">
+                        </div>
+
+                        <div class="mf-form-group">
+                            <label class="mf-label">Duración Estimada (minutos)</label>
+                            <input type="number" name="duracion" min="1" step="1" class="mf-input" placeholder="Ej: 60"
+                                   value="<?= $isEdit ? ($mantenimiento->duracion ?? 60) : 60 ?>">
+                            <small class="text-muted">El sistema cambiará el estado automáticamente tras este tiempo.</small>
                         </div>
 
                         <div id="recurrenceContainer" style="<?= $tipo == 'correctivo' ? 'display:none' : '' ?>">
@@ -232,16 +251,24 @@ $tituloPagina = $isEdit ? 'Editar Mantenimiento' : 'Programar Mantenimiento';
 
                         <div class="mf-form-group">
                             <label class="mf-label">Asignado a (Técnico)</label>
-                            <!-- Assuming only admin can change this or logic is handled in backend defaults -->
-                             <?php if($_SESSION['rol'] === 'admin'): ?>
-                                <select name="tecnico_id" class="mf-select">
-                                    <!-- Populate via controller if available, otherwise just current user or 'admin' placeholder -->
-                                    <option value="<?= $_SESSION['user_id'] ?>"><?= $_SESSION['username'] ?> (Yo)</option>
-                                    <!-- If $tecnicos passed from controller, loop here. -->
-                                </select>
-                             <?php else: ?>
-                                <input type="text" class="mf-input" value="<?= $_SESSION['username'] ?>" readonly disabled>
-                             <?php endif; ?>
+                            <select name="tecnico_id" class="mf-select">
+                                <option value="" disabled selected>Seleccionar técnico...</option>
+                                <?php 
+                                    $selectedTecnico = $isEdit ? $mantenimiento->tecnico_id : $_SESSION['user_id'];
+                                    if(isset($tecnicos) && !empty($tecnicos)):
+                                        foreach($tecnicos as $t): 
+                                ?>
+                                    <option value="<?= $t->usuario_id ?>" <?= $selectedTecnico == $t->usuario_id ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($t->nombre_completo ?? $t->username) ?> 
+                                        <?= $t->usuario_id == $_SESSION['user_id'] ? '(Yo)' : '' ?>
+                                    </option>
+                                <?php 
+                                        endforeach; 
+                                    else:
+                                ?>
+                                    <option value="<?= $_SESSION['user_id'] ?>" selected><?= $_SESSION['username'] ?> (Yo)</option>
+                                <?php endif; ?>
+                            </select>
                         </div>
 
                         <div class="mf-form-group">

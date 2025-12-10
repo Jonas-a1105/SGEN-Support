@@ -21,8 +21,7 @@ class BitacoraController extends Controller
      */
     public function index()
     {
-        // Leer preferencia de paginación: URL > Cookie > Default
-        $cookiePerPage = isset($_COOKIE['sgen_pagination_per_page']) ? (int)$_COOKIE['sgen_pagination_per_page'] : 10;
+        $cookiePerPage = isset($_COOKIE['sgen_bitacora_per_page']) ? (int)$_COOKIE['sgen_bitacora_per_page'] : 10;
         $perPage = isset($_GET['per_page']) ? max(1, (int)$_GET['per_page']) : $cookiePerPage;
         $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $offset = ($currentPage - 1) * $perPage;

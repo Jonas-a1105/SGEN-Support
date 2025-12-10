@@ -82,4 +82,92 @@ class SesionLog extends Model
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+
+    /**
+     * Finds logs with dynamic filters and pagination.
+     */
+    public function findAllPaginated(int $limit, int $offset, array $filters = []): array
+    {
+        $sql = "SELECT sl.* FROM {$this->table} sl 
+                LEFT JOIN usuarios u ON sl.usuario_id = u.id
+                WHERE 1=1";
+        $params = [];
+
+        // Filter by username
+        if (!empty($filters['username'])) {
+            $sql .= " AND sl.username LIKE :username";
+            $params[':username'] = '%' . $filters['username'] . '%';
+        }
+
+        // Filter by user_id (exact match)
+        if (!empty($filters['usuario_id'])) {
+            $sql .= " AND sl.usuario_id = :usuario_id";
+            $params[':usuario_id'] = $filters['usuario_id'];
+        }
+
+        // Filter by date range
+        if (!empty($filters['fecha_desde'])) {
+            $sql .= " AND DATE(sl.fecha_inicio) >= :fecha_desde";
+            $params[':fecha_desde'] = $filters['fecha_desde'];
+        }
+
+        if (!empty($filters['fecha_hasta'])) {
+            $sql .= " AND DATE(sl.fecha_inicio) <= :fecha_hasta";
+            $params[':fecha_hasta'] = $filters['fecha_hasta'];
+        }
+
+        $sql .= " ORDER BY sl.fecha_inicio DESC LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->pdo->prepare($sql);
+        
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * Counts logs with dynamic filters.
+     */
+    public function countAll(array $filters = []): int
+    {
+        $sql = "SELECT COUNT(*) as total FROM {$this->table} sl 
+                LEFT JOIN usuarios u ON sl.usuario_id = u.id
+                WHERE 1=1";
+        $params = [];
+
+        // Filter by username
+        if (!empty($filters['username'])) {
+            $sql .= " AND sl.username LIKE :username";
+            $params[':username'] = '%' . $filters['username'] . '%';
+        }
+
+        // Filter by user_id (exact match)
+        if (!empty($filters['usuario_id'])) {
+            $sql .= " AND sl.usuario_id = :usuario_id";
+            $params[':usuario_id'] = $filters['usuario_id'];
+        }
+
+        // Filter by date range
+        if (!empty($filters['fecha_desde'])) {
+            $sql .= " AND DATE(sl.fecha_inicio) >= :fecha_desde";
+            $params[':fecha_desde'] = $filters['fecha_desde'];
+        }
+
+        if (!empty($filters['fecha_hasta'])) {
+            $sql .= " AND DATE(sl.fecha_inicio) <= :fecha_hasta";
+            $params[':fecha_hasta'] = $filters['fecha_hasta'];
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $result = $stmt->fetch(PDO::FETCH_OBJ);
+        
+        return $result ? (int)$result->total : 0;
+    }
 }

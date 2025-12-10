@@ -17,18 +17,16 @@ function getDeptColor($index, $colores) {
 
 <div class="departamentos-container">
     
-    <!-- Header -->
-    <div class="departamentos-header">
-        <div style="max-width: 1400px; margin: 0 auto;">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 p-3" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-                        <i class="bi bi-building text-white fs-4"></i>
+    <main id="departamentosMain" class="container-fluid px-4 py-4" style="max-width: 1400px; margin: 0 auto;">
+        
+        <!-- Header -->
+        <div class="departamentos-header">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="dept-header-logo">
+                        <i class="bi bi-building"></i>
                     </div>
-                    <div>
-                        <h1 class="departamentos-title">Departamentos</h1>
-                        <p class="departamentos-subtitle mb-0">Visión general de las unidades organizativas.</p>
-                    </div>
+                    <span class="dept-header-title">Departamentos</span>
                 </div>
                 <?php if ($_SESSION['rol'] === 'admin'): ?>
                     <a href="<?= BASE_URL ?>departamentos/crear" class="btn-crear-dept">
@@ -38,30 +36,32 @@ function getDeptColor($index, $colores) {
                 <?php endif; ?>
             </div>
         </div>
-    </div>
-
-    <main id="departamentosMain" class="container-fluid px-4 py-4" style="max-width: 1400px; margin: 0 auto;">
         
         <!-- Main Content Card Container -->
         <div class="departamentos-content-card">
         
         <!-- Toolbar -->
         <div class="departamentos-toolbar">
-            <!-- Bulk Delete Controls -->
-            <div class="bulk-controls">
-                <div class="form-check form-switch mb-0" title="Activar selección múltiple">
-                    <input class="form-check-input bulk-toggle" type="checkbox" id="bulkModeToggle" style="cursor: pointer; width: 3em; height: 1.5em;">
-                </div>
-                <div id="bulkSelectAllContainer" class="bulk-select-all">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="bulkSelectAll" style="cursor: pointer; border-color: #cbd5e1;">
-                        <label class="form-check-label text-muted fs-sm user-select-none" for="bulkSelectAll" style="cursor: pointer;">Todo</label>
+            <!-- Left: Bulk Controls -->
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <?php if ($_SESSION['rol'] === 'admin'): ?>
+                <!-- Bulk Delete Controls -->
+                <div class="bulk-controls">
+                    <div class="form-check form-switch mb-0" title="Activar selección múltiple">
+                        <input class="form-check-input bulk-toggle" type="checkbox" id="bulkModeToggle" style="cursor: pointer; width: 3em; height: 1.5em;">
                     </div>
+                    <div id="bulkSelectAllContainer" class="bulk-select-all">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="bulkSelectAll" style="cursor: pointer; border-color: #cbd5e1;">
+                            <label class="form-check-label text-muted fs-sm user-select-none" for="bulkSelectAll" style="cursor: pointer;">Todo</label>
+                        </div>
+                    </div>
+                    <button id="bulkDeleteBtn" class="bulk-delete-btn">
+                        <i class="bi bi-trash"></i>
+                        <span id="bulkSelectedCount">0</span> seleccionados
+                    </button>
                 </div>
-                <button id="bulkDeleteBtn" class="bulk-delete-btn">
-                    <i class="bi bi-trash"></i>
-                    <span id="bulkSelectedCount">0</span> seleccionados
-                </button>
+                <?php endif; ?>
             </div>
             
             <!-- Search -->
@@ -263,6 +263,36 @@ function getDeptColor($index, $colores) {
                     <?php endforeach; ?>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Modern Pagination Footer -->
+        <div id="paginationFooter" class="dept-pagination-footer">
+            <div class="dept-pagination-info">
+                <span class="text-slate-500 fs-sm">
+                    Mostrando <strong class="text-slate-900" id="visibleCountDisplay">0</strong> de <strong class="text-slate-900" id="totalCountDisplay">0</strong>
+                </span>
+                <div class="dept-pagination-controls">
+                    <span class="text-slate-400 fs-xs">Mostrar:</span>
+                    <select id="itemsPerPageSelector" class="pagination-select">
+                        <option value="6">6</option>
+                        <option value="12">12</option>
+                        <option value="24">24</option>
+                        <option value="48">48</option>
+                        <option value="-1">Todos</option>
+                    </select>
+                </div>
+            </div>
+            <div class="dept-pagination-controls">
+                <button id="btnPrevPage" class="pagination-btn">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </button>
+                <span class="pagination-page-info">
+                    Página <span id="currentPageDisplay">1</span> / <span id="totalPagesDisplay">1</span>
+                </span>
+                <button id="btnNextPage" class="pagination-btn">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
         </div>
 
         <!-- Empty State -->

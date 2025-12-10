@@ -1,8 +1,11 @@
 /**
  * Logic for Empleados View
+ * With User Preferences Persistence
  */
 
 (function () {
+    const MODULE_NAME = 'empleados';
+
     const init = () => {
         const gridView = document.getElementById('gridViewEmp');
         const listView = document.getElementById('listViewEmp');
@@ -12,14 +15,39 @@
         const searchInput = document.getElementById('searchEmpleados');
         const filterBtns = document.querySelectorAll('.dept-filter-btn');
 
-        let currentFilter = 'todos';
+        // Load saved preferences
+        let currentFilter = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'filter', 'todos') : 'todos';
         let currentSearch = '';
-        let currentView = 'grid';
+        let currentView = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'view', 'grid') : 'grid';
+
+        // Apply saved filter on init
+        if (currentFilter !== 'todos') {
+            filterBtns.forEach(b => {
+                b.classList.remove('active');
+                if (b.getAttribute('data-dept') === currentFilter) {
+                    b.classList.add('active');
+                }
+            });
+        }
+
+        // Apply saved view on init
+        if (currentView === 'list') {
+            if (gridView) gridView.style.display = 'none';
+            if (listView) listView.style.display = 'block';
+            if (btnViewList) btnViewList.classList.add('active');
+            if (btnViewGrid) btnViewGrid.classList.remove('active');
+        } else {
+            if (gridView) gridView.style.display = 'grid';
+            if (listView) listView.style.display = 'none';
+            if (btnViewGrid) btnViewGrid.classList.add('active');
+            if (btnViewList) btnViewList.classList.remove('active');
+        }
 
         // Toggle de vista
         if (btnViewGrid) {
             btnViewGrid.addEventListener('click', function () {
                 currentView = 'grid';
+                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'grid');
                 if (gridView) gridView.style.display = 'grid';
                 if (listView) listView.style.display = 'none';
                 btnViewGrid.classList.add('active');
@@ -31,6 +59,7 @@
         if (btnViewList) {
             btnViewList.addEventListener('click', function () {
                 currentView = 'list';
+                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'list');
                 if (gridView) gridView.style.display = 'none';
                 if (listView) listView.style.display = 'block';
                 if (btnViewList) btnViewList.classList.add('active');
@@ -45,6 +74,7 @@
                 filterBtns.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentFilter = this.getAttribute('data-dept');
+                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', currentFilter);
                 applyFilters();
             });
         });
@@ -52,6 +82,7 @@
         // Filtrar por dept desde badge
         window.filterByDept = function (dept) {
             currentFilter = dept;
+            if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', dept);
             filterBtns.forEach(b => {
                 b.classList.remove('active');
                 if (b.getAttribute('data-dept') === dept) {
@@ -70,14 +101,12 @@
         }
 
         // Variables de Paginación
-        // Note: itemsPerPage initial value should be passed from backend or default to 10
-        // We can try to read it from the selector or cookie here as well
         let itemsPerPage = 10;
         const cookieMatch = document.cookie.match(/sgen_pagination_per_page=(\d+)/);
         if (cookieMatch) itemsPerPage = parseInt(cookieMatch[1]);
 
         let currentPage = 1;
-        let filteredIndices = []; // Indices de items que coinciden con filtro
+        let filteredIndices = [];
 
         // Init selector
         const selector = document.getElementById('itemsPerPageSelector');
@@ -117,7 +146,6 @@
             filteredIndices = [];
             const cards = gridView.querySelectorAll('.empleado-card');
             const rows = listView.querySelectorAll('tbody tr');
-            let visibleCount = 0;
 
             // 1. Filtrar (Identify matches)
             cards.forEach((card, index) => {
@@ -155,7 +183,7 @@
             const visibleCountDisplay = document.getElementById('visibleCountDisplay');
             const totalCountDisplay = document.getElementById('totalCountDisplay');
             if (visibleCountDisplay) visibleCountDisplay.textContent = visibleIndices.length;
-            if (totalCountDisplay) totalCountDisplay.textContent = cards.length; // Total loaded
+            if (totalCountDisplay) totalCountDisplay.textContent = cards.length;
 
             const currentPageDisplay = document.getElementById('currentPageDisplay');
             const totalPagesDisplay = document.getElementById('totalPagesDisplay');
@@ -183,7 +211,7 @@
                 if (emptyState) emptyState.style.display = 'block';
                 if (currentView === 'grid') gridView.style.display = 'none';
                 else listView.style.display = 'none';
-                if (footer) footer.style.display = 'none'; // Hide footer if filtered out
+                if (footer) footer.style.display = 'none';
             } else {
                 if (emptyState) emptyState.style.display = 'none';
                 if (currentView === 'grid') gridView.style.display = 'grid';
@@ -196,6 +224,7 @@
         window.clearFiltersEmp = function () {
             currentFilter = 'todos';
             currentSearch = '';
+            if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', 'todos');
             if (searchInput) searchInput.value = '';
             filterBtns.forEach(b => {
                 b.classList.remove('active');
@@ -229,3 +258,4 @@
     };
     init();
 })();
+

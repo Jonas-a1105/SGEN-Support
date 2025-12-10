@@ -127,16 +127,16 @@
                 </button>
             </div>
             
-            <button class="inventario-toggle-btn active" data-view="table" data-target="items">
+            <button class="inventario-toggle-btn active" data-view="table" data-target="articulos">
                 <i class="bi bi-list-ul"></i> Tabla
             </button>
-            <button class="inventario-toggle-btn" data-view="cards" data-target="items">
+            <button class="inventario-toggle-btn" data-view="cards" data-target="articulos">
                 <i class="bi bi-grid-3x3-gap"></i> Cards
             </button>
         </div>
 
         <!-- Table View -->
-        <div class="inventario-table-container" id="items-table">
+        <div class="inventario-table-container" id="articulos-table">
             <table class="inventario-table" id="tablaInventario">
                 <thead>
                     <tr>
@@ -218,10 +218,8 @@
         </div>
 
         <!-- Cards Carousel View -->
-        <div class="inventario-carousel-wrapper" id="items-cards">
-            <button class="inventario-carousel-nav prev" data-carousel="items-carousel">
-                <i class="bi bi-chevron-left"></i>
-            </button>
+        <div class="inventario-carousel-wrapper" id="articulos-cards">
+
             <div class="inventario-carousel" id="items-carousel">
                 <?php foreach ($items as $item): ?>
                 <div class="inventario-card" data-bulk-item data-item-id="<?= $item->id ?>" style="position: relative;">
@@ -280,9 +278,7 @@
                 </div>
                 <?php endforeach; ?>
             </div>
-            <button class="inventario-carousel-nav next" data-carousel="items-carousel">
-                <i class="bi bi-chevron-right"></i>
-            </button>
+
         </div>
             <!-- Modern Pagination Footer for Items -->
             <?php if ($totalPagesItems > 1 || !empty($items)): ?>
@@ -349,14 +345,33 @@
             </div>
             <?php else: ?>
 
-            <!-- View Toggle for Equipos -->
+            <!-- View Toggle + Bulk Controls for Equipos -->
             <div class="inventario-view-toggle">
-                <button class="inventario-toggle-btn active" data-view="table" data-target="equipos">
-                    <i class="bi bi-list-ul"></i> Tabla
-                </button>
-                <button class="inventario-toggle-btn" data-view="cards" data-target="equipos">
-                    <i class="bi bi-grid-3x3-gap"></i> Cards
-                </button>
+                <!-- Bulk Delete Controls -->
+                <div class="bulk-controls">
+                    <div class="form-check form-switch mb-0" title="Activar selección múltiple">
+                        <input class="form-check-input bulk-toggle" type="checkbox" id="bulkModeToggleEquipos" style="cursor: pointer; width: 3em; height: 1.5em;">
+                    </div>
+                    <div id="bulkSelectAllContainerEquipos" class="bulk-select-all">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="bulkSelectAllEquipos" style="cursor: pointer; border-color: #cbd5e1;">
+                            <label class="form-check-label text-muted fs-sm user-select-none" for="bulkSelectAllEquipos" style="cursor: pointer;">Todo</label>
+                        </div>
+                    </div>
+                    <button id="bulkDeleteBtnEquipos" class="bulk-delete-btn">
+                        <i class="bi bi-trash"></i>
+                        <span id="bulkSelectedCountEquipos">0</span> seleccionados
+                    </button>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="inventario-toggle-btn active" data-view="table" data-target="equipos">
+                        <i class="bi bi-list-ul"></i> Tabla
+                    </button>
+                    <button class="inventario-toggle-btn" data-view="cards" data-target="equipos">
+                        <i class="bi bi-grid-3x3-gap"></i> Cards
+                    </button>
+                </div>
             </div>
 
             <!-- Equipos Table -->
@@ -376,8 +391,13 @@
                     </thead>
                     <tbody>
                         <?php foreach ($equiposSinAsignar as $equipo): ?>
-                        <tr>
-                            <td>
+                        <tr data-bulk-item data-equipo-id="<?= $equipo->id ?>">
+                            <td style="position: relative;">
+                                <!-- Bulk Checkbox -->
+                                <div class="bulk-checkbox">
+                                    <i class="bi bi-check-circle-fill icon-checked"></i>
+                                    <i class="bi bi-circle icon-unchecked"></i>
+                                </div>
                                 <span class="inventario-code"><?= htmlspecialchars($equipo->codigo_inventario ?? '') ?></span>
                             </td>
                             <td>
@@ -404,7 +424,7 @@
                             <?php if ($_SESSION['rol'] !== 'tecnico'): ?>
                             <td>
                                 <div class="inventario-actions-cell">
-                                    <a href="<?= BASE_URL ?>equipos/ver/<?= $equipo->id ?>" 
+                                    <a href="<?= BASE_URL ?>equipos/ver/<?= $equipo->id ?>?from=inventario_equipos" 
                                        class="inventario-action-btn view" 
                                        title="Ver Detalle">
                                         <i class="bi bi-eye"></i>
@@ -432,12 +452,15 @@
 
             <!-- Equipos Cards Carousel -->
             <div class="inventario-carousel-wrapper" id="equipos-cards">
-                <button class="inventario-carousel-nav prev" data-carousel="equipos-carousel">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
+
                 <div class="inventario-carousel" id="equipos-carousel">
                     <?php foreach ($equiposSinAsignar as $equipo): ?>
-                    <div class="inventario-card">
+                    <div class="inventario-card" data-bulk-item data-equipo-id="<?= $equipo->id ?>" style="position: relative;">
+                        <!-- Bulk Checkbox -->
+                        <div class="bulk-checkbox">
+                            <i class="bi bi-check-circle-fill icon-checked"></i>
+                            <i class="bi bi-circle icon-unchecked"></i>
+                        </div>
                         <div class="inventario-card-header">
                             <span class="inventario-card-code"><?= htmlspecialchars($equipo->codigo_inventario ?? '') ?></span>
                             <?php 
@@ -456,10 +479,15 @@
                             <?= htmlspecialchars($equipo->numero_serie ?? 'S/N') ?>
                         </div>
                         <?php if ($_SESSION['rol'] !== 'tecnico'): ?>
-                        <div class="inventario-card-actions">
+                            <a href="<?= BASE_URL ?>equipos/ver/<?= $equipo->id ?>?from=inventario_equipos" 
+                               class="inventario-action-btn view" 
+                               title="Ver Detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
                             <a href="<?= BASE_URL ?>equipos/editar/<?= $equipo->id ?>" 
-                               class="inventario-action-btn view" title="Asignar">
-                                <i class="bi bi-person-plus"></i>
+                               class="inventario-action-btn edit" 
+                               title="Editar">
+                                <i class="bi bi-pencil"></i>
                             </a>
                             <a href="<?= BASE_URL ?>equipos/eliminar/<?= $equipo->id ?>" 
                                class="inventario-action-btn delete"
@@ -473,9 +501,7 @@
                     </div>
                     <?php endforeach; ?>
                 </div>
-                <button class="inventario-carousel-nav next" data-carousel="equipos-carousel">
-                    <i class="bi bi-chevron-right"></i>
-                </button>
+
             </div>
             
             <!-- Modern Pagination Footer for Equipos -->
@@ -540,7 +566,7 @@
 
 <!-- Bulk Delete Assets -->
 <link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
+<script src="<?= BASE_URL ?>js/bulk-delete-class.js?v=<?= time() ?>"></script>
 
 <!-- Modern Simple Delete Modal Integration -->
 <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
@@ -573,11 +599,21 @@
         });
         document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
     }
-    
-    // Initialize Bulk Delete for Items
+</script>
+
+<script>
+    // Initialize Bulk Delete for both tabs using the Class Manager
     document.addEventListener('DOMContentLoaded', function() {
-        BulkDelete.init({
-            containerId: 'inventarioMain',
+        // Auto-switch tab based on URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab && ['articulos', 'equipos'].includes(tab)) {
+            switchInventarioTab(tab);
+        }
+
+        // 1. Inventario Artículos
+        new BulkDeleteManager({
+            containerId: 'tabArticulos', // Scoped to tab container
             itemSelector: '[data-bulk-item]',
             itemIdAttribute: 'data-item-id',
             deleteUrl: BASE_URL + 'inventario/eliminar_masivo',
@@ -588,6 +624,21 @@
             selectAllContainerId: 'bulkSelectAllContainer',
             deleteButtonId: 'bulkDeleteBtn',
             countSpanId: 'bulkSelectedCount'
+        });
+
+        // 2. Equipos en Stock
+        new BulkDeleteManager({
+            containerId: 'tabEquipos', // Scoped to tab container
+            itemSelector: '[data-bulk-item]',
+            itemIdAttribute: 'data-equipo-id',
+            deleteUrl: BASE_URL + 'equipos/eliminar_masivo', // Endpoint address
+            entityName: 'equipos',
+            entityNameSingular: 'equipo',
+            toggleId: 'bulkModeToggleEquipos',
+            selectAllId: 'bulkSelectAllEquipos',
+            selectAllContainerId: 'bulkSelectAllContainerEquipos',
+            deleteButtonId: 'bulkDeleteBtnEquipos',
+            countSpanId: 'bulkSelectedCountEquipos'
         });
     });
 </script>

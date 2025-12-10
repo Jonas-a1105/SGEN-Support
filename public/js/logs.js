@@ -1,22 +1,15 @@
 /**
- * Logic for Logs View
+ * Logic for Logs View (Server-Side Pagination & Filtering)
+ * Updated to work with backend filtering
  */
 
-// Variables globales para el estado
-// Variables globales para el estado
-if (typeof currentFilter === 'undefined') window.currentFilter = 'all';
-if (typeof currentPage === 'undefined') window.currentPage = 1;
-// itemsPerPage should be initialized from the DOM or script tag if needed, 
-// but here we can try to read it from the select element or cookie
-if (typeof itemsPerPage === 'undefined') window.itemsPerPage = 10;
-
-// Initial setup
+// Inicialización
 document.addEventListener('DOMContentLoaded', function () {
-    const itemsPerPageSelect = document.getElementById('itemsPerPage');
-    if (itemsPerPageSelect) {
-        itemsPerPage = parseInt(itemsPerPageSelect.value);
+    // Mover modal al body para evitar problemas de stacking context
+    const modal = document.getElementById('detalleModal');
+    if (modal && modal.parentNode !== document.body) {
+        document.body.appendChild(modal);
     }
-    updatePagination();
 
     // Close dropdown when clicking outside
     document.addEventListener('click', function (e) {
@@ -27,236 +20,119 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Cerrar modal al hacer clic fuera
-    const detalleModal = document.getElementById('detalleModal');
-    if (detalleModal) {
-        detalleModal.addEventListener('click', function (e) {
+    // Close modal when clicking outside
+    if (modal) {
+        modal.addEventListener('click', function (e) {
             if (e.target === this) {
                 cerrarModal();
             }
         });
     }
+
+    // Initialize Search Input with URL param
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = urlParams.get('username') || '';
+
+        // Add Enter key listener
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+    }
 });
 
-function updatePagination() {
-    const allRows = document.querySelectorAll('.log-row');
-    const currentPageEl = document.getElementById('currentPage');
-    const totalPagesEl = document.getElementById('totalPages');
-    const btnPrev = document.getElementById('btnPrev');
-    const btnNext = document.getElementById('btnNext');
-    const visibleCountEl = document.getElementById('visibleCount');
-
-    if (!currentPageEl || !totalPagesEl) return;
-
-    const filteredRows = getFilteredRows();
-    const totalFiltered = filteredRows.length;
-    const totalPages = Math.ceil(totalFiltered / itemsPerPage) || 1;
-
-    if (currentPage > totalPages) currentPage = totalPages;
-
-    currentPageEl.textContent = currentPage;
-    totalPagesEl.textContent = totalPages;
-
-    // Enable/disable buttons
-    if (btnPrev) btnPrev.disabled = currentPage === 1;
-    if (btnNext) btnNext.disabled = currentPage === totalPages;
-
-    // Show/hide rows based on pagination
-    let visibleCount = 0;
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-
-    // We need to iterate over ALL rows to hide/show them correctly
-    // But getFilteredRows only returns matches.
-    // So we iterate all, and check if it's in the filtered set AND in the current page range.
-
-    // Optimization: getFilteredRows returns DOM elements.
-    // We can hide all first? No, getFilteredRows is expensive if called repeatedly.
-    // Let's rely on the logic in getFilteredRows to KNOW if it matches, then check index.
-
-    // Actually, the original logic iterated allRows and checked filters inline.
-    // Let's replicate that for "showing" the slice.
-
-    let filteredIndex = 0;
-    allRows.forEach(row => {
-        // Re-check filter condition
-        if (matchesFilters(row)) {
-            if (filteredIndex >= start && filteredIndex < end) {
-                row.style.display = 'flex';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-            filteredIndex++;
-        } else {
-            row.style.display = 'none';
-        }
-    });
-
-    if (visibleCountEl) visibleCountEl.textContent = visibleCount;
-}
-
-function matchesFilters(row) {
-    const isActive = row.classList.contains('active-session');
+function applyFilters() {
     const searchInput = document.getElementById('searchInput');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-    const text = row.textContent.toLowerCase();
+    const username = searchInput ? searchInput.value.trim() : '';
 
-    let showByFilter = currentFilter === 'all' || (currentFilter === 'active' && isActive);
-    let showBySearch = text.includes(searchTerm);
+    const url = new URL(window.location.href);
 
-    // Check date filter if applied (stored in data-date-filtered)
-    // Note: The original code simulated date filtering client-side.
-    // If setDateFilter was called, it updated data-date-filtered attribute.
-    // If attribute is not present, assume true?
-    // Original code: row.dataset.dateFiltered = 'true'/'false'.
-    // If not set (default), we should treat as true (show).
-    let showByDate = true;
-    if (row.dataset.dateFiltered === 'false') {
-        showByDate = false;
+    if (username) {
+        url.searchParams.set('username', username);
+    } else {
+        url.searchParams.delete('username');
     }
 
-    return showByFilter && showBySearch && showByDate;
-}
+    // Reset to page 1 on filter change
+    url.searchParams.set('page', 1);
 
-function getFilteredRows() {
-    const allRows = document.querySelectorAll('.log-row');
-    return Array.from(allRows).filter(row => matchesFilters(row));
-}
-
-function previousPage() {
-    if (currentPage > 1) {
-        currentPage--;
-        updatePagination();
-    }
-}
-
-function nextPage() {
-    const filteredRows = getFilteredRows();
-    const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
-    if (currentPage < totalPages) {
-        currentPage++;
-        updatePagination();
-    }
+    window.location.href = url.toString();
 }
 
 function changeItemsPerPage() {
     const select = document.getElementById('itemsPerPage');
-    if (select) itemsPerPage = parseInt(select.value);
+    if (!select) return;
 
-    // Guardar preferencia globalmente
-    if (window.PaginationPrefs) {
-        PaginationPrefs.set(itemsPerPage);
-    }
-    currentPage = 1;
-    updatePagination();
+    const perPage = select.value;
+
+    // Set cookie
+    document.cookie = "sgen_logs_per_page=" + perPage + "; path=/; max-age=31536000"; // 1 year
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', perPage);
+    url.searchParams.set('page', 1); // Reset to page 1
+    window.location.href = url.toString();
 }
 
-function filterLogs() {
-    currentPage = 1;
-    updatePagination();
-}
-
-function setFilter(filter) {
-    currentFilter = filter;
-    currentPage = 1;
-
-    // Update button styles
-    const btnAll = document.getElementById('btn-all');
-    const btnActive = document.getElementById('btn-active');
-
-    if (btnAll && btnActive) {
-        if (filter === 'all') {
-            btnAll.style.background = '#f1f5f9';
-            btnAll.style.color = '#0f172a';
-            btnActive.style.background = 'transparent';
-            btnActive.style.color = '#64748b';
-        } else {
-            btnAll.style.background = 'transparent';
-            btnAll.style.color = '#64748b';
-            btnActive.style.background = '#d1fae5';
-            btnActive.style.color = '#059669';
-        }
-    }
-
-    updatePagination();
-}
-
-// Date filter dropdown
 function toggleDateDropdown() {
     const dropdown = document.getElementById('dateDropdown');
     if (dropdown) dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
 }
 
-function setDateFilter(days, label) {
-    const labelEl = document.getElementById('dateFilterLabel');
-    const dropdown = document.getElementById('dateDropdown');
-    if (labelEl) labelEl.textContent = label;
-    if (dropdown) dropdown.style.display = 'none';
+function setDateFilter(option, label) {
+    const url = new URL(window.location.href);
+    const today = new Date();
 
-    // Filter by date (client-side simulation - for real filtering, would need server-side)
-    const now = new Date();
-    const allRows = document.querySelectorAll('.log-row');
+    // Clear existing date filters
+    url.searchParams.delete('fecha_desde');
+    url.searchParams.delete('fecha_hasta');
 
-    allRows.forEach(row => {
-        if (days === 'all') {
-            // Remove the attribute so it defaults to true
-            delete row.dataset.dateFiltered;
-        } else {
-            const rowDate = new Date(row.dataset.fecha);
-            const diffDays = (now - rowDate) / (1000 * 60 * 60 * 24);
-            // If within range, dateFiltered = true (actually, original logic was weird: diffDays > parseInt(days) ? 'true' : 'false' ... wait.
-            // "Últimos 7 días": diffDays < 7 should be true.
-            // Original code: row.dataset.dateFiltered = diffDays > parseInt(days) ? 'true' : 'false';
-            // Wait, if diffDays > 7, then it's OLDER than 7 days.
-            // So if I want "Last 7 days", I want diffDays <= 7.
-            // Original code logic: `diffDays > parseInt(days) ? 'true' : 'false'`.
-            // If diffDays (10) > 7 => 'true'. The filter logic used to check `row.dataset.dateFiltered === 'true'`.
-            // Wait, original updatePagination didn't use dateFiltered explicitly in the snippet I saw?
-            // Ah, line 386 in original: `row.dataset.dateFiltered = 'false'`.
-            // I need to check how original updatePagination used it.
-            // Original updatePagination didn't check dateFiltered!!
-            // Wait, let me check the original file content provided.
-            // Lines 307-316 (getFilteredRows) and 283-302 (updatePagination loop)
-            // They DON'T seem to check `dataset.dateFiltered`?
-            // Wait, looking closer at the provided Logs content.
-            // Line 382: setDateFilter function sets `row.dataset.dateFiltered`.
-            // But `updatePagination` (lines 262-305) DOES NOT READ IT.
-            // This suggests the date filter was BROKEN in the original code or I missed something.
-            // Let's look at `getFilteredRows` in original:
-            // return showByFilter && showBySearch;
-            // It completely ignores date!
+    if (option !== 'all') {
+        const pastDate = new Date();
+        pastDate.setDate(today.getDate() - parseInt(option));
 
-            // I will FIX this in the refactor.
-            // Functional intention: "Últimos X días".
-            row.dataset.dateFiltered = (diffDays <= parseInt(days)) ? 'true' : 'false';
-        }
-    });
+        // Format YYYY-MM-DD
+        const fromDate = pastDate.toISOString().split('T')[0];
+        const toDate = today.toISOString().split('T')[0]; // Optional, default is until now
 
-    currentPage = 1;
-    updatePagination();
+        url.searchParams.set('fecha_desde', fromDate);
+        // url.searchParams.set('fecha_hasta', toDate); 
+    }
+
+    url.searchParams.set('page', 1);
+    window.location.href = url.toString();
 }
 
-// Export function
+// Export functionality (Client-side for visible page only for now, can be upgraded)
 function exportLogs() {
     let csvContent = "Usuario,ID,Fecha Inicio,Fecha Fin,Duración,Estado\n";
     const allRows = document.querySelectorAll('.log-row');
 
     allRows.forEach(row => {
-        // Only export visible?? Or all? Usually export all matches? 
-        // Original exported ALL rows regardless of filter.
-
-        const username = row.querySelector('.log-username').textContent;
-        const id = row.querySelector('.log-userid').textContent.replace('ID: ', '');
+        const username = row.querySelector('.log-username').textContent.trim();
+        const id = row.querySelector('.log-userid').textContent.replace('ID: ', '').trim();
         const items = row.querySelectorAll('.log-detail-item span');
-        const fecha = items[0]?.textContent || '';
-        // Duracion is usually second item's text, but if active it has different structure.
-        // Let's grab text content roughly.
+        const fecha = items[0]?.textContent.trim() || '';
+
         let duracion = '';
-        if (items.length > 1) duracion = items[1].textContent.replace('Duración: ', '');
+        if (items.length > 1) {
+            // Handle active session span
+            if (items[1].classList.contains('active-status')) {
+                duracion = 'En curso';
+            } else {
+                duracion = items[1].textContent.replace('Duración: ', '').trim();
+            }
+        } else {
+            // Fallback check
+            if (row.querySelector('.log-detail-item span[style*="color: #059669"]')) {
+                duracion = 'En curso';
+            }
+        }
 
         const estado = row.classList.contains('active-session') ? 'Activa' : 'Cerrada';
-
         csvContent += `"${username}","${id}","${fecha}","","${duracion}","${estado}"\n`;
     });
 
@@ -272,6 +148,11 @@ function verDetalle(username, userId, fechaInicio, fechaFin, duracion, estado) {
     const modal = document.getElementById('detalleModal');
     if (!modal) return;
 
+    // Asegurar que está en el body (doble check)
+    if (modal.parentNode !== document.body) {
+        document.body.appendChild(modal);
+    }
+
     document.getElementById('modal-username').textContent = username;
     document.getElementById('modal-userId').textContent = userId;
     document.getElementById('modal-fechaInicio').textContent = fechaInicio;
@@ -283,12 +164,22 @@ function verDetalle(username, userId, fechaInicio, fechaFin, duracion, estado) {
     estadoEl.style.background = estado === 'Activa' ? '#d1fae5' : '#f1f5f9';
 
     // Iniciales
-    document.getElementById('modal-avatar').textContent = username.substring(0, 2).toUpperCase();
+    const iniciales = username ? username.substring(0, 2).toUpperCase() : '??';
+    document.getElementById('modal-avatar').textContent = iniciales;
 
+    // Show modal with animation
     modal.style.display = 'flex';
+    // Force reflow
+    modal.offsetHeight;
+    modal.classList.add('active');
 }
 
 function cerrarModal() {
     const modal = document.getElementById('detalleModal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
 }

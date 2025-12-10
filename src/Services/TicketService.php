@@ -109,6 +109,15 @@ class TicketService
         $resultado = $this->soporteModel->update($id, $updateData);
 
         if ($resultado) {
+            // Actualizar estado del equipo: si tiene USUARIO asignado vuelve a 'en_uso', si solo depto o nada -> 'disponible'
+            $equipo = $this->equipoModel->findById($soporte->equipo_id);
+            if ($equipo) {
+                // El usuario pidió: "si esta asignado a un usuario solamente" -> en_uso
+                // "si solo esta asignado a un departamento entonces pasa a disponible"
+                $nuevoEstado = (!empty($equipo->empleado_id)) ? 'en_uso' : 'disponible';
+                $this->equipoModel->update($soporte->equipo_id, ['estado' => $nuevoEstado]);
+            }
+
             // Notificar al creador del ticket
             if ($soporte->usuario_creacion_id) {
                 $this->notificacionModel->createNotification(

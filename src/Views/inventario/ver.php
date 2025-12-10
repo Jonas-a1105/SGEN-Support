@@ -21,6 +21,9 @@
                 <a href="<?= BASE_URL ?>inventario/editar/<?= $item->id ?>" class="pd-btn pd-btn-white">
                     <i class="bi bi-pencil me-2"></i> Editar
                 </a>
+                <a href="<?= BASE_URL ?>inventario/historial_item/<?= $item->id ?>" class="pd-btn pd-btn-white">
+                    <i class="bi bi-clock-history me-2"></i> Ver Historial
+                </a>
                 <button type="button" class="pd-btn pd-btn-primary" 
                         onclick="StockAdjustmentModal.open({
                             id: <?= $item->id ?>,
@@ -152,79 +155,7 @@
             </div>
 
             <!-- Historial de Movimientos -->
-            <div class="pd-card">
-                 <div class="pd-card-header">
-                    <h2 class="pd-card-title">
-                        <i class="bi bi-clock-history text-primary"></i>
-                        Historial de Movimientos
-                    </h2>
-                    <?php if (!empty($movimientos)): ?>
-                        <a href="<?= BASE_URL ?>inventario/historial" class="pd-btn pd-btn-white" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Ver todo</a>
-                    <?php endif; ?>
-                 </div>
-                 
-                 <?php if (empty($movimientos)): ?>
-                     <div class="history-empty">
-                        <div class="history-empty-icon">
-                            <i class="bi bi-clock-history fs-3"></i>
-                        </div>
-                        <h3 style="font-size: 1rem; font-weight: 500; color: var(--pd-slate-900); margin-bottom: 0.25rem;">Sin movimientos recientes</h3>
-                        <p style="font-size: 0.875rem; color: var(--pd-slate-500); max-width: 250px;">
-                            No se han registrado entradas o salidas para este artículo recientemente.
-                        </p>
-                     </div>
-                 <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-custom mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Cantidad</th>
-                                    <th>Motivo</th>
-                                    <th>Usuario</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($movimientos as $mov): ?>
-                                    <?php
-                                        // Inferir tipo si está vacío
-                                        $tipo = strtoupper(trim($mov->tipo_movimiento ?? ''));
-                                        if (empty($tipo)) {
-                                            $motivo_lower = strtolower($mov->motivo ?? '');
-                                            if (strpos($motivo_lower, 'transferencia') !== false) {
-                                                $tipo = 'TRANSFERENCIA';
-                                            } elseif ($mov->cantidad > 0) {
-                                                $tipo = 'ENTRADA';
-                                            } else {
-                                                $tipo = 'SALIDA';
-                                            }
-                                        }
-
-                                        $isPositive = in_array($tipo, ['ENTRADA']);
-                                        $isNegative = in_array($tipo, ['SALIDA', 'BAJA', 'CONSUMO']);
-                                        $sign = $isPositive ? '+' : ($isNegative ? '-' : '');
-                                        
-                                        $badgeColor = 'bg-secondary';
-                                        if ($isPositive) $badgeColor = 'bg-success';
-                                        if ($isNegative) $badgeColor = 'bg-danger';
-                                        if ($tipo === 'TRANSFERENCIA' || $tipo === 'AJUSTE') $badgeColor = 'bg-warning text-dark';
-                                    ?>
-                                    <tr>
-                                        <td><?= date('d/m/Y H:i', strtotime($mov->fecha)) ?></td>
-                                        <td><span class="badge <?= $badgeColor ?>"><?= $tipo ?></span></td>
-                                        <td class="fw-bold <?= $isPositive ? 'text-success' : ($isNegative ? 'text-danger' : '') ?>">
-                                            <?= $sign . abs($mov->cantidad) ?>
-                                        </td>
-                                        <td><?= htmlspecialchars($mov->motivo) ?></td>
-                                        <td><i class="bi bi-person-circle text-muted me-1"></i> <?= htmlspecialchars($mov->username ?? 'Sistema') ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                 <?php endif; ?>
-            </div>
+            <!-- Historial de Movimientos (Moved to separate view) -->
 
         </div>
 
@@ -275,7 +206,10 @@
                     </div>
                     <div class="stock-meta-row">
                         <span class="stock-meta-label">Valor de Inventario</span>
-                        <span class="stock-meta-val">$0.00</span>
+                        <?php 
+                            $valorTotal = ($item->stock_actual ?? 0) * ($item->valor_compra ?? 0);
+                        ?>
+                        <span class="stock-meta-val">$<?= number_format($valorTotal, 2) ?></span>
                     </div>
                 </div>
 

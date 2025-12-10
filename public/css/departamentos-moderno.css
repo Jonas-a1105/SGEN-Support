@@ -45,17 +45,32 @@
 
 /* Header */
 .departamentos-header {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0.5rem 1.5rem 2rem 1.5rem;
+    background: transparent;
     width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
 }
 
+/* Header Logo - Compact style like equipos */
+.dept-header-logo {
+    background: var(--dept-indigo);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    display: inline-flex;
+}
+
+.dept-header-logo i {
+    color: white;
+    font-size: 1.25rem;
+}
+
+.dept-header-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--dept-slate-900);
+}
+
+/* Legacy (can be removed later) */
 .departamentos-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--dept-slate-900);
     letter-spacing: -0.025em;
@@ -583,8 +598,60 @@
 }
 
 .dept-table-icon {
-    padding: 0.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--dept-slate-100);
     border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dept-table-icon i {
+    color: var(--dept-slate-500);
+    font-size: 1.1rem;
+}
+
+/* Colored icon variants for table */
+.dept-table-icon.indigo-light {
+    background: var(--dept-indigo-light);
+}
+
+.dept-table-icon.indigo-light i,
+.dept-table-icon.text-indigo i {
+    color: var(--dept-indigo);
+}
+
+.dept-table-icon.orange-light {
+    background: var(--dept-orange-light);
+}
+
+.dept-table-icon.text-orange i {
+    color: var(--dept-orange);
+}
+
+.dept-table-icon.pink-light {
+    background: var(--dept-pink-light);
+}
+
+.dept-table-icon.text-pink i {
+    color: var(--dept-pink);
+}
+
+.dept-table-icon.emerald-light {
+    background: var(--dept-emerald-light);
+}
+
+.dept-table-icon.text-emerald i {
+    color: var(--dept-emerald);
+}
+
+.dept-table-icon.cyan-light {
+    background: var(--dept-cyan-light);
+}
+
+.dept-table-icon.text-cyan i {
+    color: var(--dept-cyan);
 }
 
 .dept-table-name {
@@ -633,4 +700,116 @@
     background: white;
     border-radius: 1rem;
     border: 2px dashed var(--dept-slate-200);
+}
+
+/* ============================================
+   PAGINATION FOOTER - Modern Style
+   ============================================ */
+
+.dept-pagination-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin-top: 1.5rem;
+    background: var(--dept-slate-50);
+    border-radius: 0.75rem;
+    border: 1px solid var(--dept-slate-100);
+}
+
+@media (min-width: 768px) {
+    .dept-pagination-footer {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.dept-pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.dept-pagination-info .text-slate-500 {
+    color: var(--dept-slate-500);
+}
+
+.dept-pagination-info .text-slate-900 {
+    color: var(--dept-slate-900);
+}
+
+.dept-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pagination-select {
+    padding: 0.375rem 2rem 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--dept-slate-200);
+    border-radius: 0.5rem;
+    background: white;
+    color: var(--dept-slate-700);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    transition: all 0.2s;
+}
+
+.pagination-select:hover {
+    border-color: var(--dept-slate-300);
+}
+
+.pagination-select:focus {
+    outline: none;
+    border-color: var(--dept-indigo);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--dept-slate-700);
+    background: white;
+    border: 1px solid var(--dept-slate-200);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--dept-indigo);
+    color: white;
+    border-color: var(--dept-indigo);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--dept-slate-50);
+}
+
+.pagination-page-info {
+    font-size: 0.875rem;
+    color: var(--dept-slate-600);
+    padding: 0 0.5rem;
+    white-space: nowrap;
+}
+
+.fs-sm {
+    font-size: 0.875rem;
+}
+
+.fs-xs {
+    font-size: 0.75rem;
 }

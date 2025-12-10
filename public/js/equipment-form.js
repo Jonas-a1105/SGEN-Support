@@ -6,11 +6,25 @@ const EquipmentWizard = {
     activeStep: 0,
     totalSteps: 4,
 
-    init() {
-        this.cacheDOM();
-        this.bindEvents();
-        this.updateStep();
-        this.handleOtherType(); // Init dynamic field logic
+    bindEvents() {
+        if (!this.wrapper) return;
+
+        // Navigation
+        if (this.btnPrev) this.btnPrev.addEventListener('click', () => this.prevStep());
+        if (this.btnNext) this.btnNext.addEventListener('click', () => this.nextStep());
+
+        // Step buttons (Direct navigation)
+        this.steps.forEach((btn, index) => {
+            btn.addEventListener('click', () => this.goToStep(index));
+        });
+
+        // Dynamic Field: Tipo Change
+        if (this.typeSelect) {
+            this.typeSelect.addEventListener('change', () => {
+                this.handleOtherType();
+                this.updateFieldsByType();
+            });
+        }
     },
 
     cacheDOM() {
@@ -33,22 +47,12 @@ const EquipmentWizard = {
         this.otherTypeContainer = document.getElementById('tipo_otro_container');
     },
 
-    bindEvents() {
-        if (!this.wrapper) return;
-
-        // Navigation
-        if (this.btnPrev) this.btnPrev.addEventListener('click', () => this.prevStep());
-        if (this.btnNext) this.btnNext.addEventListener('click', () => this.nextStep());
-
-        // Step buttons (Direct navigation)
-        this.steps.forEach((btn, index) => {
-            btn.addEventListener('click', () => this.goToStep(index));
-        });
-
-        // Dynamic Field: Tipo Otro
-        if (this.typeSelect) {
-            this.typeSelect.addEventListener('change', () => this.handleOtherType());
-        }
+    init() {
+        this.cacheDOM();
+        this.bindEvents();
+        this.updateStep();
+        this.handleOtherType();
+        this.updateFieldsByType();
     },
 
     handleOtherType() {
@@ -61,7 +65,75 @@ const EquipmentWizard = {
             this.otherTypeContainer.style.display = 'none';
             if (this.otherTypeInput) {
                 this.otherTypeInput.removeAttribute('required');
-                // Optional: clear value if hiding? Maybe better not content loss.
+                this.otherTypeInput.classList.remove('border-red-500'); // Clear error style if hidden
+                this.otherTypeInput.style.borderColor = '';
+            }
+        }
+    },
+
+    updateFieldsByType() {
+        if (!this.typeSelect) return;
+        const type = this.typeSelect.value;
+        const hardwarePane = document.querySelector('.step-pane[data-step="1"]');
+        const cpuInput = hardwarePane ? hardwarePane.querySelector('input[name="procesador"]') : null;
+        const ramInput = hardwarePane ? hardwarePane.querySelector('input[name="memoria_ram"]') : null;
+        const hddInput = hardwarePane ? hardwarePane.querySelector('input[name="almacenamiento"]') : null;
+        const osInput = hardwarePane ? hardwarePane.querySelector('input[name="sistema_operativo"]') : null;
+
+        // Types that require full hardware specs
+        const computerTypes = ['computadora', 'laptop', 'servidor', 'portatil'];
+        const isComputer = computerTypes.includes(type);
+
+        if (hardwarePane) {
+            const inputs = [cpuInput, ramInput, hddInput, osInput];
+
+            if (isComputer) {
+                // Show fields
+                hardwarePane.querySelectorAll('.eq-field').forEach(div => div.style.display = 'block');
+
+                // Update Callout
+                const callout = hardwarePane.querySelector('.eq-callout');
+                if (callout) callout.style.display = 'flex';
+
+                // Optional: Make them required? Currently they are optional in backend, so we keep them optional or strict based on preference.
+                // Keeping them optional for flexibility but visible.
+            } else {
+                // Hide fields for printers, monitors, etc.
+                // Or maybe just show specific ones? For now, hiding these specific CP/RAM fields
+                if (type === 'impresora') {
+                    // Maybe show only connectivity? 
+                    // For simplicity, hiding the hardware fields but keeping the pane accessible (maybe empty or with a message)
+                }
+
+                // Hide all hardware inputs
+                hardwarePane.querySelectorAll('.eq-field').forEach(div => div.style.display = 'none');
+
+                // Update Callout to explain
+                const callout = hardwarePane.querySelector('.eq-callout');
+                if (callout) callout.style.display = 'none';
+
+                // Add a message if not exists
+                let msg = hardwarePane.querySelector('.no-specs-msg');
+                if (!msg) {
+                    msg = document.createElement('div');
+                    msg.className = 'no-specs-msg eq-empty-state';
+                    msg.innerHTML = `
+                        <div class="eq-empty-icon"><i class="bi bi-info-circle"></i></div>
+                        <p>No se requieren especificaciones de hardware (CPU, RAM) para este tipo de equipo.</p>
+                        <p class="text-sm text-gray-500">Puede continuar al siguiente paso.</p>
+                    `;
+                    msg.style.textAlign = 'center';
+                    msg.style.padding = '3rem';
+                    msg.style.color = '#64748b';
+                    hardwarePane.appendChild(msg);
+                }
+                msg.style.display = 'block';
+            }
+
+            // If showing fields, hide message
+            if (isComputer) {
+                const msg = hardwarePane.querySelector('.no-specs-msg');
+                if (msg) msg.style.display = 'none';
             }
         }
     },

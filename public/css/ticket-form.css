@@ -12,10 +12,10 @@
     --tf-border: #e2e8f0;
 }
 
-/* Container */
+/* Container (sin fondo para evitar caja sobre caja) */
 .tf-container {
     min-height: 100vh;
-    background: var(--tf-bg);
+    background: transparent;
     padding: 0 1.5rem 1.5rem 1.5rem;
     width: calc(100% + 24px);
     margin-left: -12px;
@@ -30,6 +30,15 @@
     margin: 0 auto;
     padding: 0 1rem;
     box-sizing: border-box;
+}
+
+/* Main Container - envuelve el contenido dejando cabecera fuera */
+.tf-main-container {
+    background: white;
+    border: 1px solid var(--tf-border);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
 /* Header */
@@ -93,13 +102,13 @@
     gap: 1.5rem;
 }
 
-/* Search Box */
+/* Search Box (estilo sutil sin borde prominente) */
 .tf-search-card {
-    background: white;
+    background: rgba(248, 250, 252, 0.6);
     padding: 1.5rem;
-    border-radius: 1.25rem;
-    border: 1px solid var(--tf-border);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 1rem;
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    box-shadow: none;
 }
 
 .tf-search-label {
@@ -348,13 +357,13 @@
     margin: 0;
 }
 
-/* Right Column - Form */
+/* Right Column - Form (sin bordes, dentro de tf-main-container) */
 .tf-form-card {
-    background: white;
-    border-radius: 1.25rem;
-    border: 1px solid var(--tf-border);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    padding: 2rem;
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    padding: 0;
 }
 
 /* Section */
@@ -773,12 +782,13 @@
     border-color: #cbd5e1;
 }
 
-/* Status Section */
+/* Status Section (sin fondo para evitar caja sobre caja) */
 .tf-status-section {
-    background: #f8fafc;
-    padding: 1rem 1.25rem;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(226, 232, 240, 0.6);
+    background: transparent;
+    padding: 0 0 1rem 0;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
     margin-bottom: 1.5rem;
 }
 
@@ -858,10 +868,10 @@
 
 /* Static Device Card (Edit Mode) */
 .tf-device-card-static {
-    background: white;
-    border-radius: 1.25rem;
-    border: 1px solid var(--tf-border);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    background: #f8fafc;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: none;
     overflow: hidden;
 }
 
@@ -970,11 +980,11 @@
 
 /* Info Card */
 .tf-info-card {
-    background: white;
+    background: #f8fafc;
     padding: 1.25rem;
-    border-radius: 1.25rem;
-    border: 1px solid var(--tf-border);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: none;
 }
 
 .tf-info-card-label {
@@ -1065,4 +1075,60 @@
 
 .tf-resolution-textarea::placeholder {
     color: rgba(5, 150, 105, 0.5);
+}
+
+/* ===============================================
+   DESCRIPTION + RESOLUTION SIDE BY SIDE LAYOUT
+   =============================================== */
+
+.tf-description-resolution-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .tf-description-resolution-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.tf-description-col,
+.tf-resolution-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.tf-inline-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--tf-text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.tf-resolution-inline-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #059669;
+}
+
+.tf-resolution-inline-label i {
+    font-size: 0.875rem;
+}
+
+.tf-textarea-compact {
+    min-height: 100px;
+}
+
+.tf-textarea-resolution {
+    background: rgba(236, 253, 245, 0.4);
+    border-color: #a7f3d0;
+}
+
+.tf-textarea-resolution:focus {
+    background: white;
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }

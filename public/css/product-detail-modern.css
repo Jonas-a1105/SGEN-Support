@@ -271,7 +271,7 @@
     box-shadow: var(--pd-shadow-sm);
     border: 1px solid var(--pd-slate-200);
     overflow: hidden;
-    height: 100%;
+    height: auto;
     display: flex;
     flex-direction: column;
 }
@@ -444,8 +444,7 @@
 
 /* Stock Card */
 .stock-card {
-    position: sticky;
-    top: 1.5rem;
+    /* position: sticky removed */
 }
 
 .stock-status-badge {
@@ -597,6 +596,13 @@
     font-size: 0.875rem;
     color: var(--pd-slate-600);
     border-bottom: 1px solid var(--pd-slate-100);
+}
+
+/* History Scroll */
+.pd-history-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+    border-top: 1px solid var(--pd-slate-100);
 }
 
 /* --- DISTRIBUTION VIEW SPECIFIC --- */

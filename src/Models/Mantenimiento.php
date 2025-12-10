@@ -53,6 +53,30 @@ class Mantenimiento extends Model
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
+    public function findByIdWithDetails($id)
+    {
+        $sql = "
+            SELECT 
+                m.*, 
+                CONCAT(e.tipo, ' ', e.marca, ' ', e.modelo) AS equipo_nombre,
+                e.codigo_inventario AS equipo_codigo,
+                e.tipo AS equipo_tipo,
+                e.marca AS equipo_marca,
+                e.modelo AS equipo_modelo,
+                e.numero_serie AS equipo_serial,
+                u.username AS tecnico_nombre,
+                CONCAT(emp.nombre, ' ', emp.apellido) AS tecnico_completo
+            FROM {$this->table} m
+            LEFT JOIN equipos e ON m.equipo_id = e.id
+            LEFT JOIN usuarios u ON m.tecnico_id = u.id
+            LEFT JOIN empleados emp ON u.id = emp.usuario_id
+            WHERE m.id = ?
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
     public function getPendientes()
     {
         $sql = "
@@ -91,8 +115,8 @@ class Mantenimiento extends Model
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (equipo_id, fecha, tipo_mantenimiento, estado, descripcion, costo, realizado_por, tecnico_id, proxima_fecha, frecuencia, checklist, observaciones) 
-                VALUES (:equipo_id, :fecha, :tipo_mantenimiento, :estado, :descripcion, :costo, :realizado_por, :tecnico_id, :proxima_fecha, :frecuencia, :checklist, :observaciones)";
+                (equipo_id, fecha, tipo_mantenimiento, estado, descripcion, costo, realizado_por, tecnico_id, proxima_fecha, frecuencia, checklist, observaciones, duracion) 
+                VALUES (:equipo_id, :fecha, :tipo_mantenimiento, :estado, :descripcion, :costo, :realizado_por, :tecnico_id, :proxima_fecha, :frecuencia, :checklist, :observaciones, :duracion)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             'equipo_id' => $data['equipo_id'],
@@ -106,7 +130,8 @@ class Mantenimiento extends Model
             'proxima_fecha' => $data['proxima_fecha'] ?? null,
             'frecuencia' => $data['frecuencia'] ?? 'unica',
             'checklist' => $data['checklist'] ?? null,
-            'observaciones' => $data['observaciones'] ?? null
+            'observaciones' => $data['observaciones'] ?? null,
+            'duracion' => $data['duracion'] ?? null
         ]);
         return $this->pdo->lastInsertId();
     }

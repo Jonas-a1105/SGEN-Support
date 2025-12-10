@@ -77,13 +77,21 @@ $stockInicial = 0; // Solo para create
                 <!-- COLUMNA IZQUIERDA: Identidad -->
                 <div class="item-col-left">
                     
-                    <!-- Foto Uploader (Visual Only for now) -->
-                    <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('imageUpload').click()">
+                    <!-- Foto Uploader -->
+                    <div class="image-upload-area" id="imageUploadArea">
                         <input type="file" id="imageUpload" name="imagen_referencia" accept="image/*" style="display: none;">
+                        <input type="hidden" name="eliminar_imagen" id="eliminarImagen" value="0">
                         
-                        <div id="imagePreviewContainer" style="display: none; width: 100%; height: 100%;"></div>
+                        <!-- Preview Container -->
+                        <div id="imagePreviewContainer" style="display: none; width: 100%; height: 100%; position: relative;">
+                            <img id="imagePreview" src="" class="preview-image" alt="Vista previa" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem;">
+                            <button type="button" id="btnRemoveImage" class="btn-remove-image" title="Eliminar imagen">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                         
-                        <div class="image-upload-content" id="uploadPlaceholder">
+                        <!-- Upload Placeholder -->
+                        <div class="image-upload-content" id="uploadPlaceholder" onclick="document.getElementById('imageUpload').click()">
                             <div class="image-icon-wrapper">
                                 <i class="bi bi-cloud-arrow-up-fill" style="font-size: 1.5rem;"></i>
                             </div>
@@ -146,7 +154,7 @@ $stockInicial = 0; // Solo para create
                             <div class="form-group">
                                 <label class="form-label">Categoría</label>
                                 <div class="input-wrapper">
-                                    <select name="categoria" class="form-select-control">
+                                    <select name="categoria" id="categoriaSelect" class="form-select-control">
                                         <option value="">Seleccionar...</option>
                                         <?php 
                                         $cats = ['Hardware', 'Software', 'Periféricos', 'Cables', 'Consumibles', 'Herramientas', 'Otros'];
@@ -155,6 +163,10 @@ $stockInicial = 0; // Solo para create
                                         <?php endforeach; ?>
                                     </select>
                                     <i class="bi bi-chevron-down select-arrow"></i>
+                                </div>
+                                <!-- Custom Category Input (Hidden by default) -->
+                                <div id="customCategoryContainer" class="mt-2" style="display: none;">
+                                    <input type="text" name="categoria_otra" id="customCategoryInput" class="form-input-control" placeholder="Especifique la categoría..." disabled>
                                 </div>
                             </div>
                             <div class="form-group">

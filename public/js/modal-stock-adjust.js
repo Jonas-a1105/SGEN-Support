@@ -185,7 +185,7 @@ if (!window.StockAdjustmentModal) {
             const fields = {
                 'item_id': this.currentItem.id,
                 'cantidad': this.formData.quantity,
-                'tipo': 'entrada', // Always an "Entrance" for this modal
+                'tipo': 'ENTRADA', // Always an "Entrance" for this modal
                 'motivo': finalMotivo
             };
 

@@ -53,9 +53,18 @@ $tipoIcon = match(strtolower($equipo->tipo ?? 'computadora')) {
 
         <!-- TOP NAVIGATION -->
         <div class="ed-top-nav">
-            <a href="<?= BASE_URL ?>equipos" class="ed-back-btn">
+            <?php 
+            $backUrl = BASE_URL . 'equipos';
+            $backText = 'Volver a Gestión de Equipos';
+            
+            if (isset($_GET['from']) && $_GET['from'] === 'inventario_equipos') {
+                $backUrl = BASE_URL . 'inventario?tab=equipos';
+                $backText = 'Volver a Inventario (Stock)';
+            }
+            ?>
+            <a href="<?= $backUrl ?>" class="ed-back-btn">
                 <i class="bi bi-arrow-left"></i>
-                Volver a Inventario
+                <?= $backText ?>
             </a>
             <div class="ed-actions">
                 <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>

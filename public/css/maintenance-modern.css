@@ -40,25 +40,33 @@
     --mh-blue-700: #1d4ed8;
 }
 
+/* Container - Full Width Breakout like Helpdesk */
 .mh-container {
-    background-color: var(--mh-bg);
+    background: transparent;
     min-height: 100vh;
     padding: 0rem;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: var(--mh-slate-800);
-    width: 100%;
-    max-width: 1350px;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}
+
+.mh-main-container {
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 1.5rem;
 }
 
 .mh-max-w-6xl {
     width: 100%;
-    max-width: 1350px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
 /* Main Content Card - Bordered Container */
-.mh-main-content-card {
+.mh-content-card {
     background: white;
     border: 1px solid var(--mh-slate-200);
     border-radius: 1rem;
@@ -66,14 +74,36 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* --- HEADER --- */
-.mh-header-row {
+/* --- HEADER / NAV --- */
+.mh-nav {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--mh-slate-900);
+    padding: 0.5rem 1.5rem;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    max-width: 1400px;
+    margin: 0 auto;
+    border-radius: 0;
+}
+
+.mh-header-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Old header row removed/replaced by navbar structure */
+.mh-header-row {
+    display: none;
 }
 
 .mh-title-group {
@@ -83,14 +113,18 @@
 }
 
 .mh-title-icon {
-    padding: 0.5rem;
     background-color: var(--mh-indigo-600);
     color: white;
+    padding: 0.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.mh-title-icon i {
+    font-size: 1.25rem;
 }
 
 .mh-title h1 {
@@ -141,7 +175,7 @@
 
 @media (min-width: 768px) {
     .mh-stats-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
@@ -498,7 +532,15 @@
     color: var(--mh-slate-600);
 }
 
+/* Status Badge */
 .mh-status-badge {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
     padding: 0.125rem 0.625rem;
     border-radius: 0.25rem;
     font-size: 0.75rem;
@@ -691,4 +733,71 @@
 
 .mh-text-slate-300 {
     color: var(--mh-slate-300);
+}
+
+/* Action Buttons Matching Inventory Style */
+.mh-actions-group {
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.mh-list-item:hover .mh-actions-group {
+    opacity: 1;
+}
+
+.mh-action-btn {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    /* Align with others */
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    width: 34px;
+    height: 34px;
+}
+
+.mh-action-btn i {
+    font-size: 1rem;
+}
+
+.mh-action-btn.view {
+    background: var(--mh-blue-50);
+    color: var(--mh-blue-600);
+    border-color: var(--mh-blue-200);
+}
+
+.mh-action-btn.view:hover {
+    background: var(--mh-blue-600);
+    color: white;
+    border-color: var(--mh-blue-600);
+}
+
+.mh-action-btn.edit {
+    background: var(--mh-amber-50);
+    color: var(--mh-amber-700);
+    border-color: var(--mh-amber-200);
+}
+
+.mh-action-btn.edit:hover {
+    background: var(--mh-amber-700);
+    color: white;
+    border-color: var(--mh-amber-700);
+}
+
+.mh-action-btn.delete {
+    background: var(--mh-rose-50);
+    color: var(--mh-rose-600);
+    border-color: var(--mh-rose-200);
+}
+
+.mh-action-btn.delete:hover {
+    background: var(--mh-rose-600);
+    color: white;
+    border-color: var(--mh-rose-600);
 }

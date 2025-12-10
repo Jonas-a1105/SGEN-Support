@@ -3,7 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Anti-cache para páginas protegidas -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title><?= $titulo ??'SGEN-Support' ?></title>
+    <!-- Script de verificación de sesión (verifica con el servidor) -->
+    <script>
+        (function() {
+            // Verificar sesión con el servidor usando fetch síncrono-like
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '<?= BASE_URL ?>api/check-session', false); // síncrono
+            try {
+                xhr.send();
+                if (xhr.status === 401 || (xhr.status === 200 && xhr.responseText === 'false')) {
+                    window.location.replace('<?= BASE_URL ?>auth/login');
+                }
+            } catch(e) {
+                // Si hay error de red, dejar que continúe
+            }
+        })();
+    </script>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css" rel="stylesheet">
@@ -24,7 +44,7 @@
     <link rel="stylesheet" href="<?= BASE_URL ?>css/ticket-detail-v2.css?v=3.1">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/ticket-form.css?v=3.1">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/reportes-moderno.css?v=3.1">
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/maintenance-modern.css?v=3.1">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/maintenance-modern.css?v=<?= time() ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/logs-moderno.css?v=3.1">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/usuarios-moderno.css?v=3.1">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/bitacora-moderna.css?v=3.1">
@@ -160,6 +180,10 @@
             window.BASE_URL = '<?= BASE_URL ?>';
         }
     </script>
+    
+    <!-- User Preferences Module (must load before view-specific scripts) -->
+    <script src="<?= BASE_URL ?>js/user-preferences.js?v=<?= time() ?>"></script>
+    
     <script src="<?= BASE_URL ?>js/global-search.js?v=<?= time() ?>"></script>
     
     <!-- Main Content Area -->

@@ -6,7 +6,7 @@
 
 use App\Helpers\ViewHelper;
 
-$canEdit = in_array($_SESSION['rol'], ['admin', 'tecnico']);
+$canEdit = isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico']);
 $observaciones = $soporte->observaciones ?? '';
 
 // Técnico actual
@@ -109,7 +109,7 @@ if (strlen($techInitials) < 2) $techInitials = strtoupper(substr($techName, 0, 2
             </div>
         </div>
         <?php elseif (!$canEdit || $soporte->estado === 'cerrado'): ?>
-        <div class="td-card">
+        <div class="td-card" id="empty-notes-container">
             <div class="td-card-body text-center py-5">
                 <div class="td-materials-empty-icon mb-3">
                     <i class="bi bi-clipboard-check"></i>
@@ -166,17 +166,33 @@ if (strlen($techInitials) < 2) $techInitials = strtoupper(substr($techName, 0, 2
             <p class="text-muted small mb-3"><em>Sin técnico asignado</em></p>
             <?php endif; ?>
             
-            <?php if ($_SESSION['rol'] === 'admin'): ?>
-            <a href="<?= BASE_URL ?>soportes/asignar/<?= $soporte->id ?>" class="td-invite-btn">
+            <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
+            <?php 
+            // Preparar datos para el modal
+            $ticketJsonNotes = json_encode([
+                'id' => $soporte->id,
+                'title' => mb_strimwidth($soporte->descripcion ?? '', 0, 60, '...'),
+                'device' => ($soporte->equipo_tipo ?? 'Equipo') . ' ' . ($soporte->equipo_serial ?? ''),
+                'location' => $soporte->departamento_nombre ?? 'General',
+                'category' => $soporte->categoria_nombre ?? 'General',
+                'priority' => strtolower($soporte->prioridad ?? 'media'),
+                'timeElapsed' => ''
+            ]);
+            $ticketJsonNotesAttr = htmlspecialchars($ticketJsonNotes, ENT_QUOTES, 'UTF-8');
+            ?>
+            <button type="button" class="td-invite-btn" onclick='AssignTechModal.open(<?= $ticketJsonNotesAttr ?>)'>
                 <i class="bi bi-person-plus me-1"></i>
                 Asignar Técnico
-            </a>
+            </button>
             <?php endif; ?>
         </div>
         
     </div>
 </div>
 
+<script>
+    const techNameJs = "<?= htmlspecialchars($techName ?? 'Usuario') ?>";
+</script>
 <script>
 function insertFormat(prefix, suffix) {
     const textarea = document.getElementById('obsTextarea');
@@ -245,7 +261,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitBtn = form.querySelector('.td-obs-submit-btn');
             const originalText = submitBtn.innerHTML;
             const textarea = document.getElementById('obsTextarea');
-            const timelineContent = document.querySelector('.td-obs-entry-content');
             
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
@@ -268,24 +283,42 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Actualizado',
-                        text: 'Bitácora técnica registrada correctamente',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    // Mostrar modal de éxito moderno
+                    showSuccessOverlay('¡Avance Registrado!', 'La bitácora técnica se ha actualizado correctamente');
                     
-                    // Update timeline content if it exists
+                    const timelineContent = document.querySelector('.td-obs-entry-content');
+                    const emptyContainer = document.getElementById('empty-notes-container');
+                    
                     if (timelineContent) {
-                        // Simple nl2br equivalent
+                        // Update existing entry content
                         timelineContent.innerHTML = textarea.value.replace(/\n/g, '<br>');
-                    } else {
-                        // If no timeline existed (empty state), we should ideally reload or inject.
-                        // For simplicity, reload if it was empty state, otherwise update text.
-                        if (document.querySelector('.td-materials-empty')) {
-                            location.reload(); 
-                        }
+                    } else if (emptyContainer) {
+                        // Replace empty state with new timeline
+                         const newTimelineHTML = `
+                        <div class="td-obs-timeline animate-fadeIn">
+                            <div class="td-obs-entry">
+                                <div class="td-obs-entry-node action">
+                                    <i class="bi bi-tools"></i>
+                                </div>
+                                <div class="td-obs-entry-card">
+                                    <div class="td-obs-entry-meta">
+                                        <div class="td-obs-entry-author">
+                                            <span class="td-obs-entry-author-name">${techNameJs}</span>
+                                            <span class="td-obs-entry-author-role">Técnico</span>
+                                        </div>
+                                        <span class="td-obs-entry-time">
+                                            <i class="bi bi-clock"></i>
+                                            Ahora mismo
+                                        </span>
+                                    </div>
+                                    <p class="td-obs-entry-content">${textarea.value.replace(/\n/g, '<br>')}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                        
+                        // Insert new timeline before removing empty container to avoid layout shift
+                        emptyContainer.insertAdjacentHTML('beforebegin', newTimelineHTML);
+                        emptyContainer.remove();
                     }
                 } else {
                     Swal.fire('Error', data.message || 'Error al guardar', 'error');
@@ -313,4 +346,142 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+</script>
+
+<!-- Overlay de Éxito Moderno -->
+<div id="successOverlay" class="so-overlay" style="display: none;">
+    <div class="so-modal">
+        <div class="so-body">
+            <div class="so-icon-container">
+                <div class="so-icon">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+            </div>
+            <h3 class="so-title" id="successTitle">¡Éxito!</h3>
+            <p class="so-message" id="successMessage">Operación completada correctamente</p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Overlay de Éxito - Mismo estilo que otros modales */
+.so-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(0.75px);
+    -webkit-backdrop-filter: blur(0.75px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.so-overlay.show {
+    opacity: 1;
+}
+.so-modal {
+    background: white;
+    width: 100%;
+    max-width: 340px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.so-overlay.show .so-modal {
+    transform: scale(1) translateY(0);
+}
+.so-body {
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+.so-icon-container {
+    margin-bottom: 1rem;
+}
+.so-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: #059669;
+    font-size: 1.75rem;
+    border: 3px solid #6ee7b7;
+    animation: so-pulse 0.5s ease;
+}
+@keyframes so-pulse {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.so-title {
+    margin: 0 0 0.375rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+.so-message {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+</style>
+
+<script>
+// Función global para mostrar overlay de éxito
+function showSuccessOverlay(title, message) {
+    let overlay = document.getElementById('successOverlay');
+    
+    // Si no existe, crearlo dinámicamente
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'successOverlay';
+        overlay.className = 'so-overlay';
+        overlay.innerHTML = `
+            <div class="so-modal">
+                <div class="so-body">
+                    <div class="so-icon-container">
+                        <div class="so-icon">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                    </div>
+                    <h3 class="so-title" id="successTitle">¡Éxito!</h3>
+                    <p class="so-message" id="successMessage">Operación completada</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+    
+    // Mover al body si no está ahí
+    if (overlay.parentNode !== document.body) {
+        document.body.appendChild(overlay);
+    }
+    
+    // Actualizar contenido
+    document.getElementById('successTitle').textContent = title || '¡Éxito!';
+    document.getElementById('successMessage').textContent = message || 'Operación completada correctamente';
+    
+    // Mostrar con animación
+    overlay.style.display = 'flex';
+    overlay.offsetHeight; // Force reflow
+    overlay.classList.add('show');
+    
+    // Auto-cerrar después de 2 segundos
+    setTimeout(() => {
+        overlay.classList.remove('show');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+    }, 2000);
+}
 </script>

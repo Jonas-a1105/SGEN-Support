@@ -128,7 +128,8 @@ class InventarioService
             // 3. Actualizar stock global del ítem (denormalized column)
             // Ideally we should recalculate or just update. For now, simple update.
             $operador = ($tipo === 'ENTRADA') ? '+' : '-';
-            $sqlUpdate = "UPDATE inventario_items SET stock_actual = stock_actual $operador ? WHERE id = ?";
+            // Use COALESCE to handle potential NULL values in stock_actual
+            $sqlUpdate = "UPDATE inventario_items SET stock_actual = COALESCE(stock_actual, 0) $operador ? WHERE id = ?";
             $stmt = $this->pdo->prepare($sqlUpdate);
             $stmt->execute([$cantidad, $itemId]);
 
@@ -252,7 +253,7 @@ class InventarioService
                 );
 
                 // 5. Actualizar stock global
-                $sqlUpdate = "UPDATE inventario_items SET stock_actual = stock_actual - ? WHERE id = ?";
+                $sqlUpdate = "UPDATE inventario_items SET stock_actual = COALESCE(stock_actual, 0) - ? WHERE id = ?";
                 $stmt = $this->pdo->prepare($sqlUpdate);
                 $stmt->execute([$cantidad, $itemId]);
 
@@ -308,7 +309,7 @@ class InventarioService
             );
 
             // 5. Actualizar stock global (denormalized)
-            $sqlUpdGlobal = "UPDATE inventario_items SET stock_actual = stock_actual - ? WHERE id = ?";
+            $sqlUpdGlobal = "UPDATE inventario_items SET stock_actual = COALESCE(stock_actual, 0) - ? WHERE id = ?";
             $stmtUpd = $this->pdo->prepare($sqlUpdGlobal);
             $stmtUpd->execute([$cantidad, $itemId]);
 
