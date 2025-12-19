@@ -1,0 +1,31 @@
+IMPORTANTE: ESTA CARPETA NO PUEDE ESTAR VACÍA
+============================================
+
+Para que la aplicación funcione en modo "Standalone" (sin necesitar XAMPP instalado), debes descargar los ejecutables portables y colocarlos aquí manualmente.
+
+INSTRUCCIONES:
+
+1. CARPETA 'php'
+   - Descarga PHP 8.2 (VS16 x64 Non Thread Safe) desde: https://windows.php.net/download/
+   - Descomprime el contenido del ZIP dentro de la carpeta `desktop/bin/php/`.
+   - Debes ver el archivo `php.exe` directamente en `desktop/bin/php/php.exe`.
+   - Copia el archivo `php.ini-production` a `php.ini`.
+   - Edita `php.ini` y descomenta (quita el ;) de las líneas:
+     extension_dir = "ext"
+     extension=curl
+     extension=mbstring
+     extension=mysqli
+     extension=openssl
+     extension=pdo_mysql
+
+2. CARPETA 'mariadb'
+   - Descarga MariaDB (winx64 ZIP file) desde: https://mariadb.org/download/
+   - Descomprime el contenido. Normalmente crea una carpeta interna con la versión (ej: mariadb-10.11.2-winx64).
+   - MUEVE el contenido de esa carpeta interna directamente a `desktop/bin/mariadb/`.
+   - Debes ver la carpeta `bin` dentro, tal que la ruta al ejecutable sea: `desktop/bin/mariadb/bin/mysqld.exe`.
+
+RESUMEN DE RUTAS FINALES REQUERIDAS:
+- c:\xampp\htdocs\sgen-support\desktop\bin\php\php.exe
+- c:\xampp\htdocs\sgen-support\desktop\bin\mariadb\bin\mysqld.exe
+
+Una vez hecho esto, podemos ejecutar `npm install` y empezar a probar.

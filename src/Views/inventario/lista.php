@@ -436,9 +436,10 @@
                                     </a>
                                     <a href="<?= BASE_URL ?>equipos/eliminar/<?= $equipo->id ?>" 
                                        class="inventario-action-btn delete"
+                                       data-turbo="false"
                                        data-no-global-delete="true"
                                        title="Eliminar"
-                                       onclick="return confirmDeleteEquipoStock(event, this.href, '<?= addslashes(htmlspecialchars($equipo->marca . ' ' . $equipo->modelo)) ?>')">
+                                       onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteEquipoStock(event, this.href, '<?= addslashes(htmlspecialchars($equipo->marca . ' ' . $equipo->modelo)) ?>'); return false;">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </div>
@@ -491,9 +492,10 @@
                             </a>
                             <a href="<?= BASE_URL ?>equipos/eliminar/<?= $equipo->id ?>" 
                                class="inventario-action-btn delete"
+                               data-turbo="false"
                                data-no-global-delete="true"
                                title="Eliminar"
-                               onclick="return confirmDeleteEquipoStock(event, this.href, '<?= addslashes(htmlspecialchars($equipo->marca . ' ' . $equipo->modelo)) ?>')">
+                               onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteEquipoStock(event, this.href, '<?= addslashes(htmlspecialchars($equipo->marca . ' ' . $equipo->modelo)) ?>'); return false;">
                                 <i class="bi bi-trash"></i>
                             </a>
                         </div>
@@ -603,12 +605,19 @@
 
 <script>
     // Initialize Bulk Delete for both tabs using the Class Manager
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bulk Delete for both tabs using the Class Manager
+    // Use proper event listener handling for Turbo
+    function initBulkManagers() {
         // Auto-switch tab based on URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab');
         if (tab && ['articulos', 'equipos'].includes(tab)) {
-            switchInventarioTab(tab);
+            if (typeof switchInventarioTab === 'function') switchInventarioTab(tab);
+        }
+
+        if (typeof BulkDeleteManager === 'undefined') {
+            console.warn('BulkDeleteManager not loaded yet.');
+            return;
         }
 
         // 1. Inventario Artículos
@@ -640,7 +649,15 @@
             deleteButtonId: 'bulkDeleteBtnEquipos',
             countSpanId: 'bulkSelectedCountEquipos'
         });
-    });
+    }
+
+    // Run on Turbo load
+    document.addEventListener('turbo:load', initBulkManagers);
+    
+    // Also try running immediately in case script loaded after event
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(initBulkManagers, 100);
+    }
 </script>
 
 <?php require_once '../src/Views/layout/footer.php'; ?>

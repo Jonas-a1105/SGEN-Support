@@ -585,7 +585,7 @@ function filterAssets() {
 }
 
 // ===== INVENTORY TAB SCRIPTS =====
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('turbo:load', function() {
     const btnList = document.getElementById('btnViewList');
     const btnGrid = document.getElementById('btnViewGrid');
     const listView = document.getElementById('listView');
@@ -859,8 +859,6 @@ function getFilteredItems() {
     const query = document.getElementById('ramSearchInput').value.toLowerCase().trim();
     const items = ramData[ramActiveTab] || [];
     
-    console.log('Search query:', query, 'Items count:', items.length);
-    
     if (!query) return items;
     
     const filtered = items.filter(item => {
@@ -873,12 +871,10 @@ function getFilteredItems() {
         return nameMatch || codeMatch || typeMatch || roleMatch || cedulaMatch || serialMatch;
     });
     
-    console.log('Filtered count:', filtered.length);
     return filtered;
 }
 
 function filterResourceList() {
-    console.log('filterResourceList called');
     renderResourceList();
 }
 

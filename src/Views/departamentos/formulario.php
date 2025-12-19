@@ -183,7 +183,7 @@ $employeesJson = isset($empleados) ? json_encode(array_map(function($e) {
     <!-- Init Script -->
     <script src="<?= BASE_URL ?>js/department-form.js?v=<?= time() ?>"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('turbo:load', () => {
             const employees = <?= $employeesJson ?>;
             const currentManagerId = '<?= $val_jefe_id ?>';
             

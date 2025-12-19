@@ -523,7 +523,7 @@ function confirmarMarcarRealizado(id) {
     MhConfirmModal.open(id);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('turbo:load', () => {
     MhConfirmModal.init();
 });
 </script>

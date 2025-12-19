@@ -300,7 +300,7 @@ window.FechaCierreModal = {
 };
 
 // Auto-init
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('turbo:load', () => {
     FechaCierreModal.init();
 });
 

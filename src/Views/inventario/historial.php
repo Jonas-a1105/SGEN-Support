@@ -81,7 +81,7 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('turbo:load', function() {
         $('#tablaHistorial').DataTable({
             language: {
                 url: '//cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json',

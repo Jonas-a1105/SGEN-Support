@@ -137,7 +137,38 @@ class EquiposController extends Controller
             'proveedor_rif'     => $validator->get('proveedor_rif'),
             'garantia'          => $validator->get('garantia') ?: null,
             'valor_compra'      => $validator->get('valor_compra') ?: null,
+            'imagen'            => $es_edicion ? $this->equipoModel->findById($id)->imagen : null,
         ];
+
+        // --- Manejo de Imagen ---
+        $uploadDir = __DIR__ . '/../../public/uploads/equipos/';
+        
+        // 1. Si se marcó para eliminar o se va a subir una nueva
+        $debe_eliminar_vieja = ($validator->get('eliminar_imagen') === '1');
+        $nueva_imagen_subida = (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK);
+
+        if ($debe_eliminar_vieja || $nueva_imagen_subida) {
+            if ($es_edicion && !empty($datos['imagen'])) {
+                $oldFile = $uploadDir . $datos['imagen'];
+                if (file_exists($oldFile)) @unlink($oldFile);
+                $datos['imagen'] = null; // Resetear en el array por si no se sube una nueva
+            }
+        }
+
+        // 2. Procesar subida si existe
+        if ($nueva_imagen_subida) {
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
+            $newFilename = 'eq_' . time() . '_' . uniqid() . '.' . $extension;
+            $uploadPath = $uploadDir . $newFilename;
+
+            if (move_uploaded_file($_FILES['imagen']['tmp_name'], $uploadPath)) {
+                $datos['imagen'] = $newFilename;
+            }
+        }
 
         $fue_asignado = false;
         
@@ -198,6 +229,11 @@ class EquiposController extends Controller
             $message = "Error: Equipo no encontrado.";
         } else {
             if ($this->equipoModel->delete($id)) {
+                // Eliminar imagen del disco
+                if (!empty($equipo->imagen)) {
+                    $imagePath = __DIR__ . '/../../public/uploads/equipos/' . $equipo->imagen;
+                    if (file_exists($imagePath)) @unlink($imagePath);
+                }
                 $success = true;
                 $message = "Equipo eliminado correctamente.";
                 $this->logBitacora("Eliminó el equipo (Código: {$equipo->codigo_inventario})", 'equipo', $id);

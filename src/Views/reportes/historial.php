@@ -224,7 +224,7 @@ const allRows = document.querySelectorAll('.table-row');
 const totalItems = allRows.length;
 
 // Inicializar con preferencia de PHP
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('turbo:load', function() {
     updatePagination();
 });
 
@@ -302,6 +302,6 @@ function filterTable() {
 }
 
 // Initialize pagination on load
-document.addEventListener('DOMContentLoaded', updatePagination);
+document.addEventListener('turbo:load', updatePagination);
 </script>
 

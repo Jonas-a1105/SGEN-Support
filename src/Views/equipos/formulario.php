@@ -30,6 +30,7 @@ $val_proveedor    = $es_edicion ? ($equipo->proveedor ?? '') : '';
 $val_proveedor_rif = $es_edicion ? ($equipo->proveedor_rif ?? '') : '';
 $val_garantia     = $es_edicion ? ($equipo->garantia ?? '') : '';
 $val_valor        = $es_edicion ? ($equipo->valor_compra ?? '') : '';
+$val_imagen       = $es_edicion ? ($equipo->imagen ?? '') : '';
 
 // Arrays de opciones
 if (!isset($tipos_equipo)) {
@@ -99,24 +100,37 @@ if (!isset($estados_equipo)) {
             </button>
         </div>
 
-        <div class="eq-photo-box">
-             <div class="eq-photo-circle">
-                 <i class="bi bi-camera" style="font-size: 1.5rem;"></i>
+        <div class="eq-photo-box" id="photoBox" style="cursor: pointer; position: relative;">
+             <div class="eq-photo-circle" id="photoPreview" style="background-image: <?= $val_imagen ? "url('".BASE_URL."uploads/equipos/".$val_imagen."')" : 'none' ?>; background-size: cover; background-position: center; border: 2px solid var(--eq-slate-200);">
+                 <?php if (!$val_imagen): ?>
+                    <i class="bi bi-camera" style="font-size: 1.5rem;"></i>
+                 <?php endif; ?>
              </div>
-             <p style="font-size: 0.75rem; font-weight: 600; color: var(--eq-slate-600);">Subir foto del equipo</p>
-             <p style="font-size: 0.65rem; color: var(--eq-slate-400); margin-top: 0.25rem;">JPG, PNG max 2MB</p>
+             
+             <!-- Botón Eliminar -->
+             <button type="button" id="removePhotoBtn" style="display: <?= $val_imagen ? 'flex' : 'none' ?>; position: absolute; top: -5px; right: -5px; width: 24px; height: 24px; border-radius: 50%; background: #ef4444; color: white; border: 2px solid white; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                <i class="bi bi-x" style="font-size: 1.2rem;"></i>
+             </button>
+
+             <p style="font-size: 0.75rem; font-weight: 600; color: var(--eq-slate-600); margin-top: 5px;">
+                <span id="photoText"><?= $val_imagen ? 'Cambiar foto' : 'Subir foto' ?></span>
+             </p>
         </div>
     </div>
 
     <!-- Content -->
     <div class="eq-content">
-        <form action="<?= BASE_URL ?>equipos/guardar" method="POST" id="equipmentForm" style="display: flex; flex-direction: column; height: 100%;">
+        <form action="<?= BASE_URL ?>equipos/guardar" method="POST" id="equipmentForm" enctype="multipart/form-data" style="display: flex; flex-direction: column; height: 100%;">
             
             <?php if ($es_edicion): ?>
                 <input type="hidden" name="id" value="<?= $equipo->id ?>">
             <?php endif; ?>
             
             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['HTTP_REFERER'] ?? '') ?>">
+            
+            <!-- Hidden Image Inputs (Moved inside form) -->
+            <input type="file" name="imagen" id="imagenInput" accept="image/*" style="display: none;">
+            <input type="hidden" name="eliminar_imagen" id="eliminarImagenInput" value="0">
 
             <div class="eq-form-container">
                 <div class="eq-step-header">

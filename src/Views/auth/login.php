@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SGEN-Support - Iniciar Sesión</title>
     <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>img/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/login-modern.css">
     <!-- Preload JS -->
     <!-- Preload JS -->
     <script src="<?= BASE_URL ?>js/login-modern.js" defer></script>
+    
+    <!-- SweetAlert2 for Desktop Exit Confirmation -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Desktop Integration for Electron exit confirmation -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/desktop-modal.css">
+    <script src="<?= BASE_URL ?>js/desktop-integration.js" defer></script>
     
     <!-- Theme Script -->
     <script>
@@ -112,7 +119,7 @@
 
             <!-- Footer -->
             <div class="login-footer">
-                <p class="footer-text">SGEN-Support v1.0.2</p>
+                <p class="footer-text">SGEN-Support v<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?></p>
             </div>
         </div>
     </div>

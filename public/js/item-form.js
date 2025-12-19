@@ -169,6 +169,12 @@ const ItemForm = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize on Turbo navigation
+document.addEventListener('turbo:load', () => {
     ItemForm.init();
 });
+
+// Also run immediately if already loaded
+if (document.readyState !== 'loading') {
+    ItemForm.init();
+}

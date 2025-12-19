@@ -1,0 +1,109 @@
+{
+  "name": "sgen-support-desktop",
+  "version": "1.0.17",
+  "description": "Aplicación de escritorio SGEN-Support (Standalone)",
+  "main": "main.js",
+  "author": "Jonas Mendoza",
+  "license": "Propia",
+  "private": true,
+  "scripts": {
+    "start": "set ELECTRON_RUN_AS_NODE=&& electron .",
+    "dist": "electron-builder",
+    "pack": "electron-builder --dir",
+    "publish": "electron-builder --publish always"
+  },
+  "build": {
+    "appId": "com.sgen.support",
+    "productName": "SGEN-Support",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "../public/img/favicon.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "license": "LICENSE.txt"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!bin/php/extras/**",
+      "!bin/php/dev/**",
+      "!bin/mariadb/mysql-test/**",
+      "!bin/mariadb/sql-bench/**"
+    ],
+    "extraResources": [
+      {
+        "from": "../src",
+        "to": "src",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../public",
+        "to": "public",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../config",
+        "to": "config",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../vendor",
+        "to": "vendor",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "bin",
+        "to": "bin",
+        "filter": [
+          "**/*",
+          "!**/dist/**",
+          "!**/node_modules/**"
+        ]
+      },
+      {
+        "from": "../migrations",
+        "to": "migrations",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../database",
+        "to": "database",
+        "filter": [
+          "schema.sql"
+        ]
+      }
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "Jonas-a1105",
+      "repo": "SGEN-Support"
+    }
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.2.1",
+    "tree-kill": "^1.2.2"
+  }
+}

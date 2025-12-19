@@ -125,8 +125,9 @@ function getDeptColor($index, $colores) {
                                     <li>
                                         <a class="dropdown-item text-danger" 
                                            href="<?= BASE_URL ?>departamentos/eliminar/<?= $d->id ?>"
+                                           data-turbo="false"
                                            data-no-global-delete="true"
-                                           onclick="return confirmDeleteDept(event, this.href, '<?= addslashes(htmlspecialchars($d->nombre)) ?>')">
+                                           onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteDept(event, this.href, '<?= addslashes(htmlspecialchars($d->nombre)) ?>'); return false;">
                                             <i class="bi bi-trash me-2"></i>Eliminar
                                         </a>
                                     </li>
@@ -253,8 +254,9 @@ function getDeptColor($index, $colores) {
                                     <a href="<?= BASE_URL ?>departamentos/eliminar/<?= $d->id ?>" 
                                        class="dept-table-action text-danger" 
                                        title="Eliminar"
+                                       data-turbo="false"
                                        data-no-global-delete="true"
-                                       onclick="return confirmDeleteDept(event, this.href, '<?= addslashes(htmlspecialchars($d->nombre)) ?>')">
+                                       onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteDept(event, this.href, '<?= addslashes(htmlspecialchars($d->nombre)) ?>'); return false;">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 <?php endif; ?>
@@ -329,7 +331,7 @@ function getDeptColor($index, $colores) {
     }
     
     // Initialize Bulk Delete
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('turbo:load', function() {
         BulkDelete.init({
             containerId: 'departamentosMain',
             itemSelector: '[data-bulk-item]',

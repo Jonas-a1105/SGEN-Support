@@ -317,11 +317,12 @@ foreach ($mantenimientos as $m) {
                                     <?php endif; ?>
                                     <?php if ($_SESSION['rol'] === 'admin'): ?>
                                     <a href="#" 
-                                       onclick="event.preventDefault(); event.stopPropagation(); DeleteModal.open('<?= BASE_URL ?>mantenimientos/eliminar/<?= $m->id ?>', { 
-                                           id: '#<?= $m->id ?>', 
-                                           title: 'Mantenimiento: <?= addslashes($m->equipo_nombre) ?>', 
-                                           author: '<?= addslashes($m->tecnico_nombre ?? 'Sin asignar') ?>' 
-                                       })" 
+                                       data-turbo="false"
+                                       onclick="event.preventDefault(); event.stopPropagation(); SimpleDeleteModal.open('<?= BASE_URL ?>mantenimientos/eliminar/<?= $m->id ?>', { 
+                                           type: 'Mantenimiento #<?= $m->id ?>',
+                                           name: '<?= addslashes($m->equipo_nombre) ?>',
+                                           warning: 'Esta acción es definitiva. Se perderá todo el historial asociado.'
+                                       }); return false;" 
                                        class="mh-action-btn delete" 
                                        title="Eliminar">
                                         <i class="bi bi-trash"></i>
@@ -394,7 +395,7 @@ foreach ($mantenimientos as $m) {
     
     <?php if ($_SESSION['rol'] === 'admin'): ?>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('turbo:load', function() {
             if (typeof BulkDelete !== 'undefined') {
                 BulkDelete.init({
                     containerId: 'mhListContainer',

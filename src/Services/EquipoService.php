@@ -26,84 +26,63 @@ class EquipoService
     {
         $query = trim($query);
         
-        // 1. Buscar por Serial o Código
-        $equipo = $this->equipoModel->findBySerialOrCodigo($query);
+        // Use the new partial search method
+        $equipos = $this->equipoModel->searchByTerm($query);
 
-        if ($equipo) {
-            // Validar restricción de departamento
-            if ($departamentoIdRestrict && $equipo->departamento_id != $departamentoIdRestrict) {
-                return ['found' => false, 'error' => 'Equipo no pertenece a su departamento'];
+        if (empty($equipos)) {
+            return ['found' => false, 'error' => 'No se encontraron equipos con ese criterio.'];
+        }
+
+        // Filter by department restriction if active
+        if ($departamentoIdRestrict) {
+            $equipos = array_filter($equipos, function($eq) use ($departamentoIdRestrict) {
+                return $eq->departamento_id == $departamentoIdRestrict;
+            });
+            // Re-index array
+            $equipos = array_values($equipos);
+
+            if (empty($equipos)) {
+                return ['found' => false, 'error' => 'El equipo encontrado no pertenece a su departamento.'];
             }
+        }
 
+        // Process results
+        // Case 1: Single Result -> Return detailed flat structure for direct assignment
+        if (count($equipos) === 1) {
+            $eq = $equipos[0];
             return [
                 'found' => true,
                 'multiple' => false,
-                'id' => $equipo->id,
-                'tipo' => $equipo->tipo,
-                'marca' => $equipo->marca,
-                'modelo' => $equipo->modelo,
-                'serial' => $equipo->numero_serie,
-                'codigo' => $equipo->codigo_inventario,
-                'departamento_id' => $equipo->departamento_id,
-                'departamento_nombre' => $equipo->departamento_nombre
+                'id' => $eq->id,
+                'tipo' => $eq->tipo,
+                'marca' => $eq->marca,
+                'modelo' => $eq->modelo,
+                'serial' => $eq->numero_serie,
+                'codigo' => $eq->codigo_inventario,
+                'departamento_id' => $eq->departamento_id,
+                'departamento_nombre' => $eq->departamento_nombre
             ];
         }
 
-        // 2. Buscar por Cédula de Empleado
-        $equipos = $this->equipoModel->findAllByEmpleadoCedula($query);
-
-        if (!empty($equipos)) {
-            // Filtrar por departamento si es necesario
-            if ($departamentoIdRestrict) {
-                $equipos = array_filter($equipos, function($eq) use ($departamentoIdRestrict) {
-                    return $eq->departamento_id == $departamentoIdRestrict;
-                });
-                $equipos = array_values($equipos);
-            }
-
-            if (empty($equipos)) {
-                return ['found' => false, 'error' => 'No se encontraron equipos asignados a esa cédula en su departamento'];
-            }
-
-            // Si hay un solo resultado
-            if (count($equipos) === 1) {
-                $eq = $equipos[0];
-                return [
-                    'found' => true,
-                    'multiple' => false,
-                    'id' => $eq->id,
-                    'tipo' => $eq->tipo,
-                    'marca' => $eq->marca,
-                    'modelo' => $eq->modelo,
-                    'serial' => $eq->numero_serie,
-                    'codigo' => $eq->codigo_inventario,
-                    'departamento_id' => $eq->departamento_id,
-                    'departamento_nombre' => $eq->departamento_nombre
-                ];
-            }
-
-            // Múltiples resultados
-            $equiposData = array_map(function($eq) {
-                return [
-                    'id' => $eq->id,
-                    'tipo' => $eq->tipo,
-                    'marca' => $eq->marca,
-                    'modelo' => $eq->modelo,
-                    'serial' => $eq->numero_serie,
-                    'codigo_inventario' => $eq->codigo_inventario,
-                    'departamento_id' => $eq->departamento_id,
-                    'departamento_nombre' => $eq->departamento_nombre
-                ];
-            }, $equipos);
-
+        // Case 2: Multiple Results -> Return list for selection modal
+        $equiposData = array_map(function($eq) {
             return [
-                'found' => true,
-                'multiple' => true,
-                'equipos' => $equiposData
+                'id' => $eq->id,
+                'tipo' => $eq->tipo,
+                'marca' => $eq->marca,
+                'modelo' => $eq->modelo,
+                'serial' => $eq->numero_serie,
+                'codigo_inventario' => $eq->codigo_inventario,
+                'departamento_id' => $eq->departamento_id,
+                'departamento_nombre' => $eq->departamento_nombre
             ];
-        }
+        }, $equipos);
 
-        return ['found' => false];
+        return [
+            'found' => true,
+            'multiple' => true,
+            'equipos' => $equiposData
+        ];
     }
 
     /**

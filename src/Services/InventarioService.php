@@ -38,10 +38,15 @@ class InventarioService
             }
             
             // 1. Crear el ítem
-            $itemId = $this->inventarioModel->registrarItem($datos); // Refactored to be simple insert
+            try {
+                $itemId = $this->inventarioModel->registrarItem($datos);
+            } catch (Exception $e) {
+                error_log("Error fatal en registrarItem (insert): " . $e->getMessage());
+                throw new Exception("Error al insertar el ítem: " . $e->getMessage());
+            }
             
             if ($itemId <= 0) {
-                throw new Exception("Error al insertar el ítem en la base de datos.");
+                throw new Exception("Error al insertar el ítem en la base de datos (ID retornado <= 0).");
             }
 
             // 2. Si hay stock inicial, registrar entrada

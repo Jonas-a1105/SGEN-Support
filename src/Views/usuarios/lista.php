@@ -193,10 +193,11 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
                                     <?php if ($u->id != 1): ?>
                                     <a href="<?= BASE_URL ?>usuarios/eliminar/<?= $u->id ?>" 
                                        class="btn-delete"
+                                       data-turbo="false"
                                        data-no-global-delete="true"
                                        style="width: 32px; height: 32px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; background: #fee2e2; color: #dc2626; text-decoration: none;"
                                        title="Eliminar"
-                                       onclick="return confirmDeleteUser(event, this.href, '<?= addslashes(htmlspecialchars($u->username)) ?>')">
+                                       onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteUser(event, this.href, '<?= addslashes(htmlspecialchars($u->username)) ?>'); return false;">
                                         <i class="bi bi-trash-fill"></i>
                                     </a>
                                     <?php endif; ?>
@@ -281,10 +282,11 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
                                 <?php if ($u->id != 1): ?>
                                 <a href="<?= BASE_URL ?>usuarios/eliminar/<?= $u->id ?>" 
                                    class="btn-delete"
+                                   data-turbo="false"
                                    data-no-global-delete="true"
                                    style="width: 32px; height: 32px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; background: #fee2e2; color: #dc2626; text-decoration: none;"
                                    title="Eliminar"
-                                   onclick="return confirmDeleteUser(event, this.href, '<?= addslashes(htmlspecialchars($u->username)) ?>')">
+                                   onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteUser(event, this.href, '<?= addslashes(htmlspecialchars($u->username)) ?>'); return false;">
                                     <i class="bi bi-trash-fill"></i>
                                 </a>
                                 <?php endif; ?>
@@ -333,15 +335,8 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
 
 
 
-<!-- Bulk Delete Assets -->
-<link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
-
-<!-- Modern Simple Delete Modal Integration -->
-<link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>"></script>
-
-<script src="<?= BASE_URL ?>js/usuarios.js?v=<?= time() ?>"></script>
+<!-- Bulk Delete Assets (Global in Header) -->
+<script src="<?= BASE_URL ?>js/usuarios.js?v=2.6.0"></script>
 <script>
     function confirmDeleteUser(e, url, name) {
         e.preventDefault();
@@ -353,9 +348,9 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
         return false;
     }
     
-    // Initialize Bulk Delete
-    document.addEventListener('DOMContentLoaded', function() {
-        BulkDelete.init({
+    // Initialize Bulk Delete (Run immediately as Elements exist)
+    if (window.BulkDelete) {
+         BulkDelete.init({
             containerId: 'usuariosContainer',
             itemSelector: '[data-bulk-item]',
             itemIdAttribute: 'data-user-id',
@@ -368,7 +363,7 @@ $paginationPerPage = $cookiePerPage; // Variable para usar en JS
             deleteButtonId: 'bulkDeleteBtn',
             countSpanId: 'bulkSelectedCount'
         });
-    });
+    }
 </script>
 
 </content>

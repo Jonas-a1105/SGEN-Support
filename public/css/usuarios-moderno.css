@@ -14,13 +14,9 @@
 .users-modern-container {
     background: transparent;
     min-height: 100vh;
-    padding: 0 2rem 2rem 2rem;
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    margin-left: -50vw;
+    padding: 0;
+    width: 100%;
     color: var(--text-main) !important;
-    /* Force dark text color */
 }
 
 

@@ -173,8 +173,10 @@ function getStatusBadge($estado) {
                     </div>
                     <div class="equipo-card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div class="equipo-card-icon">
-                                <i class="bi <?= getEquipoIcon($e->tipo) ?>"></i>
+                            <div class="equipo-card-icon" <?= !empty($e->imagen) ? 'style="background-image: url('.BASE_URL.'uploads/equipos/'.$e->imagen.'); background-size: cover; background-position: center; border: 1px solid #e2e8f0;"' : '' ?>>
+                                <?php if (empty($e->imagen)): ?>
+                                    <i class="bi <?= getEquipoIcon($e->tipo) ?>"></i>
+                                <?php endif; ?>
                             </div>
                             <a href="<?= BASE_URL ?>equipos/ver/<?= $e->id ?>" class="text-decoration-none" title="Ver detalles">
                                 <i class="bi bi-arrow-up-right text-primary"></i>
@@ -215,9 +217,10 @@ function getStatusBadge($estado) {
                                 </a>
                                 <a href="<?= BASE_URL ?>equipos/eliminar/<?= $e->id ?>" 
                                    class="equipo-action-btn delete" 
+                                   data-turbo="false"
                                    data-no-global-delete="true"
                                    title="Eliminar"
-                                   onclick="return confirmDeleteEquipo(event, this.href, '<?= addslashes(htmlspecialchars($e->marca . ' ' . $e->modelo)) ?>')">
+                                   onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteEquipo(event, this.href, '<?= addslashes(htmlspecialchars($e->marca . ' ' . $e->modelo)) ?>'); return false;">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             <?php endif; ?>
@@ -253,8 +256,10 @@ function getStatusBadge($estado) {
                                     <i class="bi bi-circle icon-unchecked"></i>
                                 </div>
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="equipo-table-icon">
-                                        <i class="bi <?= getEquipoIcon($e->tipo) ?>"></i>
+                                    <div class="equipo-table-icon" <?= !empty($e->imagen) ? 'style="background-image: url('.BASE_URL.'uploads/equipos/'.$e->imagen.'); background-size: cover; background-position: center; border: 1px solid #e2e8f0;"' : '' ?>>
+                                        <?php if (empty($e->imagen)): ?>
+                                            <i class="bi <?= getEquipoIcon($e->tipo) ?>"></i>
+                                        <?php endif; ?>
                                     </div>
                                     <div>
                                         <div class="equipo-table-name" title="<?= htmlspecialchars($e->marca . ' ' . $e->modelo) ?>">
@@ -286,9 +291,10 @@ function getStatusBadge($estado) {
                                     <a href="<?= BASE_URL ?>equipos/editar/<?= $e->id ?>" class="btn btn-sm btn-link text-secondary"><i class="bi bi-pencil"></i></a>
                                     <a href="<?= BASE_URL ?>equipos/eliminar/<?= $e->id ?>" 
                                        class="btn btn-sm btn-link text-danger" 
+                                       data-turbo="false"
                                        data-no-global-delete="true"
                                        title="Eliminar"
-                                       onclick="return confirmDeleteEquipo(event, this.href, '<?= addslashes(htmlspecialchars($e->marca . ' ' . $e->modelo)) ?>')">
+                                       onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteEquipo(event, this.href, '<?= addslashes(htmlspecialchars($e->marca . ' ' . $e->modelo)) ?>'); return false;">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 <?php endif; ?>
@@ -346,17 +352,8 @@ function getStatusBadge($estado) {
 
 </div>
 
-<!-- Bulk Delete Assets - Solo Admin -->
-<?php if ($_SESSION['rol'] === 'admin'): ?>
-<link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
-<?php endif; ?>
-
-<!-- Modern Simple Delete Modal Integration -->
-<link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>"></script>
-
-<script src="<?= BASE_URL ?>js/equipos.js?v=<?= time() ?>"></script>
+<!-- Equipos Logic -->
+<script src="<?= BASE_URL ?>js/equipos.js?v=2.6.0"></script>
 <script>
     function confirmDeleteEquipo(e, url, name) {
         e.preventDefault();
@@ -369,8 +366,8 @@ function getStatusBadge($estado) {
     }
     
     <?php if ($_SESSION['rol'] === 'admin'): ?>
-    // Initialize Bulk Delete - Solo Admin
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bulk Delete - Solo Admin (Run immediately)
+    if (window.BulkDelete) {
         BulkDelete.init({
             containerId: 'equiposMain',
             itemSelector: '[data-bulk-item]',
@@ -384,6 +381,6 @@ function getStatusBadge($estado) {
             deleteButtonId: 'bulkDeleteBtn',
             countSpanId: 'bulkSelectedCount'
         });
-    });
+    }
     <?php endif; ?>
 </script>

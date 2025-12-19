@@ -10,6 +10,7 @@ if (!window.GlobalSearch) {
         selectedIndex: -1,
         filteredResults: [],
         isOpen: false,
+        eventsBound: false,
 
         // Comprehensive Navigation Items
         navItems: [
@@ -71,23 +72,27 @@ if (!window.GlobalSearch) {
         },
 
         bindEvents() {
-            // Document shortcuts (Ctrl+K)
-            document.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                    e.preventDefault();
-                    this.input.focus();
-                    this.showResults();
-                }
-            });
+            // Document shortcuts (Ctrl+K) - Only bind once per session
+            if (!this.eventsBound) {
+                document.addEventListener('keydown', (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                        e.preventDefault();
+                        this.input.focus();
+                        this.showResults();
+                    }
+                });
 
-            // Click outside to close
-            document.addEventListener('click', (e) => {
-                if (!this.input.contains(e.target) && !this.resultsContainer.contains(e.target)) {
-                    this.closeResults();
-                }
-            });
+                // Click outside to close
+                document.addEventListener('click', (e) => {
+                    if (!this.input.contains(e.target) && !this.resultsContainer.contains(e.target)) {
+                        this.closeResults();
+                    }
+                });
 
-            // Input events
+                this.eventsBound = true;
+            }
+
+            // Input events - Bind every time we get a new input element
             this.input.addEventListener('input', (e) => this.search(e.target.value));
             this.input.addEventListener('focus', () => this.showResults());
             this.input.addEventListener('keydown', (e) => this.handleKeydown(e));

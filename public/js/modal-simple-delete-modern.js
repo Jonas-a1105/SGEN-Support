@@ -5,7 +5,7 @@
  * - Structure: Header (Red-50), Body (P-6), Footer (Actions)
  */
 
-const SimpleDeleteModal = (function () {
+window.SimpleDeleteModal = window.SimpleDeleteModal || (function () {
     let modalElement = null;
     let targetUrl = null;
     let isDeleting = false;
@@ -96,11 +96,25 @@ const SimpleDeleteModal = (function () {
         modalElement.querySelector('#sdmConfirmBtn').addEventListener('click', confirmDelete);
 
         // Escape Key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modalElement.classList.contains('active') && !isDeleting) {
-                closeModal();
-            }
-        });
+        if (!window._sdmKeydownBound) {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalElement && modalElement.classList.contains('active') && !isDeleting) {
+                    closeModal();
+                }
+            });
+            window._sdmKeydownBound = true;
+        }
+
+        // CRITICAL: Close modal and clear state when Turbo navigates away
+        // This prevents accidental deletion if user cancels then navigates
+        if (!window._sdmTurboBound) {
+            document.addEventListener('turbo:before-visit', () => {
+                if (modalElement && modalElement.classList.contains('active') && !isDeleting) {
+                    closeModal();
+                }
+            });
+            window._sdmTurboBound = true;
+        }
     }
 
     function confirmDelete() {
@@ -136,6 +150,11 @@ const SimpleDeleteModal = (function () {
     }
 
     function open(url, options = {}) {
+        // Turbo Support: Check if element was removed from DOM (detached)
+        if (modalElement && !document.body.contains(modalElement)) {
+            modalElement = null; // Reset to force re-creation
+        }
+
         if (!modalElement) init();
 
         targetUrl = url;
@@ -166,6 +185,9 @@ const SimpleDeleteModal = (function () {
         if (modalElement) {
             modalElement.classList.remove('active');
         }
+        // CRITICAL: Clear the target URL to prevent accidental deletion on navigation
+        targetUrl = null;
+        isDeleting = false;
     }
 
     return {

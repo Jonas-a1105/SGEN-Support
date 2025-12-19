@@ -276,16 +276,18 @@ function getDeptClass($dept) {
                         </div>
                         
                         <?php if ($_SESSION['rol'] === 'admin'): ?>
-                            <div class="d-flex gap-1">
+                            <div class="d-flex gap-2">
                                 <a href="<?= BASE_URL ?>empleados/editar/<?= $e->id ?>" 
-                                   class="empleado-action-btn" title="Editar">
+                                   class="empleado-action-btn btn-action-edit" 
+                                   data-no-global-delete="true"
+                                   title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <a href="<?= BASE_URL ?>empleados/eliminar/<?= $e->id ?>" 
-                                   class="empleado-action-btn" 
-                                   data-no-global-delete="true"
-                                   title="Eliminar"
-                                   onclick="return confirmDelete(event, this.href, '<?= addslashes(htmlspecialchars($nombre_completo)) ?>')">
+                                   class="empleado-action-btn btn-delete" 
+                                   data-turbo="false"
+                                   data-name="<?= htmlspecialchars($nombre_completo) ?>"
+                                   title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </div>
@@ -356,16 +358,18 @@ function getDeptClass($dept) {
                             </td>
                             <?php if ($_SESSION['rol'] === 'admin'): ?>
                                 <td class="text-end">
-                                    <div class="d-flex gap-1 justify-content-end">
+                                    <div class="d-flex gap-2 justify-content-end">
                                         <a href="<?= BASE_URL ?>empleados/editar/<?= $e->id ?>" 
-                                           class="empleado-action-btn" title="Editar">
+                                           class="empleado-action-btn btn-action-edit" 
+                                           data-no-global-delete="true"
+                                           title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         <a href="<?= BASE_URL ?>empleados/eliminar/<?= $e->id ?>" 
-                                           class="empleado-action-btn" 
-                                           data-no-global-delete="true"
-                                           title="Eliminar"
-                                           onclick="return confirmDelete(event, this.href, '<?= addslashes(htmlspecialchars($nombre_completo)) ?>')">
+                                           class="empleado-action-btn btn-delete" 
+                                           data-turbo="false"
+                                           data-name="<?= htmlspecialchars($nombre_completo) ?>"
+                                           title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </div>
@@ -420,29 +424,15 @@ function getDeptClass($dept) {
     </main>
 </div>
 
-<!-- Bulk Delete Assets -->
-<link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>"></script>
-
-<!-- Modern Simple Delete Modal Integration -->
-<link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=<?= time() ?>">
-<script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>"></script>
-
-<script src="<?= BASE_URL ?>js/empleados.js?v=<?= time() ?>"></script>
+<!-- Empleados Logic -->
+<script src="<?= BASE_URL ?>js/empleados.js?v=2.6.0"></script>
 <script>
     // Helper simple para usar en el onclick inline
-    function confirmDelete(e, url, name) {
-        e.preventDefault();
-        SimpleDeleteModal.open(url, {
-            type: 'Empleado',
-            name: name,
-            warning: 'Esta acción es definitiva. Se desvinculará cualquier usuario asociado.'
-        });
-        return false;
-    }
+    // (Removed: We now use Global Delete Interceptor in app.js via .btn-delete class)
+
     
-    // Initialize Bulk Delete
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bulk Delete (Run immediately)
+    if (window.BulkDelete) {
         BulkDelete.init({
             containerId: 'empleadosMain',
             itemSelector: '[data-bulk-item]',
@@ -456,5 +446,5 @@ function getDeptClass($dept) {
             deleteButtonId: 'bulkDeleteBtn',
             countSpanId: 'bulkSelectedCount'
         });
-    });
+    }
 </script>

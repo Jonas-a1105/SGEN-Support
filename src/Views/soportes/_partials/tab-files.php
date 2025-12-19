@@ -292,56 +292,5 @@ $archivos = $archivos ?? [];
 }
 </style>
 
-<script>
-window.DeleteFileModal = {
-    overlay: null,
-    archivoId: null,
-
-    init() {
-        this.overlay = document.getElementById('deleteFileOverlay');
-        if (this.overlay && this.overlay.parentNode !== document.body) {
-            document.body.appendChild(this.overlay);
-        }
-        
-        // Bind confirm button
-        const confirmBtn = document.getElementById('confirmDeleteBtn');
-        if (confirmBtn) {
-            confirmBtn.addEventListener('click', () => this.confirm());
-        }
-    },
-
-    open(archivoId, nombreArchivo) {
-        if (!this.overlay) this.init();
-        if (!this.overlay) return;
-
-        this.archivoId = archivoId;
-        document.getElementById('deleteFileName').textContent = nombreArchivo;
-
-        this.overlay.style.display = 'flex';
-        this.overlay.offsetHeight; // Force reflow
-        this.overlay.classList.add('show');
-    },
-
-    close() {
-        if (!this.overlay) return;
-        this.overlay.classList.remove('show');
-        setTimeout(() => {
-            this.overlay.style.display = 'none';
-        }, 250);
-    },
-
-    confirm() {
-        if (this.archivoId) {
-            window.location.href = BASE_URL + 'soportes/eliminar_archivo/' + this.archivoId;
-        }
-    }
-};
-
-function confirmarEliminarArchivo(archivoId, nombreArchivo) {
-    DeleteFileModal.open(archivoId, nombreArchivo);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    DeleteFileModal.init();
-});
-</script>
+<!-- Modular Ticket Files Script -->
+<script src="<?= BASE_URL ?>js/ticket-files.js?v=<?= time() ?>"></script>

@@ -60,10 +60,32 @@ class TicketService
      */
     public function asignarTecnico(int $soporteId, int $empleadoId): bool
     {
+
+        // Validar que el empleado sea realmente un técnico (o tenga usuario técnico)
+        $empleado = (new Empleado())->findById($empleadoId);
+        if (!$empleado || !$empleado->usuario_id) {
+             // Si queremos ser estrictos, podríamos retornar false.
+             // Por ahora, asumimos que la UI filtra, pero validamos existencia.
+             return false;
+        }
+
+        // Opcional: Validar rol del usuario asociado
+        $usuario = $this->usuarioModel->findById($empleado->usuario_id);
+        if (!$usuario || $usuario->rol !== 'tecnico') {
+             // Permitimos 'admin' también? Generalmente se asigna a técnicos.
+             // Si es admin, lo permitimos.
+             if ($usuario->rol !== 'admin') {
+                 return false; 
+             }
+        }
+
         $updateData = [
             'empleado_id' => $empleadoId,
             'estado' => 'en_proceso'
         ];
+
+
+
 
         $resultado = $this->soporteModel->update($soporteId, $updateData);
 

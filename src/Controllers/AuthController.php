@@ -56,7 +56,7 @@ class AuthController extends Controller
             $_SESSION['user_id']  = $usuario->id;
             $_SESSION['username'] = $usuario->username;
             $_SESSION['rol']      = $usuario->rol;
-            $_SESSION['tema']     = $usuario->tema;
+            $_SESSION['tema']     = $usuario->tema ?? 'light';
             $_SESSION['empleado_id'] = $usuario->empleado_id ?? null;
             
             // 3. Obtener departamento_id

@@ -88,6 +88,14 @@ debug_*.txt
 .phpunit.result.cache
 phpunit.xml
 
+# Desktop App
+desktop/dist/
+desktop/node_modules/
+desktop/bin/php/
+!desktop/bin/php/php.ini
+desktop/bin/mariadb/
+!desktop/bin/INSTRUCCIONES_BINARIOS.txt
+
 # =============================================
 # Miscellaneous
 # =============================================

@@ -1,174 +1,161 @@
 /**
  * TicketTabManager - Gestión moderna de tabs en vista detalle
- * 
- * Features:
- * - Remember last visited tab (localStorage)
- * - Keyboard shortcuts (Alt+1 to Alt+5)
- * - Smooth transitions
- * - Mobile responsive
- * - Tab analytics tracking
+ * Turbo-compatible version.
  */
+(function () {
+    // Idempotency guard
+    if (window.TICKET_TABS_LOADED) return;
+    window.TICKET_TABS_LOADED = true;
 
-class TicketTabManager {
-    constructor() {
-        this.tabs = {
-            'info': { key: '1', icon: 'bi-ticket-detailed' },
-            'files': { key: '2', icon: 'bi-paperclip' },
-            'comments': { key: '3', icon: 'bi-chat-dots' },
-            'notes': { key: '4', icon: 'bi-clipboard-check' },
-            'signature': { key: '5', icon: 'bi-pen' }
-        };
+    class TicketTabManager {
+        constructor() {
+            this.tabs = {
+                'info': { key: '1', icon: 'bi-ticket-detailed' },
+                'files': { key: '2', icon: 'bi-paperclip' },
+                'comments': { key: '3', icon: 'bi-chat-dots' },
+                'notes': { key: '4', icon: 'bi-clipboard-check' },
+                'signature': { key: '5', icon: 'bi-pen' }
+            };
 
-        this.activeTab = this.getStoredTab() || 'info';
-        this.init();
-    }
+            this.activeTab = this.getStoredTab() || 'info';
+            this.keyboardHandler = null;
+        }
 
-    /**
-     * Initialize tab manager
-     */
-    init() {
-        // Restore last visited tab
-        this.switchToTab(this.activeTab);
+        init() {
+            // Restore last visited tab
+            this.switchToTab(this.activeTab);
 
-        // Setup event listeners
-        this.setupTabListeners();
-        this.setupKeyboardShortcuts();
+            // Setup event listeners
+            this.setupTabListeners();
+            this.setupKeyboardShortcuts();
 
-        // Update badge counts
-        this.updateTabBadges();
+            // Update badge counts
+            this.updateTabBadges();
 
-        console.log('✅ TicketTabManager initialized');
-    }
+            console.log('✅ TicketTabManager initialized');
+        }
 
-    /**
-     * Setup tab click listeners
-     */
-    setupTabListeners() {
-        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tabEl => {
-            tabEl.addEventListener('shown.bs.tab', (e) => {
-                const target = e.target.getAttribute('data-bs-target');
-                const tabId = target.slice(1); // Remove #
+        destroy() {
+            // Remove keyboard listener
+            if (this.keyboardHandler) {
+                document.removeEventListener('keydown', this.keyboardHandler);
+            }
+        }
 
-                this.onTabShown(tabId);
+        setupTabListeners() {
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tabEl => {
+                tabEl.addEventListener('shown.bs.tab', (e) => {
+                    const target = e.target.getAttribute('data-bs-target');
+                    const tabId = target.slice(1);
+                    this.onTabShown(tabId);
+                });
             });
-        });
-    }
+        }
 
-    /**
-     * Handle tab shown event
-     */
-    onTabShown(tabId) {
-        // Store in localStorage
-        this.storeTab(tabId);
+        onTabShown(tabId) {
+            this.storeTab(tabId);
+            this.activeTab = tabId;
+            this.trackTabView(tabId);
 
-        // Update active tab
-        this.activeTab = tabId;
+            window.dispatchEvent(new CustomEvent('ticket:tab:changed', {
+                detail: { tabId }
+            }));
+        }
 
-        // Analytics (optional)
-        this.trackTabView(tabId);
+        setupKeyboardShortcuts() {
+            this.keyboardHandler = (e) => {
+                if (e.altKey && e.key >= '1' && e.key <= '5') {
+                    const tabIds = Object.keys(this.tabs);
+                    const index = parseInt(e.key) - 1;
 
-        // Trigger custom event
-        window.dispatchEvent(new CustomEvent('ticket:tab:changed', {
-            detail: { tabId }
-        }));
-    }
+                    if (tabIds[index]) {
+                        this.switchToTab(tabIds[index]);
+                        e.preventDefault();
 
-    /**
-     * Setup keyboard shortcuts
-     */
-    setupKeyboardShortcuts() {
-        document.addEventListener('keydown', (e) => {
-            // Alt + 1-5 para cambiar tabs
-            if (e.altKey && e.key >= '1' && e.key <= '5') {
-                const tabIds = Object.keys(this.tabs);
-                const index = parseInt(e.key) - 1;
-
-                if (tabIds[index]) {
-                    this.switchToTab(tabIds[index]);
-                    e.preventDefault();
-
-                    // Visual feedback
-                    ToastManager.info(`Tab: ${tabIds[index]}`, 'Atajo de teclado');
+                        if (window.ToastManager) {
+                            ToastManager.info(`Tab: ${tabIds[index]}`, 'Atajo de teclado');
+                        }
+                    }
                 }
+            };
+
+            document.addEventListener('keydown', this.keyboardHandler);
+        }
+
+        switchToTab(tabId) {
+            const tabEl = document.querySelector(`[data-bs-target="#${tabId}"]`);
+
+            if (tabEl && window.bootstrap) {
+                const tab = new bootstrap.Tab(tabEl);
+                tab.show();
             }
-        });
-    }
+        }
 
-    /**
-     * Switch to specific tab
-     */
-    switchToTab(tabId) {
-        const tabEl = document.querySelector(`[data-bs-target="#${tabId}"]`);
+        updateTabBadges() {
+            const filesCount = document.querySelectorAll('#files .list-group-item').length;
+            this.updateBadge('files-tab', filesCount);
 
-        if (tabEl) {
-            const tab = new bootstrap.Tab(tabEl);
-            tab.show();
+            const commentsCount = document.querySelectorAll('#comments .d-flex.mb-3').length;
+            this.updateBadge('comments-tab', commentsCount);
+        }
+
+        updateBadge(tabId, count) {
+            const tabEl = document.getElementById(tabId);
+            if (!tabEl) return;
+
+            let badge = tabEl.querySelector('.badge');
+
+            if (count > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'badge bg-secondary ms-1';
+                    tabEl.appendChild(badge);
+                }
+                badge.textContent = count;
+            } else if (badge) {
+                badge.remove();
+            }
+        }
+
+        getStoredTab() {
+            return localStorage.getItem('ticket_detail_last_tab');
+        }
+
+        storeTab(tabId) {
+            localStorage.setItem('ticket_detail_last_tab', tabId);
+        }
+
+        trackTabView(tabId) {
+            console.log(`📊 Tab viewed: ${tabId}`);
         }
     }
 
-    /**
-     * Update badge counts on tabs
-     */
-    updateTabBadges() {
-        // Files count
-        const filesCount = document.querySelectorAll('#files .list-group-item').length;
-        this.updateBadge('files-tab', filesCount);
+    // Expose class globally
+    window.TicketTabManager = TicketTabManager;
 
-        // Comments count
-        const commentsCount = document.querySelectorAll('#comments .d-flex.mb-3').length;
-        this.updateBadge('comments-tab', commentsCount);
-    }
-
-    /**
-     * Update a specific tab badge
-     */
-    updateBadge(tabId, count) {
-        const tabEl = document.getElementById(tabId);
-        if (!tabEl) return;
-
-        let badge = tabEl.querySelector('.badge');
-
-        if (count > 0) {
-            if (!badge) {
-                badge = document.createElement('span');
-                badge.className = 'badge bg-secondary ms-1';
-                tabEl.appendChild(badge);
+    function initTabs() {
+        if (document.getElementById('ticketTabs')) {
+            // Destroy previous instance if exists
+            if (window.ticketTabManager) {
+                window.ticketTabManager.destroy();
             }
-            badge.textContent = count;
-        } else if (badge) {
-            badge.remove();
+            window.ticketTabManager = new TicketTabManager();
+            window.ticketTabManager.init();
         }
     }
 
-    /**
-     * Get stored tab from localStorage
-     */
-    getStoredTab() {
-        return localStorage.getItem('ticket_detail_last_tab');
-    }
+    // Cleanup on navigation away
+    document.addEventListener('turbo:before-cache', function () {
+        if (window.ticketTabManager) {
+            window.ticketTabManager.destroy();
+        }
+    });
 
-    /**
-     * Store current tab in localStorage
-     */
-    storeTab(tabId) {
-        localStorage.setItem('ticket_detail_last_tab', tabId);
-    }
+    // Initialize on Turbo navigation
+    document.addEventListener('turbo:load', initTabs);
 
-    /**
-     * Track tab view (analytics)
-     */
-    trackTabView(tabId) {
-        // Optional: Send to analytics
-        console.log(`📊 Tab viewed: ${tabId}`);
-
-        // Could integrate with Google Analytics, Mixpanel, etc.
-        // gtag('event', 'tab_view', { tab_name: tabId });
+    // Also run immediately if already loaded
+    if (document.readyState !== 'loading') {
+        initTabs();
     }
-}
-
-// Auto-initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('ticketTabs')) {
-        window.ticketTabManager = new TicketTabManager();
-    }
-});
+})();

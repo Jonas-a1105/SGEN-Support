@@ -69,19 +69,20 @@ if (!window.StockAdjustmentModal) {
             this.elements.submitText = document.getElementById('adjSubmitText');
 
             // Events
-            this.elements.btnTypePurchase.addEventListener('click', () => this.setType('purchase'));
-            this.elements.btnTypeReturn.addEventListener('click', () => this.setType('return'));
-            this.elements.btnTypeAudit.addEventListener('click', () => this.setType('audit'));
+            // Events (Nuclear Option)
+            this.elements.btnTypePurchase.onclick = () => this.setType('purchase');
+            this.elements.btnTypeReturn.onclick = () => this.setType('return');
+            this.elements.btnTypeAudit.onclick = () => this.setType('audit');
 
-            this.elements.inputQuantity.addEventListener('input', (e) => this.handleQuantityChange(e.target.value));
+            this.elements.inputQuantity.oninput = (e) => this.handleQuantityChange(e.target.value);
 
-            this.elements.btnCancel.addEventListener('click', () => this.close());
-            this.elements.btnClose.addEventListener('click', () => this.close());
-            this.elements.overlay.addEventListener('click', (e) => {
+            this.elements.btnCancel.onclick = () => this.close();
+            this.elements.btnClose.onclick = () => this.close();
+            this.elements.overlay.onclick = (e) => {
                 if (e.target === this.elements.overlay) this.close();
-            });
+            };
 
-            this.elements.btnSubmit.addEventListener('click', () => this.handleSubmit());
+            this.elements.btnSubmit.onclick = () => this.handleSubmit();
         },
 
         open(itemData) {
@@ -203,6 +204,14 @@ if (!window.StockAdjustmentModal) {
     };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.StockAdjustmentModal.init();
-});
+// Initialize on Load (Supports Turbo)
+// Initialize on Load (Supports Turbo)
+// Global Guard
+if (!window._stockModalListenerAttached) {
+    document.addEventListener('turbo:load', () => {
+        if (window.StockAdjustmentModal) {
+            window.StockAdjustmentModal.init();
+        }
+    });
+    window._stockModalListenerAttached = true;
+}

@@ -13,7 +13,8 @@ class Database {
         // Incluir las constantes de configuración
         require_once __DIR__ . '/../../config/database.php';
         
-        $this->dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
+        $this->dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
+        
         $options = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -23,8 +24,9 @@ class Database {
         try {
             $this->pdo = new PDO($this->dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            // En un sistema real, esto debería loguearse, no mostrarse.
-            throw new PDOException("Error de conexión: " . $e->getMessage());
+            // Loguear error internamente si es necesario, pero NO exponer en public
+            error_log("Database Connection Error: " . $e->getMessage());
+            throw new PDOException("Error de conexión a la base de datos.");
         }
     }
 

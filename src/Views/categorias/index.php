@@ -46,7 +46,9 @@
                                     </a>
                                     <a href="<?= BASE_URL ?>categorias/eliminar/<?= $cat->id ?>" 
                                        class="btn btn-sm btn-outline-danger" 
-                                       onclick="return confirm('¿Estás seguro de eliminar esta categoría?')"
+                                       data-turbo="false"
+                                       data-no-global-delete="true"
+                                       onclick="event.preventDefault(); event.stopPropagation(); SimpleDeleteModal.open(this.href, {type: 'Categoría', name: '<?= addslashes(htmlspecialchars($cat->nombre)) ?>'}); return false;"
                                        title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </a>

@@ -374,7 +374,22 @@ const NotificationConfig = {
         }
 
         if (!silent) {
-            alert('Preferencias guardadas correctamente.');
+            if (window.Swal) {
+                Swal.fire({
+                    title: 'Guardado',
+                    text: 'Preferencias guardadas correctamente.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    customClass: {
+                        container: 'desktop-modal-container',
+                        popup: 'desktop-modal-popup'
+                    },
+                    backdrop: 'rgba(0,0,0,0)'
+                });
+            } else {
+                alert('Preferencias guardadas correctamente.');
+            }
         }
     },
 
@@ -464,8 +479,8 @@ window.saveNotificationPreferences = function (silent = false) {
     NotificationConfig.save(prefs, silent);
 };
 
-// Bind to main config form submit
-document.addEventListener('DOMContentLoaded', () => {
+// Bind to main config form submit - Turbo compatible
+document.addEventListener('turbo:load', () => {
     const configForm = document.getElementById('configForm');
     if (configForm) {
         configForm.addEventListener('submit', () => {
@@ -475,9 +490,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Also trigger load inputs on DOM ready
+    // Also trigger load inputs on page load
     if (document.getElementById('panel-notifications')) {
         NotificationConfig.loadToUI();
+    }
+});
+
+// Cleanup polling on navigation away
+document.addEventListener('turbo:before-cache', () => {
+    if (window.NotificationCenter && window.NotificationCenter.pollingInterval) {
+        clearInterval(window.NotificationCenter.pollingInterval);
+        window.NotificationCenter.pollingInterval = null;
     }
 });
 

@@ -4,45 +4,61 @@
  */
 
 // Inicialización
-document.addEventListener('DOMContentLoaded', function () {
-    // Mover modal al body para evitar problemas de stacking context
+// Inicialización compatible con Turbo
+document.addEventListener('turbo:load', function () {
+    // Evitar múltiples inicializaciones si es necesario, aunque para event delegation es mejor limpiar
+
+    // Mover modal al body si es necesario
     const modal = document.getElementById('detalleModal');
     if (modal && modal.parentNode !== document.body) {
         document.body.appendChild(modal);
     }
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function (e) {
-        const dropdown = document.getElementById('dateDropdown');
-        const btn = document.getElementById('dateFilterBtn');
-        if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.style.display = 'none';
-        }
-    });
+    // Dropdown Logic - Re-attach or use delegation? Delegation is safer.
+    // We'll use a named function for the click handler to avoid duplicates if specific element listeners are used.
 
-    // Close modal when clicking outside
-    if (modal) {
-        modal.addEventListener('click', function (e) {
-            if (e.target === this) {
-                cerrarModal();
-            }
-        });
-    }
-
-    // Initialize Search Input with URL param
+    // Initialize Search Input
     const urlParams = new URLSearchParams(window.location.search);
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.value = urlParams.get('username') || '';
 
-        // Add Enter key listener
-        searchInput.addEventListener('keypress', function (e) {
+        // Remove existing listeners to be safe (cloning node is a quick hack, or just named function)
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+
+        newSearchInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 applyFilters();
             }
         });
+
+        // Restore focus if needed
+        if (newSearchInput.value) {
+            const len = newSearchInput.value.length;
+            newSearchInput.setSelectionRange(len, len);
+        }
     }
 });
+
+// Global Event Delegation for Dropdowns (runs once)
+if (!window._logsGlobalListeners) {
+    document.addEventListener('click', function (e) {
+        // Date Dropdown Close
+        const dateDropdown = document.getElementById('dateDropdown');
+        const dateBtn = document.getElementById('dateFilterBtn');
+        if (dateDropdown && dateBtn && !dateBtn.contains(e.target) && !dateDropdown.contains(e.target)) {
+            dateDropdown.style.display = 'none';
+        }
+
+        // Modal Close
+        const modal = document.getElementById('detalleModal');
+        if (modal && e.target === modal) {
+            cerrarModal();
+        }
+    });
+    window._logsGlobalListeners = true;
+}
 
 function applyFilters() {
     const searchInput = document.getElementById('searchInput');

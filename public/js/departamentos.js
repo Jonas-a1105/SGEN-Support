@@ -217,6 +217,13 @@
         filterAndRender();
     };
 
-    document.addEventListener('DOMContentLoaded', init);
+    // Initialize on Turbo navigation
+    document.addEventListener('turbo:load', init);
+
+    // Also run immediately if already loaded
+    if (document.readyState !== 'loading') {
+        init();
+    }
 })();
+
 

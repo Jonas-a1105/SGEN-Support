@@ -13,13 +13,10 @@
 /* Layout Isolation */
 .reportes-full-width-wrapper {
     background: transparent;
-    padding: 0.75rem;
+    padding: 0;
     display: flex;
     justify-content: center;
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    margin-left: -50vw;
+    width: 100%;
 }
 
 .reportes-white-container {
@@ -514,3 +511,5 @@
 [data-theme='dark'] { --rep-border: var(--border-color); }
 
 [data-theme='dark'] .reportes-white-container { background-color: var(--bg-card) !important; border-color: var(--border-color); }
+
+

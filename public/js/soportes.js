@@ -78,17 +78,19 @@
         });
 
         // Search Input (Debounced)
-        searchInput.addEventListener('input', function () {
-            const val = this.value.toLowerCase();
-            clearTimeout(debounceTimer);
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                const val = this.value.toLowerCase();
+                clearTimeout(debounceTimer);
 
-            // Wait 300ms before filtering to stop UI "freezing" on fast typing
-            debounceTimer = setTimeout(() => {
-                currentSearch = val;
-                currentPage = 1;
-                applyFiltersAndRender();
-            }, 300);
-        });
+                // Wait 300ms before filtering to stop UI "freezing" on fast typing
+                debounceTimer = setTimeout(() => {
+                    currentSearch = val;
+                    currentPage = 1;
+                    applyFiltersAndRender();
+                }, 300);
+            });
+        }
 
         // --- Core Logic ---
 
@@ -186,5 +188,14 @@
     };
 
     // Execute immediately if body is ready (Turbo/Script at end of body)
-    init();
+    // Global Guard
+    if (!window._soportesListenerAttached) {
+        document.addEventListener('turbo:load', init);
+        window._soportesListenerAttached = true;
+    }
+
+    // Fallback for first load if needed (though Turbo listener catches it)
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        // init(); // Removed to avoid double-init on first load if turbo:load also fires
+    }
 })();
