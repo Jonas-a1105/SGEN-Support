@@ -25,6 +25,19 @@ const EquipmentWizard = {
                 this.updateFieldsByType();
             });
         }
+
+        if (this.photoBox && this.imageInput) {
+            this.photoBox.addEventListener('click', (e) => {
+                // Don't trigger if clicking the remove button
+                if (e.target.closest('#removePhotoBtn')) return;
+                this.imageInput.click();
+            });
+            this.imageInput.addEventListener('change', (e) => this.handleImagePreview(e));
+        }
+
+        if (this.removePhotoBtn) {
+            this.removePhotoBtn.addEventListener('click', () => this.removePhoto());
+        }
     },
 
     cacheDOM() {
@@ -45,6 +58,14 @@ const EquipmentWizard = {
         this.typeSelect = document.getElementById('tipo');
         this.otherTypeInput = document.getElementById('tipo_otro');
         this.otherTypeContainer = document.getElementById('tipo_otro_container');
+
+        // Photo Elements
+        this.photoBox = document.getElementById('photoBox');
+        this.imageInput = document.getElementById('imagenInput');
+        this.photoPreview = document.getElementById('photoPreview');
+        this.removePhotoBtn = document.getElementById('removePhotoBtn');
+        this.eliminarImagenInput = document.getElementById('eliminarImagenInput');
+        this.photoText = document.getElementById('photoText');
     },
 
     init() {
@@ -136,6 +157,44 @@ const EquipmentWizard = {
                 if (msg) msg.style.display = 'none';
             }
         }
+    },
+
+    handleImagePreview(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Basic validation
+        if (file.size > 2 * 1024 * 1024) {
+            alert('La imagen es demasiado grande (Máximo 2MB)');
+            e.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            if (this.photoPreview) {
+                this.photoPreview.style.backgroundImage = `url(${event.target.result})`;
+                this.photoPreview.style.backgroundSize = 'cover';
+                this.photoPreview.style.backgroundPosition = 'center';
+                this.photoPreview.innerHTML = ''; // Remove the icon
+
+                if (this.removePhotoBtn) this.removePhotoBtn.style.display = 'flex';
+                if (this.eliminarImagenInput) this.eliminarImagenInput.value = '0';
+                if (this.photoText) this.photoText.innerText = 'Cambiar foto';
+            }
+        };
+        reader.readAsDataURL(file);
+    },
+
+    removePhoto() {
+        if (this.photoPreview) {
+            this.photoPreview.style.backgroundImage = 'none';
+            this.photoPreview.innerHTML = '<i class="bi bi-camera" style="font-size: 1.5rem;"></i>';
+        }
+        if (this.imageInput) this.imageInput.value = '';
+        if (this.removePhotoBtn) this.removePhotoBtn.style.display = 'none';
+        if (this.eliminarImagenInput) this.eliminarImagenInput.value = '1';
+        if (this.photoText) this.photoText.innerText = 'Subir foto';
     },
 
     goToStep(index) {
@@ -233,6 +292,12 @@ const EquipmentWizard = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize on Turbo navigation
+document.addEventListener('turbo:load', () => {
     EquipmentWizard.init();
 });
+
+// Also run immediately if already loaded
+if (document.readyState !== 'loading') {
+    EquipmentWizard.init();
+}

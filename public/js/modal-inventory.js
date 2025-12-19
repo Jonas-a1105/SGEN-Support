@@ -58,31 +58,32 @@ if (!window.InventoryModal) {
             this.elements.btnSubmitText = document.getElementById('invModalSubmitText');
             this.elements.spinner = document.getElementById('invModalSpinner');
 
-            // Bind Events
-            this.elements.inputQuantity.addEventListener('input', () => this.validate());
-            this.elements.inputReason.addEventListener('input', () => this.validate());
-            this.elements.inputDeleteFromCatalog.addEventListener('change', (e) => this.toggleDangerMode(e.target.checked));
+            // Bind Events (Nuclear Option: Properties to prevent duplication)
+            this.elements.inputQuantity.oninput = () => this.validate();
+            this.elements.inputReason.oninput = () => this.validate();
+            this.elements.inputDeleteFromCatalog.onchange = (e) => this.toggleDangerMode(e.target.checked);
 
-            this.elements.overlay.querySelector('.inventory-modal-close').addEventListener('click', () => this.close());
-            this.elements.overlay.querySelector('.btn-cancel').addEventListener('click', () => this.close());
+            this.elements.overlay.querySelector('.inventory-modal-close').onclick = () => this.close();
+            const btnCancel = this.elements.overlay.querySelector('.btn-cancel');
+            if (btnCancel) btnCancel.onclick = () => this.close();
 
             // Close on clean background click
-            this.elements.overlay.addEventListener('click', (e) => {
+            this.elements.overlay.onclick = (e) => {
                 if (e.target === this.elements.overlay) this.close();
-            });
+            };
 
             // Quick Tags
             document.querySelectorAll('.tag-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.onclick = () => {
                     const reason = btn.getAttribute('data-reason');
                     const currentVal = this.elements.inputReason.value;
                     this.elements.inputReason.value = currentVal ? `${currentVal}, ${reason}` : reason;
                     this.validate();
-                });
+                };
             });
 
             // Submit
-            this.elements.btnSubmit.addEventListener('click', () => this.handleSubmit());
+            this.elements.btnSubmit.onclick = () => this.handleSubmit();
         },
 
         /**
@@ -269,6 +270,14 @@ if (!window.InventoryModal) {
 }
 
 // Initialize on Load
-document.addEventListener('DOMContentLoaded', () => {
-    window.InventoryModal.init();
-});
+// Initialize on Load (Supports Turbo)
+// Initialize on Load (Supports Turbo)
+// Global Guard to prevent duplicate listeners on script re-execution
+if (!window._inventoryModalListenerAttached) {
+    document.addEventListener('turbo:load', () => {
+        if (window.InventoryModal) {
+            window.InventoryModal.init();
+        }
+    });
+    window._inventoryModalListenerAttached = true;
+}

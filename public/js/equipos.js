@@ -58,7 +58,7 @@
 
         // Toggle de vista
         if (btnViewGrid) {
-            btnViewGrid.addEventListener('click', function () {
+            btnViewGrid.onclick = function () {
                 currentView = 'grid';
                 if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'grid');
                 if (gridView) gridView.style.display = 'grid';
@@ -66,11 +66,11 @@
                 btnViewGrid.classList.add('active');
                 btnViewList.classList.remove('active');
                 applyFilters();
-            });
+            };
         }
 
         if (btnViewList) {
-            btnViewList.addEventListener('click', function () {
+            btnViewList.onclick = function () {
                 currentView = 'list';
                 if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'list');
                 if (gridView) gridView.style.display = 'none';
@@ -78,28 +78,28 @@
                 btnViewList.classList.add('active');
                 btnViewGrid.classList.remove('active');
                 applyFilters();
-            });
+            };
         }
 
         // Filtros de estado
         filterTabs.forEach(tab => {
-            tab.addEventListener('click', function () {
+            tab.onclick = function () {
                 filterTabs.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
                 currentFilter = this.getAttribute('data-filter');
                 if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', currentFilter);
                 currentPage = 1;
                 applyFilters();
-            });
+            };
         });
 
         // Search
         if (searchInput) {
-            searchInput.addEventListener('input', function () {
+            searchInput.oninput = function () {
                 currentSearch = this.value.toLowerCase();
                 currentPage = 1;
                 applyFilters();
-            });
+            };
         }
 
         // Pagination Functions
@@ -232,6 +232,15 @@
         // Delete Logic - Handled by SimpleDeleteModal (inline)
 
     };
-    init();
+
+    // Turbo Idempotency
+    // We are inside the IIFE, so 'init' is available here.
+    if (!window._equiposListenerAttached) {
+        document.addEventListener('turbo:load', init);
+        window._equiposListenerAttached = true;
+    }
+
+    // Also run immediately if needed (legacy behavior, or if script loads after turbo:load)
+    // init(); // Removed to avoid double run, relying on turbo:load
 })();
 

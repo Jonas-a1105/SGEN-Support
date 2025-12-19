@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `username` VARCHAR(50) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
   `rol` ENUM('admin', 'tecnico', 'consultor') NOT NULL DEFAULT 'consultor',
+  `tema` VARCHAR(20) DEFAULT 'light',
   `empleado_id` INT NULL COMMENT 'Referencia al empleado vinculado',
   `departamento_id` INT NULL COMMENT 'Departamento del usuario (para filtros)',
   `activo` BOOLEAN DEFAULT TRUE,
@@ -121,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `equipos` (
   `modelo` VARCHAR(100) NULL,
   `estado` VARCHAR(30) NOT NULL DEFAULT 'disponible' COMMENT 'disponible, en_uso, en_reparacion, fuera_de_servicio, nuevo, usado, en_reserva',
   `procesador` VARCHAR(100) NULL,
-  `ram` VARCHAR(50) NULL,
+  `memoria_ram` VARCHAR(50) NULL,
   `almacenamiento` VARCHAR(100) NULL,
   `sistema_operativo` VARCHAR(100) NULL,
   `direccion_ip` VARCHAR(45) NULL,
@@ -129,9 +130,10 @@ CREATE TABLE IF NOT EXISTS `equipos` (
   `toner` VARCHAR(100) NULL COMMENT 'Para impresoras',
   `ubicacion_fisica` VARCHAR(150) NULL,
   `fecha_compra` DATE NULL,
-  `fecha_garantia` DATE NULL COMMENT 'Fecha fin de garantía',
+  `garantia` DATE NULL COMMENT 'Fecha fin de garantía',
   `valor_compra` DECIMAL(12,2) NULL,
   `proveedor` VARCHAR(150) NULL,
+  `proveedor_rif` VARCHAR(30) NULL COMMENT 'RIF del proveedor',
   `observaciones` TEXT NULL,
   `departamento_id` INT NULL,
   `empleado_id` INT NULL COMMENT 'Empleado asignado',
@@ -397,8 +399,9 @@ CREATE TABLE IF NOT EXISTS `bitacora_acciones` (
   `usuario_id` INT NULL COMMENT 'El usuario que realizó la acción',
   `username` VARCHAR(50) NOT NULL COMMENT 'Nombre del usuario en ese momento',
   `accion` VARCHAR(255) NOT NULL COMMENT 'Descripción de la acción',
+  `enlace_tipo` VARCHAR(50) NULL COMMENT 'Tipo de entidad vinculada (ej: equipo)',
+  `enlace_id` INT NULL COMMENT 'ID de la entidad vinculada',
   `entidad` VARCHAR(50) NULL COMMENT 'Tabla afectada',
-  `entidad_id` INT NULL COMMENT 'ID del registro afectado',
   `datos_anteriores` JSON NULL COMMENT 'Estado anterior del registro',
   `datos_nuevos` JSON NULL COMMENT 'Estado nuevo del registro',
   `ip_address` VARCHAR(45) NULL,
@@ -414,7 +417,7 @@ CREATE TABLE IF NOT EXISTS `bitacora_acciones` (
 -- Usuario: admin / Contraseña: admin123
 -- =============================================
 INSERT INTO `usuarios` (`username`, `password`, `rol`) VALUES
-  ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin')
+  ('admin', '$2y$10$UzcTNIBXYdAEBfdzynSn8uBfjd5Z5SELvQGOSWOcH/o.BaaaL88ja', 'admin')
 ON DUPLICATE KEY UPDATE `username` = VALUES(`username`);
 
 SET FOREIGN_KEY_CHECKS = 1;

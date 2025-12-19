@@ -113,8 +113,10 @@ $tipoIcon = match(strtolower($equipo->tipo ?? 'computadora')) {
                         <i class="bi bi-qr-code"></i>
                     </div>
                     
-                    <div class="ed-equip-icon">
-                        <i class="bi <?= $tipoIcon ?>"></i>
+                    <div class="ed-equip-icon" <?= !empty($equipo->imagen) ? 'style="background-image: url('.BASE_URL.'uploads/equipos/'.$equipo->imagen.'); background-size: cover; background-position: center; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"' : '' ?>>
+                        <?php if (empty($equipo->imagen)): ?>
+                            <i class="bi <?= $tipoIcon ?>"></i>
+                        <?php endif; ?>
                     </div>
                     
                     <span class="ed-status-badge <?= $estadoInfo['class'] ?>">
@@ -213,6 +215,13 @@ $tipoIcon = match(strtolower($equipo->tipo ?? 'computadora')) {
                             <i class="bi bi-cpu"></i>
                             Especificaciones Técnicas
                         </h3>
+
+                        <?php if (!empty($equipo->imagen)): ?>
+                        <div class="ed-image-container" style="margin-bottom: 1.5rem; text-align: center; background: #f8fafc; border-radius: 1rem; padding: 1rem; border: 1px solid #f1f5f9;">
+                            <img src="<?= BASE_URL ?>uploads/equipos/<?= $equipo->imagen ?>" alt="Foto del equipo" style="max-width: 100%; max-height: 400px; border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;"><i class="bi bi-zoom-in"></i> Click para ampliar</p>
+                        </div>
+                        <?php endif; ?>
                         
                         <div class="ed-specs-grid">
                             <div class="ed-spec-card">

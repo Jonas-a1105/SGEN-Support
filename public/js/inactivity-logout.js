@@ -62,8 +62,10 @@
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 customClass: {
-                    popup: 'card'
+                    container: 'desktop-modal-container',
+                    popup: 'desktop-modal-popup'
                 },
+                backdrop: 'rgba(0,0,0,0)', // Fix flicker
                 didOpen: () => {
                     const timer = Swal.getHtmlContainer().querySelector('.timer');
                     let timeLeft = 2;

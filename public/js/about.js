@@ -1,13 +1,21 @@
 /**
  * About Page Logic
- * Handles tab switching for the modernization layout.
+ * Turbo-compatible version.
  */
+(function () {
+    // Idempotency guard
+    if (window.ABOUT_PAGE_LOADED) return;
+    window.ABOUT_PAGE_LOADED = true;
 
-if (!window.AboutPage) {
     window.AboutPage = {
+        tabs: null,
+        panes: null,
+
         init() {
             this.tabs = document.querySelectorAll('.nav-btn');
             this.panes = document.querySelectorAll('.tab-pane');
+
+            if (!this.tabs.length) return;
 
             this.tabs.forEach(tab => {
                 tab.addEventListener('click', (e) => this.switchTab(e));
@@ -17,11 +25,9 @@ if (!window.AboutPage) {
         switchTab(e) {
             const targetId = e.currentTarget.dataset.target;
 
-            // Remove active class from all tabs and panes
             this.tabs.forEach(tab => tab.classList.remove('active'));
             this.panes.forEach(pane => pane.classList.remove('active'));
 
-            // Add active class to clicked tab and target pane
             e.currentTarget.classList.add('active');
             const targetPane = document.getElementById(targetId);
             if (targetPane) {
@@ -29,8 +35,18 @@ if (!window.AboutPage) {
             }
         }
     };
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.AboutPage.init();
-});
+    function initAboutPage() {
+        if (document.querySelector('.nav-btn')) {
+            window.AboutPage.init();
+        }
+    }
+
+    // Initialize on Turbo navigation
+    document.addEventListener('turbo:load', initAboutPage);
+
+    // Also run immediately if already loaded
+    if (document.readyState !== 'loading') {
+        initAboutPage();
+    }
+})();

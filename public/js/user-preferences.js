@@ -9,7 +9,8 @@
  *   UserPrefs.clear('equipos');               // Clear all prefs for a module
  */
 
-const UserPrefs = (function () {
+// Prevent re-declaration on Turbo navigation
+window.UserPrefs = window.UserPrefs || (function () {
     const STORAGE_PREFIX = 'sgen_prefs_';
 
     /**
@@ -115,5 +116,7 @@ const UserPrefs = (function () {
     };
 })();
 
-// Make available globally
-window.UserPrefs = UserPrefs;
+// Make available globally (prevent re-declaration)
+if (!window.UserPrefs) {
+    window.UserPrefs = UserPrefs;
+}

@@ -43,15 +43,16 @@ class CategoriasController extends Controller
             ];
 
             if (empty($data['nombre'])) {
-                // TODO: Manejar error de validación
+                $this->setFlashMessage('error', 'El nombre de la categoría es obligatorio.');
                 header('Location: ' . BASE_URL . 'categorias/crear');
                 return;
             }
 
             if ($this->categoriaModel->create($data)) {
+                $this->setFlashMessage('success', 'Categoría creada correctamente.');
                 header('Location: ' . BASE_URL . 'categorias');
             } else {
-                // TODO: Manejar error de guardado
+                $this->setFlashMessage('error', 'Error al guardar la categoría.');
                 header('Location: ' . BASE_URL . 'categorias/crear');
             }
         }
@@ -82,8 +83,10 @@ class CategoriasController extends Controller
             ];
 
             if ($this->categoriaModel->update($id, $data)) {
+                $this->setFlashMessage('success', 'Categoría actualizada correctamente.');
                 header('Location: ' . BASE_URL . 'categorias');
             } else {
+                $this->setFlashMessage('error', 'Error al actualizar la categoría.');
                 header('Location: ' . BASE_URL . 'categorias/editar/' . $id);
             }
         }
@@ -92,7 +95,11 @@ class CategoriasController extends Controller
     public function eliminar($id)
     {
         // Soft delete: cambiar activo a 0
-        $this->categoriaModel->update($id, ['activo' => 0]);
+        if ($this->categoriaModel->update($id, ['activo' => 0])) {
+            $this->setFlashMessage('success', 'Categoría eliminada correctamente.');
+        } else {
+            $this->setFlashMessage('error', 'Error al eliminar la categoría.');
+        }
         header('Location: ' . BASE_URL . 'categorias');
     }
 }

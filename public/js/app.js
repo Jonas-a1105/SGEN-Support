@@ -42,67 +42,45 @@
 
         if (esBorrarPorUrl || esBorrarPorClase || esBorrarPorOnclick) {
 
-            // --- EXCEPCIÓN: Si el botón tiene 'data-no-global-delete', dejamos que su propio script lo maneje
+            // --- EXCEPCIÓN 1: Si el botón tiene 'data-no-global-delete'
             if (link.hasAttribute('data-no-global-delete')) {
                 return;
             }
 
-            // ¡IMPORTANTE! Detenemos el evento inmediatamente
+            // --- EXCEPCIÓN 2: Proteger URL de 'editar' o 'edit' (Case insensitive y clase explícita)
+            const lowerHref = href.toLowerCase();
+            if (lowerHref.includes('/editar/') || lowerHref.includes('/edit/') || link.classList.contains('btn-action-edit')) {
+                return;
+            }
 
+            // ¡IMPORTANTE! Detenemos el evento inmediatamente
             e.preventDefault();
             e.stopPropagation();
 
-            // Intentamos obtener el nombre del registro para el mensaje
-            let mensajeDetalle = '';
-
+            // Intentamos obtener el nombre del registro
+            let nombreElemento = '';
             if (link.getAttribute('data-name')) {
-                // Opción A: Usamos el atributo data-name (lo ideal)
-                mensajeDetalle = `<strong class="text-danger">${link.getAttribute('data-name')}</strong>`;
-            }
-            else if (esBorrarPorOnclick) {
-                // Opción B: Extraemos el texto del onclick antiguo
+                nombreElemento = link.getAttribute('data-name');
+            } else if (esBorrarPorOnclick) {
                 const match = onclickTexto.match(/confirm\(['"](.*?)['"]\)/);
                 if (match && match[1]) {
-                    let textoLimpio = match[1].replace(/^[¿?]+|[?]+$/g, '');
-                    mensajeDetalle = `<span class="text-muted">${textoLimpio}</span>`;
+                    nombreElemento = match[1].replace(/^[¿?]+|[?]+$/g, '');
                 }
             }
 
-            // Mensaje por defecto si no encontramos nada
-            if (!mensajeDetalle) {
-                mensajeDetalle = '<span class="text-muted">Este registro se borrará permanentemente.</span>';
-            }
-
-            // Mostramos la alerta bonita
-            Swal.fire({
-                html: `
-                    <div class="mb-3">
-                        <i class="bi bi-trash3-fill trash-animate" style="font-size: 5rem;"></i>
-                    </div>
-                    <h3 class="fw-bold text-dark">¿Estás seguro?</h3>
-                    <div class="fs-5 mt-2">${mensajeDetalle}</div>
-                    <p class="text-muted small mt-2">¡Esta acción no se puede deshacer!</p>
-                `,
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545', // Rojo
-                cancelButtonColor: '#6c757d',  // Gris
-                confirmButtonText: 'Sí, ¡elimínalo!',
-                cancelButtonText: 'Cancelar',
-                focusCancel: true,
-                buttonsStyling: false,
-                customClass: {
-                    confirmButton: 'btn btn-danger btn-lg rounded-pill px-4 mx-2',
-                    cancelButton: 'btn btn-secondary btn-lg rounded-pill px-4 mx-2',
-                    popup: 'card' // Hereda estilo Glass
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Si confirma, redirigimos manualmente
+            // Usamos el NUEVO MODELO (SimpleDeleteModal)
+            if (window.SimpleDeleteModal) {
+                SimpleDeleteModal.open(href, {
+                    name: nombreElemento
+                });
+            } else {
+                // Fallback si no cargó el modal (no debería pasar)
+                if (confirm('¿Estás seguro de que deseas eliminar este elemento?')) {
                     window.location.href = href;
                 }
-            });
+            }
 
-            return; // Terminamos aquí para no procesar más lógica
+            return; // Terminamos aquí
         }
 
         // ----------------------------------------------------------------
@@ -133,10 +111,13 @@
                 focusCancel: true,
                 buttonsStyling: false,
                 customClass: {
+                    container: 'desktop-modal-container',
                     confirmButton: 'btn btn-primary btn-lg rounded-pill px-4 mx-2',
                     cancelButton: 'btn btn-secondary btn-lg rounded-pill px-4 mx-2',
+                    cancelButton: 'btn btn-secondary btn-lg rounded-pill px-4 mx-2',
                     popup: 'card'
-                }
+                },
+                backdrop: 'rgba(0,0,0,0)' // Fix flicker
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Mensaje de despedida (Toast)
@@ -153,4 +134,98 @@
         }
 
     }, true); // <--- 'true' activa la fase de captura (CRUCIAL para ganar a los onclick viejos)
+
+    // ----------------------------------------------------------------
+    // 3. RESPONSIVE SIDEBAR TOGGLE (Mobile)
+    // ----------------------------------------------------------------
+    const mobileToggle = document.getElementById('mobileSidebarToggle');
+    const sidebar = document.querySelector('.ms-sidebar');
+
+    if (mobileToggle && sidebar) {
+        // Create backdrop dynamically
+        const backdrop = document.createElement('div');
+        backdrop.className = 'ms-sidebar-backdrop';
+        backdrop.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
+            z-index: 1055;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        `;
+        document.body.appendChild(backdrop);
+
+        const closeSidebar = () => {
+            sidebar.classList.remove('open');
+            backdrop.style.opacity = '0';
+            backdrop.style.pointerEvents = 'none';
+            document.body.style.overflow = '';
+        };
+
+        const openSidebar = () => {
+            sidebar.classList.add('open');
+            backdrop.style.opacity = '1';
+            backdrop.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        };
+
+        mobileToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+
+        // Close on backdrop click
+        backdrop.addEventListener('click', closeSidebar);
+
+        // Close on route change (for Turbo/SPA feel)
+        document.addEventListener('turbo:visit', closeSidebar);
+
+        // Close on swipe left (optional simple implementation)
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            if (touchStartX > 50 && e.changedTouches[0].screenX < touchStartX - 50) { // Swipe left
+                if (sidebar.classList.contains('open')) closeSidebar();
+            }
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // 4. SIDEBAR ACTIVE STATE - Update on Turbo Navigation
+    // ----------------------------------------------------------------
+    function updateSidebarActiveState() {
+        const currentPath = window.location.pathname.replace(/^\/sgen-support\/?/, '').replace(/^\//, '');
+        const sidebarLinks = document.querySelectorAll('.ms-sidebar .ms-link');
+
+        sidebarLinks.forEach(link => {
+            link.classList.remove('active');
+
+            const href = link.getAttribute('href') || '';
+            // Extract the route from the href (remove base URL)
+            const linkPath = href.replace(/.*\/sgen-support\/?/, '').replace(/^\//, '');
+
+            // Check if this link matches the current path
+            if (linkPath === '' && (currentPath === '' || currentPath === '/')) {
+                // Dashboard (root)
+                link.classList.add('active');
+            } else if (linkPath !== '' && currentPath.startsWith(linkPath)) {
+                // Other routes - match prefix
+                link.classList.add('active');
+            }
+        });
+    }
+
+    // Update on initial load
+    updateSidebarActiveState();
+
+    // Update on Turbo navigation
+    document.addEventListener('turbo:load', updateSidebarActiveState);
+    document.addEventListener('turbo:render', updateSidebarActiveState);
+
 })();

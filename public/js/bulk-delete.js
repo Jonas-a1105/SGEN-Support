@@ -13,7 +13,7 @@
  * });
  */
 
-const BulkDelete = (function () {
+window.BulkDelete = window.BulkDelete || (function () {
     let config = {};
     let selectedIds = new Set();
     let isSelectionMode = false;
@@ -287,20 +287,47 @@ const BulkDelete = (function () {
                         updateUI();
 
                         if (window.Toast) Toast.show('success', data.message);
-                        else if (window.Swal) Swal.fire('Eliminados', data.message, 'success');
+                        else if (window.Swal) Swal.fire({
+                            title: 'Eliminados',
+                            text: data.message,
+                            icon: 'success',
+                            customClass: {
+                                container: 'desktop-modal-container',
+                                popup: 'desktop-modal-popup'
+                            },
+                            backdrop: 'rgba(0,0,0,0)'
+                        });
                     }, 400);
 
                 } else {
                     closeModal();
                     if (config.onError) config.onError(data.message);
-                    else if (window.Swal) Swal.fire('Error', data.message, 'error');
+                    else if (window.Swal) Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error',
+                        customClass: {
+                            container: 'desktop-modal-container',
+                            popup: 'desktop-modal-popup'
+                        },
+                        backdrop: 'rgba(0,0,0,0)'
+                    });
                 }
             })
             .catch(err => {
                 console.error('BulkDelete Error:', err);
                 closeModal();
                 if (config.onError) config.onError('Error de conexión');
-                else if (window.Swal) Swal.fire('Error', 'Error de conexión', 'error');
+                else if (window.Swal) Swal.fire({
+                    title: 'Error',
+                    text: 'Error de conexión',
+                    icon: 'error',
+                    customClass: {
+                        container: 'desktop-modal-container',
+                        popup: 'desktop-modal-popup'
+                    },
+                    backdrop: 'rgba(0,0,0,0)'
+                });
             });
     }
 

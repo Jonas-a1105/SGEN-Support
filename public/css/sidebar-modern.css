@@ -40,7 +40,7 @@
     border-radius: 1.5rem;
     z-index: 1040;
     /* Lowered from 1060 to sit behind bootstrap modals (1050) */
-    transition: all 0.3s ease;
+    transition: all 0.1s ease;
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -53,6 +53,8 @@
     /* Expanded width */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
+
+
 
 .ms-nav-container {
     overflow-y: auto;
@@ -89,7 +91,7 @@
     /* tracking-wider */
     margin-bottom: 0.5rem;
     padding: 0 0.75rem;
-    transition: opacity 0.3s;
+    transition: opacity 0.1s;
     opacity: 0;
     white-space: nowrap;
     display: none;
@@ -116,7 +118,7 @@
     padding: 0;
     /* Remove padding by default */
     border-radius: 0.5rem;
-    transition: all 0.2s;
+    transition: all 0.1s;
     text-decoration: none;
     color: var(--ms-slate-500);
     overflow: hidden;
@@ -154,7 +156,7 @@
     /* w-8 */
     height: 2rem;
     /* h-8 */
-    transition: transform 0.3s;
+    transition: transform 0.1s;
 }
 
 .ms-link.active .ms-icon-box {
@@ -170,7 +172,7 @@
     font-weight: 500;
     font-size: 0.875rem;
     white-space: nowrap;
-    transition: all 0.3s;
+    transition: all 0.1s;
     transform-origin: left;
     opacity: 0;
     transform: translateX(-2.5rem);
@@ -203,7 +205,7 @@
     width: 100%;
     padding: 0.5rem;
     border-radius: 0.75rem;
-    transition: all 0.2s;
+    transition: all 0.1s;
     border: none;
     background: transparent;
     cursor: pointer;
@@ -229,7 +231,7 @@
     padding: 0;
     border-bottom: 1px solid var(--ms-slate-50);
     flex-shrink: 0;
-    transition: all 0.3s;
+    transition: all 0.1s;
 }
 
 .ms-sidebar:hover .ms-brand-area {
@@ -244,7 +246,7 @@
     /* Align fix: No gap when collapsed */
     text-decoration: none;
     overflow: hidden;
-    transition: gap 0.3s;
+    transition: gap 0.1s;
 }
 
 .ms-sidebar:hover .ms-brand-group {
@@ -273,7 +275,7 @@
     width: 0;
     opacity: 0;
     transform: translateX(-10px);
-    transition: all 0.3s;
+    transition: all 0.1s;
 }
 
 .ms-sidebar:hover .ms-brand-text {
@@ -300,7 +302,7 @@
     text-align: left;
     overflow: hidden;
     white-space: nowrap;
-    transition: all 0.3s;
+    transition: all 0.1s;
     width: 0;
     opacity: 0;
 }
@@ -356,7 +358,7 @@
     color: var(--ms-slate-400);
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.1s;
 }
 
 .ms-search-trigger:hover {
@@ -375,7 +377,7 @@
     opacity: 0;
     width: 0;
     overflow: hidden;
-    transition: all 0.3s;
+    transition: all 0.1s;
 }
 
 .ms-sidebar:hover .ms-search-label {
@@ -396,7 +398,7 @@
     opacity: 0;
     width: 0;
     overflow: hidden;
-    transition: all 0.3s;
+    transition: all 0.1s;
 }
 
 .ms-sidebar:hover .ms-search-kbd {
@@ -430,7 +432,7 @@
     overflow: hidden;
     transform: scale(0.95) translateY(-10px);
     opacity: 0;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .gs-overlay.active .gs-modal {
@@ -495,7 +497,7 @@
     padding: 0.75rem;
     border-radius: 0.5rem;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.1s;
     text-decoration: none;
     color: var(--ms-slate-700);
 }
@@ -583,6 +585,11 @@
     height: 1.25rem;
     color: white;
 }
-[data-theme='dark'] { --ms-slate-200: var(--border-color); }
 
-[data-theme='dark'] { --ms-white: var(--bg-card); }
+[data-theme='dark'] {
+    --ms-slate-200: var(--border-color);
+}
+
+[data-theme='dark'] {
+    --ms-white: var(--bg-card);
+}

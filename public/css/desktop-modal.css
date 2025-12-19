@@ -1,0 +1,177 @@
+/* Desktop Modal Premium Styles (Glassmorphism) */
+:root {
+    --modal-bg: rgba(255, 255, 255, 0.95);
+    --modal-backdrop: rgba(255, 255, 255, 0.6);
+    /* Modern System Default (Light) */
+    --modal-border: rgba(255, 255, 255, 0.5);
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --accent-color: #3b82f6;
+}
+
+[data-theme='dark'] {
+    --modal-bg: rgba(30, 41, 59, 0.95);
+    --modal-backdrop: rgba(0, 0, 0, 0.5);
+    /* Darker for dark mode */
+    --modal-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+}
+
+/* Override SweetAlert2 Popup */
+.swal2-container.desktop-modal-container {
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    /* background set via JS to avoid flicker */
+}
+
+/* Override SweetAlert2 Popup */
+.swal2-popup.desktop-modal-popup {
+    background: var(--modal-bg) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--modal-border) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    padding: 2rem !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    width: 420px !important;
+}
+
+/* Titles */
+.swal2-title.desktop-modal-title {
+    color: var(--text-primary) !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Content Text */
+.swal2-html-container.desktop-modal-text {
+    color: var(--text-secondary) !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+}
+
+/* Actions */
+.swal2-actions {
+    margin-top: 2rem !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    justify-content: center !important;
+}
+
+/* Premium Buttons */
+.desktop-btn-confirm,
+.desktop-btn-cancel {
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+
+.desktop-btn-confirm {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+[data-theme='dark'] .desktop-btn-confirm {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+}
+
+.desktop-btn-confirm:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+}
+
+.desktop-btn-cancel {
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--modal-border) !important;
+    box-shadow: none !important;
+}
+
+.desktop-btn-cancel:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Custom Progress Bar */
+.desktop-progress-wrapper {
+    width: 100%;
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.desktop-progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+[data-theme='dark'] .desktop-progress-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.desktop-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.desktop-progress-stats {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Icon Animation Wrapper */
+.desktop-icon-badge {
+    width: 80px;
+    height: 80px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem auto;
+    font-size: 2rem;
+    color: #3b82f6;
+    position: relative;
+}
+
+.desktop-icon-badge::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid #3b82f6;
+    opacity: 0.2;
+    animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}

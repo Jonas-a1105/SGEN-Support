@@ -15,7 +15,7 @@ class AboutController extends Controller
         // Información del sistema
         $systemInfo = [
             'nombre' => 'SGEN-Support',
-            'version' => '1.0.2',
+            'version' => defined('APP_VERSION') ? APP_VERSION : '1.0.0',
             'descripcion' => 'Sistema de Gestión de Soporte Técnico y Mantenimiento',
             'year' => date('Y'),
             'stack' => [

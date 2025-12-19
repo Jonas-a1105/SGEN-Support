@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciando SGEN Support...</title>
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #334155;
+            user-select: none;
+        }
+        .container {
+            text-align: center;
+        }
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #e2e8f0;
+            border-bottom-color: #3b82f6;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+        p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="loader"></span>
+        <h2>Iniciando Sistema</h2>
+        <p>Cargando servidor y base de datos...</p>
+    </div>
+</body>
+</html>

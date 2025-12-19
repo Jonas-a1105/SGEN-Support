@@ -40,7 +40,7 @@ function generateBrowserID() {
         s4() + '-' + s4() + s4() + s4() + (new Date()).getTime();
 }
 
-$(document).ready(function () {
+document.addEventListener('turbo:load', function () {
     if (readCookie(userKey) === null) {
         createCookie(userKey, generateBrowserID(), expireDays);
     }

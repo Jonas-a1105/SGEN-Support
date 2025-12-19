@@ -518,7 +518,7 @@ class SoportesController extends Controller
         $archivo = (new \App\Models\TicketArchivo())->findById($id);
         
         if (!$archivo) {
-            $_SESSION['flash_error'] = 'Archivo no encontrado.';
+            $this->setFlashMessage('error', 'Archivo no encontrado.');
             header('Location: ' . BASE_URL . 'soportes');
             exit;
         }
@@ -527,9 +527,9 @@ class SoportesController extends Controller
         
         // Eliminar archivo
         if ($this->fileUploadService->eliminarArchivo($id)) {
-            $_SESSION['flash_success'] = 'Archivo eliminado correctamente.';
+            $this->setFlashMessage('success', 'Archivo eliminado correctamente.');
         } else {
-            $_SESSION['flash_error'] = 'Error al eliminar el archivo.';
+            $this->setFlashMessage('error', 'Error al eliminar el archivo.');
         }
         
         // Redirigir al ticket

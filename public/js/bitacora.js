@@ -65,10 +65,14 @@ function changeItemsPerPage() {
 }
 
 // Cerrar dropdown al hacer clic fuera
-document.addEventListener('click', function (e) {
-    const dropdown = document.getElementById('filterDropdown');
-    const btn = document.getElementById('filterBtn');
-    if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.style.display = 'none';
-    }
-});
+// Cerrar dropdown al hacer clic fuera (Guarded)
+if (!window._bitacoraListenerAttached) {
+    document.addEventListener('click', function (e) {
+        const dropdown = document.getElementById('filterDropdown');
+        const btn = document.getElementById('filterBtn');
+        if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+    window._bitacoraListenerAttached = true;
+}

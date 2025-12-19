@@ -52,6 +52,11 @@ class Router {
         if ($uri === '' || $uri === '/index.php') {
             $uri = '/';
         }
+        
+        // CRITICAL: Ensure URI always starts with /
+        if ($uri !== '/' && strpos($uri, '/') !== 0) {
+            $uri = '/' . $uri;
+        }
 
         // --- MANEJO DE RUTAS ---
 

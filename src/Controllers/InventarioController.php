@@ -105,6 +105,7 @@ class InventarioController extends Controller {
             ];
             
             try {
+                error_log("Intentando registrar ítem: " . json_encode($datos));
                 $itemId = $this->inventarioService->registrarItem($datos, $_SESSION['user_id']);
                 if ($itemId > 0) {
                     $this->setFlashMessage('success', 'Ítem creado exitosamente.');
@@ -112,6 +113,7 @@ class InventarioController extends Controller {
                     exit;
                 }
             } catch (Exception $e) {
+                error_log("Error en InventarioController::crear: " . $e->getMessage());
                 $this->setFlashMessage('error', 'Error al crear: ' . $e->getMessage());
             }
         }

@@ -16,20 +16,22 @@ if (!window.AssignTechModal) {
 
             if (!this.overlay) return;
 
-            // Bind Search
+            // Bind Search (Nuclear property assignment)
             const searchInput = document.getElementById('atSearchInput');
             if (searchInput) {
-                searchInput.addEventListener('input', (e) => this.filterTechnicians(e.target.value));
+                searchInput.oninput = (e) => this.filterTechnicians(e.target.value);
             }
 
             // Bind Close
             const closeBtns = this.overlay.querySelectorAll('.at-close-btn, .at-btn-cancel');
-            closeBtns.forEach(btn => btn.addEventListener('click', () => this.close()));
+            closeBtns.forEach(btn => {
+                btn.onclick = () => this.close();
+            });
 
             // Bind Confirm
             const confirmBtn = document.getElementById('atConfirmBtn');
             if (confirmBtn) {
-                confirmBtn.addEventListener('click', () => this.submitAssignment());
+                confirmBtn.onclick = () => this.submitAssignment();
             }
         },
 
@@ -259,6 +261,14 @@ if (!window.AssignTechModal) {
     };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.AssignTechModal.init();
-});
+// Initialize on Load (Supports Turbo)
+// Initialize on Load (Supports Turbo)
+// Global Guard
+if (!window._assignTechModalListenerAttached) {
+    document.addEventListener('turbo:load', () => {
+        if (window.AssignTechModal) {
+            window.AssignTechModal.init();
+        }
+    });
+    window._assignTechModalListenerAttached = true;
+}

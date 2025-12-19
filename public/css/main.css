@@ -88,11 +88,12 @@ body {
 }
 
 .content-wrapper {
-    margin-left: 6rem;
+    margin-left: 7.5rem;
+    /* Sidebar ends at 7rem (left:1.5rem + width:5.5rem), adding 0.5rem gap */
     padding-top: 90px;
     padding-bottom: 40px;
     min-height: 100vh;
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.1s ease;
     width: auto;
     background-color: var(--bg-body);
 }
@@ -380,9 +381,12 @@ a:hover {
 /* ======================================================
    RESPONSIVE
    ====================================================== */
-@media (max-width: 768px) {
+@media (max-width: 991.98px) {
     .content-wrapper {
-        margin-left: 0;
+        margin-left: 7.5rem;
+        /* Keep margin to avoid sidebar overlap */
+        padding-top: 70px;
+        width: auto;
     }
 
     body {
@@ -390,7 +394,7 @@ a:hover {
     }
 
     .main-container {
-        padding: 15px;
+        padding: 1rem;
     }
 
     .centered-card {

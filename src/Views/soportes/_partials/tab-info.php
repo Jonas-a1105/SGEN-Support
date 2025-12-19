@@ -417,37 +417,5 @@ if (strpos($deviceType, 'laptop') !== false || strpos($deviceType, 'portatil') !
 </div>
 
 <!-- JavaScript para Modal Materiales -->
-<script>
-window.MaterialesModal = {
-    overlay: null,
-    
-    init() {
-        this.overlay = document.getElementById('materialesOverlay');
-        if (this.overlay && this.overlay.parentNode !== document.body) {
-            document.body.appendChild(this.overlay);
-        }
-    },
-
-    open() {
-        if (!this.overlay) this.init();
-        if (!this.overlay) return;
-
-        this.overlay.style.display = 'flex';
-        this.overlay.offsetHeight; // Force reflow
-        this.overlay.classList.add('show');
-    },
-
-    close() {
-        if (!this.overlay) return;
-        this.overlay.classList.remove('show');
-        setTimeout(() => {
-            this.overlay.style.display = 'none';
-        }, 300);
-    }
-};
-
-// Auto-init
-document.addEventListener('DOMContentLoaded', () => {
-    MaterialesModal.init();
-});
-</script>
+<!-- Modular Ticket Info Script -->
+<script src="<?= BASE_URL ?>js/ticket-info.js?v=<?= time() ?>"></script>

@@ -197,7 +197,23 @@ function changeItemsPerPage(perPage) {
                 }
             });
         });
+        // Initialize on Load (Supports Turbo)
+        if (!window._inventarioListenerAttached) {
+            document.addEventListener('turbo:load', init);
+            window._inventarioListenerAttached = true;
+        }
     };
-    init();
+
+    // We export init or just verify if handled by listener. 
+    // Since this is inside IIFE, we just attach listener.
+    // But wait, the original code called init() immediately at line 201.
+    // If we only use turbo:load, first load is covered ? Yes, because script is deferred or at end of body.
+    // But to be safe and match pattern:
+
+    if (!window._inventarioListenerAttached) {
+        document.addEventListener('turbo:load', init);
+        window._inventarioListenerAttached = true;
+    }
+
 })();
 

@@ -1,0 +1,79 @@
+LICENCIA DE USO - SGEN-Support
+==============================
+
+Version 1.0
+Fecha de vigencia: Diciembre 2025
+
+ACUERDO DE LICENCIA DE USUARIO FINAL (EULA)
+
+IMPORTANTE: LEA ATENTAMENTE ESTE ACUERDO ANTES DE INSTALAR O UTILIZAR ESTE SOFTWARE.
+
+Al instalar, copiar o utilizar de cualquier manera el software SGEN-Support ("Software"), 
+usted acepta quedar vinculado por los terminos y condiciones de este Acuerdo de Licencia.
+
+1. CONCESION DE LICENCIA
+------------------------
+El autor (Jonas Mendoza) le concede una licencia limitada, no exclusiva e intransferible 
+para instalar y utilizar el Software en dispositivos de su organizacion, siempre que:
+
+  a) El Software se utilice unicamente para fines internos de gestion de soporte tecnico.
+  b) No se modifique, descompile, realice ingenieria inversa ni se creen obras derivadas 
+     del Software sin autorizacion expresa.
+  c) No se distribuya, sublicencie, alquile ni venda el Software a terceros.
+
+2. PROPIEDAD INTELECTUAL
+------------------------
+El Software y toda la documentacion asociada son propiedad exclusiva del autor. Este 
+acuerdo no le otorga ningun derecho de propiedad sobre el Software, unicamente una 
+licencia de uso segun los terminos aqui establecidos.
+
+3. RESTRICCIONES
+----------------
+  a) No podra utilizar el Software para fines ilegales o no autorizados.
+  b) No podra remover, alterar u ocultar avisos de propiedad o derechos de autor.
+  c) No podra transferir esta licencia sin el consentimiento previo por escrito del autor.
+
+4. ACTUALIZACIONES
+------------------
+El autor puede proporcionar actualizaciones del Software. Dichas actualizaciones estaran 
+sujetas a los terminos de este acuerdo a menos que se indique lo contrario.
+
+5. EXCLUSION DE GARANTIAS
+-------------------------
+EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTIAS DE NINGUN TIPO, YA SEAN EXPRESAS 
+O IMPLICITAS, INCLUYENDO PERO NO LIMITANDOSE A GARANTIAS DE COMERCIABILIDAD, 
+IDONEIDAD PARA UN PROPOSITO PARTICULAR Y NO INFRACCION.
+
+El autor no garantiza que el Software funcionara sin interrupciones ni errores, ni 
+que se corregiran todos los defectos.
+
+6. LIMITACION DE RESPONSABILIDAD
+---------------------------------
+EN NINGUN CASO EL AUTOR SERA RESPONSABLE POR DANOS DIRECTOS, INDIRECTOS, INCIDENTALES, 
+ESPECIALES, EJEMPLARES O CONSECUENTES (INCLUYENDO, PERO NO LIMITANDOSE A, PERDIDA DE 
+DATOS, INTERRUPCION DEL NEGOCIO O PERDIDA DE BENEFICIOS) QUE SURJAN DEL USO O LA 
+IMPOSIBILIDAD DE USAR EL SOFTWARE.
+
+7. TERMINACION
+--------------
+Esta licencia es efectiva hasta que sea terminada. Sus derechos bajo esta licencia 
+terminaran automaticamente sin previo aviso si usted incumple cualquier termino de 
+este acuerdo. Al terminar, debera cesar todo uso del Software y destruir todas las 
+copias del mismo.
+
+8. LEY APLICABLE
+----------------
+Este acuerdo se regira e interpretara de acuerdo con las leyes de la Republica 
+Bolivariana de Venezuela.
+
+9. ACEPTACION
+-------------
+Al hacer clic en "Acepto" o al instalar el Software, usted reconoce que ha leido 
+este acuerdo, lo comprende y acepta estar sujeto a sus terminos y condiciones.
+
+---
+
+Copyright (C) 2025 Jonas Mendoza. Todos los derechos reservados.
+SGEN-Support - Sistema de Gestion de Soporte Tecnico y Mantenimiento
+
+Para consultas sobre licenciamiento, contacte al desarrollador.

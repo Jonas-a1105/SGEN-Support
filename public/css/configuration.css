@@ -12,13 +12,10 @@
 /* Main Layout Wrapper (Reduced top padding) */
 .config-layout-wrapper {
     background: transparent;
-    padding: 0.1rem 2rem 2rem 2rem;
+    padding: 0;
     display: flex;
     justify-content: center;
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    margin-left: -50vw;
+    width: 100%;
 }
 
 .config-card {
@@ -1096,3 +1093,4 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .notification-item:hover .inbox-actions {
     opacity: 1;
 }
+

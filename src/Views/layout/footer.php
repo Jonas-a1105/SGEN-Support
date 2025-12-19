@@ -3,146 +3,32 @@
 
 <footer class="text-center py-3 mt-auto" style="background: var(--glass); border-top: 1px solid var(--border);">
     <div class="container">
-        SGEN-Support &copy; <?= date('Y') ?>
+        <p style="font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin: 0;">
+            SGEN-Support &copy; <?= date('Y') ?>
+        </p>
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= BASE_URL ?>vendors/jquery/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
-<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
-<script src="<?= BASE_URL ?>js/datatables-global.js"></script>
 
-<script>
-    // Pasamos la URL base de PHP a JavaScript
-    if (!window.APP_BASE_URL) {
-        window.APP_BASE_URL = '<?= BASE_URL ?>';
-    }
-</script>
-
-<!-- Dark Mode Initialization REMOVED - Now handled exclusively in header.php to prevent flicker -->
-<!-- The theme script in header.php reads from localStorage (client-side) which is more reliable -->
-
-
-<!-- Global Pagination Preferences (using cookies for PHP access) -->
-<script>
-    if (!window.PaginationPrefs) {
-        window.PaginationPrefs = {
-            KEY: 'sgen_pagination_per_page',
-            DEFAULT: 10,
-            
-            get: function() {
-                // Leer de cookie
-                const match = document.cookie.match(new RegExp('(^| )' + this.KEY + '=([^;]+)'));
-                return match ? parseInt(match[2]) : this.DEFAULT;
-            },
-            
-            set: function(value) {
-                // Guardar en cookie (expira en 1 año)
-                const expires = new Date();
-                expires.setFullYear(expires.getFullYear() + 1);
-                document.cookie = this.KEY + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
-            },
-            
-            // Aplica la preferencia a todos los selectores de paginación en la página
-            apply: function() {
-                const savedValue = this.get();
-                document.querySelectorAll('[data-pagination-selector], #itemsPerPage, #pageLength').forEach(select => {
-                    if (select.tagName === 'SELECT') {
-                        const optionExists = Array.from(select.options).some(opt => opt.value == savedValue);
-                        if (optionExists) {
-                            select.value = savedValue;
-                        }
-                    }
-                });
-            },
-            
-            init: function() {
-                this.apply();
-                
-                document.querySelectorAll('[data-pagination-selector], #itemsPerPage, #pageLength').forEach(select => {
-                    select.addEventListener('change', (e) => {
-                        this.set(e.target.value);
-                    });
-                });
-            }
-        };
-    }
-    
-    document.addEventListener('DOMContentLoaded', () => PaginationPrefs.init());
-</script>
-
-<script src="<?= BASE_URL ?>js/inactivity-logout.js"></script>
-<script src="<?= BASE_URL ?>js/utils.js?v=<?= time() ?>"></script>
-<script src="<?= BASE_URL ?>js/app.js?v=<?= time() ?>"></script>
-<script src="<?= BASE_URL ?>js/toast.js?v=<?= time() ?>"></script>
-
-<!-- Delete Modal Assets -->
-
-<script src="<?= BASE_URL ?>js/modal-delete.js?v=<?= time() ?>"></script>
-
-<!-- Global Delete Modal -->
-<div id="deleteModalOverlay" class="delete-modal-overlay">
-    <div class="delete-modal-container">
-        <!-- Header -->
-        <div class="delete-modal-header">
-            <h3 class="delete-modal-title">
-                <div class="icon-box-red">
-                    <i class="bi bi-trash"></i>
-                </div>
-                Eliminar Elemento
-            </h3>
-            <button id="btnCloseModal" class="close-btn">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-
-        <!-- Body -->
-        <div class="delete-modal-body">
-            <p class="confirm-text">
-                ¿Estás seguro de que deseas eliminar este elemento? Esta acción eliminará el ticket permanentemente.
-            </p>
-
-            <!-- Context Card -->
-            <div class="context-card">
-                <div class="context-icon">
-                    <i class="bi bi-ticket-perforated"></i>
-                </div>
-                <div class="context-info">
-                    <span id="deleteContextId" class="context-id">#000</span>
-                    <p id="deleteContextTitle" class="context-title">Título del elemento</p>
-                    <span id="deleteContextAuthor" class="context-author">Por: Usuario</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="delete-modal-footer">
-            <button id="btnCancelDelete" class="btn-cancel">Cancelar</button>
-            <button id="btnConfirmDelete" class="btn-delete">Eliminar</button>
-        </div>
-    </div>
-</div>
 
 <?php if (isset($_SESSION['flash_message'])): ?>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        (function() {
             // Map PHP flash types to Toast types
             const type = '<?= $_SESSION['flash_message']['type'] ?>';
             const message = '<?= addslashes($_SESSION['flash_message']['message']) ?>';
             
             // Normalize types if necessary
-            // PHP might use 'danger' which maps to 'error' in our toast system
             let toastType = type;
             if (type === 'danger') toastType = 'error';
-            if (type === 'warning') toastType = 'error'; // or neutral
+            if (type === 'warning') toastType = 'error';
             if (type === 'info') toastType = 'neutral';
             
+            // Run immediately as script is executed by Turbo after render
             if (window.Toast) {
                 Toast.show(toastType, message);
             }
-        });
+        })();
     </script>
     
     <?php unset($_SESSION['flash_message']); ?>
@@ -152,7 +38,7 @@
 <!-- MODERN INVENTORY WRITE-OFF MODAL           -->
 <!-- ========================================== -->
 
-<script src="<?= BASE_URL ?>js/modal-inventory.js?v=<?= time() ?>"></script>
+<!-- MODERN INVENTORY WRITE-OFF MODAL           -->
 
 <div id="inventoryWriteOffModal" class="inventory-modal-overlay">
     <div class="inventory-modal-container">
@@ -348,14 +234,12 @@
 </div>
 <script src="<?= BASE_URL ?>js/modal-assign-tech.js?v=FIX_CACHE_999"></script>
 
-</body>
-</html>
 
 <!-- ========================================== -->
 <!-- MODERN STOCK ADJUSTMENT MODAL (ENTRADA)    -->
 <!-- ========================================== -->
 
-<script src="<?= BASE_URL ?>js/modal-stock-adjust.js?v=<?= time() ?>"></script>
+<!-- STOCK ADJUSTMENT MODAL           -->
 
 <div id="stockAdjustmentModal" class="stock-adjust-overlay">
     <div class="stock-adjust-container">
@@ -450,3 +334,6 @@
 
     </div>
 </div>
+
+</body>
+</html>

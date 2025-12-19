@@ -8,10 +8,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="turbo-cache-control" content="no-cache">
     <title><?= $titulo ?? 'SGEN-Support' ?></title>
 
     <script>
         window.BASE_URL = '<?= BASE_URL ?>';
+    </script>
+    <!-- Hotwire Turbo -->
+    <script type="module">
+        import hotwiredTurbo from 'https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.0/+esm';
     </script>
 
     <!-- Critical CSS - MUST come BEFORE theme script to have styles ready -->
@@ -64,19 +69,30 @@
     </script>
 
     <!-- Script de verificación de sesión (verifica con el servidor) -->
+    <!-- Script de verificación de sesión (Asíncrono para evitar bloqueo) -->
     <script>
         (function() {
-            // Verificar sesión con el servidor usando fetch síncrono-like
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '<?= BASE_URL ?>api/check-session', false); // síncrono
-            try {
-                xhr.send();
-                if (xhr.status === 401 || (xhr.status === 200 && xhr.responseText === 'false')) {
-                    window.location.replace('<?= BASE_URL ?>auth/login');
-                }
-            } catch(e) {
-                // Si hay error de red, dejar que continúe
-            }
+            // Verificar sesión con el servidor de forma asíncrona
+            // Esto evita que la página se congele si la red es lenta
+            fetch('<?= BASE_URL ?>api/check-session')
+                .then(response => {
+                    if (response.status === 401) {
+                         // Si es 401, redirigir a login
+                        throw new Error('Unauthorized');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                   if (text === 'false') {
+                       window.location.replace('<?= BASE_URL ?>auth/login');
+                   }
+                })
+                .catch(err => {
+                    if (err.message === 'Unauthorized') {
+                         window.location.replace('<?= BASE_URL ?>auth/login');
+                    }
+                    // Si es error de red (offline), no bloqueamos la navegación por ahora
+                });
         })();
     </script>
     
@@ -92,8 +108,35 @@
     <!-- Module Specific CSS (Preloaded for Turbo) -->
     <link rel="stylesheet" href="<?= BASE_URL ?>css/dashboard-v3.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/helpdesk-moderno.css?v=2.5.0">
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/equipos-moderno.css?v=2.5.0">
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/empleados-moderno.css?v=2.5.0">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/equipos-moderno.css?v=2.6.0">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-simple-delete-modern.css?v=2.5.0">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/empleados-moderno.css?v=2.6.0">
+
+    <!-- Global Scripts (Moved from Footer for Turbo Compatibility) -->
+    <!-- Defer ensures they run after HTML parsing but before DOMContentLoaded -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="<?= BASE_URL ?>vendors/jquery/jquery.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js" defer></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js" defer></script>
+    
+    <!-- App Scripts -->
+    <script src="<?= BASE_URL ?>js/utils.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/datatables-global.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/inactivity-logout.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/app.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/toast.js?v=<?= time() ?>" defer></script>
+    
+    <!-- Modal Logics -->
+    <script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/modal-inventory.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/modal-stock-adjust.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/modal-assign-tech.js?v=<?= time() ?>" defer></script> 
+    
+    <!-- Bulk Delete Global -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=2.6.0">
+    <script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>" defer></script>
+
     <link rel="stylesheet" href="<?= BASE_URL ?>css/departamentos-moderno.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/inventario-moderno.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/ticket-detail-v2.css?v=2.5.0">
@@ -106,11 +149,16 @@
     <link rel="stylesheet" href="<?= BASE_URL ?>css/configuration.css?v=2.5.0">
 
     <!-- CSS for Modals (Moved to head to prevent FOUC) -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-delete-modern.css?v=2.5.0">
+
     <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-inventory-modern.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-assign-tech.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-stock-adjust.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/logout-modal.css?v=2.5.0">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/desktop-modal.css?v=<?= time() ?>">
+
+    <!-- Desktop Integration (Electron) -->
+    <script src="<?= BASE_URL ?>js/desktop-integration.js?v=<?= time() ?>" defer></script>
+
     <style>
         /* Turbo Progress Bar Customization */
         .turbo-progress-bar {
@@ -124,12 +172,16 @@
 <body class="d-flex flex-column min-vh-100">
 
     <?php include __DIR__ . '/../components/logout-modal.php'; ?>
+    
+    <!-- React Replica Delete Modal (JS-Injected) -->
+    <script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>" defer></script>
 
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top glass-opaque">
             <div class="container-fluid header-container-padded">
                 
                 <a class="navbar-brand fw-bold text-dark d-flex align-items-center gap-2" href="<?= BASE_URL ?>">
+
                     <div class="brand-icon-wrapper">
                         <!-- Same logo as sidebar -->
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -204,7 +256,7 @@
 
                         <script src="<?= BASE_URL ?>js/notifications.js?v=<?= time() ?>"></script>
                         -->
-                        
+
                         <!-- Logout Icon (Replaced User Menu) -->
                         <li class="nav-item">
                             <button class="btn btn-link text-dark p-0 ms-2" onclick="LogoutModal.open(event)" title="Cerrar Sesión">
@@ -224,8 +276,10 @@
     
     <!-- User Preferences Module (must load before view-specific scripts) -->
     <script src="<?= BASE_URL ?>js/user-preferences.js?v=<?= time() ?>"></script>
-    
     <script src="<?= BASE_URL ?>js/global-search.js?v=<?= time() ?>"></script>
+    
+    <!-- Class-based Bulk Delete (Required for Inventory) -->
+    <script src="<?= BASE_URL ?>js/bulk-delete-class.js?v=<?= time() ?>" defer></script>
     
     <!-- Main Content Area -->
     <main class="content-wrapper">

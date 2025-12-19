@@ -229,4 +229,33 @@ class Equipo extends Model
         $stmt->execute([$cedula]);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+
+    /**
+     * Search by partial Serial, Code, or Employee Cedula
+     */
+    public function searchByTerm(string $term)
+    {
+        // Remove special chars that might break LIKE
+        $term = "%" . trim($term) . "%";
+
+        $sql = "
+            SELECT 
+                e.*, 
+                d.nombre AS departamento_nombre,
+                CONCAT(emp.nombre, ' ', IFNULL(emp.apellido, '')) AS empleado_nombre,
+                emp.cedula as empleado_cedula
+            FROM {$this->table} e
+            LEFT JOIN departamentos d ON e.departamento_id = d.id
+            LEFT JOIN empleados emp ON e.empleado_id = emp.id
+            WHERE 
+                e.codigo_inventario LIKE ? OR 
+                e.numero_serie LIKE ? OR 
+                emp.cedula LIKE ?
+            ORDER BY e.codigo_inventario ASC
+            LIMIT 50
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$term, $term, $term]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
 }

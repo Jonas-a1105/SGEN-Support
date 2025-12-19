@@ -1,7 +1,8 @@
 /**
  * Maintenance Schedule Form Logic
+ * Turbo-compatible version
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('turbo:load', () => {
     // --- DOM Elements ---
     const btnPreventive = document.getElementById('btnTypePreventive');
     const btnCorrective = document.getElementById('btnTypeCorrective');

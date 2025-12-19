@@ -45,7 +45,7 @@
 
         // Toggle de vista
         if (btnViewGrid) {
-            btnViewGrid.addEventListener('click', function () {
+            btnViewGrid.onclick = function () {
                 currentView = 'grid';
                 if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'grid');
                 if (gridView) gridView.style.display = 'grid';
@@ -53,11 +53,11 @@
                 btnViewGrid.classList.add('active');
                 if (btnViewList) btnViewList.classList.remove('active');
                 applyFilters();
-            });
+            };
         }
 
         if (btnViewList) {
-            btnViewList.addEventListener('click', function () {
+            btnViewList.onclick = function () {
                 currentView = 'list';
                 if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'list');
                 if (gridView) gridView.style.display = 'none';
@@ -65,18 +65,18 @@
                 if (btnViewList) btnViewList.classList.add('active');
                 if (btnViewGrid) btnViewGrid.classList.remove('active');
                 applyFilters();
-            });
+            };
         }
 
         // Filtros de departamento
         filterBtns.forEach(btn => {
-            btn.addEventListener('click', function () {
+            btn.onclick = function () {
                 filterBtns.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentFilter = this.getAttribute('data-dept');
                 if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', currentFilter);
                 applyFilters();
-            });
+            };
         });
 
         // Filtrar por dept desde badge
@@ -94,10 +94,10 @@
 
         // Búsqueda
         if (searchInput) {
-            searchInput.addEventListener('input', function () {
+            searchInput.oninput = function () {
                 currentSearch = this.value.toLowerCase();
                 applyFilters();
-            });
+            };
         }
 
         // Variables de Paginación
@@ -256,6 +256,11 @@
             });
         };
     };
-    init();
+
+    // Turbo Idempotency
+    if (!window._empleadosListenerAttached) {
+        document.addEventListener('turbo:load', init);
+        window._empleadosListenerAttached = true;
+    }
 })();
 

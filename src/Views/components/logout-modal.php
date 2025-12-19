@@ -93,12 +93,26 @@ if (!window.LogoutModal) {
             this.spinnerLogout = document.getElementById('spinnerLogout');
             this.iconArrowLogout = document.getElementById('iconArrowLogout');
 
-            // Close on escape
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && this.modal && this.modal.classList.contains('open') && !this.isLoggingOut) {
-                    this.close();
-                }
-            });
+            // Elements might be missing if we are not on a page with mod (unlikely as it's in header)
+            if (!this.modal) return;
+
+            // Close on escape - Global Listener (ONE TIME ONLY)
+            if (!this.hasKeydown) {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.modal && this.modal.classList.contains('open') && !this.isLoggingOut) {
+                        this.close();
+                    }
+                });
+                this.hasKeydown = true;
+            }
+            
+            // Re-bind click events (Nuclear Option: Properties)
+            // Even if elements are new, we overwrite properties.
+            if (this.btnCancel) this.btnCancel.onclick = () => this.close();
+            
+            // Note: btnConfirm has inline onclick="LogoutModal.confirm()", so we don't strictly need to bind it here.
+            // But we can for safety.
+             if (this.btnConfirm) this.btnConfirm.onclick = () => this.confirm();
         },
 
         open: function(e) {
@@ -140,9 +154,26 @@ if (!window.LogoutModal) {
 }
 
 // Ensure init is called on every load (even Turbo renders)
+// Idempotency: window.LogoutModal is global, but elements are replaced by Turbo.
+// So we need to re-bind elements, BUT not re-bind document listeners if already bound.
+
+if (window.LogoutModal) {
+    // If it exists, it might have stale element references.
+    // If we are in a Turbo render, we need to re-run init to find new elements.
+    // But we must NOT add document listener again.
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.LogoutModal.init());
+    document.addEventListener('turbo:load', () => {
+        window.LogoutModal.init();
+    });
 } else {
+    // If loaded via Turbo, this runs immediately.
     window.LogoutModal.init();
 }
+
+// Turbo Load Hook to re-init (Nuclear)
+document.addEventListener('turbo:load', () => {
+    if (window.LogoutModal) window.LogoutModal.init();
+});
 </script>

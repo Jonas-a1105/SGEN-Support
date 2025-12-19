@@ -13,10 +13,9 @@
 /* Layout Isolation */
 .bitacora-layout-container {
     width: 100%;
-    max-width: 1350px !important;
+    max-width: 1350px;
     margin: 0 auto;
-    padding: 0rem !important;
-    /* Forces consistent padding */
+    padding: 1.5rem;
 }
 
 /* Header */
@@ -491,3 +490,6 @@
 [data-theme='dark'] { --log-border: var(--border-color); }
 
 [data-theme='dark'] .bitacora-content-card { background-color: var(--bg-card) !important; border-color: var(--border-color); }
+
+
+
