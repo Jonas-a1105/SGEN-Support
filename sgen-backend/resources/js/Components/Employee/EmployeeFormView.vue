@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import type { EmployeeItem } from '@/Composables/useEmployeeFilters';
 import EmployeeCredentialPreview from './EmployeeCredentialPreview.vue';
+import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
 
 export interface DepartmentSelectOption {
     id: number;
@@ -65,6 +66,21 @@ watch(
     { immediate: true }
 );
 
+const departmentOptions = computed(() =>
+    props.departments.map((d) => ({
+        value: d.id,
+        label: d.nombre,
+    }))
+);
+
+const userOptions = computed(() =>
+    props.users.map((u) => ({
+        value: u.id,
+        label: u.username,
+        sublabel: u.rol,
+    }))
+);
+
 // Preview Computations
 const previewFullName = computed(() => {
     const full = `${firstName.value} ${lastName.value}`.trim();
@@ -103,8 +119,8 @@ const handleSubmit = () => {
         cedula: idDoc.value,
         cargo: position.value,
         email: email.value,
-        departamento_id: departmentId.value !== '' ? departmentId.value : null,
-        usuario_id: userId.value !== '' ? userId.value : null,
+        departamento_id: departmentId.value !== '' ? Number(departmentId.value) : null,
+        usuario_id: userId.value !== '' ? Number(userId.value) : null,
     });
 };
 </script>
@@ -215,41 +231,21 @@ const handleSubmit = () => {
                 </div>
 
                 <div class="form-row-2">
-                    <div class="form-group">
-                        <label class="form-label" for="selectDepartment">Departamento</label>
-                        <div class="input-with-icon">
-                            <svg viewBox="0 0 24 24">
-                                <rect x="4" y="2" width="16" height="20" rx="2"></rect>
-                                <line x1="9" y1="22" x2="9" y2="2"></line>
-                                <line x1="15" y1="22" x2="15" y2="2"></line>
-                            </svg>
-                            <select class="form-select" id="selectDepartment" v-model="departmentId" required>
-                                <option value="" disabled>-- Seleccionar --</option>
-                                <option v-for="dept in departments" :key="dept.id" :value="dept.id">
-                                    {{ dept.nombre }}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
+                    <BaseCombobox
+                        v-model="departmentId"
+                        label="Departamento"
+                        placeholder="-- Seleccionar --"
+                        :options="departmentOptions"
+                        required
+                    />
 
-                    <div class="form-group">
-                        <label class="form-label" for="selectUserAccount">
-                            <span>Cuenta de Usuario</span>
-                            <span class="label-optional">OPCIONAL</span>
-                        </label>
-                        <div class="input-with-icon">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                            <select class="form-select" id="selectUserAccount" v-model="userId">
-                                <option value="">-- No vincular --</option>
-                                <option v-for="user in users" :key="user.id" :value="user.id">
-                                    Vincular a {{ user.username }} ({{ user.rol }})
-                                </option>
-                            </select>
-                        </div>
-                    </div>
+                    <BaseCombobox
+                        v-model="userId"
+                        label="Cuenta de Usuario (Opcional)"
+                        placeholder="-- No vincular --"
+                        :options="userOptions"
+                        clearable
+                    />
                 </div>
 
                 <div class="form-actions-row">
@@ -266,7 +262,7 @@ const handleSubmit = () => {
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: TARJETA DE VISTA PREVIA EN VIVO (Componente Modular) -->
+            <!-- COLUMNA DERECHA: TARJETA DE VISTA PREVIA EN VIVO -->
             <EmployeeCredentialPreview
                 :full-name="previewFullName"
                 :email="previewEmail"
@@ -279,234 +275,3 @@ const handleSubmit = () => {
         </form>
     </section>
 </template>
-
-<style scoped>
-.employee-form-view {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.module-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-}
-
-.module-title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.module-icon-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--blue);
-    display: grid;
-    place-items: center;
-    color: #ffffff;
-    box-shadow: none !important;
-}
-
-.module-icon-box svg {
-    width: 22px;
-    height: 22px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-}
-
-.module-title {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: var(--text);
-    margin: 0 0 2px 0;
-}
-
-.module-subtitle {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin: 0;
-}
-
-.btn-back {
-    background: var(--bg-sub);
-    border: var(--stroke-w) solid var(--stroke);
-    color: var(--text);
-    font-size: 12px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.btn-back:hover {
-    background: var(--stroke-subtle);
-    border-color: var(--stroke-hover);
-}
-
-.form-grid-layout {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 20px;
-    align-items: start;
-}
-
-@media (max-width: 860px) {
-    .form-grid-layout {
-        grid-template-columns: 1fr;
-    }
-}
-
-.form-card-panel {
-    background: var(--bg-card);
-    border: var(--stroke-w) solid var(--stroke);
-    border-radius: var(--panel-radius);
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    box-shadow: none !important;
-}
-
-.form-row-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
-@media (max-width: 580px) {
-    .form-row-2 {
-        grid-template-columns: 1fr;
-    }
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.label-optional {
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--text-dim);
-    background: var(--stroke-subtle);
-    padding: 1px 5px;
-    border-radius: 4px;
-}
-
-.input-with-icon {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.input-with-icon svg {
-    position: absolute;
-    left: 12px;
-    width: 16px;
-    height: 16px;
-    stroke: var(--text-dim);
-    fill: none;
-    stroke-width: 2;
-    pointer-events: none;
-}
-
-.input-with-icon .form-input,
-.input-with-icon .form-select {
-    padding-left: 38px;
-}
-
-.form-input,
-.form-select {
-    width: 100%;
-    height: 40px;
-    background: var(--bg-sub);
-    border: var(--stroke-w) solid var(--stroke);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 13px;
-    padding: 0 14px;
-    outline: none;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.form-input:focus,
-.form-select:focus {
-    border-color: var(--blue);
-}
-
-.form-actions-row {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
-    padding-top: 16px;
-    border-top: var(--stroke-w) solid var(--stroke-subtle);
-}
-
-.btn-cancel {
-    background: transparent;
-    border: var(--stroke-w) solid var(--stroke);
-    color: var(--text-muted);
-    font-size: 13px;
-    padding: 8px 18px;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-    color: var(--text);
-    border-color: var(--stroke-hover);
-}
-
-.btn-submit {
-    background: var(--blue);
-    border: var(--stroke-w) solid var(--blue);
-    color: #ffffff;
-    font-size: 13px;
-    padding: 8px 20px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    box-shadow: none !important;
-    transition: opacity 0.2s ease;
-}
-
-.btn-submit svg {
-    width: 16px;
-    height: 16px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2.2;
-}
-
-.btn-submit:hover {
-    opacity: 0.9;
-}
-</style>

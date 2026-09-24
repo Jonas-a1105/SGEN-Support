@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { BaseAvatar, BaseBadge } from '@/Components/UI';
 import type { EmployeeItem } from '@/Composables/useEmployeeFilters';
 
 defineProps<{
@@ -18,9 +19,11 @@ const emit = defineEmits<{
         <div class="card-main-content">
             <div class="card-top-identity">
                 <div class="card-user-row">
-                    <div class="emp-avatar-circle" :class="employee.tint">
-                        {{ employee.initials }}
-                    </div>
+                    <BaseAvatar
+                        :name="employee.fullName"
+                        :initials="employee.initials"
+                        size="md"
+                    />
                     <div class="emp-identity-info">
                         <Link :href="`/personal/${employee.numericId}`" class="emp-name-link">
                             <h3 class="emp-name-text">{{ employee.fullName }}</h3>
@@ -44,14 +47,16 @@ const emit = defineEmits<{
             </div>
 
             <div class="card-body-meta">
-                <span class="dept-badge-pill" :title="employee.dept">
-                    <svg viewBox="0 0 24 24">
-                        <rect x="4" y="2" width="16" height="20" rx="2"></rect>
-                        <line x1="9" y1="22" x2="9" y2="2"></line>
-                        <line x1="15" y1="22" x2="15" y2="2"></line>
-                    </svg>
-                    <span>{{ employee.dept }}</span>
-                </span>
+                <BaseBadge variant="info" size="sm" :title="employee.dept">
+                    <template #icon>
+                        <svg viewBox="0 0 24 24" class="badge-icon">
+                            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                            <line x1="9" y1="22" x2="9" y2="2"></line>
+                            <line x1="15" y1="22" x2="15" y2="2"></line>
+                        </svg>
+                    </template>
+                    {{ employee.dept }}
+                </BaseBadge>
 
                 <div class="meta-info-line" :title="employee.email">
                     <svg viewBox="0 0 24 24">
@@ -76,9 +81,12 @@ const emit = defineEmits<{
         <div class="card-bottom-actions-row">
             <div class="access-status-wrap">
                 <span class="access-tag-label">ACCESO</span>
-                <span class="access-pill" :class="employee.userAccount ? 'active' : 'inactive'">
+                <BaseBadge
+                    :variant="employee.userAccount ? 'success' : 'neutral'"
+                    size="sm"
+                >
                     {{ employee.userAccount || 'Inactivo' }}
-                </span>
+                </BaseBadge>
             </div>
 
             <div class="card-action-btns">
@@ -159,48 +167,6 @@ const emit = defineEmits<{
     gap: 10px;
 }
 
-.emp-avatar-circle {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-size: 13px;
-    font-weight: 700;
-    flex-shrink: 0;
-    border: var(--stroke-w) solid var(--stroke);
-}
-
-.emp-avatar-circle.blue {
-    background: rgba(37, 99, 235, 0.15);
-    color: #3b82f6;
-    border-color: rgba(37, 99, 235, 0.3);
-}
-
-.emp-avatar-circle.green {
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-    border-color: rgba(16, 185, 129, 0.3);
-}
-
-.emp-avatar-circle.purple {
-    background: rgba(139, 92, 246, 0.15);
-    color: #8b5cf6;
-    border-color: rgba(139, 92, 246, 0.3);
-}
-
-.emp-avatar-circle.orange {
-    background: rgba(249, 115, 22, 0.15);
-    color: #f97316;
-    border-color: rgba(249, 115, 22, 0.3);
-}
-
-.emp-avatar-circle.amber {
-    background: rgba(245, 158, 11, 0.15);
-    color: #f59e0b;
-    border-color: rgba(245, 158, 11, 0.3);
-}
-
 .emp-identity-info {
     display: flex;
     flex-direction: column;
@@ -264,25 +230,12 @@ const emit = defineEmits<{
     padding: 10px;
 }
 
-.dept-badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text);
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.dept-badge-pill svg {
-    width: 13px;
-    height: 13px;
-    stroke: var(--blue);
+.badge-icon {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
     fill: none;
     stroke-width: 2;
-    flex-shrink: 0;
 }
 
 .meta-info-line {
@@ -325,23 +278,6 @@ const emit = defineEmits<{
     color: var(--text-dim);
     font-weight: 700;
     letter-spacing: 0.05em;
-}
-
-.access-pill {
-    padding: 2px 7px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.access-pill.active {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-}
-
-.access-pill.inactive {
-    background: var(--stroke-subtle);
-    color: var(--text-muted);
 }
 
 .card-action-btns {

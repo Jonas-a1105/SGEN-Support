@@ -1,0 +1,271 @@
+/* ==========================================================================
+   ESTILOS ESTÁNDAR PARA FORMULARIOS Y PANELES — SGEN SUPPORT
+   Garantiza 0 sombras, tipografía consistente, y compatibilidad dark/light
+   ========================================================================== */
+
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--blue, #2563eb);
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+    box-shadow: none !important;
+    flex-shrink: 0;
+}
+
+.module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--text, #f4f4f6);
+    margin: 0 0 2px 0;
+}
+
+.module-subtitle {
+    font-size: 12px;
+    color: var(--text-dim, #8e9199);
+    margin: 0;
+}
+
+.btn-back {
+    background: var(--bg-sub, #1e2024);
+    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
+    color: var(--text, #f4f4f6);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+    background: var(--stroke-subtle, #23252a);
+    border-color: var(--stroke-hover, #454952);
+    color: var(--text, #f4f4f6);
+}
+
+/* LAYOUT GRID DE FORMULARIOS */
+.form-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 880px) {
+    .form-grid-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-card-panel {
+    background: var(--bg-card, #17181a);
+    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
+    border-radius: var(--panel-radius, 18px);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: none !important;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 580px) {
+    .form-row-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted, #8e9199);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.label-optional {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-dim, #60636d);
+    background: var(--stroke-subtle, #23252a);
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-with-icon svg {
+    position: absolute;
+    left: 12px;
+    width: 16px;
+    height: 16px;
+    stroke: var(--text-dim, #60636d);
+    fill: none;
+    stroke-width: 2;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.input-with-icon .form-input,
+.input-with-icon .form-select {
+    padding-left: 38px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    background: var(--bg-sub, #1e2024);
+    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
+    border-radius: 10px;
+    color: var(--text, #f4f4f6);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0 14px;
+    outline: none;
+    box-shadow: none !important;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.form-input,
+.form-select {
+    height: 40px;
+}
+
+.form-textarea {
+    padding: 10px 14px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    border-color: var(--blue, #2563eb);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: var(--text-dim, #60636d);
+    font-weight: 400;
+}
+
+/* ACCIONES DE FORMULARIO */
+.form-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 16px;
+    border-top: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
+}
+
+.btn-cancel {
+    background: transparent;
+    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
+    color: var(--text-muted, #8e9199);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-cancel:hover {
+    color: var(--text, #f4f4f6);
+    border-color: var(--stroke-hover, #454952);
+}
+
+.btn-submit {
+    background: var(--blue, #2563eb);
+    border: var(--stroke-w, 2px) solid var(--blue, #2563eb);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: none !important;
+    transition: opacity 0.2s ease;
+}
+
+.btn-submit svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+}
+
+.btn-submit:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

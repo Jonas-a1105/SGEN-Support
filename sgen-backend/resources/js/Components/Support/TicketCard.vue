@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { router, Link } from '@inertiajs/vue3';
 import BaseCard from '@/Components/UI/BaseCard.vue';
+import { BaseAvatar } from '@/Components/UI';
 import TicketStatusIcon from '@/Components/Support/TicketStatusIcon.vue';
 import type { TicketListItem } from '@/types/support';
 
@@ -69,7 +70,7 @@ const navigateToDetail = () => {
 
         <div class="ticket-card-bottom">
             <div class="ticket-tech">
-                <div class="tech-avatar">{{ ticket.tech_init }}</div>
+                <BaseAvatar :name="ticket.tech" :initials="ticket.tech_init" size="sm" />
                 <div class="tech-meta">
                     <span class="tech-role">Técnico</span>
                     <button
@@ -295,19 +296,6 @@ const navigateToDetail = () => {
     align-items: center;
     gap: 10px;
     min-width: 130px;
-}
-
-.tech-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: var(--stroke-subtle);
-    border: var(--stroke-w) solid var(--stroke);
-    display: grid;
-    place-items: center;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text);
 }
 
 .tech-meta {

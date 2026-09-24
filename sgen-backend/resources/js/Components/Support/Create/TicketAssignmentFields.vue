@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
 import type { FormTechnician } from './types';
 
-defineProps<{
+const props = defineProps<{
     requester: string;
     department: string;
     selectedTechId: number;
@@ -13,6 +15,16 @@ const emit = defineEmits<{
     (e: 'update:department', value: string): void;
     (e: 'update:selectedTechId', value: number): void;
 }>();
+
+const technicianOptions = computed(() =>
+    (props.technicians || []).map((tech) => ({
+        value: tech.id,
+        label: tech.name,
+        sublabel: `${tech.specialty} • ${tech.active_tickets} tickets activos`,
+        badge: tech.active_tickets === 0 ? 'Disponible' : `${tech.active_tickets} act.`,
+        badgeVariant: (tech.active_tickets === 0 ? 'success' : 'warning') as any,
+    }))
+);
 </script>
 
 <template>
@@ -49,17 +61,13 @@ const emit = defineEmits<{
         </div>
 
         <div class="tf-form-field">
-            <label class="tf-field-label" for="techSelect">Técnico Responsable Asignado</label>
-            <select
-                id="techSelect"
-                :value="selectedTechId"
-                class="tf-select-input"
-                @change="emit('update:selectedTechId', Number(($event.target as HTMLSelectElement).value))"
-            >
-                <option v-for="tech in technicians" :key="tech.id" :value="tech.id">
-                    {{ tech.name }} ({{ tech.specialty }}) — {{ tech.active_tickets }} tickets activos
-                </option>
-            </select>
+            <BaseCombobox
+                :model-value="selectedTechId"
+                label="Técnico Responsable Asignado"
+                placeholder="Seleccionar técnico..."
+                :options="technicianOptions"
+                @update:model-value="(val) => emit('update:selectedTechId', Number(val))"
+            />
         </div>
     </div>
 </template>
@@ -108,30 +116,26 @@ const emit = defineEmits<{
     gap: 6px;
 }
 .tf-field-label {
-    display: block;
     font-size: 11px;
     font-weight: 700;
-    color: var(--text-muted, #8e9199);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    margin-bottom: 2px;
+    color: var(--text-muted, #8e9199);
 }
-.tf-text-input,
-.tf-select-input {
+.tf-text-input {
     width: 100%;
-    height: 40px;
-    padding: 0 12px;
+    height: 42px;
+    border-radius: 10px;
     background: var(--bg-sub, #1e2024);
     border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    border-radius: 10px;
     color: var(--text, #f4f4f6);
     font-size: 13px;
+    padding: 0 14px;
     outline: none;
-    transition: border-color 0.2s ease;
     box-shadow: none !important;
+    transition: border-color 0.2s ease;
 }
-.tf-text-input:focus,
-.tf-select-input:focus {
+.tf-text-input:focus {
     border-color: var(--orange, #2563eb);
 }
 </style>

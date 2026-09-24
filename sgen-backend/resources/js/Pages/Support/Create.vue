@@ -10,6 +10,7 @@ import PrioritySelector from '@/Components/Support/Create/PrioritySelector.vue';
 import TicketIncidentFields from '@/Components/Support/Create/TicketIncidentFields.vue';
 import TicketAssignmentFields from '@/Components/Support/Create/TicketAssignmentFields.vue';
 import ModalSelectEquipment from '@/Components/Support/Create/ModalSelectEquipment.vue';
+import { useTicketEquipmentSearch } from '@/Composables/useTicketEquipmentSearch';
 import type { FormEquipment, FormCategory, FormTechnician, TicketPriority } from '@/Components/Support/Create/types';
 
 interface Props {
@@ -23,7 +24,6 @@ interface Props {
 const props = defineProps<Props>();
 
 // Form state
-const selectedEquipmentId = ref<number | null>(props.options.equipments?.[0]?.id ?? null);
 const selectedCategoryId = ref<number>(props.options.categories?.[0]?.id ?? 1);
 const selectedPriority = ref<TicketPriority>('media');
 const titulo = ref('');
@@ -34,57 +34,25 @@ const selectedTechnicianId = ref<number>(props.options.technicians?.[0]?.id ?? 3
 const isSubmitting = ref(false);
 const errorMessage = ref('');
 
-// Device search & modal state
-const deviceSearch = ref('');
-const isDeviceModalOpen = ref(false);
-
-const selectedEquipment = computed<FormEquipment | undefined>(() => {
-    if (!selectedEquipmentId.value || !props.options.equipments) return undefined;
-    return props.options.equipments.find((e) => e.id === selectedEquipmentId.value);
-});
-
-function selectEquipment(eq: FormEquipment) {
-    selectedEquipmentId.value = eq.id;
+// Device search via composable (SRP)
+const equipmentsRef = computed(() => props.options.equipments);
+const {
+    deviceSearch,
+    selectedEquipmentId,
+    isDeviceModalOpen,
+    selectedEquipment,
+    searchResults,
+    selectEquipment,
+    clearEquipment,
+    handleSearchSubmit,
+} = useTicketEquipmentSearch(equipmentsRef, (eq: FormEquipment) => {
     if (eq.department && eq.department !== 'Sin departamento') {
         departamento.value = eq.department;
     }
     if (eq.assigned_to && eq.assigned_to !== 'Sin asignar') {
         solicitante.value = eq.assigned_to;
     }
-    isDeviceModalOpen.value = false;
-    deviceSearch.value = '';
-}
-
-function clearEquipment() {
-    selectedEquipmentId.value = null;
-}
-
-const searchResults = computed<FormEquipment[]>(() => {
-    const q = deviceSearch.value.trim().toLowerCase();
-    if (!q || !props.options.equipments) return [];
-    return props.options.equipments.filter((eq) => {
-        const code = (eq.code || '').toLowerCase();
-        const serial = (eq.serial || '').toLowerCase();
-        const model = (eq.model || '').toLowerCase();
-        const dept = (eq.department || '').toLowerCase();
-        const assigned = (eq.assigned_to || '').toLowerCase();
-        return (
-            code.includes(q) ||
-            serial.includes(q) ||
-            model.includes(q) ||
-            dept.includes(q) ||
-            assigned.includes(q)
-        );
-    });
 });
-
-function handleSearchSubmit() {
-    if (searchResults.value.length === 1) {
-        selectEquipment(searchResults.value[0]);
-    } else if (searchResults.value.length > 1) {
-        isDeviceModalOpen.value = true;
-    }
-}
 
 function handleSubmit() {
     if (!titulo.value.trim()) {
@@ -134,18 +102,21 @@ function handleSubmit() {
         <div class="tf-container">
             <div class="tf-max-w">
                 <!-- Header -->
-                <div class="tf-header">
-                    <Link href="/soportes" class="tf-back-btn" title="Volver a lista de soportes">
-                        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
-                    </Link>
-                    <div>
-                        <h1 class="tf-title">Nuevo Ticket de Soporte</h1>
-                        <p class="tf-subtitle">Reporta una incidencia técnica para su resolución y seguimiento.</p>
+                <div class="module-header">
+                    <div class="module-title-wrap">
+                        <Link href="/soportes" class="btn-back" title="Volver a lista de soportes">
+                            <span>←</span>
+                            <span>Volver a Soportes</span>
+                        </Link>
+                        <div>
+                            <h1 class="module-title">Nuevo Ticket de Soporte</h1>
+                            <p class="module-subtitle">Reporta una incidencia técnica para su resolución y seguimiento.</p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Error Alert -->
-                <div v-if="errorMessage" class="tf-alert-error">
+                <div v-if="errorMessage" class="tf-alert-error" role="alert">
                     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                     <span>{{ errorMessage }}</span>
                 </div>
@@ -211,11 +182,11 @@ function handleSubmit() {
                                 />
 
                                 <!-- Actions -->
-                                <div class="tf-actions">
-                                    <Link href="/soportes" class="tf-btn-cancel">
+                                <div class="form-actions-row">
+                                    <Link href="/soportes" class="btn-cancel">
                                         Cancelar
                                     </Link>
-                                    <button type="submit" class="tf-btn-save" :disabled="isSubmitting">
+                                    <button type="submit" class="btn-submit" :disabled="isSubmitting">
                                         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                                         <span>{{ isSubmitting ? 'Guardando...' : 'Guardar Ticket' }}</span>
                                     </button>
@@ -247,53 +218,6 @@ function handleSubmit() {
 
 .tf-max-w {
     width: 100%;
-}
-
-.tf-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.tf-back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: var(--bg-card, #17181a);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    color: var(--text-muted, #8e9199);
-    display: grid;
-    place-items: center;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    box-shadow: none !important;
-}
-
-.tf-back-btn:hover {
-    color: var(--text, #f4f4f6);
-    border-color: var(--orange, #2563eb);
-}
-
-.tf-back-btn svg {
-    width: 18px;
-    height: 18px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-}
-
-.tf-title {
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    color: var(--text, #f4f4f6);
-    margin: 0 0 2px 0;
-}
-
-.tf-subtitle {
-    font-size: 13px;
-    color: var(--text-muted, #8e9199);
-    margin: 0;
 }
 
 .tf-alert-error {
@@ -398,66 +322,5 @@ function handleSubmit() {
 .tf-divider {
     height: 1px;
     background: var(--stroke-subtle, #23252a);
-}
-
-.tf-actions {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 12px;
-    margin-top: 10px;
-    padding-top: 16px;
-    border-top: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
-}
-
-.tf-btn-cancel {
-    padding: 10px 18px;
-    border-radius: 10px;
-    background: transparent;
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    color: var(--text-muted, #8e9199);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    box-shadow: none !important;
-}
-
-.tf-btn-cancel:hover {
-    color: var(--text, #f4f4f6);
-    border-color: var(--stroke-hover, #454952);
-}
-
-.tf-btn-save {
-    padding: 10px 22px;
-    border-radius: 10px;
-    background: var(--orange, #2563eb);
-    border: var(--stroke-w, 2px) solid var(--orange, #2563eb);
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: opacity 0.2s ease;
-    box-shadow: none !important;
-}
-
-.tf-btn-save:hover:not(:disabled) {
-    opacity: 0.9;
-}
-
-.tf-btn-save:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.tf-btn-save svg {
-    width: 16px;
-    height: 16px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2.5;
 }
 </style>

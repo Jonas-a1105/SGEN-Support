@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import BaseDropdown from '@/Components/UI/BaseDropdown.vue';
 import type { DepartmentItem } from '@/Composables/useDepartmentFilters';
 
 const props = defineProps<{
@@ -12,22 +13,6 @@ const emit = defineEmits<{
     (e: 'edit', department: DepartmentItem): void;
     (e: 'delete', department: DepartmentItem): void;
 }>();
-
-const isMenuOpen = ref(false);
-
-const toggleMenu = () => {
-    isMenuOpen.value = !isMenuOpen.value;
-};
-
-const handleEdit = () => {
-    isMenuOpen.value = false;
-    emit('edit', props.department);
-};
-
-const handleDelete = () => {
-    isMenuOpen.value = false;
-    emit('delete', props.department);
-};
 
 // Deterministic color class
 const colorClass = computed(() => {
@@ -67,39 +52,41 @@ const progressWidthClass = computed(() => {
                     </svg>
                 </div>
 
-                <div class="dropdown-container">
-                    <button
-                        class="btn-card-menu"
-                        @click="toggleMenu"
-                        type="button"
-                        title="Opciones del departamento"
-                    >
-                        ···
-                    </button>
-                    <div v-if="isMenuOpen" class="card-dropdown-menu">
-                        <Link :href="`/departamentos/${department.numericId}`" class="card-menu-item">
+                <BaseDropdown align="right">
+                    <template #trigger="{ toggle }">
+                        <button
+                            class="btn-card-menu"
+                            @click="toggle"
+                            type="button"
+                            title="Opciones del departamento"
+                        >
+                            ···
+                        </button>
+                    </template>
+                    <template #content="{ close }">
+                        <Link :href="`/departamentos/${department.numericId}`" class="card-menu-item" @click="close">
                             <svg viewBox="0 0 24 24">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                             <span>Ver Detalle</span>
                         </Link>
-                        <button class="card-menu-item" @click="handleEdit" type="button">
+                        <button class="card-menu-item" @click="() => { close(); emit('edit', department); }" type="button">
                             <svg viewBox="0 0 24 24">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                             <span>Editar</span>
                         </button>
-                        <button class="card-menu-item delete" @click="handleDelete" type="button">
+                        <button class="card-menu-item delete" @click="() => { close(); emit('delete', department); }" type="button">
                             <svg viewBox="0 0 24 24">
                                 <polyline points="3 6 5 6 21 6"></polyline>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                             </svg>
                             <span>Eliminar</span>
                         </button>
-                    </div>
-                </div>
+                    </template>
+                </BaseDropdown>
             </div>
 
             <div class="card-title-group">
@@ -210,10 +197,6 @@ const progressWidthClass = computed(() => {
     stroke-width: 2;
 }
 
-.dropdown-container {
-    position: relative;
-}
-
 .btn-card-menu {
     width: 28px;
     height: 28px;
@@ -236,34 +219,20 @@ const progressWidthClass = computed(() => {
     color: var(--text);
 }
 
-.card-dropdown-menu {
-    position: absolute;
-    right: 0;
-    top: 32px;
-    background: var(--bg-card);
-    border: var(--stroke-w) solid var(--stroke);
-    border-radius: 10px;
-    padding: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 110px;
-    z-index: 20;
-    box-shadow: none !important;
-}
-
 .card-menu-item {
     background: transparent;
     border: none;
     color: var(--text);
     font-size: 12px;
-    padding: 6px 10px;
+    padding: 8px 12px;
     border-radius: 6px;
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
     box-shadow: none !important;
+    text-decoration: none;
+    width: 100%;
     transition: background 0.15s ease;
 }
 

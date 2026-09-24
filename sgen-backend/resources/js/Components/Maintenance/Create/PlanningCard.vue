@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import BaseDatePicker from '@/Components/UI/BaseDatePicker.vue';
+import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
+
 defineProps<{
     fecha: string;
     duracion: number;
@@ -12,6 +15,14 @@ const emit = defineEmits<{
     (e: 'update:frecuencia', val: string): void;
     (e: 'update:proximaFecha', val: string): void;
 }>();
+
+const frequencyOptions = [
+    { value: 'unica', label: 'Una sola vez' },
+    { value: 'mensual', label: 'Mensual' },
+    { value: 'trimestral', label: 'Trimestral' },
+    { value: 'semestral', label: 'Semestral' },
+    { value: 'anual', label: 'Anual' },
+];
 </script>
 
 <template>
@@ -24,16 +35,13 @@ const emit = defineEmits<{
             <span>3. Planificación</span>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">Fecha y Hora Programada</label>
-            <input
-                :value="fecha"
-                type="datetime-local"
-                class="form-input"
-                required
-                @input="emit('update:fecha', ($event.target as HTMLInputElement).value)"
-            />
-        </div>
+        <BaseDatePicker
+            :model-value="fecha"
+            type="datetime-local"
+            label="Fecha y Hora Programada"
+            required
+            @update:model-value="(val) => emit('update:fecha', val)"
+        />
 
         <div class="form-group">
             <label class="form-label">Duración Estimada (minutos)</label>
@@ -49,30 +57,20 @@ const emit = defineEmits<{
             <span class="helper-text">Tiempo estimado para la ejecución de la tarea.</span>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">Recurrencia (Próxima Fecha Auto.)</label>
-            <select
-                :value="frecuencia"
-                class="form-select"
-                @change="emit('update:frecuencia', ($event.target as HTMLSelectElement).value)"
-            >
-                <option value="unica">Una sola vez</option>
-                <option value="mensual">Mensual</option>
-                <option value="trimestral">Trimestral</option>
-                <option value="semestral">Semestral</option>
-                <option value="anual">Anual</option>
-            </select>
-        </div>
+        <BaseCombobox
+            :model-value="frecuencia"
+            label="Recurrencia (Próxima Fecha Auto.)"
+            :options="frequencyOptions"
+            :searchable="false"
+            @update:model-value="(val) => emit('update:frecuencia', String(val))"
+        />
 
-        <div class="form-group">
-            <label class="form-label">Próxima Fecha (Estimada)</label>
-            <input
-                :value="proximaFecha"
-                type="date"
-                class="form-input"
-                @input="emit('update:proximaFecha', ($event.target as HTMLInputElement).value)"
-            />
-        </div>
+        <BaseDatePicker
+            :model-value="proximaFecha"
+            type="date"
+            label="Próxima Fecha (Estimada)"
+            @update:model-value="(val) => emit('update:proximaFecha', val)"
+        />
     </div>
 </template>
 
@@ -98,16 +96,15 @@ const emit = defineEmits<{
     font-weight: 700;
     color: var(--text);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
 }
 
 .card-section-header svg {
-    width: 17px;
-    height: 17px;
-    stroke: currentColor;
+    width: 18px;
+    height: 18px;
+    stroke: var(--orange);
     fill: none;
     stroke-width: 2;
-    color: var(--orange);
 }
 
 .form-group {
@@ -118,34 +115,32 @@ const emit = defineEmits<{
 
 .form-label {
     font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 0.02em;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-.form-input,
-.form-select {
+.form-input {
     width: 100%;
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: var(--stroke-w) solid var(--stroke);
+    height: 42px;
     background: var(--bg-sub);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 10px;
     color: var(--text);
+    padding: 0 14px;
     font-size: 13px;
     outline: none;
-    transition: border-color 0.2s ease;
     box-shadow: none !important;
+    transition: border-color 0.2s ease;
 }
 
-.form-input:focus,
-.form-select:focus {
+.form-input:focus {
     border-color: var(--orange);
 }
 
 .helper-text {
     font-size: 11px;
     color: var(--text-dim);
-    margin-top: 4px;
-    line-height: 1.4;
 }
 </style>

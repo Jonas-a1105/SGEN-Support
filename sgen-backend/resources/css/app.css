@@ -1,5 +1,6 @@
 @import './variables.css';
 @import './inventario-general.css';
+@import './forms.css';
 @import 'tailwindcss';
 
 @source '../views/**/*.blade.php';

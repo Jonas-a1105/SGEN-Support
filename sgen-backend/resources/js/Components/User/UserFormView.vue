@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import type { UserItem } from '@/Composables/useUserFilters';
 import UserCredentialPreview from './UserCredentialPreview.vue';
+import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
 
 interface DepartmentLookup {
     id: number;
@@ -37,8 +38,8 @@ const username = ref('');
 const password = ref('');
 const role = ref('tecnico');
 const linkOrg = ref(false);
-const departmentId = ref<number | null>(null);
-const employeeId = ref<number | null>(null);
+const departmentId = ref<number | ''>('');
+const employeeId = ref<number | ''>('');
 
 watch(
     () => props.user,
@@ -48,21 +49,27 @@ watch(
             password.value = '';
             role.value = u.rol;
             linkOrg.value = u.departamento_id !== null || u.empleado_id !== null;
-            departmentId.value = u.departamento_id;
-            employeeId.value = u.empleado_id;
+            departmentId.value = u.departamento_id ?? '';
+            employeeId.value = u.empleado_id ?? '';
         } else {
             username.value = '';
             password.value = '';
             role.value = 'tecnico';
             linkOrg.value = false;
-            departmentId.value = null;
-            employeeId.value = null;
+            departmentId.value = '';
+            employeeId.value = '';
         }
     },
     { immediate: true }
 );
 
-// Department selection can filter employees
+const roleOptions = [
+    { value: 'tecnico', label: 'Técnico' },
+    { value: 'admin', label: 'Administrador' },
+    { value: 'consultor', label: 'Consultor' },
+    { value: 'operador', label: 'Operador' },
+];
+
 const filteredEmployees = computed(() => {
     if (!departmentId.value) {
         return props.empleados;
@@ -72,10 +79,26 @@ const filteredEmployees = computed(() => {
     );
 });
 
+const departmentOptions = computed(() => [
+    { value: '', label: 'Sin Asignar' },
+    ...props.departamentos.map((d) => ({
+        value: d.id,
+        label: d.nombre,
+    })),
+]);
+
+const employeeOptions = computed(() => [
+    { value: '', label: 'Sin Vinculación Directa' },
+    ...filteredEmployees.value.map((e) => ({
+        value: e.id,
+        label: `${e.nombre} ${e.apellido}`,
+    })),
+]);
+
 // Live preview computations
 const previewDisplayName = computed(() => {
     if (employeeId.value) {
-        const emp = props.empleados.find((e) => e.id === employeeId.value);
+        const emp = props.empleados.find((e) => e.id === Number(employeeId.value));
         if (emp) {
             return `${emp.nombre} ${emp.apellido}`;
         }
@@ -101,13 +124,13 @@ const previewDeptName = computed(() => {
     if (!linkOrg.value || !departmentId.value) {
         return 'Sin Departamento';
     }
-    const dept = props.departamentos.find((d) => d.id === departmentId.value);
+    const dept = props.departamentos.find((d) => d.id === Number(departmentId.value));
     return dept ? dept.nombre : 'Sin Departamento';
 });
 
 const previewInitials = computed(() => {
     if (employeeId.value) {
-        const emp = props.empleados.find((e) => e.id === employeeId.value);
+        const emp = props.empleados.find((e) => e.id === Number(employeeId.value));
         if (emp) {
             return `${emp.nombre.charAt(0)}${emp.apellido.charAt(0)}`.toUpperCase();
         }
@@ -118,11 +141,10 @@ const previewInitials = computed(() => {
 });
 
 const isVerified = computed(() => {
-    return linkOrg.value && employeeId.value !== null;
+    return linkOrg.value && employeeId.value !== '';
 });
 
-function handleEmployeeSelect(event: Event) {
-    const val = (event.target as HTMLSelectElement).value;
+function handleEmployeeSelect(val: string | number | null) {
     if (val) {
         const emp = props.empleados.find((e) => e.id === Number(val));
         if (emp && emp.departamento_id) {
@@ -137,8 +159,8 @@ function handleSubmit() {
         username: username.value.trim(),
         password: password.value || undefined,
         rol: role.value,
-        departamento_id: linkOrg.value ? departmentId.value : null,
-        empleado_id: linkOrg.value ? employeeId.value : null,
+        departamento_id: linkOrg.value && departmentId.value !== '' ? Number(departmentId.value) : null,
+        empleado_id: linkOrg.value && employeeId.value !== '' ? Number(employeeId.value) : null,
     });
 }
 </script>
@@ -187,7 +209,7 @@ function handleSubmit() {
                             id="inputPassword"
                             v-model="password"
                             type="password"
-                            class="form-input has-icon"
+                            class="form-input"
                             placeholder="Contraseña segura"
                             :required="!user"
                             autocomplete="new-password"
@@ -196,13 +218,13 @@ function handleSubmit() {
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="selectRole">Nivel de Acceso (Rol)</label>
-                    <select id="selectRole" v-model="role" class="form-select" required>
-                        <option value="tecnico">Técnico</option>
-                        <option value="admin">Administrador</option>
-                        <option value="consultor">Consultor</option>
-                        <option value="operador">Operador</option>
-                    </select>
+                    <BaseCombobox
+                        v-model="role"
+                        label="Nivel de Acceso (Rol)"
+                        :options="roleOptions"
+                        :searchable="false"
+                        required
+                    />
                 </div>
 
                 <!-- Checkbox Vincular Organización -->
@@ -214,38 +236,36 @@ function handleSubmit() {
                     </div>
                 </label>
 
-                <!-- Selectores Dinámicos -->
+                <!-- Selectores Dinámicos con BaseCombobox -->
                 <div v-if="linkOrg" class="org-selectors-wrap">
                     <div class="form-group">
-                        <label class="form-label" for="selectDepartment">Departamento Asignado</label>
-                        <select id="selectDepartment" v-model="departmentId" class="form-select">
-                            <option :value="null">Sin Asignar</option>
-                            <option v-for="d in departamentos" :key="d.id" :value="d.id">{{ d.nombre }}</option>
-                        </select>
+                        <BaseCombobox
+                            v-model="departmentId"
+                            label="Departamento Asignado"
+                            placeholder="Seleccionar departamento..."
+                            :options="departmentOptions"
+                            clearable
+                        />
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="selectEmployee">Colaborador Existente</label>
-                        <select
-                            id="selectEmployee"
+                        <BaseCombobox
                             v-model="employeeId"
-                            class="form-select"
-                            @change="handleEmployeeSelect"
-                        >
-                            <option :value="null">Sin Vinculación Directa</option>
-                            <option v-for="e in filteredEmployees" :key="e.id" :value="e.id">
-                                {{ e.nombre }} {{ e.apellido }}
-                            </option>
-                        </select>
+                            label="Colaborador Existente"
+                            placeholder="Seleccionar colaborador..."
+                            :options="employeeOptions"
+                            clearable
+                            @update:model-value="handleEmployeeSelect"
+                        />
                     </div>
                 </div>
 
                 <div class="form-actions-row">
+                    <button class="btn-cancel" type="button" @click="emit('back')">Cancelar</button>
                     <button class="btn-submit" type="submit">
                         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                         <span>{{ user ? 'Actualizar Usuario' : 'Crear Usuario' }}</span>
                     </button>
-                    <button class="btn-cancel" type="button" @click="emit('back')">Cancelar</button>
                 </div>
             </div>
 
@@ -267,127 +287,7 @@ function handleSubmit() {
     max-width: 1100px;
     margin: 0 auto;
 }
-.module-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-.module-title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-.module-icon-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: #4f46e5;
-    display: grid;
-    place-items: center;
-    color: #ffffff;
-    box-shadow: none !important;
-}
-.module-icon-box svg {
-    width: 22px;
-    height: 22px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-}
-.module-title {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: var(--text, #f4f4f6);
-    margin: 0 0 2px 0;
-}
-.module-subtitle {
-    font-size: 12px;
-    color: var(--text-muted, #8e9199);
-    margin: 0;
-}
-.btn-back {
-    background: var(--bg-sub, #1e2024);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    color: var(--text, #f4f4f6);
-    border-radius: 10px;
-    padding: 8px 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    box-shadow: none !important;
-}
 
-.form-grid-layout {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 24px;
-    align-items: start;
-}
-@media (max-width: 860px) {
-    .form-grid-layout {
-        grid-template-columns: 1fr;
-    }
-}
-
-.form-card-panel {
-    background: var(--bg-card, #17181a);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    border-radius: var(--panel-radius, 18px);
-    padding: 24px;
-    box-shadow: none !important;
-}
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 18px;
-}
-.form-label {
-    font-size: 12px;
-    font-weight: 600 !important;
-    color: var(--text, #f4f4f6);
-}
-.form-input,
-.form-select {
-    width: 100%;
-    height: 42px;
-    border-radius: 10px;
-    background: var(--bg-sub, #1e2024);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    color: var(--text, #f4f4f6);
-    padding: 0 14px;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-    box-shadow: none !important;
-}
-.form-input:focus,
-.form-select:focus {
-    border-color: #4f46e5;
-}
-.input-with-icon {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-.input-with-icon svg {
-    position: absolute;
-    left: 14px;
-    width: 16px;
-    height: 16px;
-    stroke: var(--text-muted, #8e9199);
-    fill: none;
-    stroke-width: 2;
-    pointer-events: none;
-}
-.form-input.has-icon {
-    padding-left: 40px;
-}
 .checkbox-card-wrap {
     display: flex;
     align-items: flex-start;
@@ -397,69 +297,38 @@ function handleSubmit() {
     border: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
     border-radius: 12px;
     cursor: pointer;
-    margin-bottom: 18px;
     box-shadow: none !important;
 }
+
 .checkbox-card-wrap input[type='checkbox'] {
     width: 18px;
     height: 18px;
     margin-top: 2px;
     accent-color: #4f46e5;
 }
+
 .checkbox-copy-block {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
+
 .checkbox-title {
     font-size: 13px;
     font-weight: 600 !important;
     color: var(--text, #f4f4f6);
 }
+
 .checkbox-desc {
     font-size: 11px;
     color: var(--text-muted, #8e9199);
 }
+
 .org-selectors-wrap {
     padding-left: 12px;
     border-left: 2px solid rgba(79, 70, 229, 0.4);
-    margin-bottom: 18px;
-}
-
-.form-actions-row {
     display: flex;
-    gap: 12px;
-    margin-top: 24px;
-}
-.btn-submit {
-    background: #4f46e5;
-    border: var(--stroke-w, 2px) solid #4f46e5;
-    color: #ffffff;
-    border-radius: 10px;
-    padding: 10px 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 700 !important;
-    cursor: pointer;
-    box-shadow: none !important;
-}
-.btn-submit svg {
-    width: 15px;
-    height: 15px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2.5;
-}
-.btn-cancel {
-    background: var(--bg-sub, #1e2024);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    color: var(--text, #f4f4f6);
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-size: 13px;
-    cursor: pointer;
-    box-shadow: none !important;
+    flex-direction: column;
+    gap: 14px;
 }
 </style>

@@ -106,8 +106,8 @@ const handleSubmit = () => {
             </div>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="form-container-card">
-            <div class="form-grid-inner">
+        <form @submit.prevent="handleSubmit" class="form-card-panel">
+            <div class="form-row-2">
                 <div class="form-group">
                     <label class="form-label" for="inputDeptName">Nombre del Departamento</label>
                     <input
@@ -144,7 +144,7 @@ const handleSubmit = () => {
                     ></textarea>
                 </div>
 
-                <!-- RESPONSABLE / JEFE DE ÁREA WIDGET (Componente Modular) -->
+                <!-- RESPONSABLE / JEFE DE ÁREA WIDGET -->
                 <div class="form-group full-width">
                     <label class="form-label">Responsable del Departamento</label>
                     <DepartmentManagerWidget
@@ -158,13 +158,18 @@ const handleSubmit = () => {
 
             <div class="form-actions-row">
                 <button class="btn-cancel" @click="emit('back')" type="button">Cancelar</button>
-                <button class="btn-submit" type="submit">Guardar Cambios</button>
+                <button class="btn-submit" type="submit">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>{{ editDepartment ? 'Guardar Cambios' : 'Guardar Departamento' }}</span>
+                </button>
             </div>
         </form>
 
-        <!-- MODAL DE SELECCIÓN DE LÍDER (Componente Modular) -->
+        <!-- MODAL PARA SELECCIONAR JEFE DE ÁREA -->
         <ModalSelectDepartmentLeader
-            :is-open="showCandidatesModal"
+            v-if="showCandidatesModal"
             :candidates="candidates"
             @close="showCandidatesModal = false"
             @select="selectCandidate"
@@ -177,174 +182,19 @@ const handleSubmit = () => {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .header-breadcrumbs {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-}
-
-.btn-back {
-    align-self: flex-start;
-    background: var(--bg-sub);
-    border: var(--stroke-w) solid var(--stroke);
-    color: var(--text);
-    font-size: 12px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.btn-back:hover {
-    background: var(--stroke-subtle);
-    border-color: var(--stroke-hover);
+    gap: 12px;
 }
 
 .header-title-row {
     display: flex;
     align-items: center;
     gap: 14px;
-}
-
-.module-icon-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--blue);
-    display: grid;
-    place-items: center;
-    color: #ffffff;
-    box-shadow: none !important;
-}
-
-.module-icon-box svg {
-    width: 22px;
-    height: 22px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-}
-
-.module-title {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: var(--text);
-    margin: 0 0 2px 0;
-}
-
-.module-subtitle {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin: 0;
-}
-
-.form-container-card {
-    background: var(--bg-card);
-    border: var(--stroke-w) solid var(--stroke);
-    border-radius: var(--panel-radius);
-    padding: 24px;
-    box-shadow: none !important;
-}
-
-.form-grid-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-}
-
-@media (max-width: 640px) {
-    .form-grid-inner {
-        grid-template-columns: 1fr;
-    }
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-group.full-width {
-    grid-column: 1 / -1;
-}
-
-.form-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.form-input,
-.form-textarea {
-    width: 100%;
-    background: var(--bg-sub);
-    border: var(--stroke-w) solid var(--stroke);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 13px;
-    padding: 10px 14px;
-    outline: none;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.form-input {
-    height: 40px;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-    border-color: var(--blue);
-}
-
-.form-actions-row {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: var(--stroke-w) solid var(--stroke-subtle);
-}
-
-.btn-cancel {
-    background: transparent;
-    border: var(--stroke-w) solid var(--stroke);
-    color: var(--text-muted);
-    font-size: 13px;
-    padding: 8px 18px;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-    color: var(--text);
-    border-color: var(--stroke-hover);
-}
-
-.btn-submit {
-    background: var(--blue);
-    border: var(--stroke-w) solid var(--blue);
-    color: #ffffff;
-    font-size: 13px;
-    padding: 8px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    box-shadow: none !important;
-    transition: opacity 0.2s ease;
-}
-
-.btn-submit:hover {
-    opacity: 0.9;
 }
 </style>
