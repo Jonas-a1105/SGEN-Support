@@ -161,8 +161,6 @@ function handleExportBitacora() {
 
 <style scoped>
 .module-wrapper {
-    max-width: 1400px;
-    margin: 0 auto;
     width: 100%;
 }
 

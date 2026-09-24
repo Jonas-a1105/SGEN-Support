@@ -210,8 +210,6 @@ const handleConfirmUnlink = () => {
     display: flex;
     flex-direction: column;
     gap: 24px;
-    padding: 24px;
-    min-height: 100vh;
 }
 
 .dept-kpi-grid {
@@ -255,7 +253,6 @@ const handleConfirmUnlink = () => {
     }
 
     .dept-show-container {
-        padding: 16px;
         gap: 16px;
     }
 

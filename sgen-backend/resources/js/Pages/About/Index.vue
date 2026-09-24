@@ -145,9 +145,7 @@ function selectTab(tab: TabKey) {
 
 <style scoped>
 .module-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 8px 0;
+    width: 100%;
 }
 
 .about-layout-card {

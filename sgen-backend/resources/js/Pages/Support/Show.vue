@@ -127,8 +127,6 @@ const isEditFieldOpen = ref(false);
     flex-direction: column;
     gap: 16px;
     width: 100%;
-    max-width: 1360px;
-    margin: 0 auto;
 }
 .detail-tab-body {
     width: 100%;

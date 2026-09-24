@@ -149,12 +149,10 @@ const isEditModalOpen = ref(false);
 
 <style scoped>
 .maint-show-wrapper {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 24px 20px;
     display: flex;
     flex-direction: column;
     gap: 24px;
+    width: 100%;
 }
 
 .maint-kpi-grid {

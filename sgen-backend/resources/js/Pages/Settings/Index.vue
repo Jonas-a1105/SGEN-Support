@@ -101,8 +101,6 @@ function handleUpdatePassword(payload: {
 
 <style scoped>
 .module-wrapper {
-    max-width: 1400px;
-    margin: 0 auto;
     width: 100%;
 }
 .config-layout-grid {

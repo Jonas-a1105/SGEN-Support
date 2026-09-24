@@ -48,7 +48,9 @@ watch(
         <main class="main">
             <Topbar :title="title" />
             <div class="content">
-                <slot />
+                <div class="app-container">
+                    <slot />
+                </div>
             </div>
         </main>
 
@@ -80,12 +82,25 @@ watch(
     flex: 1;
     overflow-y: auto;
     background: var(--bg);
+    padding: 24px 36px 48px;
+}
+
+.app-container {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 @media (max-width: 1024px) {
     .main {
         margin-left: 0;
         padding-bottom: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    .content {
+        padding: 16px 16px 80px;
     }
 }
 </style>

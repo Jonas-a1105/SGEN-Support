@@ -211,9 +211,8 @@ function handleSubmit() {
 <style scoped>
 .tf-container {
     width: 100%;
-    max-width: 1200px;
     margin: 0 auto;
-    padding: 12px 0 32px 0;
+    padding: 0 0 32px 0;
 }
 
 .tf-max-w {

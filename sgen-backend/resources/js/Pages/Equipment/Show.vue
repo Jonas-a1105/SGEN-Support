@@ -171,8 +171,6 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
     display: flex;
     flex-direction: column;
     gap: 24px;
-    padding: 24px;
-    min-height: 100vh;
 }
 
 .equip-kpi-grid {
@@ -233,7 +231,6 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
     }
 
     .equip-show-container {
-        padding: 16px;
         gap: 16px;
     }
 
