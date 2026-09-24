@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import SidebarNav from '@/Components/Layout/SidebarNav.vue';
 import MobileBottomNav from '@/Components/Layout/MobileBottomNav.vue';
 import Topbar from '@/Components/Layout/Topbar.vue';
+import BaseToastContainer from '@/Components/UI/BaseToastContainer.vue';
+import { useToast } from '@/Composables/useToast';
 
 defineProps<{ title?: string }>();
 
@@ -15,6 +18,23 @@ interface PageFlashProps {
 }
 
 const page = usePage<PageFlashProps>();
+const toast = useToast();
+
+watch(
+    () => page.props.flash?.success,
+    (msg) => {
+        if (msg) toast.success('Éxito', msg);
+    },
+    { immediate: true }
+);
+
+watch(
+    () => page.props.flash?.error,
+    (msg) => {
+        if (msg) toast.error('Error', msg);
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
@@ -28,15 +48,12 @@ const page = usePage<PageFlashProps>();
         <main class="main">
             <Topbar :title="title" />
             <div class="content">
-                <div v-if="page.props.flash?.success" class="alert-banner">
-                    {{ page.props.flash.success }}
-                </div>
-                <div v-if="page.props.flash?.error" class="alert-banner alert-error">
-                    {{ page.props.flash.error }}
-                </div>
                 <slot />
             </div>
         </main>
+
+        <!-- GLOBAL TOAST NOTIFICATIONS PORTAL -->
+        <BaseToastContainer />
     </div>
 </template>
 
@@ -61,36 +78,14 @@ const page = usePage<PageFlashProps>();
 
 .content {
     flex: 1;
-    width: 100%;
     overflow-y: auto;
-    padding: 24px 36px 48px;
+    background: var(--bg);
 }
 
-.alert-banner {
-    max-width: 1220px;
-    margin: 0 auto 16px;
-    padding: 12px 18px;
-    border-radius: 12px;
-    background: rgba(16, 185, 129, 0.12);
-    border: var(--stroke-w) solid var(--green);
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: none !important;
-}
-
-.alert-error {
-    background: rgba(220, 38, 38, 0.12);
-    border-color: var(--red);
-}
-
-/* RESPONSIVE MÓVIL */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .main {
         margin-left: 0;
-    }
-    .content {
-        padding: 16px 16px 84px 16px;
+        padding-bottom: 80px;
     }
 }
 </style>
