@@ -2,11 +2,8 @@
 import { ref, computed } from 'vue';
 import type { Product, InventoryPagination } from '@/Types/inventory';
 import { useClientPagination } from '@/Composables/useClientPagination';
-import TablePaginationFooter from './Common/TablePaginationFooter.vue';
 import InventoryControlsBar from './Common/InventoryControlsBar.vue';
-import BaseCard from '@/Components/UI/BaseCard.vue';
-import BaseBadge from '@/Components/UI/BaseBadge.vue';
-import BaseButton from '@/Components/UI/BaseButton.vue';
+import { BaseBadge, BaseButton, BaseCard, BaseDataTable, BasePagination, type DataTableColumn } from '@/Components/UI';
 
 const props = withDefaults(
     defineProps<{
@@ -41,13 +38,20 @@ const filteredProducts = computed(() => {
 });
 
 const {
-    perPage,
     currentPage,
     totalPages,
     paginatedItems: paginatedProducts,
     setPage,
-    setPerPage,
 } = useClientPagination(filteredProducts, 10);
+
+const columns: DataTableColumn[] = [
+    { key: 'sku', label: 'CÓDIGO', width: '120px' },
+    { key: 'name', label: 'ARTÍCULO', sortable: true },
+    { key: 'category', label: 'CATEGORÍA', width: '140px' },
+    { key: 'location', label: 'UBICACIÓN' },
+    { key: 'stock', label: 'STOCK', width: '150px' },
+    { key: 'actions', label: 'ACCIONES', width: '100px', align: 'right' },
+];
 </script>
 
 <template>
@@ -76,90 +80,92 @@ const {
 
         <!-- TABLA DE ARTÍCULOS DE INVENTARIO -->
         <div v-if="viewMode === 'table'" class="data-container-card" id="tableWrapArticulos">
-            <div class="table-responsive">
-                <table class="custom-table" :class="{ dense: isDense }">
-                    <thead>
-                        <tr>
-                            <th>CÓDIGO</th>
-                            <th>ARTÍCULO</th>
-                            <th>CATEGORÍA</th>
-                            <th>UBICACIÓN</th>
-                            <th>STOCK</th>
-                            <th>ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyArticulos">
-                        <tr v-for="item in paginatedProducts" :key="item.id">
-                            <td><BaseBadge variant="code">{{ item.sku }}</BaseBadge></td>
-                            <td><strong class="table-item-title">{{ item.name }}</strong></td>
-                            <td><BaseBadge variant="info">{{ item.category }}</BaseBadge></td>
-                            <td><span class="table-item-subtitle">{{ item.location || 'Almacén Central' }}</span></td>
-                            <td>
-                                <div class="stock-pill" :class="item.current_stock <= item.minimum_stock ? 'stock-danger' : 'stock-green'">
-                                    <span>{{ item.current_stock }}</span>
-                                    <span class="stock-min-label">/ min {{ item.minimum_stock }}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="table-actions-row">
-                                    <button class="tbl-btn" type="button" title="Ajustar stock" @click="emit('open-adjust', item)">
-                                        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                                    </button>
-                                    <button class="tbl-btn" type="button" title="Ver ficha detallada" @click="emit('view-item', item)">
-                                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr v-if="paginatedProducts.length === 0">
-                            <td colspan="6" class="table-empty-cell">
-                                No se encontraron artículos que coincidan con la búsqueda.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <BaseDataTable
+                :columns="columns"
+                :items="paginatedProducts"
+                :pagination="{
+                    currentPage,
+                    lastPage: totalPages,
+                    total: filteredProducts.length
+                }"
+                @page-change="setPage"
+                empty-title="No se encontraron artículos"
+                empty-subtitle="No hay insumos que coincidan con la búsqueda."
+            >
+                <template #cell-sku="{ item }">
+                    <BaseBadge variant="code">{{ item.sku }}</BaseBadge>
+                </template>
 
-            <TablePaginationFooter
-                :showing-count="paginatedProducts.length"
-                :total-count="filteredProducts.length"
-                item-label="items"
-                :current-page="currentPage"
-                :total-pages="totalPages"
-                :per-page="perPage"
-                @change-page="setPage"
-                @change-per-page="setPerPage"
-            />
+                <template #cell-name="{ item }">
+                    <strong class="table-item-title">{{ item.name }}</strong>
+                </template>
+
+                <template #cell-category="{ item }">
+                    <BaseBadge variant="info">{{ item.category }}</BaseBadge>
+                </template>
+
+                <template #cell-location="{ item }">
+                    <span class="table-item-subtitle">{{ item.location || 'Almacén Central' }}</span>
+                </template>
+
+                <template #cell-stock="{ item }">
+                    <div class="stock-pill" :class="item.current_stock <= item.minimum_stock ? 'stock-danger' : 'stock-green'">
+                        <span>{{ item.current_stock }}</span>
+                        <span class="stock-min-label">/ min {{ item.minimum_stock }}</span>
+                    </div>
+                </template>
+
+                <template #cell-actions="{ item }">
+                    <div class="table-actions-row">
+                        <button class="tbl-btn" type="button" title="Ajustar stock" @click="emit('open-adjust', item)">
+                            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                        </button>
+                        <button class="tbl-btn" type="button" title="Ver ficha detallada" @click="emit('view-item', item)">
+                            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z" /><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </template>
+            </BaseDataTable>
         </div>
 
         <!-- CARDS VIEW DE ARTÍCULOS -->
-        <div v-else class="cards-grid">
-            <BaseCard
-                v-for="item in paginatedProducts"
-                :key="item.id"
-                padding="md"
-                class="card-item-box"
-            >
-                <div class="card-item-header">
-                    <BaseBadge variant="code">{{ item.sku }}</BaseBadge>
-                    <BaseBadge variant="info">{{ item.category }}</BaseBadge>
-                </div>
-                <h4 class="card-item-title">{{ item.name }}</h4>
-                <div class="card-item-meta">
-                    <span>{{ item.location || 'Almacén Central' }}</span>
-                    <span class="stock-pill" :class="item.current_stock <= item.minimum_stock ? 'stock-danger' : 'stock-green'">
-                        Stock: {{ item.current_stock }}
-                    </span>
-                </div>
-                <div class="card-item-footer">
-                    <BaseButton variant="secondary" size="sm" class="flex-1" @click="emit('open-adjust', item)">
-                        Ajustar
-                    </BaseButton>
-                    <BaseButton variant="primary" size="sm" class="flex-1" @click="emit('view-item', item)">
-                        Ver Ficha
-                    </BaseButton>
-                </div>
-            </BaseCard>
+        <div v-else class="cards-view-wrap">
+            <div class="cards-grid">
+                <BaseCard
+                    v-for="item in paginatedProducts"
+                    :key="item.id"
+                    padding="md"
+                    class="card-item-box"
+                >
+                    <div class="card-item-header">
+                        <BaseBadge variant="code">{{ item.sku }}</BaseBadge>
+                        <BaseBadge variant="info">{{ item.category }}</BaseBadge>
+                    </div>
+                    <h4 class="card-item-title">{{ item.name }}</h4>
+                    <div class="card-item-meta">
+                        <span>{{ item.location || 'Almacén Central' }}</span>
+                        <span class="stock-pill" :class="item.current_stock <= item.minimum_stock ? 'stock-danger' : 'stock-green'">
+                            Stock: {{ item.current_stock }}
+                        </span>
+                    </div>
+                    <div class="card-item-footer">
+                        <BaseButton variant="secondary" size="sm" class="flex-1" @click="emit('open-adjust', item)">
+                            Ajustar
+                        </BaseButton>
+                        <BaseButton variant="primary" size="sm" class="flex-1" @click="emit('view-item', item)">
+                            Ver Ficha
+                        </BaseButton>
+                    </div>
+                </BaseCard>
+            </div>
+
+            <div class="cards-pagination-bar">
+                <BasePagination
+                    :current-page="currentPage"
+                    :total-pages="totalPages"
+                    @page-change="setPage"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -191,10 +197,10 @@ const {
     gap: 6px;
 }
 
-.table-empty-cell {
-    text-align: center;
-    color: var(--text-muted);
-    padding: var(--space-6);
+.cards-view-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
 }
 
 .cards-grid {
@@ -236,6 +242,12 @@ const {
     margin-top: auto;
     padding-top: var(--space-2);
     border-top: var(--stroke-w) solid var(--stroke-subtle);
+}
+
+.cards-pagination-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-3);
 }
 
 .flex-1 {

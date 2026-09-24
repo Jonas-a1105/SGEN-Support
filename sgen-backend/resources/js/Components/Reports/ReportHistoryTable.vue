@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BaseDataTable, type DataTableColumn } from '@/Components/UI';
 import type { ReportHistoryItem } from './types';
 
 defineProps<{
@@ -10,6 +11,15 @@ defineProps<{
 const emit = defineEmits<{
     (e: 'update:searchQuery', val: string): void;
 }>();
+
+const columns: DataTableColumn[] = [
+    { key: 'reporte', label: 'REPORTE', sortable: true },
+    { key: 'formato', label: 'FORMATO', width: '110px' },
+    { key: 'fecha', label: 'FECHA', width: '160px', sortable: true },
+    { key: 'usuario', label: 'USUARIO', width: '130px' },
+    { key: 'filtros', label: 'FILTROS' },
+    { key: 'acciones', label: 'ACCIONES', width: '100px', align: 'right' },
+];
 </script>
 
 <template>
@@ -26,88 +36,67 @@ const emit = defineEmits<{
                     :value="searchQuery"
                     type="text"
                     class="search-history-input"
-                    placeholder="Buscar..."
+                    placeholder="Buscar en historial..."
                     autocomplete="off"
                     @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
                 />
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>REPORTE</th>
-                        <th>FORMATO</th>
-                        <th>FECHA</th>
-                        <th>USUARIO</th>
-                        <th>FILTROS</th>
-                        <th class="text-right">ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="item in items" :key="item.id">
-                        <td>
-                            <div class="report-cell">
-                                <div class="report-icon-thumb" :class="item.scope">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                        <polyline points="14 2 14 8 20 8" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="report-item-title">{{ item.title }}</div>
-                                    <div class="report-item-sub">{{ item.scope }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="format-badge-pill" :class="item.format">
-                                {{ item.format.toUpperCase() }}
-                            </span>
-                        </td>
-                        <td>{{ item.date }}</td>
-                        <td>
-                            <span class="user-badge-mini">@{{ item.user }}</span>
-                        </td>
-                        <td>
-                            <span class="filters-summary">{{ item.filters }}</span>
-                        </td>
-                        <td class="text-right">
-                            <a
-                                :href="item.url"
-                                target="_blank"
-                                class="table-action-icon-btn"
-                                title="Descargar nuevamente"
-                            >
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                    <polyline points="7 10 12 15 17 10" />
-                                    <line x1="12" y1="15" x2="12" y2="3" />
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr v-if="items.length === 0">
-                        <td colspan="6" class="empty-table-cell">
-                            No se encontraron reportes en el historial.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <BaseDataTable
+            :columns="columns"
+            :items="items"
+            empty-title="No se encontraron reportes en el historial"
+            empty-subtitle="Prueba con otros términos de búsqueda."
+        >
+            <template #cell-reporte="{ item }">
+                <div class="report-cell">
+                    <div class="report-icon-thumb" :class="item.scope">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="report-item-title">{{ item.title }}</div>
+                        <div class="report-item-sub">{{ item.scope }}</div>
+                    </div>
+                </div>
+            </template>
 
-        <!-- PAGINACIÓN -->
-        <div class="pagination-footer">
-            <div>
-                Mostrando <strong>{{ items.length }}</strong> de
-                <strong>{{ totalCount }}</strong> registros
-            </div>
-            <div class="pagination-controls-row">
-                <button type="button" class="page-step-btn" disabled>Anterior</button>
-                <button type="button" class="page-step-btn" disabled>Siguiente</button>
-            </div>
-        </div>
+            <template #cell-formato="{ item }">
+                <span class="format-badge-pill" :class="item.format">
+                    {{ item.format.toUpperCase() }}
+                </span>
+            </template>
+
+            <template #cell-fecha="{ item }">
+                <span>{{ item.date }}</span>
+            </template>
+
+            <template #cell-usuario="{ item }">
+                <span class="user-badge-mini">@{{ item.user }}</span>
+            </template>
+
+            <template #cell-filtros="{ item }">
+                <span class="filters-summary">{{ item.filters }}</span>
+            </template>
+
+            <template #cell-acciones="{ item }">
+                <a
+                    :href="item.url"
+                    target="_blank"
+                    class="table-action-icon-btn"
+                    title="Descargar nuevamente"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                </a>
+            </template>
+        </BaseDataTable>
     </div>
 </template>
 
@@ -172,40 +161,6 @@ const emit = defineEmits<{
 
 .search-history-input:focus {
     border-color: var(--orange);
-}
-
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-.custom-table th {
-    padding: 12px 16px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-dim);
-    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
-    background: var(--bg-card);
-}
-
-.custom-table td {
-    padding: 14px 16px;
-    font-size: 13px;
-    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
-    color: var(--text);
-    vertical-align: middle;
-}
-
-.custom-table tr:hover td {
-    background: var(--stroke-subtle);
 }
 
 .report-cell {
@@ -303,10 +258,6 @@ const emit = defineEmits<{
     color: var(--text-muted);
 }
 
-.text-right {
-    text-align: right;
-}
-
 .table-action-icon-btn {
     width: 32px;
     height: 32px;
@@ -334,45 +285,5 @@ const emit = defineEmits<{
     stroke: currentColor;
     fill: none;
     stroke-width: 2;
-}
-
-.empty-table-cell {
-    text-align: center;
-    padding: 32px;
-    color: var(--text-muted);
-}
-
-.pagination-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    border-top: var(--stroke-w) solid var(--stroke-subtle);
-    font-size: 12px;
-    color: var(--text-muted);
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.pagination-controls-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.page-step-btn {
-    padding: 5px 12px;
-    border-radius: 8px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: transparent;
-    color: var(--text);
-    font-size: 12px;
-    cursor: pointer;
-    box-shadow: none !important;
-}
-
-.page-step-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 </style>

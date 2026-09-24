@@ -1,10 +1,19 @@
 <script setup lang="ts">
+import { BaseBadge, BaseDataTable, type DataTableColumn } from '@/Components/UI';
+import { formatDateTime } from '@/Utils/formatters';
 import type { InventoryMovement } from '@/Types/inventory';
-import BaseBadge from '@/Components/UI/BaseBadge.vue';
 
 defineProps<{
     movements: InventoryMovement[];
 }>();
+
+const columns: DataTableColumn[] = [
+    { key: 'fecha', label: 'FECHA', sortable: true },
+    { key: 'tipo', label: 'TIPO', width: '130px' },
+    { key: 'cantidad', label: 'CANTIDAD', width: '130px' },
+    { key: 'motivo', label: 'MOTIVO' },
+    { key: 'usuario', label: 'USUARIO', width: '140px' },
+];
 
 const getBadgeVariant = (type: string): 'success' | 'danger' | 'info' | 'neutral' => {
     switch (type.toUpperCase()) {
@@ -25,59 +34,42 @@ const getQtyClass = (type: string) => {
 </script>
 
 <template>
-    <div class="table-responsive">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>FECHA</th>
-                    <th>TIPO</th>
-                    <th>CANTIDAD</th>
-                    <th>MOTIVO</th>
-                    <th>USUARIO</th>
-                </tr>
-            </thead>
-            <tbody id="tbodyHistory">
-                <tr v-for="mov in movements" :key="mov.id">
-                    <td>{{ mov.created_at ? new Date(mov.created_at).toLocaleString() : 'Reciente' }}</td>
-                    <td>
-                        <BaseBadge :variant="getBadgeVariant(mov.tipo)">
-                            {{ mov.tipo }}
-                        </BaseBadge>
-                    </td>
-                    <td>
-                        <strong :class="getQtyClass(mov.tipo)">
-                            {{ mov.tipo.toUpperCase() === 'ENTRADA' ? '+' : (mov.tipo.toUpperCase() === 'SALIDA' ? '-' : '') }}{{ mov.cantidad }} uds
-                        </strong>
-                    </td>
-                    <td>{{ mov.motivo || 'Sin motivo especificado' }}</td>
-                    <td><BaseBadge variant="code">{{ mov.usuario_nombre || 'Sistema' }}</BaseBadge></td>
-                </tr>
-                <tr v-if="movements.length === 0">
-                    <td colspan="5" class="history-empty-cell">
-                        No hay movimientos registrados para este artículo.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="history-movements-table-wrap">
+        <BaseDataTable
+            :columns="columns"
+            :items="movements"
+            empty-title="No hay movimientos registrados"
+            empty-subtitle="No se encontraron registros de entradas o salidas para este artículo."
+        >
+            <template #cell-fecha="{ item }">
+                <span>{{ item.created_at ? formatDateTime(item.created_at) : 'Reciente' }}</span>
+            </template>
+
+            <template #cell-tipo="{ item }">
+                <BaseBadge :variant="getBadgeVariant(item.tipo)">
+                    {{ item.tipo }}
+                </BaseBadge>
+            </template>
+
+            <template #cell-cantidad="{ item }">
+                <strong :class="getQtyClass(item.tipo)">
+                    {{ item.tipo.toUpperCase() === 'ENTRADA' ? '+' : (item.tipo.toUpperCase() === 'SALIDA' ? '-' : '') }}{{ item.cantidad }} uds
+                </strong>
+            </template>
+
+            <template #cell-motivo="{ item }">
+                <span>{{ item.motivo || 'Sin motivo especificado' }}</span>
+            </template>
+
+            <template #cell-usuario="{ item }">
+                <BaseBadge variant="code">{{ item.usuario_nombre || 'Sistema' }}</BaseBadge>
+            </template>
+        </BaseDataTable>
     </div>
 </template>
 
 <style scoped>
-.qty-text-green {
-    color: var(--green);
-}
-
-.qty-text-red {
-    color: var(--red);
-}
-
-.qty-text-blue {
-    color: var(--blue);
-}
-
-.history-empty-cell {
-    text-align: center;
-    color: var(--text-muted);
-    padding: var(--space-6);
-}
+.qty-text-green { color: var(--green); }
+.qty-text-red { color: var(--red); }
+.qty-text-blue { color: var(--blue); }
 </style>

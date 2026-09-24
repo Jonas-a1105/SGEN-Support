@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Product, StockLocation } from '@/Types/inventory';
-import BaseCard from '@/Components/UI/BaseCard.vue';
-import BaseBadge from '@/Components/UI/BaseBadge.vue';
+import { BaseBadge, BaseCard, BaseDataTable, type DataTableColumn } from '@/Components/UI';
 
 const props = withDefaults(
     defineProps<{
@@ -19,12 +18,48 @@ const emit = defineEmits<{
     (e: 'update:search', val: string): void;
 }>();
 
-const filteredLocations = computed(() => {
+const columns: DataTableColumn[] = [
+    { key: 'ubicacion', label: 'UBICACIÓN', sortable: true },
+    { key: 'tipo', label: 'TIPO', width: '130px' },
+    { key: 'stock', label: 'DISPONIBILIDAD', width: '150px' },
+    { key: 'estado', label: 'ESTADO', width: '120px' },
+];
+
+const tableItems = computed(() => {
+    const list: Array<{
+        id: number | string;
+        ubicacion: string;
+        tipo: string;
+        stock: number;
+        isPrimary?: boolean;
+    }> = [];
+
     const term = (props.search || '').trim().toLowerCase();
-    if (!term) return props.locations;
-    return props.locations.filter((l) =>
-        (l.departamento_nombre || l.nombre || '').toLowerCase().includes(term)
-    );
+
+    if (!term || 'almacén central (principal)'.includes(term)) {
+        list.push({
+            id: 'central',
+            ubicacion: '🏢 Almacén Central (Principal)',
+            tipo: 'Central',
+            stock: props.item.current_stock,
+            isPrimary: true,
+        });
+    }
+
+    props.locations.forEach((loc) => {
+        const name = loc.departamento_nombre || loc.nombre || 'Departamento Asignado';
+        if (!term || name.toLowerCase().includes(term)) {
+            list.push({
+                id: loc.id,
+                ubicacion: name,
+                tipo: loc.tipo || 'Sede',
+                stock: loc.stock_actual ?? 0,
+                isPrimary: false,
+            });
+        }
+    });
+
+    return list;
 });
 </script>
 
@@ -52,41 +87,32 @@ const filteredLocations = computed(() => {
             </div>
         </div>
 
-        <div class="table-responsive distribution-table-spacing">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>UBICACIÓN</th>
-                        <th>TIPO</th>
-                        <th>DISPONIBILIDAD</th>
-                        <th>ESTADO</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyDistribution">
-                    <tr>
-                        <td><strong>🏢 Almacén Central (Principal)</strong></td>
-                        <td><BaseBadge variant="code">Central</BaseBadge></td>
-                        <td><strong class="distribution-bold-stock">{{ item.current_stock }} uds</strong></td>
-                        <td><BaseBadge variant="success">Principal</BaseBadge></td>
-                    </tr>
-                    <tr v-for="loc in filteredLocations" :key="loc.id">
-                        <td>{{ loc.departamento_nombre || loc.nombre || 'Departamento Asignado' }}</td>
-                        <td><BaseBadge variant="code">{{ loc.tipo || 'Sede' }}</BaseBadge></td>
-                        <td><strong>{{ loc.stock_actual ?? 0 }} uds</strong></td>
-                        <td>
-                            <BaseBadge :variant="(loc.stock_actual ?? 0) > 0 ? 'success' : 'danger'">
-                                {{ (loc.stock_actual ?? 0) > 0 ? 'Activo' : 'Agotado' }}
-                            </BaseBadge>
-                        </td>
-                    </tr>
-                    <tr v-if="filteredLocations.length === 0 && search">
-                        <td colspan="4" class="distribution-empty-cell">
-                            No se encontraron sedes con ese nombre.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <BaseDataTable
+            :columns="columns"
+            :items="tableItems"
+            empty-title="No se encontraron sedes"
+            empty-subtitle="No hay ubicaciones que coincidan con la búsqueda."
+        >
+            <template #cell-ubicacion="{ item: row }">
+                <strong v-if="row.isPrimary">{{ row.ubicacion }}</strong>
+                <span v-else>{{ row.ubicacion }}</span>
+            </template>
+
+            <template #cell-tipo="{ item: row }">
+                <BaseBadge variant="code">{{ row.tipo }}</BaseBadge>
+            </template>
+
+            <template #cell-stock="{ item: row }">
+                <strong>{{ row.stock }} uds</strong>
+            </template>
+
+            <template #cell-estado="{ item: row }">
+                <BaseBadge v-if="row.isPrimary" variant="success">Principal</BaseBadge>
+                <BaseBadge v-else :variant="row.stock > 0 ? 'success' : 'danger'">
+                    {{ row.stock > 0 ? 'Activo' : 'Agotado' }}
+                </BaseBadge>
+            </template>
+        </BaseDataTable>
     </BaseCard>
 </template>
 
@@ -129,19 +155,5 @@ const filteredLocations = computed(() => {
     padding-left: 10px !important;
     font-size: 12px !important;
     width: 200px;
-}
-
-.distribution-table-spacing {
-    margin-top: var(--space-2);
-}
-
-.distribution-bold-stock {
-    color: var(--text);
-}
-
-.distribution-empty-cell {
-    text-align: center;
-    color: var(--text-muted);
-    padding: var(--space-5);
 }
 </style>
