@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Gestión de Departamentos — Estructura Organizativa</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #2563eb; /* Color de acento de Departamentos: Azul corporativo */
+    --orange-rgb: 37, 99, 235;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica por departamento */
+    --blue: #4f46e5;
+    --orange-dept: #f97316;
+    --pink: #ec4899;
+    --green: #10b981;
+    --cyan: #06b6d4;
+    --purple: #8b5cf6;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .form-section-header {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CABECERA DEL MÓDULO DE DEPARTAMENTOS */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #4f46e5;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .btn-create-department {
+    height: 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #0f172a;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-create-department:hover {
+    filter: brightness(1.15) !important;
+    transform: translateY(-1px);
+  }
+
+  /* BARRA DE HERRAMIENTAS, FILTROS Y VISTAS */
+  .toolbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .switch-wrap {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .switch-input { display: none; }
+
+  .switch-rail {
+    width: 44px;
+    height: 24px;
+    background: var(--stroke);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .switch-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease;
+  }
+
+  .switch-input:checked + .switch-rail {
+    background: var(--orange);
+    border-color: var(--orange);
+  }
+
+  .switch-input:checked + .switch-rail .switch-dot {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 14px 0 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--orange);
+  }
+
+  .view-mode-toggle-group {
+    display: inline-flex;
+    align-items: center;
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+
+  .view-mode-btn {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .view-mode-btn.active {
+    background: var(--stroke-subtle);
+    color: var(--orange);
+  }
+
+  .view-mode-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* CUADRÍCULA DE TARJETAS DE DEPARTAMENTO */
+  .departments-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    width: 100%;
+  }
+
+  .department-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+
+  .department-card:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  /* BORDE SUPERIOR DE COLOR SEGÚN EL DEPARTAMENTO */
+  .card-top-accent-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
+  }
+
+  .card-top-meta-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .dept-icon-square {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .dept-icon-square svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .btn-card-menu {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    line-height: 1;
+    transition: all 0.18s ease;
+  }
+
+  .btn-card-menu:hover {
+    color: var(--text);
+    background: var(--stroke-subtle);
+  }
+
+  .card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dept-card-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .dept-card-code {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .dept-card-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.45;
+    min-height: 38px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* BADGES DE RECURSOS (EQUIPOS Y EMPLEADOS) */
+  .card-metrics-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .metric-badge-box {
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .metric-badge-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+  }
+
+  .metric-badge-head svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .metric-badge-value {
+    font-size: 20px;
+    font-weight: 700 !important;
+    color: var(--text);
+    line-height: 1.1;
+  }
+
+  /* BARRA DE PROGRESO DE INVENTARIO */
+  .card-progress-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .progress-legend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .progress-legend-percent {
+    font-weight: 700 !important;
+    color: var(--text);
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 6px;
+    background: var(--bg-sub);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.4s ease;
+  }
+
+  /* MENÚ DESPLEGABLE CONTEXTUAL DE TARJETA */
+  .card-dropdown-menu {
+    position: absolute;
+    top: 48px;
+    right: 18px;
+    width: 160px;
+    background: var(--bg-card);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 12px;
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 50;
+  }
+
+  .card-dropdown-menu.show {
+    display: flex;
+  }
+
+  .card-menu-item {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: all 0.16s ease;
+  }
+
+  .card-menu-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--orange);
+  }
+
+  .card-menu-item.delete:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+  }
+
+  .card-menu-item svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* VISTA EN TABLA DE DEPARTAMENTOS */
+  .departments-table-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+    display: none;
+    width: 100%;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .custom-table th {
+    padding: 14px 18px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+  }
+
+  .custom-table td {
+    padding: 14px 18px;
+    font-size: 13px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .custom-table tr:hover td {
+    background: var(--stroke-subtle);
+  }
+
+  .badge-code {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--stroke-subtle);
+    border: 1px solid var(--stroke);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* =========================================================
+     VISTA 2: CREAR NUEVO DEPARTAMENTO (FORMULARIO COMPLETO)
+     ========================================================= */
+  .department-form-view {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .department-form-view.active {
+    display: flex;
+  }
+
+  .form-card-panel {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+
+  .form-section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-section-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    padding-bottom: 8px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .form-section-title-wrap svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .form-label span.req {
+    color: #ef4444;
+  }
+
+  .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-with-icon svg {
+    position: absolute;
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input.no-icon, .form-textarea.no-icon {
+    padding-left: 14px;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--orange);
+  }
+
+  /* VISTA PREVIA DE MAPA / UBICACIÓN */
+  .map-preview-placeholder {
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .map-preview-placeholder:hover {
+    border-color: var(--stroke);
+    color: var(--text);
+  }
+
+  .map-preview-placeholder svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  /* LIDERAZGO Y RESPONSABLE CONTENEDOR */
+  .manager-assignment-box {
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 72px;
+  }
+
+  .manager-display-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .manager-avatar-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--orange);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700 !important;
+    flex-shrink: 0;
+  }
+
+  .btn-assign-manager {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-assign-manager:hover {
+    border-color: var(--stroke-hover);
+    color: var(--orange);
+  }
+
+  .btn-assign-manager svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* ACCIONES DEL FORMULARIO */
+  .form-footer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn-submit-department {
+    height: 42px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 0 24px;
+    font-size: 13px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn-submit-department:hover {
+    filter: brightness(1.1) !important;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    height: 42px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 20px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(540px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head, .appearance-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn-modal-danger {
+    background: #ef4444;
+    border: var(--stroke-w) solid #ef4444;
+    color: #ffffff;
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  /* LISTA DE SELECCIÓN DE RESPONSABLE (JEFE) */
+  .staff-select-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .staff-select-item {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .staff-select-item:hover,
+  .staff-select-item.selected {
+    border-color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  .staff-item-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* TOAST NOTIFICACIÓN */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 240px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .card-dropdown-menu,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD TOTAL Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 1200px) {
+    .departments-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 980px) {
+    .departments-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .form-grid-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    .departments-grid {
+      grid-template-columns: 1fr !important;
+      gap: 14px;
+    }
+
+    .toolbar-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .search-box {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+    .form-footer-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO FLOTANTE -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de navegación">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item" data-section="staff">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <span class="nav-label">Personal</span>
+      </div>
+      <div class="nav-item active" data-section="departments">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+        </div>
+        <span class="nav-label">Departamentos</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item" data-section="maintenance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <span class="nav-label">Mantenimientos</span>
+      </div>
+      <div class="nav-item" data-section="categories">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+        </div>
+        <span class="nav-label">Categorías</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#2563eb" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      
+      <!-- ==============================================================
+           VISTA 1: CATÁLOGO DE DEPARTAMENTOS (LISTADO / GRID / TABLA)
+           ============================================================== -->
+      <section class="module-wrapper" id="viewDepartmentsList">
+        
+        <!-- CABECERA DEL MÓDULO -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Departamentos</h1>
+            </div>
+          </div>
+          <button class="btn-create-department" id="btnOpenCreateDepartment" type="button">
+            <span>+</span>
+            <span>Crear Departamento</span>
+          </button>
+        </div>
+
+        <!-- BARRA DE HERRAMIENTAS, FILTROS Y VISTAS -->
+        <div class="toolbar-card">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <label class="switch-wrap" title="Alternar modo de visualización">
+              <input type="checkbox" id="denseSwitch" class="switch-input" />
+              <div class="switch-rail"><div class="switch-dot"></div></div>
+            </label>
+          </div>
+
+          <div class="search-box">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" class="search-input" id="searchDepartmentInput" placeholder="Buscar por nombre..." autocomplete="off" />
+          </div>
+
+          <div class="view-mode-toggle-group">
+            <button class="view-mode-btn active" id="btnToggleGridView" type="button" title="Vista en tarjetas cuadrícula">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </button>
+            <button class="view-mode-btn" id="btnToggleTableView" type="button" title="Vista en lista / tabla">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- CUADRÍCULA DE TARJETAS DE DEPARTAMENTO (CARDS VIEW) -->
+        <div class="departments-grid" id="departmentsCardsContainer">
+          <!-- Inyectado dinámicamente -->
+        </div>
+
+        <!-- VISTA EN TABLA DE DEPARTAMENTOS (TABLE VIEW) -->
+        <div class="departments-table-card" id="departmentsTableContainer">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>CÓDIGO</th>
+                  <th>DEPARTAMENTO</th>
+                  <th>UBICACIÓN FÍSICA</th>
+                  <th>RESPONSABLE / JEFE</th>
+                  <th>EQUIPOS</th>
+                  <th>EMPLEADOS</th>
+                  <th>INVENTARIO ASIGNADO</th>
+                  <th style="text-align:right;">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyDepartments">
+                <!-- Rellenado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ESTADO VACÍO DE BÚSQUEDA -->
+        <div class="glass-card" id="emptyDepartmentsState" style="padding:56px 20px;text-align:center;display:none;flex-direction:column;align-items:center;gap:12px;border:var(--stroke-w) dashed var(--stroke);background:var(--bg-card);border-radius:var(--panel-radius);">
+          <div style="width:52px;height:52px;border-radius:50%;background:var(--stroke-subtle);border:var(--stroke-w) solid var(--stroke);display:grid;place-items:center;color:var(--text-muted);">
+            <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <div>
+            <strong style="font-size:14px;color:var(--text);display:block;">No se encontraron departamentos</strong>
+            <span style="font-size:12px;color:var(--text-muted);">Prueba con otros términos de búsqueda.</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==============================================================
+           VISTA 2: CREAR / EDITAR DEPARTAMENTO (FORMULARIO DETALLADO)
+           ============================================================== -->
+      <section class="module-wrapper department-form-view" id="viewDepartmentForm">
+        
+        <!-- CABECERA DEL FORMULARIO CON BREADCRUMB -->
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <a href="javascript:void(0)" class="btn-secondary" id="btnBackToDirectory" style="align-self:flex-start;height:34px;padding:0 12px;font-size:12px;gap:6px;">
+            <span>←</span>
+            <span>Volver a Departamentos</span>
+          </a>
+          <div style="display:flex;align-items:center;gap:14px;margin-top:6px;">
+            <div class="module-icon-box" style="background:#2563eb;">
+              <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+            </div>
+            <div>
+              <h1 class="module-title" id="formHeaderTitle">Crear Nuevo Departamento</h1>
+              <p class="module-subtitle" id="formHeaderSubtitle" style="margin:3px 0 0;font-size:13px;color:var(--text-muted);">Establece una nueva unidad organizativa.</p>
+            </div>
+          </div>
+        </div>
+
+        <form id="formDepartmentRecord" class="form-card-panel">
+          <input type="hidden" id="editDepartmentId" value="" />
+
+          <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
+          <div class="form-section-block">
+            <div class="form-section-title-wrap">
+              <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+              <span>INFORMACIÓN GENERAL</span>
+            </div>
+
+            <div class="form-grid-2">
+              <!-- NOMBRE DEL DEPARTAMENTO -->
+              <div class="form-group">
+                <label class="form-label" for="inputDeptName">Nombre del Departamento <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+                  <input type="text" class="form-input" id="inputDeptName" placeholder="Ej: Recursos Humanos" required autocomplete="off" />
+                </div>
+              </div>
+
+              <!-- UBICACIÓN FÍSICA -->
+              <div class="form-group">
+                <label class="form-label" for="inputDeptLocation">Ubicación Física</label>
+                <div class="input-with-icon">
+                  <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  <input type="text" class="form-input" id="inputDeptLocation" placeholder="Ej: Edificio Central, Piso 2" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <!-- DESCRIPCIÓN -->
+              <div class="form-group">
+                <label class="form-label" for="textDeptDesc">Descripción</label>
+                <textarea class="form-textarea no-icon" id="textDeptDesc" rows="4" placeholder="Breve descripción de funciones..."></textarea>
+              </div>
+
+              <!-- VISTA PREVIA DE MAPA -->
+              <div class="form-group">
+                <label class="form-label">Plano o Ubicación Espacial</label>
+                <div class="map-preview-placeholder" id="btnPreviewMap">
+                  <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                  <span>Vista Previa de Mapa</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECCIÓN 2: LIDERAZGO Y RESPONSABLE -->
+          <div class="form-section-block">
+            <div class="form-section-title-wrap">
+              <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <span>LIDERAZGO Y RESPONSABLE</span>
+            </div>
+
+            <div class="manager-assignment-box">
+              <div class="manager-display-info" id="managerDisplayInfo">
+                <div class="manager-avatar-badge" id="managerAvatar">--</div>
+                <div>
+                  <strong style="font-size:14px;color:var(--text);display:block;" id="managerName">Sin responsable asignado</strong>
+                  <span style="font-size:12px;color:var(--text-muted);" id="managerRole">Haga clic en Asignar Jefe para designar al líder del departamento.</span>
+                </div>
+              </div>
+              <input type="hidden" id="inputAssignedManager" value="" />
+              <button class="btn-assign-manager" id="btnOpenAssignManagerModal" type="button">
+                <span>Asignar Jefe</span>
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- BOTONES DE ACCIÓN INFERIORES -->
+          <div class="form-footer-actions">
+            <button class="btn-secondary" id="btnCancelForm" type="button">Cancelar</button>
+            <button class="btn-submit-department" id="btnSubmitForm" type="submit">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span id="btnSubmitLabel">Guardar Cambios</span>
+            </button>
+          </div>
+
+        </form>
+
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: ASIGNAR JEFE / RESPONSABLE -->
+<div class="modal-backdrop" id="modalAssignManager">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalAssignManagerTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalAssignManagerTitle">Asignar Responsable de Departamento</h3>
+      <button class="icon-close" id="closeAssignManagerModal" type="button">×</button>
+    </div>
+    <div class="search-box" style="max-width:100%;margin-bottom:12px;">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" class="search-input" id="searchStaffCandidateInput" placeholder="Buscar personal disponible..." />
+    </div>
+    <div class="staff-select-list" id="staffCandidatesList">
+      <!-- Rellenado dinámicamente -->
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btnCancelAssignManager" type="button">Cancelar</button>
+      <button class="btn-submit-department" id="btnConfirmManagerSelection" type="button">Confirmar Responsable</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VISTA PREVIA DE PLANO / MAPA -->
+<div class="modal-backdrop" id="modalMapPreview">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mapPreviewTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="mapPreviewTitle">Plano de Ubicación Física</h3>
+      <button class="icon-close" id="closeMapModal" type="button">×</button>
+    </div>
+    <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:32px 20px;text-align:center;background:var(--bg-sub);display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:rgba(37,99,235,0.12);color:var(--orange);display:grid;place-items:center;">
+        <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      </div>
+      <strong style="font-size:15px;color:var(--text);" id="modalMapLocationText">Edificio Central, Piso 2</strong>
+      <p style="font-size:12px;color:var(--text-muted);max-width:320px;margin:0;">Zona asignada dentro del esquema de infraestructura institucional de la organización.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-submit-department" id="btnDoneMapModal" type="button">Cerrar Plano</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR ELIMINACIÓN DE DEPARTAMENTO -->
+<div class="modal-backdrop" id="modalDeleteDepartment">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteDeptTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="deleteDeptTitle">Eliminar Departamento</h3>
+      <button class="icon-close" id="closeDeleteModal" type="button">×</button>
+    </div>
+    <p style="margin:0 0 16px;font-size:14px;color:var(--text-muted);line-height:1.5;">
+      ¿Estás seguro de que deseas retirar el departamento <strong id="deleteTargetDeptName" style="color:var(--text);">Dpto. de Compras</strong>?
+      Los equipos y empleados asignados quedarán temporalmente en estado "No Asignado".
+    </p>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelDeleteBtn" type="button">Cancelar</button>
+      <button class="btn-modal-danger" id="confirmDeleteBtn" type="button">Eliminar Departamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APARIENCIA Y ESTILO -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn-submit-department" id="doneAppearance" style="height:36px;padding:0 16px;" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Departamentos</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFICADOR
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // BASE DE DATOS DE DEPARTAMENTOS (FIEL A LA CAPTURA)
+  let departamentos = [
+    {
+      id: 'dept_01',
+      code: 'DEPT-28',
+      name: 'Dpto. de Compras',
+      desc: 'Gestión y administración del área de compras institucionales.',
+      location: 'Edificio Central, Piso 2',
+      equipos: 7,
+      empleados: 1,
+      inventoryPercent: 77,
+      color: '#4f46e5',
+      manager: 'Dailiana Luna'
+    },
+    {
+      id: 'dept_02',
+      code: 'DEPT-43',
+      name: 'DPTO. De Compras',
+      desc: 'Gestión y administración del área de dpto. de compras.',
+      location: 'Edificio Central, Piso 2',
+      equipos: 1,
+      empleados: 0,
+      inventoryPercent: 57,
+      color: '#f97316',
+      manager: null
+    },
+    {
+      id: 'dept_03',
+      code: 'DEPT-38',
+      name: 'Dpto. de Consultorio Medico',
+      desc: 'Gestión y administración del área de dpto. de consultorio medico.',
+      location: 'Módulo de Salud, PB',
+      equipos: 12,
+      empleados: 2,
+      inventoryPercent: 89,
+      color: '#ec4899',
+      manager: 'Dra. Elena Vargas'
+    },
+    {
+      id: 'dept_04',
+      code: 'DEPT-26',
+      name: 'Dpto. de Contabilidad',
+      desc: 'Gestión y administración del área de dpto. de contabilidad.',
+      location: 'Edificio Central, Piso 3',
+      equipos: 41,
+      empleados: 4,
+      inventoryPercent: 54,
+      color: '#10b981',
+      manager: 'Abigail Chirinos'
+    },
+    {
+      id: 'dept_05',
+      code: 'DEPT-36',
+      name: 'Dpto. de control de calidad',
+      desc: 'Gestión y administración del área de dpto. de control de calidad.',
+      location: 'Planta de Producción, Sector A',
+      equipos: 8,
+      empleados: 3,
+      inventoryPercent: 62,
+      color: '#06b6d4',
+      manager: 'Ing. Carlos Ortiz'
+    },
+    {
+      id: 'dept_06',
+      code: 'DEPT-30',
+      name: 'Dpto. de Electricidad',
+      desc: 'Gestión y administración del área de dpto. de electricidad.',
+      location: 'Taller Técnico, Sótano 1',
+      equipos: 15,
+      empleados: 2,
+      inventoryPercent: 70,
+      color: '#8b5cf6',
+      manager: 'Alexis Datica'
+    },
+    {
+      id: 'dept_07',
+      code: 'DEPT-33',
+      name: 'Dpto. de Gerencia',
+      desc: 'Gestión y administración del área de dpto. de gerencia.',
+      location: 'Edificio Central, Piso 4',
+      equipos: 19,
+      empleados: 5,
+      inventoryPercent: 85,
+      color: '#f59e0b',
+      manager: 'Lic. Roberto Mendoza'
+    },
+    {
+      id: 'dept_08',
+      code: 'DEPT-42',
+      name: 'DPTO. De Gerencia',
+      desc: 'Gestión y administración del área de dpto. de gerencia.',
+      location: 'Edificio Central, Piso 4',
+      equipos: 6,
+      empleados: 1,
+      inventoryPercent: 40,
+      color: '#f43f5e',
+      manager: null
+    }
+  ];
+
+  // CANDIDATOS DISPONIBLES PARA ASIGNAR COMO JEFE
+  const candidatosLiderazgo = [
+    { name: 'Alexis Datica', role: 'Soporte TI & Telecomunicaciones', init: 'AD' },
+    { name: 'Abigail Chirinos', role: 'Especialista en Contabilidad', init: 'AC' },
+    { name: 'Dailiana Luna', role: 'Compras & Suministros', init: 'DL' },
+    { name: 'Alejandro Medina', role: 'Informática & Servidores', init: 'AM' },
+    { name: 'Lic. Roberto Mendoza', role: 'Gerente General', init: 'RM' },
+    { name: 'Dra. Elena Vargas', role: 'Médico Ocupacional', init: 'EV' },
+    { name: 'Ing. Carlos Ortiz', role: 'Control de Calidad', init: 'CO' },
+    { name: 'Herdil Nair Gutierrez', role: 'Recursos Humanos', init: 'HG' }
+  ];
+
+  let searchQuery = '';
+  let activeViewMode = 'grid'; // 'grid' | 'table'
+  let pendingDeleteId = null;
+  let selectedCandidate = null;
+  let activeOpenMenuId = null;
+
+  // RENDERIZADO PRINCIPAL
+  const renderDepartments = () => {
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = departamentos.filter(d => {
+      if (!q) return true;
+      return d.name.toLowerCase().includes(q) ||
+             d.code.toLowerCase().includes(q) ||
+             d.desc.toLowerCase().includes(q) ||
+             (d.location && d.location.toLowerCase().includes(q)) ||
+             (d.manager && d.manager.toLowerCase().includes(q));
+    });
+
+    const cardsContainer = $('#departmentsCardsContainer');
+    const tableContainer = $('#departmentsTableContainer');
+    const emptyBox = $('#emptyDepartmentsState');
+    const tbody = $('#tbodyDepartments');
+
+    if (filtered.length === 0) {
+      cardsContainer.style.display = 'none';
+      tableContainer.style.display = 'none';
+      emptyBox.style.display = 'flex';
+      return;
+    }
+
+    emptyBox.style.display = 'none';
+
+    if (activeViewMode === 'grid') {
+      cardsContainer.style.display = 'grid';
+      tableContainer.style.display = 'none';
+
+      cardsContainer.innerHTML = filtered.map(dept => `
+        <article class="department-card" data-id="${dept.id}">
+          <div class="card-top-accent-bar" style="background:${dept.color};"></div>
+          
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="card-top-meta-row">
+              <div class="dept-icon-square" style="background:${dept.color}1f;color:${dept.color};">
+                <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line></svg>
+              </div>
+
+              <div style="position:relative;">
+                <button class="btn-card-menu btn-toggle-menu" data-id="${dept.id}" title="Opciones" type="button">···</button>
+                <div class="card-dropdown-menu" id="menu-${dept.id}">
+                  <button class="card-menu-item btn-edit-dept" data-id="${dept.id}" type="button">
+                    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    <span>Editar</span>
+                  </button>
+                  <button class="card-menu-item delete btn-delete-dept" data-id="${dept.id}" type="button">
+                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    <span>Eliminar</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-title-group">
+              <h2 class="dept-card-title">${dept.name}</h2>
+              <span class="dept-card-code">${dept.code}</span>
+            </div>
+
+            <p class="dept-card-desc">${dept.desc}</p>
+
+            <div class="card-metrics-row">
+              <div class="metric-badge-box">
+                <div class="metric-badge-head">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                  <span>EQUIPOS</span>
+                </div>
+                <div class="metric-badge-value">${dept.equipos}</div>
+              </div>
+
+              <div class="metric-badge-box">
+                <div class="metric-badge-head">
+                  <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                  <span>EMPLEADOS</span>
+                </div>
+                <div class="metric-badge-value">${dept.empleados}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-progress-footer">
+            <div class="progress-legend-row">
+              <span>Inventario Asignado</span>
+              <span class="progress-legend-percent">${dept.inventoryPercent}%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:${dept.inventoryPercent}%;background:${dept.color};"></div>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    } else {
+      cardsContainer.style.display = 'none';
+      tableContainer.style.display = 'block';
+
+      tbody.innerHTML = filtered.map(dept => `
+        <tr>
+          <td><span class="badge-code">${dept.code}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="dept-icon-square" style="width:32px;height:32px;border-radius:8px;background:${dept.color}1f;color:${dept.color};">
+                <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+              </div>
+              <strong style="color:var(--text);font-size:14px;">${dept.name}</strong>
+            </div>
+          </td>
+          <td style="color:var(--text-muted);">${dept.location || 'Sin ubicación'}</td>
+          <td>${dept.manager ? `<strong style="color:var(--text);">${dept.manager}</strong>` : '<span style="color:var(--text-dim);">No asignado</span>'}</td>
+          <td><span class="badge-code">${dept.equipos}</span></td>
+          <td><span class="badge-code">${dept.empleados}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;min-width:130px;">
+              <div class="progress-track" style="flex:1;">
+                <div class="progress-fill" style="width:${dept.inventoryPercent}%;background:${dept.color};"></div>
+              </div>
+              <span style="font-size:12px;font-weight:700;">${dept.inventoryPercent}%</span>
+            </div>
+          </td>
+          <td style="text-align:right;">
+            <div style="display:inline-flex;gap:6px;">
+              <button class="btn-assign-manager btn-edit-dept" data-id="${dept.id}" style="height:32px;padding:0 10px;" title="Editar departamento" type="button">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button class="btn-assign-manager btn-delete-dept" data-id="${dept.id}" style="height:32px;padding:0 10px;color:#ef4444;" title="Eliminar departamento" type="button">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    attachCardEvents();
+  };
+
+  // EVENTOS DE BOTONES EN TARJETAS
+  const attachCardEvents = () => {
+    $$('.btn-toggle-menu').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const menu = $(`#menu-${id}`);
+        const isShown = menu.classList.contains('show');
+
+        $$('.card-dropdown-menu').forEach(m => m.classList.remove('show'));
+
+        if (!isShown) {
+          menu.classList.add('show');
+          activeOpenMenuId = id;
+        } else {
+          activeOpenMenuId = null;
+        }
+      });
+    });
+
+    $$('.btn-edit-dept').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        $$('.card-dropdown-menu').forEach(m => m.classList.remove('show'));
+        const id = btn.dataset.id;
+        const dept = departamentos.find(x => x.id === id);
+        if (!dept) return;
+        openDepartmentForm(dept);
+      });
+    });
+
+    $$('.btn-delete-dept').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        $$('.card-dropdown-menu').forEach(m => m.classList.remove('show'));
+        const id = btn.dataset.id;
+        const dept = departamentos.find(x => x.id === id);
+        if (!dept) return;
+
+        pendingDeleteId = id;
+        $('#deleteTargetDeptName').textContent = dept.name;
+        $('#modalDeleteDepartment').classList.add('show');
+      });
+    });
+  };
+
+  // CERRAR MENÚS CONTEXTUALES AL HACER CLIC FUERA
+  document.addEventListener('click', () => {
+    $$('.card-dropdown-menu').forEach(m => m.classList.remove('show'));
+    activeOpenMenuId = null;
+  });
+
+  // NAVEGACIÓN ENTRE DIRECTORIO Y FORMULARIO
+  const showDirectoryView = () => {
+    $('#viewDepartmentForm').classList.remove('active');
+    $('#viewDepartmentsList').style.display = 'flex';
+  };
+
+  const openDepartmentForm = (dept = null) => {
+    $('#viewDepartmentsList').style.display = 'none';
+    $('#viewDepartmentForm').classList.add('active');
+
+    const form = $('#formDepartmentRecord');
+    form.reset();
+
+    if (dept) {
+      $('#formHeaderTitle').textContent = `Editar Departamento`;
+      $('#formHeaderSubtitle').textContent = `Modifica los parámetros organizativos de ${dept.name}.`;
+      $('#btnSubmitLabel').textContent = 'Guardar Cambios';
+      $('#editDepartmentId').value = dept.id;
+      $('#inputDeptName').value = dept.name;
+      $('#inputDeptLocation').value = dept.location || '';
+      $('#textDeptDesc').value = dept.desc || '';
+      $('#inputAssignedManager').value = dept.manager || '';
+
+      if (dept.manager) {
+        const initials = dept.manager.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        $('#managerAvatar').textContent = initials;
+        $('#managerName').textContent = dept.manager;
+        $('#managerRole').textContent = 'Responsable asignado a la unidad.';
+      } else {
+        resetManagerWidget();
+      }
+    } else {
+      $('#formHeaderTitle').textContent = 'Crear Nuevo Departamento';
+      $('#formHeaderSubtitle').textContent = 'Establece una nueva unidad organizativa.';
+      $('#btnSubmitLabel').textContent = 'Guardar Cambios';
+      $('#editDepartmentId').value = '';
+      resetManagerWidget();
+    }
+  };
+
+  const resetManagerWidget = () => {
+    $('#managerAvatar').textContent = '--';
+    $('#managerName').textContent = 'Sin responsable asignado';
+    $('#managerRole').textContent = 'Haga clic en Asignar Jefe para designar al líder del departamento.';
+    $('#inputAssignedManager').value = '';
+  };
+
+  $('#btnOpenCreateDepartment').addEventListener('click', () => openDepartmentForm(null));
+  $('#btnBackToDirectory').addEventListener('click', showDirectoryView);
+  $('#btnCancelForm').addEventListener('click', showDirectoryView);
+
+  // FORMULARIO: GUARDAR O EDITAR DEPARTAMENTO
+  $('#formDepartmentRecord').addEventListener('submit', e => {
+    e.preventDefault();
+    const editId = $('#editDepartmentId').value;
+    const name = $('#inputDeptName').value.trim();
+    const location = $('#inputDeptLocation').value.trim() || 'Edificio Central';
+    const desc = $('#textDeptDesc').value.trim() || `Gestión y administración del área de ${name.toLowerCase()}.`;
+    const manager = $('#inputAssignedManager').value.trim() || null;
+
+    if (!name) {
+      showToast('Campo Requerido', 'Por favor ingresa el nombre del departamento.');
+      return;
+    }
+
+    if (editId) {
+      const idx = departamentos.findIndex(x => x.id === editId);
+      if (idx !== -1) {
+        departamentos[idx] = {
+          ...departamentos[idx],
+          name,
+          location,
+          desc,
+          manager
+        };
+        showToast('Departamento Actualizado', `Cambios guardados en ${name}.`);
+      }
+    } else {
+      const colors = ['#4f46e5', '#f97316', '#ec4899', '#10b981', '#06b6d4', '#8b5cf6', '#f59e0b', '#f43f5e'];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      const nextCodeNum = departamentos.length + 45;
+
+      const newDept = {
+        id: `dept_${Date.now()}`,
+        code: `DEPT-${nextCodeNum}`,
+        name,
+        desc,
+        location,
+        equipos: 0,
+        empleados: manager ? 1 : 0,
+        inventoryPercent: 0,
+        color: randomColor,
+        manager
+      };
+      departamentos.unshift(newDept);
+      showToast('Nuevo Departamento', `${name} establecido exitosamente.`);
+    }
+
+    renderDepartments();
+    showDirectoryView();
+  });
+
+  // MODAL: ASIGNAR RESPONSABLE / JEFE
+  const modalAssignManager = $('#modalAssignManager');
+  const staffCandidatesList = $('#staffCandidatesList');
+
+  const renderStaffCandidates = (query = '') => {
+    const q = query.toLowerCase().trim();
+    const filtered = candidatosLiderazgo.filter(c => {
+      if (!q) return true;
+      return c.name.toLowerCase().includes(q) || c.role.toLowerCase().includes(q);
+    });
+
+    staffCandidatesList.innerHTML = filtered.map(c => `
+      <div class="staff-select-item ${selectedCandidate === c.name ? 'selected' : ''}" data-name="${c.name}" data-role="${c.role}" data-init="${c.init}">
+        <div class="staff-item-info">
+          <div class="manager-avatar-badge" style="width:34px;height:34px;font-size:11px;">${c.init}</div>
+          <div>
+            <strong style="font-size:13px;color:var(--text);display:block;">${c.name}</strong>
+            <span style="font-size:11px;color:var(--text-muted);">${c.role}</span>
+          </div>
+        </div>
+        <span style="font-size:11px;color:var(--orange);font-weight:700;">Seleccionar</span>
+      </div>
+    `).join('');
+
+    $$('.staff-select-item').forEach(item => {
+      item.addEventListener('click', () => {
+        $$('.staff-select-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        selectedCandidate = item.dataset.name;
+      });
+    });
+  };
+
+  $('#btnOpenAssignManagerModal').addEventListener('click', () => {
+    selectedCandidate = $('#inputAssignedManager').value || null;
+    $('#searchStaffCandidateInput').value = '';
+    renderStaffCandidates();
+    modalAssignManager.classList.add('show');
+  });
+
+  const closeManagerModal = () => modalAssignManager.classList.remove('show');
+  $('#closeAssignManagerModal').addEventListener('click', closeManagerModal);
+  $('#btnCancelAssignManager').addEventListener('click', closeManagerModal);
+
+  $('#searchStaffCandidateInput').addEventListener('input', e => {
+    renderStaffCandidates(e.target.value);
+  });
+
+  $('#btnConfirmManagerSelection').addEventListener('click', () => {
+    if (selectedCandidate) {
+      const cand = candidatosLiderazgo.find(c => c.name === selectedCandidate);
+      if (cand) {
+        $('#inputAssignedManager').value = cand.name;
+        $('#managerAvatar').textContent = cand.init;
+        $('#managerName').textContent = cand.name;
+        $('#managerRole').textContent = cand.role;
+        showToast('Responsable Asignado', `${cand.name} designado como jefe.`);
+      }
+    }
+    closeManagerModal();
+  });
+
+  // MODAL: VISTA PREVIA DE PLANO
+  const modalMap = $('#modalMapPreview');
+  $('#btnPreviewMap').addEventListener('click', () => {
+    const loc = $('#inputDeptLocation').value.trim() || 'Edificio Central, Piso 2';
+    $('#modalMapLocationText').textContent = loc;
+    modalMap.classList.add('show');
+  });
+  $('#closeMapModal').addEventListener('click', () => modalMap.classList.remove('show'));
+  $('#btnDoneMapModal').addEventListener('click', () => modalMap.classList.remove('show'));
+
+  // MODAL: CONFIRMAR ELIMINACIÓN
+  const modalDelete = $('#modalDeleteDepartment');
+  const closeDeleteModal = () => {
+    modalDelete.classList.remove('show');
+    pendingDeleteId = null;
+  };
+  $('#closeDeleteModal').addEventListener('click', closeDeleteModal);
+  $('#cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+  $('#confirmDeleteBtn').addEventListener('click', () => {
+    if (pendingDeleteId) {
+      const dept = departamentos.find(x => x.id === pendingDeleteId);
+      departamentos = departamentos.filter(x => x.id !== pendingDeleteId);
+      renderDepartments();
+      showToast('Departamento Retirado', `${dept ? dept.name : 'La unidad'} fue eliminada.`);
+    }
+    closeDeleteModal();
+  });
+
+  // BÚSQUEDA EN TIEMPO REAL
+  $('#searchDepartmentInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderDepartments();
+  });
+
+  // TOGGLE VISTA CUADRÍCULA / TABLA
+  $('#btnToggleGridView').addEventListener('click', () => {
+    activeViewMode = 'grid';
+    $('#btnToggleGridView').classList.add('active');
+    $('#btnToggleTableView').classList.remove('active');
+    renderDepartments();
+    showToast('Visualización', 'Modo cuadrícula activado.');
+  });
+
+  $('#btnToggleTableView').addEventListener('click', () => {
+    activeViewMode = 'table';
+    $('#btnToggleTableView').classList.add('active');
+    $('#btnToggleGridView').classList.remove('active');
+    renderDepartments();
+    showToast('Visualización', 'Modo tabla activado.');
+  });
+
+  // CONTROL DE GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('dept-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // COLOR DE ACENTO GLOBAL
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+    localStorage.setItem('dept-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('dept-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('dept-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('dept-border-width') || '2px';
+  const savedAccent = localStorage.getItem('dept-accent-color') || '#2563eb';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // INICIALIZACIÓN
+  renderDepartments();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      modalDelete.classList.remove('show');
+      modalMap.classList.remove('show');
+      modalAssignManager.classList.remove('show');
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -88,7 +88,6 @@ abstract class Controller {
             // DEBUG: Uncomment to trace view loading
             // echo "<!-- Loading View: $viewFile -->"; 
             require_once __DIR__ . '/../Views/layout/header.php';
-            require_once __DIR__ . '/../Views/layout/left-side-menu.php';
             require_once $viewFile;
             require_once __DIR__ . '/../Views/layout/right-side-menu.php';
             require_once __DIR__ . '/../Views/layout/footer.php';

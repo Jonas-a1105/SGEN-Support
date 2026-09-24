@@ -57,8 +57,8 @@
         };
 
         window.nextPage = function () {
-            const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
-            if ((itemsPerPage === -1 && currentPage === 1) || (itemsPerPage !== -1 && currentPage < totalPages)) {
+            const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(filteredResults.length / itemsPerPage) || 1;
+            if (currentPage < totalPages) {
                 currentPage++;
                 renderCurrentPage();
             }
@@ -183,19 +183,115 @@
             if (footer) footer.style.display = 'flex';
         }
 
+        // --- Sincronización en Tiempo Real (Smart Polling) ---
+        let lastUpdateCheck = Date.now();
+        const pollingInterval = 20000; // 20 seconds (optimized for LAN)
+
+        const checkUpdates = async () => {
+            console.log('Checking for ticket updates...');
+            try {
+                // Fetch the current list again via AJAX
+                const response = await fetch(window.location.href, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTickets = doc.querySelectorAll('.helpdesk-ticket');
+
+                if (newTickets.length > 0) {
+                    processTicketUpdates(newTickets);
+                }
+            } catch (error) {
+                console.error('Error polling updates:', error);
+            }
+        };
+
+        const processTicketUpdates = (newTicketElements) => {
+            let hasChanges = false;
+
+            newTicketElements.forEach(newEl => {
+                const id = newEl.getAttribute('data-id') || newEl.id;
+                const oldEl = document.querySelector(`.helpdesk-ticket[data-id="${id}"], .helpdesk-ticket#${id}`);
+
+                if (oldEl) {
+                    const oldState = oldEl.getAttribute('data-estado');
+                    const newState = newEl.getAttribute('data-estado');
+
+                    if (oldState !== newState) {
+                        console.log(`Ticket ${id} changed state: ${oldState} -> ${newState}`);
+                        // Update the DOM element
+                        oldEl.setAttribute('data-estado', newState);
+                        oldEl.innerHTML = newEl.innerHTML;
+
+                        // Update the cache
+                        const cacheItem = allTicketsCache.find(item => item.el === oldEl);
+                        if (cacheItem) {
+                            cacheItem.estado = newState;
+                            cacheItem.tecnico = newEl.getAttribute('data-tecnico');
+                            cacheItem.search = newEl.getAttribute('data-search').toLowerCase();
+                        }
+                        hasChanges = true;
+                    }
+                } else {
+                    // New ticket found
+                    console.log(`New ticket detected: ${id}`);
+                    if (window.showDesktopNotification) {
+                        window.showDesktopNotification('Nuevo Ticket', `Se ha recibido el ticket #${id}`);
+                    }
+                    hasChanges = true;
+                }
+            });
+
+            if (hasChanges) {
+                applyFiltersAndRender();
+                showUpdateToast();
+            }
+        };
+
+        const showUpdateToast = () => {
+            if (window.Toast) {
+                window.Toast.fire({
+                    icon: 'info',
+                    title: 'Tickets actualizados automáticamente'
+                });
+            }
+        };
+
+        // Start polling if not already started
+        if (!window._soportesPollingInterval) {
+            window._soportesPollingInterval = setInterval(checkUpdates, pollingInterval);
+        }
+
         // Initial Load
         applyFiltersAndRender();
     };
 
-    // Execute immediately if body is ready (Turbo/Script at end of body)
-    // Global Guard
-    if (!window._soportesListenerAttached) {
-        document.addEventListener('turbo:load', init);
-        window._soportesListenerAttached = true;
+    // Clean initialization for Turbo compatibility
+    // Remove previous listener if exists to avoid double binding
+    if (window._soportesInitHandler) {
+        document.removeEventListener('turbo:load', window._soportesInitHandler);
     }
 
-    // Fallback for first load if needed (though Turbo listener catches it)
+    window._soportesInitHandler = init;
+    document.addEventListener('turbo:load', init);
+
+    // Cleanup on before-cache for Turbo
+    document.addEventListener('turbo:before-cache', () => {
+        if (window._soportesPollingInterval) {
+            clearInterval(window._soportesPollingInterval);
+            window._soportesPollingInterval = null;
+        }
+    });
+
+    // Also run on first load if DOM is ready (for non-Turbo scenarios)
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        // init(); // Removed to avoid double-init on first load if turbo:load also fires
+        // Check if we're on the soportes page
+        if (document.getElementById('ticketFeed')) {
+            init();
+        }
     }
 })();

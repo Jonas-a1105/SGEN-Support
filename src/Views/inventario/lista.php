@@ -1,6 +1,4 @@
-﻿<?php require_once '../src/Views/layout/header.php'; ?>
-<?php require_once '../src/Views/layout/left-side-menu.php'; ?>
-
+﻿
 
 
 <div class="inventario-container">
@@ -479,7 +477,7 @@
                             <i class="bi bi-upc"></i>
                             <?= htmlspecialchars($equipo->numero_serie ?? 'S/N') ?>
                         </div>
-                        <?php if ($_SESSION['rol'] !== 'tecnico'): ?>
+                        <div class="inventario-card-actions">
                             <a href="<?= BASE_URL ?>equipos/ver/<?= $equipo->id ?>?from=inventario_equipos" 
                                class="inventario-action-btn view" 
                                title="Ver Detalle">
@@ -499,7 +497,6 @@
                                 <i class="bi bi-trash"></i>
                             </a>
                         </div>
-                        <?php endif; ?>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -660,4 +657,3 @@
     }
 </script>
 
-<?php require_once '../src/Views/layout/footer.php'; ?>

@@ -1,0 +1,27 @@
+name: 🚀 Solicitud de Función (Feature Request)
+description: Sugiere una nueva idea o mejora de arquitectura para SGEN-Support.
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nos encanta recibir propuestas de nuevas funcionalidades que amplíen las capacidades de SGEN-Support.
+  - type: textarea
+    id: problem
+    attributes:
+      label: ¿Qué problema resuelve esta propuesta?
+      description: Explica la necesidad o fricción actual que experimentan los usuarios o desarrolladores.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solución Propuesta
+      description: Describe detalladamente cómo visualizas la solución técnica o de interfaz.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: Describe otras opciones o enfoques que hayas contemplado.

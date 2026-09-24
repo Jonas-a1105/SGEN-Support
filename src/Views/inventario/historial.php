@@ -1,5 +1,3 @@
-<?php require_once '../src/Views/layout/header.php'; ?>
-<?php require_once '../src/Views/layout/left-side-menu.php'; ?>
 
 <div class="main-content">
     <div class="container-fluid">
@@ -91,4 +89,3 @@
     });
 </script>
 
-<?php require_once '../src/Views/layout/footer.php'; ?>

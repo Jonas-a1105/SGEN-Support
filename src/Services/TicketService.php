@@ -81,11 +81,9 @@ class TicketService
 
         $updateData = [
             'empleado_id' => $empleadoId,
-            'estado' => 'en_proceso'
+            'estado' => 'en_proceso',
+            'current_version' => $data['current_version'] ?? null
         ];
-
-
-
 
         $resultado = $this->soporteModel->update($soporteId, $updateData);
 
@@ -125,7 +123,8 @@ class TicketService
         $updateData = [
             'estado' => 'resuelto',
             'fecha_cierre' => $fechaCierre,
-            'tiempo_atencion_minutos' => round($tiempoMinutos)
+            'tiempo_atencion_minutos' => round($tiempoMinutos),
+            'current_version' => $soporte->version_id // Read from DB just before or passed from UI
         ];
 
         $resultado = $this->soporteModel->update($id, $updateData);

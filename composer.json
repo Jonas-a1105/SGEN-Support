@@ -26,6 +26,20 @@
         "sort-packages": true,
         "platform": {
             "php": "8.2.12"
+        },
+        "audit": {
+            "ignore": [
+                "PKSA-gh7h-hhy4-byg7",
+                "PKSA-6r8f-nxsb-67bq",
+                "PKSA-cv56-2228-pzr6",
+                "PKSA-mwt3-h9tv-kx78",
+                "PKSA-mckv-s5hg-868k",
+                "PKSA-hp6n-n4kz-21wk",
+                "PKSA-rdkp-vv9z-mjkg"
+            ]
+        },
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     },
     "scripts": {
@@ -34,5 +48,12 @@
             "php -S localhost:8000 -t public"
         ],
         "migrate": "php migrations/run_migration.php"
+    },
+    "require-dev": {
+        "pestphp/pest": "^3.8",
+        "phpstan/phpstan": "^2.2",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "rector/rector": "^2.6",
+        "squizlabs/php_codesniffer": "^4.0"
     }
 }

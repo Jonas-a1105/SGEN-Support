@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Gestión de Soportes — Control y Seguimiento de Tickets</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    /* Bordes neutros, suaves y limpios */
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #e11d48; /* Color de acento de tickets / soportes */
+    --orange-light: #fb7185;
+    --orange-rgb: 225, 29, 72;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta de estados operativos */
+    --blue: #2563eb;
+    --green: #16a34a;
+    --red: #dc2626;
+    --yellow: #d97706;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS EN 16PX - 18PX EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .appearance-head h3 {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* MENÚ LATERAL PÍLDORA COMPACTO (ALTURA EXACTA DE SUS ENLACES) */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s ease, left 0.3s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700 !important;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .badge {
+    margin-left: auto;
+    background: var(--orange);
+    color: #ffffff;
+    border-radius: 10px;
+    font-size: 10px;
+    min-width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+    padding: 0 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .badge,
+  .sidebar.open .badge {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL Y CONTENEDOR CENTRADO */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ENCABEZADO DE MÓDULO CON ICONO Y BOTÓN NUEVO TICKET */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--orange);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .module-subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .btn-new-ticket {
+    height: 40px;
+    background: var(--orange);
+    color: #ffffff;
+    border: var(--stroke-w) solid var(--orange);
+    border-radius: 12px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn-new-ticket:hover {
+    filter: brightness(1.08) !important;
+    transform: translateY(-1px);
+  }
+
+  /* FILA DE 4 KPIS OPERATIVAS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .glass-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    position: relative;
+    overflow: hidden;
+    transition: border-width 0.2s ease, border-color 0.2s ease;
+  }
+
+  .kpi {
+    cursor: pointer;
+    min-height: 104px;
+  }
+
+  .kpi .card-pad {
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* TEXTO DE KPI EN MINÚSCULAS ESTÁNDAR (NO UPPERCASE) */
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 600 !important;
+    color: var(--text-muted);
+    letter-spacing: normal;
+    text-transform: none !important;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 700 !important;
+    line-height: 1.1;
+  }
+
+  .kpi.criticos .kpi-value { color: var(--red); }
+  .kpi.cola .kpi-value { color: var(--yellow); }
+  .kpi.proceso .kpi-value { color: var(--blue); }
+  .kpi.asignaciones .kpi-value { color: var(--green); }
+
+  .kpi-icon-pill {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .kpi-icon-pill svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+  }
+
+  .kpi.criticos .kpi-icon-pill {
+    background: rgba(220, 38, 38, 0.12);
+    color: var(--red);
+  }
+
+  .kpi.cola .kpi-icon-pill {
+    background: rgba(217, 119, 6, 0.12);
+    color: var(--yellow);
+  }
+
+  .kpi.proceso .kpi-icon-pill {
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--blue);
+  }
+
+  .kpi.asignaciones .kpi-icon-pill {
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--green);
+  }
+
+  /* BORDE INFERIOR DE 4PX EN HOVER TRANSICIONADO */
+  .accent-bottom {
+    height: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .kpi.criticos .accent-bottom { background: var(--red); }
+  .kpi.cola .accent-bottom { background: var(--yellow); }
+  .kpi.proceso .accent-bottom { background: var(--blue); }
+  .kpi.asignaciones .accent-bottom { background: var(--green); }
+
+  .kpi:hover .accent-bottom {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* BARRA DE FILTROS, SWITCH Y BÚSQUEDA */
+  .toolbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .filters-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* SWITCH TOGGLE */
+  .switch-wrap {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .switch-input {
+    display: none;
+  }
+
+  .switch-rail {
+    width: 44px;
+    height: 24px;
+    background: var(--stroke);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .switch-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .switch-input:checked + .switch-rail {
+    background: var(--orange);
+    border-color: var(--orange);
+  }
+
+  .switch-input:checked + .switch-rail .switch-dot {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  /* PÍLDORAS DE FILTRO */
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 20px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .filter-pill:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+  }
+
+  .filter-pill.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+
+  body.light .filter-pill.active {
+    background: #191c21;
+    border-color: #191c21;
+    color: #ffffff;
+  }
+
+  .pill-count {
+    font-size: 11px;
+    padding: 0 5px;
+    border-radius: 8px;
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .filter-pill.active .pill-count {
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  body.light .filter-pill.active .pill-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+
+  /* CAMPO DE BÚSQUEDA */
+  .search-box {
+    position: relative;
+    min-width: 290px;
+    flex: 1;
+    max-width: 380px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 17px;
+    height: 17px;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 14px 0 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--orange);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-dim);
+  }
+
+  /* LISTADO DE TICKETS INDEPENDIENTES (SIN BORDE GENERAL DE TABLA) */
+  .tickets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  /* TARJETA INDEPENDIENTE DE TICKET CON BORDE IZQUIERDO DE 4PX SEGÚN ESTADO */
+  .ticket-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    padding: 16px 22px;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s ease, background 0.18s ease;
+  }
+
+  .ticket-card:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  /* BORDE IZQUIERDO DE 4PX INDICADOR DE ESTADO */
+  .ticket-card.status-resolved,
+  .ticket-card.status-resuelto { border-left: 4px solid var(--green) !important; }
+  .ticket-card.status-process,
+  .ticket-card.status-proceso  { border-left: 4px solid var(--blue) !important; }
+  .ticket-card.status-pending,
+  .ticket-card.status-pendiente  { border-left: 4px solid var(--yellow) !important; }
+  .ticket-card.status-critical,
+  .ticket-card.status-critica { border-left: 4px solid var(--red) !important; }
+
+  /* ESTADO VERIFICADO EN CÍRCULO CON FONDO RELLENADO CORRESPONDIENTE */
+  .ticket-status-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  .ticket-card.status-resolved .ticket-status-icon,
+  .ticket-card.status-resuelto .ticket-status-icon {
+    background: var(--green) !important;
+    color: #ffffff !important;
+  }
+
+  .ticket-card.status-process .ticket-status-icon,
+  .ticket-card.status-proceso .ticket-status-icon {
+    background: var(--blue) !important;
+    color: #ffffff !important;
+  }
+
+  .ticket-card.status-pending .ticket-status-icon,
+  .ticket-card.status-pendiente .ticket-status-icon {
+    background: var(--yellow) !important;
+    color: #ffffff !important;
+  }
+
+  .ticket-card.status-critical .ticket-status-icon,
+  .ticket-card.status-critica .ticket-status-icon {
+    background: var(--red) !important;
+    color: #ffffff !important;
+  }
+
+  .ticket-status-icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: #ffffff !important;
+    fill: none;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* COLUMNA CENTRAL: TÍTULO, BADGES Y SOLICITANTE */
+  .ticket-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .ticket-meta-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ticket-code {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .ticket-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    padding: 1px 7px;
+    border-radius: 6px;
+    background: var(--stroke-subtle);
+    border: 1px solid var(--stroke);
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .ticket-title {
+    font-size: 14px;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ticket-requester {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ticket-requester svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+  }
+
+  /* ENLACE TRADICIONAL HTML DEL SOLICITANTE CON BORDE INFERIOR */
+  .requester-link {
+    font-size: 12px;
+    font-weight: 700 !important;
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1.5px solid var(--stroke);
+    padding-bottom: 1px;
+    transition: color 0.2s ease, border-bottom-color 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .requester-link:hover {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+  }
+
+  /* COLUMNA TÉCNICO CON ENLACE HTML Y BORDE INFERIOR TRANSICIONADO */
+  .ticket-tech {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 150px;
+  }
+
+  .tech-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--blue);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700 !important;
+    flex-shrink: 0;
+  }
+
+  .tech-meta {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tech-role {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* ENLACE TRADICIONAL HTML CON BORDE INFERIOR */
+  .tech-link {
+    font-size: 13px;
+    font-weight: 700 !important;
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1.5px solid var(--stroke);
+    padding-bottom: 1px;
+    transition: color 0.2s ease, border-bottom-color 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .tech-link:hover {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+  }
+
+  /* COLUMNA FECHA Y METADATOS */
+  .ticket-date-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 100px;
+  }
+
+  .ticket-date {
+    font-size: 13px;
+    font-weight: 700 !important;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .ticket-indicators {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+
+  .indicator-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .indicator-item svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* ACCIONES DE FILA (VER, EDITAR, ELIMINAR) */
+  .ticket-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .action-btn:hover {
+    color: var(--text);
+    background: var(--stroke);
+  }
+
+  .action-btn.delete:hover {
+    color: var(--red);
+    background: rgba(220, 38, 38, 0.12);
+  }
+
+  .action-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* ESTADO VACÍO CUANDO NO HAY COINCIDENCIAS */
+  .empty-search-state {
+    padding: 48px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+    border: var(--stroke-w) dashed var(--stroke);
+    border-radius: var(--card-radius);
+    background: var(--bg-card);
+  }
+
+  .empty-search-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--stroke-subtle);
+    display: grid;
+    place-items: center;
+    color: var(--text-dim);
+  }
+
+  .empty-search-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(520px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--orange);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn.primary {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #ffffff;
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  .btn.danger {
+    background: var(--red);
+    border-color: var(--red);
+    color: #ffffff;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .appearance-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .appearance-block {
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    padding: 14px;
+    background: transparent;
+  }
+
+  .appearance-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .color-editor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .color-editor input {
+    width: 44px;
+    height: 38px;
+    padding: 2px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .swatches {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: var(--stroke-w) solid var(--stroke);
+    cursor: pointer;
+    transition: transform 0.16s ease;
+  }
+
+  .swatch:hover {
+    transform: scale(1.15);
+  }
+
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  body.light .kpi.criticos .kpi-icon-pill { background: rgba(220, 38, 38, 0.08); }
+  body.light .kpi.cola .kpi-icon-pill { background: rgba(217, 119, 6, 0.08); }
+  body.light .kpi.proceso .kpi-icon-pill { background: rgba(37, 99, 235, 0.08); }
+  body.light .kpi.asignaciones .kpi-icon-pill { background: rgba(22, 163, 74, 0.08); }
+
+  /* RESPONSIVIDAD TOTAL Y REDISEÑO DE TICKETS EN MÓVIL Y TABLET */
+  @media (max-width: 1080px) {
+    .main {
+      margin-left: 78px;
+    }
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .ticket-card {
+      grid-template-columns: auto 1fr auto;
+      gap: 16px;
+    }
+    .ticket-tech {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar .profile-copy,
+    .sidebar .nav-label,
+    .sidebar .badge {
+      opacity: 1 !important;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    /* KPIS EN 2 COLUMNAS ESTRICTAS EN MÓVIL */
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px;
+    }
+
+    .kpi .card-pad {
+      padding: 14px;
+    }
+
+    .kpi-value {
+      font-size: 22px;
+    }
+
+    .kpi-icon-pill {
+      width: 36px;
+      height: 36px;
+    }
+
+    .kpi-icon-pill svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .toolbar-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .search-box {
+      max-width: 100%;
+      min-width: 100%;
+    }
+
+    /* REDISEÑO FLUIDO DEL TICKET INDEPENDIENTE EN MÓVIL */
+    .ticket-card {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .ticket-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .ticket-title {
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .ticket-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-top: 1px solid var(--stroke-subtle);
+      padding-top: 12px;
+    }
+
+    .ticket-tech {
+      display: flex;
+      min-width: auto;
+    }
+
+    .ticket-date-col {
+      min-width: auto;
+      align-items: flex-end;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .ticket-card-top {
+      display: contents;
+    }
+    .ticket-card-bottom {
+      display: contents;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de soportes">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item active" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+        <span class="badge" id="navBadge">5</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item" data-section="performance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M5 19V9m7 10V5m7 14v-8"></path></svg>
+        </div>
+        <span class="nav-label">Rendimiento</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento de tickets">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#e11d48" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content" id="supportView">
+      <div class="module-wrapper">
+
+        <!-- CABECERA DEL MÓDULO GESTIÓN DE SOPORTES CON BOTÓN NUEVO TICKET -->
+        <section class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V9z"></path><path d="M10 7v10M14 7v10"></path></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Gestión de Soportes</h1>
+              <p class="module-subtitle">Control y seguimiento de tickets</p>
+            </div>
+          </div>
+          <button class="btn-new-ticket" id="btnOpenNewTicket" type="button">
+            <span>+</span> Nuevo Ticket
+          </button>
+        </section>
+
+        <!-- CUADRÍCULA DE 4 KPIS CON TEXTO EN MINÚSCULAS NORMALES -->
+        <section class="kpi-grid">
+          <div class="glass-card kpi criticos" data-filter="critica" title="Filtrar por críticos">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Críticos pendientes</div>
+                <div class="kpi-value" id="countCritical">0</div>
+              </div>
+              <div class="kpi-icon-pill">
+                <svg viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi cola" data-filter="pendiente" title="Filtrar por cola general">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Cola general</div>
+                <div class="kpi-value" id="countQueue">0</div>
+              </div>
+              <div class="kpi-icon-pill">
+                <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi proceso" data-filter="proceso" title="Filtrar por en proceso">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">En proceso</div>
+                <div class="kpi-value" id="countProcess">0</div>
+              </div>
+              <div class="kpi-icon-pill">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi asignaciones" data-filter="mis-tickets" title="Filtrar por mis asignaciones">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Mis asignaciones</div>
+                <div class="kpi-value" id="countAssigned">0</div>
+              </div>
+              <div class="kpi-icon-pill">
+                <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+        </section>
+
+        <!-- BARRA DE FILTROS, SWITCH Y BÚSQUEDA -->
+        <section class="toolbar-card">
+          <div class="filters-left">
+            <label class="switch-wrap" title="Alternar vista compacta / completa">
+              <input type="checkbox" id="viewToggle" class="switch-input" />
+              <div class="switch-rail"><div class="switch-dot"></div></div>
+            </label>
+            <div class="filter-pills" id="filterPills">
+              <button class="filter-pill active" data-pill="todos" type="button">
+                Todos <span class="pill-count" id="countPillTodos">5</span>
+              </button>
+              <button class="filter-pill" data-pill="pendiente" type="button">
+                Pendientes <span class="pill-count" id="countPillPendientes">0</span>
+              </button>
+              <button class="filter-pill" data-pill="mis-tickets" type="button">
+                Mis Tickets <span class="pill-count" id="countPillMisTickets">5</span>
+              </button>
+              <button class="filter-pill" data-pill="resuelto" type="button">
+                Resueltos <span class="pill-count" id="countPillResueltos">5</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" class="search-input" id="searchInput" placeholder="Buscar ticket, serial o problema..." autocomplete="off" />
+          </div>
+        </section>
+
+        <!-- LISTA DE TICKETS INDEPENDIENTES (CADA TICKET ES UNA TARJETA SEPARADA) -->
+        <section class="tickets-container" id="ticketRowsContainer">
+          <!-- Las tarjetas individuales se renderizan dinámicamente -->
+        </section>
+
+        <div class="empty-search-state" id="emptySearchState" style="display:none;">
+          <div class="empty-search-icon">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <div>
+            <strong style="display:block;font-size:14px;color:var(--text);">No se encontraron tickets</strong>
+            <span style="font-size:12px;color:var(--text-muted);">Prueba con otros términos de búsqueda o cambia los filtros seleccionados.</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: NUEVO TICKET -->
+<div class="modal-backdrop" id="modalNewTicket">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalNewTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalNewTitle">Registrar Nuevo Ticket</h3>
+      <button class="icon-close" id="closeNewTicket" type="button">×</button>
+    </div>
+    <form id="newTicketForm">
+      <div class="form-group">
+        <label class="form-label" for="ticketTitleInput">Título del Problema / Asunto</label>
+        <input type="text" class="form-input" id="ticketTitleInput" placeholder="Ej: SOPORTE EN RED LOCAL Y SERVIDORES" required />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="ticketRequesterInput">Solicitante</label>
+          <input type="text" class="form-input" id="ticketRequesterInput" placeholder="Ej: Herdil Nair Gutierrez" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ticketDeptInput">Departamento</label>
+          <input type="text" class="form-input" id="ticketDeptInput" placeholder="Ej: Dpto. de Recursos Humanos" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="ticketCategorySelect">Categoría</label>
+          <select class="form-select" id="ticketCategorySelect">
+            <option value="GENERAL">GENERAL</option>
+            <option value="SERVIDORES">SERVIDORES</option>
+            <option value="NÓMINA">NÓMINA</option>
+            <option value="HARDWARE">HARDWARE</option>
+            <option value="REDES">REDES</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ticketPrioritySelect">Prioridad</label>
+          <select class="form-select" id="ticketPrioritySelect">
+            <option value="baja">Baja</option>
+            <option value="media" selected>Media</option>
+            <option value="alta">Alta</option>
+            <option value="critica">Crítica</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="ticketTechSelect">Técnico Asignado</label>
+          <select class="form-select" id="ticketTechSelect">
+            <option value="Alexis Datica">Alexis Datica</option>
+            <option value="Marcos Rodriguez">Marcos Rodriguez</option>
+            <option value="Lucia Mendez">Lucia Mendez</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ticketStatusSelect">Estado Inicial</label>
+          <select class="form-select" id="ticketStatusSelect">
+            <option value="resuelto">Resuelto / Entregado (Verde)</option>
+            <option value="proceso">En Proceso (Azul)</option>
+            <option value="pendiente">Pendiente (Ámbar)</option>
+            <option value="critica">Crítico (Rojo)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" type="button" id="cancelNewTicket">Cancelar</button>
+        <button class="btn primary" type="submit">Guardar Ticket</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: DETALLE DEL TICKET -->
+<div class="modal-backdrop" id="modalViewTicket">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalViewTitle">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="viewCodeBadge" class="ticket-tag">#T-96</span>
+        <h3 class="modal-title" id="modalViewTitle">Detalle de Soporte</h3>
+      </div>
+      <button class="icon-close" id="closeViewTicket" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label class="form-label">Asunto</label>
+        <p id="viewTitle" style="margin:4px 0 0;font-size:15px;font-weight:700 !important;color:var(--text);"></p>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Solicitante y Área</label>
+          <p id="viewRequester" style="margin:4px 0 0;font-size:13px;color:var(--text);"></p>
+        </div>
+        <div>
+          <label class="form-label">Técnico Responsable</label>
+          <p id="viewTech" style="margin:4px 0 0;font-size:13px;color:var(--text);"></p>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Estado</label>
+          <p id="viewStatus" style="margin:4px 0 0;font-size:13px;"></p>
+        </div>
+        <div>
+          <label class="form-label">Fecha de Apertura</label>
+          <p id="viewDate" style="margin:4px 0 0;font-size:13px;color:var(--text);"></p>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Registro Operativo / Comentarios</label>
+        <div style="background:var(--stroke-subtle);border-radius:12px;padding:12px;margin-top:6px;font-size:13px;color:var(--text-muted);" id="viewLog">
+          Soporte atendido y verificado satisfactoriamente según protocolo de TI.
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" type="button" id="closeViewBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR ELIMINACIÓN (SIN ALERT NI CONFIRM) -->
+<div class="modal-backdrop" id="modalDeleteTicket">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="deleteTitle">Eliminar Ticket</h3>
+      <button class="icon-close" id="closeDeleteModal" type="button">×</button>
+    </div>
+    <p style="margin:0 0 16px;font-size:14px;color:var(--text-muted);line-height:1.5;">
+      ¿Estás seguro de que deseas eliminar permanentemente el ticket <strong id="deleteTargetId" style="color:var(--text);">#T-00</strong>? Esta acción no se puede deshacer.
+    </p>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="cancelDeleteBtn">Cancelar</button>
+      <button class="btn danger" type="button" id="confirmDeleteBtn">Eliminar Ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PERSONALIZACIÓN Y APARIENCIA -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div class="appearance-kicker" style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Estilo, Color y Bordes</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div class="appearance-grid" style="margin-top:14px;">
+      <div class="appearance-block">
+        <span class="appearance-label">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div class="appearance-block">
+        <span class="appearance-label">Color principal de acento</span>
+        <div class="color-editor">
+          <input id="accentColorPanel" type="color" value="#e11d48" aria-label="Selector de color hex">
+          <div>
+            <span id="accentHex" style="font-size:13px;display:block">#E11D48</span>
+            <span style="font-size:12px;color:var(--text-muted);">Se actualiza en badges, bordes y botones.</span>
+          </div>
+        </div>
+        <div class="swatches" id="accentSwatches"></div>
+      </div>
+      <div class="appearance-block">
+        <span class="appearance-label">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn primary" id="doneAppearance" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Operación</b>
+  <span id="toastText">Actualización aplicada correctamente.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFIER
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // DATOS BASE DE TICKETS CON ESTADOS REPRESENTATIVOS (Verde, Azul, Ámbar, Rojo)
+  let tickets = [
+    {
+      id: 'T-96',
+      title: 'SOPORTE EN SERVIDORES Y SISTEMAS PRODUMIL',
+      category: 'GENERAL',
+      requester: 'Herdil Nair Gutierrez',
+      dept: 'Dpto. de Recursos Humanos',
+      tech: 'Alexis Datica',
+      techInit: 'A',
+      date: '19/12/2025',
+      comments: 0,
+      status: 'resolved', // Borde izquierdo verde
+      priority: 'media'
+    },
+    {
+      id: 'T-95',
+      title: 'SOPORTE NOMINA OPERATIVO PRODUMIL',
+      category: 'GENERAL',
+      requester: 'Herdil Nair Gutierrez',
+      dept: 'Dpto. de Recursos Humanos',
+      tech: 'Alexis Datica',
+      techInit: 'A',
+      date: '18/12/2025',
+      comments: 0,
+      status: 'process', // Borde izquierdo azul
+      priority: 'alta'
+    },
+    {
+      id: 'T-94',
+      title: 'ASISTENCIA NOMINA PRODUMIL (NOMINA ADMINISTRATIVA)',
+      category: 'GENERAL',
+      requester: 'Herdil Nair Gutierrez',
+      dept: 'Dpto. de Recursos Humanos',
+      tech: 'Alexis Datica',
+      techInit: 'A',
+      date: '12/12/2025',
+      comments: 0,
+      status: 'pending', // Borde izquierdo ámbar
+      priority: 'media'
+    },
+    {
+      id: 'T-93',
+      title: 'SOPORTE NOMINA PRODUMIL',
+      category: 'GENERAL',
+      requester: 'Herdil Nair Gutierrez',
+      dept: 'Dpto. de Recursos Humanos',
+      tech: 'Alexis Datica',
+      techInit: 'A',
+      date: '10/12/2025',
+      comments: 0,
+      status: 'resolved', // Borde izquierdo verde
+      priority: 'baja'
+    },
+    {
+      id: 'T-92',
+      title: 'RECARGA DE TONER',
+      category: 'GENERAL',
+      requester: 'Carmen Perez',
+      dept: 'Dpto. de Contabilidad',
+      tech: 'Alexis Datica',
+      techInit: 'A',
+      date: '05/12/2025',
+      comments: 0,
+      status: 'critical', // Borde izquierdo rojo
+      priority: 'critica'
+    }
+  ];
+
+  let currentPill = 'todos';
+  let searchQuery = '';
+  let pendingDeleteId = null;
+
+  // ACTUALIZACIÓN DE CONTADORES KPI
+  const updateKPIs = () => {
+    const isCritical = t => (t.priority === 'critical' || t.priority === 'critica' || t.status === 'critical' || t.status === 'critica');
+    const isResolved = t => (t.status === 'resolved' || t.status === 'resuelto');
+    const isPending  = t => (t.status === 'pending' || t.status === 'pendiente');
+    const isProcess  = t => (t.status === 'process' || t.status === 'proceso');
+
+    const critical = tickets.filter(t => isCritical(t) && !isResolved(t)).length;
+    const queue = tickets.filter(isPending).length;
+    const process = tickets.filter(isProcess).length;
+    const assigned = tickets.filter(t => t.tech.toLowerCase().includes('alexis') && !isResolved(t)).length;
+
+    $('#countCritical').textContent = critical;
+    $('#countQueue').textContent = queue;
+    $('#countProcess').textContent = process;
+    $('#countAssigned').textContent = assigned;
+
+    $('#countPillTodos').textContent = tickets.length;
+    $('#countPillPendientes').textContent = queue;
+    $('#countPillMisTickets').textContent = tickets.filter(t => t.tech.toLowerCase().includes('alexis')).length;
+    $('#countPillResueltos').textContent = tickets.filter(isResolved).length;
+
+    const navBadge = $('#navBadge');
+    if (navBadge) navBadge.textContent = tickets.length;
+  };
+
+  // ICONOS SVG SEGÚN ESTADO DEL TICKET
+  const getStatusSvg = status => {
+    switch (status) {
+      case 'resolved':
+      case 'resuelto':
+        return `<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg>`;
+      case 'process':
+      case 'proceso':
+        return `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
+      case 'pending':
+      case 'pendiente':
+        return `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 15"></polyline></svg>`;
+      case 'critical':
+      case 'critica':
+        return `<svg viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+      default:
+        return `<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg>`;
+    }
+  };
+
+  // RENDERIZADO DE TICKETS INDEPENDIENTES (SIN BORDE GENERAL DE TABLA)
+  const container = $('#ticketRowsContainer');
+  const emptyState = $('#emptySearchState');
+
+  const renderTickets = () => {
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = tickets.filter(ticket => {
+      // Filtro de píldora
+      if (currentPill === 'pendiente' && ticket.status !== 'pendiente') return false;
+      if (currentPill === 'resuelto' && ticket.status !== 'resuelto') return false;
+      if (currentPill === 'proceso' && ticket.status !== 'proceso') return false;
+      if (currentPill === 'critica' && ticket.status !== 'critica' && ticket.priority !== 'critica') return false;
+      if (currentPill === 'mis-tickets' && !ticket.tech.toLowerCase().includes('alexis')) return false;
+
+      // Filtro de texto
+      if (q) {
+        const matchTitle = ticket.title.toLowerCase().includes(q);
+        const matchReq = ticket.requester.toLowerCase().includes(q);
+        const matchDept = ticket.dept.toLowerCase().includes(q);
+        const matchId = ticket.id.toLowerCase().includes(q);
+        const matchTech = ticket.tech.toLowerCase().includes(q);
+        if (!matchTitle && !matchReq && !matchDept && !matchId && !matchTech) return false;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '';
+      emptyState.style.display = 'flex';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+    container.innerHTML = filtered.map(t => {
+      return `
+        <article class="ticket-card status-${t.status}" data-id="${t.id}">
+          <div class="ticket-card-top">
+            <div class="ticket-status-icon" title="Estado: ${t.status}">
+              ${getStatusSvg(t.status)}
+            </div>
+
+            <div class="ticket-info">
+              <div class="ticket-meta-top">
+                <span class="ticket-code">#${t.id}</span>
+                <span class="ticket-tag">
+                  <svg style="width:10px;height:10px;stroke:currentColor;fill:none" viewBox="0 0 24 24"><path d="m4 6 7-1 7 7-6 6-7-7z"></path><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"></circle></svg>
+                  ${t.category}
+                </span>
+              </div>
+              <h2 class="ticket-title" title="${t.title}">${t.title}</h2>
+              <div class="ticket-requester">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <a href="javascript:void(0)" class="requester-link" data-requester="${t.requester}" title="Filtrar por este solicitante">${t.requester}</a>
+                <span style="color:var(--text-dim)">• ${t.dept}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-card-bottom">
+            <div class="ticket-tech">
+              <div class="tech-avatar">${t.techInit}</div>
+              <div class="tech-meta">
+                <span class="tech-role">Técnico</span>
+                <a href="javascript:void(0)" class="tech-link" data-tech="${t.tech}" title="Filtrar por este técnico">${t.tech}</a>
+              </div>
+            </div>
+
+            <div class="ticket-date-col">
+              <span class="ticket-date">${t.date}</span>
+              <div class="ticket-indicators">
+                <span class="indicator-item" title="Comentarios">
+                  <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  ${t.comments}
+                </span>
+                <span class="indicator-item" title="Detalles">
+                  <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                </span>
+              </div>
+            </div>
+
+            <div class="ticket-actions">
+              <button class="action-btn view-btn" data-id="${t.id}" title="Ver detalle" type="button">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              <button class="action-btn edit-btn" data-id="${t.id}" title="Editar ticket" type="button">
+                <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+              </button>
+              <button class="action-btn delete delete-btn" data-id="${t.id}" title="Eliminar ticket" type="button">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    attachRowEvents();
+  };
+
+  // EVENTOS DE FILAS Y ACCIONES
+  const attachRowEvents = () => {
+    $$('.requester-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.stopPropagation();
+        const reqName = link.dataset.requester;
+        $('#searchInput').value = reqName;
+        searchQuery = reqName;
+        renderTickets();
+        showToast('Filtro por Solicitante', `Mostrando tickets de ${reqName}`);
+      });
+    });
+
+    $$('.view-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const t = tickets.find(x => x.id === id);
+        if (!t) return;
+        $('#viewCodeBadge').textContent = `#${t.id}`;
+        $('#viewTitle').textContent = t.title;
+        $('#viewRequester').textContent = `${t.requester} (${t.dept})`;
+        $('#viewTech').textContent = t.tech;
+        $('#viewStatus').innerHTML = `<span style="text-transform:capitalize;color:${t.status==='resuelto'?'var(--green)':'var(--orange)'};font-weight:700">${t.status}</span> • Prioridad ${t.priority.toUpperCase()}`;
+        $('#viewDate').textContent = t.date;
+        $('#modalViewTicket').classList.add('show');
+      });
+    });
+
+    $$('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const t = tickets.find(x => x.id === id);
+        if (!t) return;
+        showToast('Edición de Ticket', `Modo edición abierto para #${t.id}.`);
+        $('#ticketTitleInput').value = t.title;
+        $('#ticketRequesterInput').value = t.requester;
+        $('#ticketDeptInput').value = t.dept;
+        $('#ticketCategorySelect').value = t.category;
+        $('#ticketPrioritySelect').value = t.priority;
+        $('#ticketTechSelect').value = t.tech;
+        $('#ticketStatusSelect').value = t.status;
+        $('#modalNewTitle').textContent = `Editar Ticket #${t.id}`;
+        $('#modalNewTicket').dataset.editId = t.id;
+        $('#modalNewTicket').classList.add('show');
+      });
+    });
+
+    $$('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        pendingDeleteId = btn.dataset.id;
+        $('#deleteTargetId').textContent = `#${pendingDeleteId}`;
+        $('#modalDeleteTicket').classList.add('show');
+      });
+    });
+
+    $$('.tech-link').forEach(link => {
+      link.addEventListener('click', () => {
+        const techName = link.dataset.tech;
+        $('#searchInput').value = techName;
+        searchQuery = techName;
+        renderTickets();
+        showToast('Filtro por Técnico', `Mostrando tickets de ${techName}`);
+      });
+    });
+  };
+
+  // FILTRADO POR BÚSQUEDA Y PÍLDORAS
+  $('#searchInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderTickets();
+  });
+
+  $$('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      $$('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      currentPill = pill.dataset.pill;
+      renderTickets();
+    });
+  });
+
+  // FILTRADO RÁPIDO DESDE TARJETAS KPI
+  $$('.kpi').forEach(kpi => {
+    kpi.addEventListener('click', () => {
+      const targetFilter = kpi.dataset.filter;
+      currentPill = targetFilter;
+      $$('.filter-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.pill === targetFilter);
+      });
+      renderTickets();
+      showToast('Filtro rápido', `Mostrando tickets con filtro: ${targetFilter}.`);
+    });
+  });
+
+  // SWITCH TOGGLE DE VISTA COMPACTA
+  $('#viewToggle').addEventListener('change', e => {
+    container.classList.toggle('compact-view', e.target.checked);
+    showToast('Vista de lista', e.target.checked ? 'Vista compacta activada.' : 'Vista estándar.');
+  });
+
+  // FORMULARIO: ALTA Y EDICIÓN DE TICKETS
+  const modalNew = $('#modalNewTicket');
+  $('#btnOpenNewTicket').addEventListener('click', () => {
+    $('#newTicketForm').reset();
+    delete modalNew.dataset.editId;
+    $('#modalNewTitle').textContent = 'Registrar Nuevo Ticket';
+    modalNew.classList.add('show');
+  });
+
+  const closeNewModal = () => modalNew.classList.remove('show');
+  $('#closeNewTicket').addEventListener('click', closeNewModal);
+  $('#cancelNewTicket').addEventListener('click', closeNewModal);
+
+  $('#newTicketForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const editId = modalNew.dataset.editId;
+
+    if (editId) {
+      // Edición existente
+      const t = tickets.find(x => x.id === editId);
+      if (t) {
+        t.title = $('#ticketTitleInput').value.trim();
+        t.requester = $('#ticketRequesterInput').value.trim();
+        t.dept = $('#ticketDeptInput').value.trim();
+        t.category = $('#ticketCategorySelect').value;
+        t.priority = $('#ticketPrioritySelect').value;
+        t.tech = $('#ticketTechSelect').value;
+        t.techInit = t.tech.charAt(0).toUpperCase();
+        t.status = $('#ticketStatusSelect').value;
+        showToast('Ticket actualizado', `Ticket #${t.id} guardado con éxito.`);
+      }
+    } else {
+      // Nuevo ticket
+      const nextNum = tickets.length > 0 
+        ? Math.max(...tickets.map(t => parseInt(t.id.replace('T-', '')) || 90)) + 1 
+        : 97;
+      const techVal = $('#ticketTechSelect').value;
+      const newT = {
+        id: `T-${nextNum}`,
+        title: $('#ticketTitleInput').value.trim(),
+        category: $('#ticketCategorySelect').value,
+        requester: $('#ticketRequesterInput').value.trim(),
+        dept: $('#ticketDeptInput').value.trim(),
+        tech: techVal,
+        techInit: techVal.charAt(0).toUpperCase(),
+        date: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        comments: 0,
+        status: $('#ticketStatusSelect').value,
+        priority: $('#ticketPrioritySelect').value
+      };
+      tickets.unshift(newT);
+      showToast('Nuevo ticket', `Ticket #${newT.id} registrado correctamente.`);
+    }
+
+    updateKPIs();
+    renderTickets();
+    closeNewModal();
+  });
+
+  // MODAL DETALLE
+  const closeViewModal = () => $('#modalViewTicket').classList.remove('show');
+  $('#closeViewTicket').addEventListener('click', closeViewModal);
+  $('#closeViewBtn').addEventListener('click', closeViewModal);
+
+  // MODAL ELIMINAR
+  const closeDeleteModal = () => $('#modalDeleteTicket').classList.remove('show');
+  $('#closeDeleteModal').addEventListener('click', closeDeleteModal);
+  $('#cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+  $('#confirmDeleteBtn').addEventListener('click', () => {
+    if (pendingDeleteId) {
+      tickets = tickets.filter(t => t.id !== pendingDeleteId);
+      showToast('Ticket eliminado', `El ticket #${pendingDeleteId} fue retirado.`);
+      pendingDeleteId = null;
+      updateKPIs();
+      renderTickets();
+    }
+    closeDeleteModal();
+  });
+
+  // GESTIÓN DE GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const borderLabel = $('#borderLabel');
+    if (borderLabel) borderLabel.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('support-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes del módulo fijados a ${w}.`);
+  };
+
+  $('#borderToggle')?.addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // GESTIÓN DE COLOR DE ACENTO
+  const accentInputs = [$('#accentColor'), $('#accentColorPanel')].filter(Boolean);
+  const accentHexText = $('#accentHex');
+  const palettePresets = ['#e11d48', '#ff5a00', '#0070f3', '#10b981', '#7928ca', '#f5a623', '#06b6d4'];
+
+  const hexToRgb = hex => {
+    const clean = hex.replace('#', '');
+    return {
+      r: parseInt(clean.substring(0, 2), 16),
+      g: parseInt(clean.substring(2, 4), 16),
+      b: parseInt(clean.substring(4, 6), 16)
+    };
+  };
+
+  const applyAccent = (colorHex, notify = false) => {
+    const hex = colorHex.toLowerCase();
+    document.documentElement.style.setProperty('--orange', hex);
+    const { r, g, b } = hexToRgb(hex);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInputs.forEach(input => { if (input) input.value = hex; });
+    if (accentHexText) accentHexText.textContent = hex.toUpperCase();
+    localStorage.setItem('support-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado al módulo.`);
+  };
+
+  accentInputs.forEach(input => {
+    input.addEventListener('input', e => applyAccent(e.target.value, false));
+    input.addEventListener('change', e => applyAccent(e.target.value, true));
+  });
+
+  const swatchesWrap = $('#accentSwatches');
+  if (swatchesWrap) {
+    palettePresets.forEach(color => {
+      const btn = document.createElement('button');
+      btn.className = 'swatch';
+      btn.style.backgroundColor = color;
+      btn.type = 'button';
+      btn.title = color;
+      btn.addEventListener('click', () => applyAccent(color, true));
+      swatchesWrap.appendChild(btn);
+    });
+  }
+
+  // TEMA CLARO (#FFFFFF PURO) / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('support-theme-mode', theme);
+    if (notify) showToast('Tema actualizado', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle')?.addEventListener('click', () => {
+    const currentIsLight = document.body.classList.contains('light');
+    setTheme(currentIsLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL DE APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  const openAppearance = () => {
+    appearanceBackdrop.classList.add('show');
+    appearanceBackdrop.setAttribute('aria-hidden', 'false');
+  };
+  const closeAppearance = () => {
+    appearanceBackdrop.classList.remove('show');
+    appearanceBackdrop.setAttribute('aria-hidden', 'true');
+  };
+
+  $('#settingsItem')?.addEventListener('click', openAppearance);
+  $('#closeAppearance')?.addEventListener('click', closeAppearance);
+  $('#doneAppearance')?.addEventListener('click', closeAppearance);
+  appearanceBackdrop?.addEventListener('click', e => {
+    if (e.target === appearanceBackdrop) closeAppearance();
+  });
+
+  // SIDEBAR FLOTANTE Y RESPONSIVE DRAWER
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn')?.addEventListener('click', toggleSidebar);
+  backdrop?.addEventListener('click', closeSidebar);
+
+  $$('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (item.id === 'settingsItem') return;
+      $$('.nav-item').forEach(x => x.classList.remove('active'));
+      item.classList.add('active');
+      const label = item.querySelector('.nav-label')?.textContent || 'Módulo';
+      showToast(label, `Navegando a ${label.toLowerCase()}.`);
+      if (window.innerWidth <= 768) closeSidebar();
+    });
+  });
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedAccent = localStorage.getItem('support-accent-color') || '#e11d48';
+  const savedTheme = localStorage.getItem('support-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('support-border-width') || '2px';
+  applyAccent(savedAccent, false);
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+
+  // INICIALIZACIÓN DE DATOS
+  updateKPIs();
+  renderTickets();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeNewModal();
+      closeViewModal();
+      closeDeleteModal();
+      closeAppearance();
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

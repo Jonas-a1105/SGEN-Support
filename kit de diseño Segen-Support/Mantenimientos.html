@@ -1,0 +1,2318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Gestión de Mantenimientos — Planificación y Salud de Activos</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #4f46e5; /* Color de acento: Índigo de Mantenimientos */
+    --orange-rgb: 79, 70, 229;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta de estados */
+    --green: #10b981;
+    --blue: #2563eb;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .section-kicker-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .view-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CABECERA DEL MÓDULO */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--orange);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .module-subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .btn-primary-action {
+    height: 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--orange);
+    background: var(--orange);
+    color: #ffffff;
+    padding: 0 18px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+  }
+
+  .btn-primary-action:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  .btn-secondary-action {
+    height: 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    padding: 0 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary-action:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  /* FILA DE 3 KPIS OPERATIVAS */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .glass-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    position: relative;
+    overflow: hidden;
+    transition: border-width 0.2s ease, border-color 0.2s ease;
+  }
+
+  .kpi {
+    cursor: pointer;
+    min-height: 98px;
+  }
+
+  .kpi .card-pad {
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* TEXTO DE KPI EN MINÚSCULAS NORMALES (SIN UPPERCASE) */
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 600 !important;
+    color: var(--text-muted);
+    text-transform: none !important;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700 !important;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .kpi-subtext {
+    font-size: 12px;
+    color: var(--green);
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .kpi-icon-bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .kpi.salud-flota .kpi-icon-bubble {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--green);
+    border: var(--stroke-w) solid rgba(16, 185, 129, 0.35);
+  }
+
+  .kpi.mantenimientos-ok .kpi-icon-bubble {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--green);
+    border: var(--stroke-w) solid rgba(16, 185, 129, 0.35);
+  }
+
+  .kpi.proximos-dias .kpi-icon-bubble {
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--blue);
+    border: var(--stroke-w) solid rgba(37, 99, 235, 0.35);
+  }
+
+  .kpi-icon-bubble svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .accent-bottom {
+    height: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    background: var(--orange);
+  }
+
+  .kpi:hover .accent-bottom {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* BARRA DE HERRAMIENTAS Y FILTROS */
+  .toolbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .switch-wrap {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .switch-input { display: none; }
+
+  .switch-rail {
+    width: 44px;
+    height: 24px;
+    background: var(--stroke);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .switch-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease;
+  }
+
+  .switch-input:checked + .switch-rail {
+    background: var(--orange);
+    border-color: var(--orange);
+  }
+
+  .switch-input:checked + .switch-rail .switch-dot {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 20px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .filter-pill:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+  }
+
+  .filter-pill.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+
+  body.light .filter-pill.active {
+    background: #191c21;
+    border-color: #191c21;
+    color: #ffffff;
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 260px;
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 14px 0 38px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--orange);
+  }
+
+  .filter-btn-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .filter-btn-icon:hover {
+    border-color: var(--stroke-hover);
+    color: var(--text);
+  }
+
+  .filter-btn-icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* ESTADO VACÍO ELEGANTE */
+  .empty-state-panel {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 64px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 14px;
+  }
+
+  .empty-calendar-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--stroke-subtle);
+    border: var(--stroke-w) solid var(--stroke);
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+  }
+
+  .empty-calendar-icon svg {
+    width: 26px;
+    height: 26px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  .empty-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .empty-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 380px;
+  }
+
+  /* TABLA DINÁMICA DE MANTENIMIENTOS */
+  .table-container-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+    display: none;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .custom-table th {
+    padding: 14px 18px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+  }
+
+  .custom-table td {
+    padding: 14px 18px;
+    font-size: 13px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .custom-table tr:hover td {
+    background: var(--stroke-subtle);
+  }
+
+  .badge-code {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--stroke-subtle);
+    border: 1px solid var(--stroke);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .badge-type-pill {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700 !important;
+    display: inline-block;
+  }
+
+  .badge-type-pill.preventivo {
+    background: rgba(37, 99, 235, 0.15);
+    color: var(--blue);
+  }
+
+  .badge-type-pill.correctivo {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--red);
+  }
+
+  .status-pill {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .status-pill.pendiente {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--yellow);
+  }
+
+  .status-pill.en-progreso {
+    background: rgba(37, 99, 235, 0.15);
+    color: var(--blue);
+  }
+
+  .status-pill.completado {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--green);
+  }
+
+  .tbl-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .tbl-action-btn:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .tbl-action-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* PAGINACIÓN */
+  .pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-nav-btn {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .page-nav-btn:hover:not(:disabled) {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .page-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* VISTA FORMULARIO: PROGRAMAR MANTENIMIENTO */
+  .schedule-form-view {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .schedule-form-view.active {
+    display: flex;
+  }
+
+  .breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .breadcrumb-link {
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    border-bottom: 1.5px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--orange);
+    border-color: var(--orange);
+  }
+
+  .schedule-grid-layout {
+    display: grid;
+    grid-template-columns: 1.45fr 0.85fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .form-section-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    font-size: 13px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .card-section-header svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    color: var(--orange);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--orange);
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* TIPO DE MANTENIMIENTO SEGMENTED CONTROL */
+  .segmented-control {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 12px;
+    background: var(--bg-sub);
+    overflow: hidden;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .segment-btn {
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .segment-btn.active {
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--stroke);
+  }
+
+  body.light .segment-btn.active {
+    background: #ffffff;
+    color: #191c21;
+    border-color: #d9dce1;
+  }
+
+  /* CHECKLIST DE TAREAS */
+  .checklist-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .checklist-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .checklist-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .checklist-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+  }
+
+  .checklist-item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .checklist-item.done span {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .btn-remove-task {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 16px;
+  }
+
+  .btn-remove-task:hover {
+    color: var(--red);
+  }
+
+  /* RECURSOS Y COSTOS */
+  .helper-text {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(520px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head, .appearance-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn.primary {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #ffffff;
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* TOAST NOTIFICACIÓN */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 1080px) {
+    .main {
+      margin-left: 78px;
+    }
+    .kpi-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .schedule-grid-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    /* KPIS EN 2 COLUMNAS ESTRICTAS EN MÓVIL */
+    .kpi-row {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px;
+    }
+
+    .form-row-2 {
+      grid-template-columns: 1fr !important;
+    }
+
+    .toolbar-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .toolbar-right {
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .search-box {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de mantenimientos">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item active" data-section="maintenance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <span class="nav-label">Mantenimientos</span>
+      </div>
+      <div class="nav-item" data-section="performance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M5 19V9m7 10V5m7 14v-8"></path></svg>
+        </div>
+        <span class="nav-label">Rendimiento</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#4f46e5" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ==============================================================
+           VISTA 1: GESTIÓN DE MANTENIMIENTOS (LISTADO / ESTADO VACÍO)
+           ============================================================== -->
+      <section class="view-wrapper" id="viewMaintenanceList">
+        
+        <!-- CABECERA DEL MÓDULO -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Gestión de Mantenimientos</h1>
+              <p class="module-subtitle">Planificación y seguimiento de la salud de los activos.</p>
+            </div>
+          </div>
+          <button class="btn-primary-action" id="btnOpenScheduleForm" type="button">
+            <span>+</span>
+            <span>Programar Nuevo</span>
+          </button>
+        </div>
+
+        <!-- FILA DE 3 KPIS OPERATIVAS (SIN UPPERCASE) -->
+        <div class="kpi-row">
+          <div class="glass-card kpi salud-flota" data-kpi="salud">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Salud de flota</div>
+                <div class="kpi-value" id="kpiFleetHealth">95%</div>
+                <div class="kpi-subtext">↗ Operatividad Alta</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi mantenimientos-ok" data-kpi="realizados">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Mantenimientos realizados</div>
+                <div class="kpi-value" id="kpiCompletedCount">0</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Total acumulado</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi proximos-dias" data-kpi="proximos">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Próximos 7 días</div>
+                <div class="kpi-value" id="kpiUpcomingCount">0</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+        </div>
+
+        <!-- BARRA DE FILTROS, SWITCH Y BÚSQUEDA -->
+        <div class="toolbar-card">
+          <div class="toolbar-left">
+            <label class="switch-wrap" title="Alternar visualización de órdenes">
+              <input type="checkbox" id="denseSwitch" class="switch-input" />
+              <div class="switch-rail"><div class="switch-dot"></div></div>
+            </label>
+            <div class="filter-pills" id="filterPillsGroup">
+              <button class="filter-pill active" data-pill="all" type="button">Todos</button>
+              <button class="filter-pill" data-pill="Pendiente" type="button">Pendientes</button>
+              <button class="filter-pill" data-pill="Programado" type="button">Programados</button>
+              <button class="filter-pill" data-pill="Historial" type="button">Historial</button>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" class="search-input" id="searchMaintenanceInput" placeholder="Buscar equipo..." autocomplete="off" />
+            </div>
+            <button class="filter-btn-icon" id="btnFilterTrigger" type="button" title="Filtros avanzados">
+              <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ESTADO VACÍO (IDÉNTICO A LA CAPTURA) -->
+        <div class="empty-state-panel" id="emptyStatePanel">
+          <div class="empty-calendar-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+          <h2 class="empty-title">Sin mantenimientos</h2>
+          <p class="empty-desc">No hay registros de mantenimientos en el sistema actualmente.</p>
+        </div>
+
+        <!-- TABLA DINÁMICA DE MANTENIMIENTOS (MOSTRADA AL REGISTRAR) -->
+        <div class="table-container-card" id="maintenanceTableContainer">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>CÓDIGO ACTIVO</th>
+                  <th>DESCRIPCIÓN</th>
+                  <th>TIPO</th>
+                  <th>FECHA PROGRAMADA</th>
+                  <th>TÉCNICO</th>
+                  <th>ESTADO</th>
+                  <th>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMaintenance">
+                <!-- Rellenado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PAGINACIÓN INFERIOR -->
+        <div class="pagination-footer">
+          <div>
+            Mostrando <strong id="showingCountText">0</strong> de <strong id="totalCountText">0</strong> registros
+            <span style="margin-left:14px">Mostrar:</span>
+            <select id="selectPerPage" style="background:transparent;border:var(--stroke-w) solid var(--stroke);color:var(--text);border-radius:6px;padding:2px 8px;font-size:12px;">
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="pagination-controls">
+            <button class="page-nav-btn" id="btnPrevPage" disabled type="button">← Anterior</button>
+            <span>Página <strong id="currPageNum">1</strong> / 1</span>
+            <button class="page-nav-btn" id="btnNextPage" disabled type="button">Siguiente →</button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==============================================================
+           VISTA 2: PROGRAMAR MANTENIMIENTO (FORMULARIO DETALLADO)
+           ============================================================== -->
+      <section class="view-wrapper schedule-form-view" id="viewScheduleForm">
+        
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumb-nav">
+          <a class="breadcrumb-link" id="linkBreadcrumbBack">Mantenimientos</a>
+          <span>›</span>
+          <span style="color:var(--text);">Programar</span>
+        </div>
+
+        <!-- ENCABEZADO DEL FORMULARIO -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" style="background:#2563eb;">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><line x1="12" y1="14" x2="12" y2="18"></line><line x1="10" y1="16" x2="14" y2="16"></line></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Programar Mantenimiento</h1>
+              <p class="module-subtitle">Complete los detalles técnicos y logísticos para la orden de trabajo.</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="btn-secondary-action" id="btnCancelScheduleForm" type="button">
+              <span>←</span>
+              <span>Cancelar</span>
+            </button>
+            <button class="btn-primary-action" id="btnSaveMaintenanceOrder" type="button" style="background:#2563eb;border-color:#2563eb;">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Guardar Orden</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CUADRÍCULA DEL FORMULARIO A 2 COLUMNAS -->
+        <form id="formMaintenanceOrder" class="schedule-grid-layout">
+          
+          <!-- COLUMNA IZQUIERDA: ACTIVO Y DETALLE DEL TRABAJO -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            
+            <!-- TARJETA 1: SELECCIÓN DEL ACTIVO -->
+            <div class="form-section-card">
+              <div class="card-section-header">
+                <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                <span>1. Selección del Activo</span>
+              </div>
+
+              <div class="form-group">
+                <div style="position:relative;">
+                  <svg viewBox="0 0 24 24" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--text-muted);fill:none;stroke-width:2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <input type="text" class="form-input" id="searchAssetInput" placeholder="Buscar por serial, nombre o código..." style="padding-left:38px;" autocomplete="off" required />
+                </div>
+                <span class="helper-text">Ingrese el serial, código de activo o nombre para buscar.</span>
+                
+                <!-- SELECTOR DE ACTIVOS RÁPIDO -->
+                <div style="margin-top:6px;">
+                  <select class="form-select" id="quickAssetSelect">
+                    <option value="" disabled selected>-- O seleccione un equipo del inventario --</option>
+                    <option value="INTEL N5095 (00271)">INTEL N5095 • ID: 00271 (Dpto. Recursos Humanos)</option>
+                    <option value="EPSON L5590 (00272)">EPSON L5590 • ID: 00272 (Dpto. Recursos Humanos)</option>
+                    <option value="INTEL N5095 (00269)">INTEL N5095 • ID: 00269 (Dpto. Producción)</option>
+                    <option value="HP OJ-7740 (00266)">HP OJ-7740 • ID: 00266 (Dpto. Recursos Humanos)</option>
+                    <option value="PANASONIC GENERICO (00265)">PANASONIC GENERICO • ID: 00265 (Logística)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- TARJETA 2: DETALLE DEL TRABAJO -->
+            <div class="form-section-card">
+              <div class="card-section-header">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <span>2. Detalle del Trabajo</span>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label">Tipo de Mantenimiento</label>
+                  <div class="segmented-control">
+                    <button type="button" class="segment-btn active" id="btnTypePreventivo" data-type="Preventivo">Preventivo</button>
+                    <button type="button" class="segment-btn" id="btnTypeCorrectivo" data-type="Correctivo">Correctivo</button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="selectInitialStatus">Estado Inicial</label>
+                  <select class="form-select" id="selectInitialStatus">
+                    <option value="Pendiente" selected>Pendiente</option>
+                    <option value="En Progreso">En Progreso</option>
+                    <option value="Programado">Programado</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="textGeneralDesc">Descripción General</label>
+                <textarea class="form-textarea" id="textGeneralDesc" rows="3" placeholder="Describa el objetivo o la falla detectada..." required></textarea>
+              </div>
+
+              <!-- CHECKLIST DE TAREAS -->
+              <div class="checklist-box">
+                <div class="checklist-header-row">
+                  <span class="form-label" style="display:flex;align-items:center;gap:6px;">
+                    <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                    <span>Checklist de Tareas</span>
+                  </span>
+                  <span class="badge-code" id="taskCountBadge">0 tareas</span>
+                </div>
+
+                <div class="checklist-input-group">
+                  <input type="text" class="form-input" id="inputNewTaskText" placeholder="+ Añadir nueva tarea y presionar Enter..." />
+                  <button class="btn" id="btnAddTaskToList" type="button" style="height:38px;">Añadir</button>
+                </div>
+
+                <div class="checklist-items-list" id="checklistContainer">
+                  <!-- Tareas insertadas dinámicamente -->
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="textObservations">Observaciones Adicionales</label>
+                <textarea class="form-textarea" id="textObservations" rows="3" placeholder="Notas internas..."></textarea>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- COLUMNA DERECHA: PLANIFICACIÓN Y RECURSOS -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            
+            <!-- TARJETA 3: PLANIFICACIÓN -->
+            <div class="form-section-card">
+              <div class="card-section-header">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>Planificación</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputScheduleDateTime">Fecha y Hora Programada</label>
+                <input type="datetime-local" class="form-input" id="inputScheduleDateTime" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputEstimatedDuration">Duración Estimada (minutos)</label>
+                <input type="number" class="form-input" id="inputEstimatedDuration" value="60" min="5" step="5" required />
+                <span class="helper-text">El sistema cambiará el estado automáticamente tras este tiempo.</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="selectRecurrence">Recurrencia (Próxima Fecha Auto.)</label>
+                <select class="form-select" id="selectRecurrence">
+                  <option value="Una sola vez" selected>Una sola vez</option>
+                  <option value="Semanal">Semanal</option>
+                  <option value="Mensual">Mensual</option>
+                  <option value="Trimestral">Trimestral</option>
+                  <option value="Semestral">Semestral</option>
+                  <option value="Anual">Anual</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputNextDateEstimated">Próxima Fecha (Estimada)</label>
+                <input type="date" class="form-input" id="inputNextDateEstimated" />
+              </div>
+            </div>
+
+            <!-- TARJETA 4: RECURSOS -->
+            <div class="form-section-card">
+              <div class="card-section-header">
+                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <span>Recursos</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="selectAssignedTech">Asignado a (Técnico)</label>
+                <select class="form-select" id="selectAssignedTech" required>
+                  <option value="" disabled selected>Seleccionar técnico...</option>
+                  <option value="Alexis Datica">Alexis Datica (Soporte TI)</option>
+                  <option value="Marcos Rodriguez">Marcos Rodriguez (Redes & Servidores)</option>
+                  <option value="Lucia Mendez">Lucia Mendez (Hardware & Equipos)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputEstimatedCost">Costo Estimado ($)</label>
+                <input type="number" class="form-input" id="inputEstimatedCost" value="0.00" step="0.01" min="0" />
+              </div>
+            </div>
+
+          </div>
+
+        </form>
+
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: APARIENCIA Y ESTILO -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn primary" id="doneAppearance" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Mantenimientos</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // NOTIFICADOR TOAST
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // DATOS REACTIVOS DE MANTENIMIENTO
+  let mantenimientos = [];
+  let currentTasksList = [];
+  let currentMaintenanceType = 'Preventivo';
+  let activePillFilter = 'all';
+  let searchQuery = '';
+
+  // FECHA Y HORA ACTUAL POR DEFECTO
+  const setInitialScheduleTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    $('#inputScheduleDateTime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // NAVEGACIÓN ENTRE VISTAS (LISTADO ↔ FORMULARIO)
+  const showListView = () => {
+    $('#viewScheduleForm').classList.remove('active');
+    $('#viewMaintenanceList').style.display = 'flex';
+  };
+
+  const showScheduleForm = () => {
+    $('#viewMaintenanceList').style.display = 'none';
+    $('#viewScheduleForm').classList.add('active');
+    setInitialScheduleTime();
+  };
+
+  $('#btnOpenScheduleForm').addEventListener('click', showScheduleForm);
+  $('#btnCancelScheduleForm').addEventListener('click', showListView);
+  $('#linkBreadcrumbBack').addEventListener('click', showListView);
+
+  // CONTROL DEL SEGMENTO: PREVENTIVO VS CORRECTIVO
+  const btnTypePreventivo = $('#btnTypePreventivo');
+  const btnTypeCorrectivo = $('#btnTypeCorrectivo');
+
+  btnTypePreventivo.addEventListener('click', () => {
+    btnTypePreventivo.classList.add('active');
+    btnTypeCorrectivo.classList.remove('active');
+    currentMaintenanceType = 'Preventivo';
+  });
+
+  btnTypeCorrectivo.addEventListener('click', () => {
+    btnTypeCorrectivo.classList.add('active');
+    btnTypePreventivo.classList.remove('active');
+    currentMaintenanceType = 'Correctivo';
+  });
+
+  // VINCULACIÓN DEL SELECTOR RÁPIDO DE ACTIVOS AL INPUT
+  $('#quickAssetSelect').addEventListener('change', e => {
+    if (e.target.value) {
+      $('#searchAssetInput').value = e.target.value;
+    }
+  });
+
+  // GESTIÓN DE LA CHECKLIST DE TAREAS
+  const taskInput = $('#inputNewTaskText');
+  const checklistContainer = $('#checklistContainer');
+  const taskCountBadge = $('#taskCountBadge');
+
+  const renderChecklist = () => {
+    taskCountBadge.textContent = `${currentTasksList.length} tareas`;
+    checklistContainer.innerHTML = currentTasksList.map((task, idx) => `
+      <div class="checklist-item ${task.done ? 'done' : ''}">
+        <label class="checklist-item-left">
+          <input type="checkbox" data-idx="${idx}" class="task-checkbox" ${task.done ? 'checked' : ''} style="cursor:pointer;" />
+          <span>${task.text}</span>
+        </label>
+        <button type="button" class="btn-remove-task" data-idx="${idx}" title="Eliminar tarea">×</button>
+      </div>
+    `).join('');
+
+    $$('.task-checkbox').forEach(cb => {
+      cb.addEventListener('change', e => {
+        const i = e.target.dataset.idx;
+        currentTasksList[i].done = e.target.checked;
+        renderChecklist();
+      });
+    });
+
+    $$('.btn-remove-task').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const i = e.target.dataset.idx;
+        currentTasksList.splice(i, 1);
+        renderChecklist();
+      });
+    });
+  };
+
+  const addTask = () => {
+    const text = taskInput.value.trim();
+    if (!text) return;
+    currentTasksList.push({ text, done: false });
+    taskInput.value = '';
+    renderChecklist();
+  };
+
+  $('#btnAddTaskToList').addEventListener('click', addTask);
+  taskInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTask();
+    }
+  });
+
+  // ACTUALIZACIÓN DE CONTADORES Y TABLA DE MANTENIMIENTOS
+  const updateMaintenanceUI = () => {
+    const emptyPanel = $('#emptyStatePanel');
+    const tableContainer = $('#maintenanceTableContainer');
+    const tbody = $('#tbodyMaintenance');
+
+    const total = mantenimientos.length;
+    const completed = mantenimientos.filter(m => m.status === 'Completado').length;
+    const upcoming = mantenimientos.filter(m => m.status !== 'Completado').length;
+
+    $('#kpiCompletedCount').textContent = completed;
+    $('#kpiUpcomingCount').textContent = upcoming;
+    $('#showingCountText').textContent = total;
+    $('#totalCountText').textContent = total;
+
+    if (total === 0) {
+      emptyPanel.style.display = 'flex';
+      tableContainer.style.display = 'none';
+      return;
+    }
+
+    emptyPanel.style.display = 'none';
+    tableContainer.style.display = 'block';
+
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = mantenimientos.filter(item => {
+      if (activePillFilter !== 'all' && item.status !== activePillFilter) return false;
+      if (q) {
+        return item.asset.toLowerCase().includes(q) ||
+               item.desc.toLowerCase().includes(q) ||
+               item.tech.toLowerCase().includes(q);
+      }
+      return true;
+    });
+
+    tbody.innerHTML = filtered.map(item => `
+      <tr>
+        <td><span class="badge-code">${item.asset}</span></td>
+        <td><strong style="color:var(--text);">${item.desc}</strong></td>
+        <td><span class="badge-type-pill ${item.type.toLowerCase()}">${item.type}</span></td>
+        <td style="color:var(--text-muted);">${item.datetime.replace('T', ' ')}</td>
+        <td>${item.tech}</td>
+        <td>
+          <span class="status-pill ${item.status.toLowerCase().replace(' ', '-')}">
+            ● ${item.status}
+          </span>
+        </td>
+        <td>
+          <button class="tbl-action-btn btn-delete-order" data-id="${item.id}" title="Eliminar orden" type="button">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    $$('.btn-delete-order').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = parseInt(btn.dataset.id, 10);
+        mantenimientos = mantenimientos.filter(x => x.id !== id);
+        updateMaintenanceUI();
+        showToast('Orden Retirada', 'El mantenimiento fue eliminado.');
+      });
+    });
+  };
+
+  // GUARDAR ORDEN DE MANTENIMIENTO
+  $('#btnSaveMaintenanceOrder').addEventListener('click', () => {
+    const asset = $('#searchAssetInput').value.trim();
+    const desc = $('#textGeneralDesc').value.trim();
+    const tech = $('#selectAssignedTech').value;
+    const datetime = $('#inputScheduleDateTime').value;
+    const status = $('#selectInitialStatus').value;
+
+    if (!asset) {
+      showToast('Campo Requerido', 'Por favor indique el activo para la orden.');
+      return;
+    }
+    if (!desc) {
+      showToast('Campo Requerido', 'Por favor describa el trabajo a realizar.');
+      return;
+    }
+    if (!tech) {
+      showToast('Campo Requerido', 'Por favor seleccione un técnico responsable.');
+      return;
+    }
+
+    const newOrder = {
+      id: Date.now(),
+      asset,
+      desc,
+      type: currentMaintenanceType,
+      tech,
+      datetime,
+      status,
+      tasks: [...currentTasksList],
+      duration: $('#inputEstimatedDuration').value,
+      cost: $('#inputEstimatedCost').value
+    };
+
+    mantenimientos.unshift(newOrder);
+    currentTasksList = [];
+    renderChecklist();
+    $('#formMaintenanceOrder').reset();
+    updateMaintenanceUI();
+    showListView();
+    showToast('Orden Registrada', `Mantenimiento para ${asset} programado exitosamente.`);
+  });
+
+  // FILTRADO POR PÍLDORAS
+  $$('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      $$('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activePillFilter = pill.dataset.pill;
+      updateMaintenanceUI();
+      showToast('Filtro', `Mostrando órdenes: ${pill.textContent}`);
+    });
+  });
+
+  // BÚSQUEDA EN TIEMPO REAL
+  $('#searchMaintenanceInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    updateMaintenanceUI();
+  });
+
+  // CONTROL DEL GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('maint-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes del módulo fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // CONTROL DE COLOR DE ACENTO
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+    localStorage.setItem('maint-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('maint-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('maint-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('maint-border-width') || '2px';
+  const savedAccent = localStorage.getItem('maint-accent-color') || '#4f46e5';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // INICIALIZACIÓN
+  updateMaintenanceUI();
+  setInitialScheduleTime();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

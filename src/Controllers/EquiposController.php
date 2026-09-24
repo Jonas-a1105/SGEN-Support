@@ -37,7 +37,7 @@ class EquiposController extends Controller
     public function index()
     {
         if ($_SESSION['rol'] === 'admin') {
-            $equipos = $this->equipoModel->findAssigned();
+        $equipos = $this->equipoModel->findAllWithDetails();
         } elseif ($_SESSION['rol'] === 'tecnico' || $_SESSION['rol'] === 'consultor') {
             $deptId = $_SESSION['departamento_id'];
             $equipos = $deptId ? $this->equipoModel->findByDepartamentoId($deptId) : [];

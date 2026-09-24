@@ -1,0 +1,69 @@
+# ==============================================================================
+# SGEN-Support - Git Attributes Configuration
+# Standardizes line endings, diff drivers, and archive export rules across OS
+# ==============================================================================
+
+# Set default behavior to automatically normalize line endings to LF
+* text=auto eol=lf
+
+# ------------------------------------------------------------------------------
+# Source Code & Text Files (Enforce LF)
+# ------------------------------------------------------------------------------
+*.php text eol=lf diff=php
+*.vue text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+*.sql text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.env.example text eol=lf
+
+# ------------------------------------------------------------------------------
+# Windows Shell Scripts (Require CRLF for Command Prompt / PowerShell)
+# ------------------------------------------------------------------------------
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# ------------------------------------------------------------------------------
+# Unix Shell Scripts (Require LF)
+# ------------------------------------------------------------------------------
+*.sh text eol=lf
+
+# ------------------------------------------------------------------------------
+# Binary Assets (Prevent any line-ending normalization or corruption)
+# ------------------------------------------------------------------------------
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.svg text eol=lf
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.exe binary
+*.dll binary
+
+# ------------------------------------------------------------------------------
+# Export-Ignore (Exclude from git archive / distribution bundles)
+# ------------------------------------------------------------------------------
+.github export-ignore
+tests export-ignore
+.phpunit.cache export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+CONTRIBUTING.md export-ignore

@@ -347,6 +347,7 @@
     margin-top: 0.5rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -573,7 +574,7 @@
     background: var(--bg-card);
     border-radius: 1rem;
     border: 1px solid var(--dept-slate-200);
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 

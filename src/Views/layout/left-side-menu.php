@@ -10,17 +10,7 @@ function isActive($link, $currentUri) {
 
 <aside class="ms-sidebar">
     <!-- 1. Area del Logo -->
-    <div class="ms-brand-area">
-        <a href="<?= BASE_URL ?>" class="ms-brand-group">
-            <div class="ms-logo-box">
-                <!-- Logo SVG simple -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-logo-svg">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
-                </svg>
-            </div>
-            <span class="ms-brand-text">SGEN-Support</span>
-        </a>
-    </div>
+
 
     <!-- 2. Items de Navegacion -->
     <div class="ms-nav-container">
@@ -104,6 +94,21 @@ function isActive($link, $currentUri) {
                         </svg>
                     </div>
                     <span class="ms-link-text">Mantenimientos</span>
+                </a>
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['rol']) && in_array($_SESSION['rol'], ['admin', 'tecnico'])): ?>
+                <!-- Categorías -->
+                <a href="<?= BASE_URL ?>categorias" class="ms-link <?= isActive('categorias', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/Tags -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Categorías</span>
                 </a>
                 <?php endif; ?>
             </div>
@@ -192,6 +197,16 @@ function isActive($link, $currentUri) {
                     </div>
                     <span class="ms-link-text">Log Sesión</span>
                 </a>
+                <a href="<?= BASE_URL ?>configuracion" class="ms-link <?= isActive('configuracion', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12.22 2h-.44a2 2 0 0 1-2 1.08l-.68.61a2 2 0 0 1-2.48.54l-.84-.44a2 2 0 0 0-2.22.46l-.54.54a2 2 0 0 0-.46 2.22l.44.84a2 2 0 0 1-.54 2.48l-.61.68a2 2 0 0 1-1.08 2v.44a2 2 0 0 1 1.08 2l.61.68a2 2 0 0 1 .54 2.48l-.44.84a2 2 0 0 0 .46 2.22l.54.54a2 2 0 0 0 2.22-.46l.84-.44a2 2 0 0 1 2.48.54l.68.61a2 2 0 0 1 2 1.08h.44a2 2 0 0 1 2-1.08l.68-.61a2 2 0 0 1 2.48-.54l.84.44a2 2 0 0 0 2.22-.46l.54-.54a2 2 0 0 0 .46-2.22l-.44-.84a2 2 0 0 1 .54-2.48l.61-.68a2 2 0 0 1 1.08-2v-.44a2 2 0 0 1-1.08-2l-.61-.68a2 2 0 0 1-.54-2.48l.44-.84a2 2 0 0 0-.46-2.22l-.54-.54a2 2 0 0 0-2.22.46l-.84.44a2 2 0 0 1-2.48-.54l-.68-.61a2 2 0 0 1-2-1.08z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Configuración</span>
+                </a>
                 <a href="<?= BASE_URL ?>reportes" class="ms-link <?= isActive('reportes', $currentUri) ?>">
                     <div class="ms-active-indicator"></div>
                     <div class="ms-icon-box">
@@ -234,6 +249,18 @@ function isActive($link, $currentUri) {
                         </svg>
                     </div>
                     <span class="ms-link-text">Acerca de</span>
+                </a>
+
+                <a href="<?= BASE_URL ?>practica" class="ms-link <?= isActive('practica', $currentUri) ?>">
+                    <div class="ms-active-indicator"></div>
+                    <div class="ms-icon-box">
+                        <!-- icons/BookOpen -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                    </div>
+                    <span class="ms-link-text">Práctica</span>
                 </a>
             </div>
         </div>

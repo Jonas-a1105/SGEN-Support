@@ -248,6 +248,118 @@
             });
         };
 
+        // --- CONNECTIVITY HEARTBEAT ---
+        let isConnectionLost = false;
+        let connectivityModal = null;
+
+        const checkHeartbeat = async () => {
+            if (!window.electronAPI || !window.electronAPI.checkConnectivity) return;
+
+            try {
+                const status = await window.electronAPI.checkConnectivity();
+                if (status.success) {
+                    if (isConnectionLost) {
+                        isConnectionLost = false;
+                        if (connectivityModal) {
+                            connectivityModal.close();
+                            connectivityModal = null;
+                        }
+                        glassSwal.fire({
+                            icon: 'success',
+                            title: 'Conexión Restablecida',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 3000,
+                            showConfirmButton: false,
+                            backdrop: 'none'
+                        });
+                    }
+                } else {
+                    handleConnectionLoss(status.error);
+                }
+            } catch (e) {
+                handleConnectionLoss(e.message);
+            }
+        };
+
+        const handleConnectionLoss = (error) => {
+            if (isConnectionLost) return; // Modal already shown
+            isConnectionLost = true;
+
+            connectivityModal = glassSwal.fire({
+                html: `
+                <div class="desktop-icon-badge" style="color: #ef4444; border-color: #ef4444">
+                    <i class="bi bi-wifi-off"></i>
+                </div>
+                <h3>Conexión Perdida</h3>
+                <p>No se puede comunicar con el servidor de base de datos.</p>
+                <p style="font-size: 0.9em; opacity: 0.7;"><em>${error || 'Error de red desconocido'}</em></p>
+            `,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showCancelButton: true,
+                confirmButtonText: 'Reintentar Ahora',
+                cancelButtonText: 'Salir',
+                backdrop: getBackdropColor(),
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    isConnectionLost = false; // Reset to allow re-showing if recheck fails
+                    checkHeartbeat();
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    window.electronAPI.exitApp();
+                }
+            });
+        };
+
+        // Start Heartbeat: Check every 15 seconds
+        if (!window._connectivityHeartbeat) {
+            window._connectivityHeartbeat = setInterval(checkHeartbeat, 15000);
+        }
+
+        // --- OS NOTIFICATIONS ---
+        window.showDesktopNotification = (title, body, icon = null) => {
+            if (!("Notification" in window)) return;
+
+            if (Notification.permission === "granted") {
+                new Notification(title, { body, icon });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification(title, { body, icon });
+                    }
+                });
+            }
+        };
+
+        // --- AUTO-DISCOVERY UI (CLIENT ONLY) ---
+        if (APP_MODE === 'client') {
+            const startDiscovery = async () => {
+                if (!window.electronAPI.discovery) return;
+                log('Iniciando auto-descubrimiento...');
+                const server = await window.electronAPI.discovery();
+                if (server && !server.timeout) {
+                    glassSwal.fire({
+                        title: 'Servidor Encontrado',
+                        text: `Se ha detectado el servidor "${server.name}" en ${server.host}. ¿Desea conectar?`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Conectar',
+                        cancelButtonText: 'Configurar Manual'
+                    }).then((res) => {
+                        if (res.isConfirmed) {
+                            // Ideally, we'd update .env here via IPC, but for now we just notify success
+                            // In a real implementation, we'd trigger a reload with the new IP
+                            glassSwal.fire('Conectado', 'Reinicie la aplicación para aplicar los cambios.', 'success');
+                        }
+                    });
+                }
+            };
+            // startDiscovery(); // Hidden for now, can be triggered from settings
+        }
+
     } // End of initDesktopIntegration function
 
     // Initialize on Turbo navigation (for pages that use Turbo)

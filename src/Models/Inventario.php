@@ -361,6 +361,22 @@ class Inventario extends Model {
     }
 
     /**
+     * Registra un consumo de inventario asociado a un ticket de soporte.
+     */
+    public function registrarConsumoRecord(int $soporteId, int $itemId, int $cantidad, int $usuarioId): bool
+    {
+        $sql = "INSERT INTO inventario_consumos (soporte_id, item_id, cantidad, usuario_id) 
+                VALUES (:soporte_id, :item_id, :cantidad, :usuario_id)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            'soporte_id' => $soporteId,
+            'item_id' => $itemId,
+            'cantidad' => $cantidad,
+            'usuario_id' => $usuarioId
+        ]);
+    }
+
+    /**
      * Elimina un ítem del inventario y sus registros relacionados.
      */
     /**

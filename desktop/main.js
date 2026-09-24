@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const http = require('http');
+const dgram = require('dgram');
 const treeKill = require('tree-kill'); // npm install tree-kill
 
 // Conditional import for Auto Updater to prevent Dev crashes
@@ -19,8 +20,57 @@ if (app && app.isPackaged) {
 
 // --- Configuration ---
 const PHP_PORT = 0;
-const DB_PORT = 3307;
+let DB_PORT = 3307; // Changed to let to allow dynamic assignment
 const DB_NAME = 'sgen_db';
+let APP_MODE = 'server'; // 'server' or 'client'
+let REMOTE_HOST = '127.0.0.1';
+const DISCOVERY_PORT = 5555;
+let discoveryServer = null;
+let discoveryClient = null;
+
+const DB_USER_SGEN = 'sgen_admin';
+const DB_PASS_SGEN = 'SgenSupport2026!'; // Enterprise-grade password
+
+const USER_DATA_PATH = app.getPath('userData');
+const LOG_FILE = path.join(USER_DATA_PATH, 'debug.log');
+
+function log(msg) {
+    const timestamp = new Date().toISOString();
+    const formattedMsg = `[${timestamp}] [Main] ${msg}`;
+    console.log(formattedMsg);
+    try {
+        fs.appendFileSync(LOG_FILE, formattedMsg + '\n');
+    } catch (e) { /* ignore log write errors */ }
+}
+
+// Helper: Check if a port is available (Refined for server environments)
+async function findAvailablePort(startPort) {
+    const net = require('net');
+    const checkPort = (port) => new Promise(resolve => {
+        const server = net.createServer();
+        server.once('error', (err) => resolve(false)); // Any error means port is not available
+        server.once('listening', () => {
+            server.close();
+            resolve(true);
+        });
+        try {
+            server.listen(port, '127.0.0.1');
+        } catch (e) {
+            resolve(false);
+        }
+    });
+
+    let port = startPort;
+    log(`Scanning ports starting from ${startPort}...`);
+    while (port < startPort + 200) { // Increased range for busy servers
+        const available = await checkPort(port);
+        if (available) return port;
+        log(`Port ${port} is occupied or restricted, trying next...`);
+        port++;
+    }
+    throw new Error('No se han encontrado puertos libres en el rango 3307-3507. Verifique los permisos del servidor.');
+}
+
 
 let mainWindow;
 let phpProcess;
@@ -39,14 +89,32 @@ const MYSQL_INIT_EXE = path.join(BIN_PATH, 'mariadb', 'bin', 'mysql_install_db.e
 const PUBLIC_ROOT = path.resolve(resourcesPath, isDev ? '../public' : 'public');
 
 // Database storage setup
-const USER_DATA_PATH = app.getPath('userData');
 const DB_DATA_DIR = path.join(USER_DATA_PATH, 'mysql_data_v2');
+const LEGACY_DB_DATA_DIR = path.join(USER_DATA_PATH, 'mysql_data');
 
-function log(msg) {
-    console.log(`[Main] ${msg}`);
+// Migration: If new data dir doesn't exist but old one does, RENAME it
+if (fs.existsSync(LEGACY_DB_DATA_DIR)) {
+    if (!fs.existsSync(DB_DATA_DIR)) {
+        log('MIGRATION: Found legacy mysql_data. Renaming to mysql_data_v2...');
+        try {
+            fs.renameSync(LEGACY_DB_DATA_DIR, DB_DATA_DIR);
+            log('MIGRATION: Success.');
+        } catch (e) {
+            log('MIGRATION: Failed to rename: ' + e.message);
+        }
+    } else {
+        // Both exist! This means 1.0.19 failed to migrate but created a new v2
+        log('MIGRATION: Both legacy and v2 exist. Favoring legacy data...');
+        try {
+            const backupPath = DB_DATA_DIR + '_empty_' + Date.now();
+            fs.renameSync(DB_DATA_DIR, backupPath);
+            fs.renameSync(LEGACY_DB_DATA_DIR, DB_DATA_DIR);
+            log('MIGRATION: Success. Legacy data restored, empty v2 backed up to ' + path.basename(backupPath));
+        } catch (e) {
+            log('MIGRATION: Failed to swap: ' + e.message);
+        }
+    }
 }
-
-// Helper: Wait for database to be ready by testing TCP connection
 function waitForDatabaseReady(port, maxAttempts = 30, interval = 500) {
     const net = require('net');
     return new Promise((resolve, reject) => {
@@ -93,7 +161,6 @@ function waitForDatabaseReady(port, maxAttempts = 30, interval = 500) {
 async function startDatabase() {
     log('Starting Database...');
     log(`MYSQL_EXE: ${MYSQL_EXE}`);
-    log(`MYSQL_EXE exists: ${fs.existsSync(MYSQL_EXE)}`);
     log(`DB_DATA_DIR: ${DB_DATA_DIR}`);
 
     if (!fs.existsSync(DB_DATA_DIR)) {
@@ -107,13 +174,23 @@ async function startDatabase() {
         } catch (e) { log('Init Error: ' + e); }
     }
 
+    // Clean up potential leftover .pid file if process is not running
+    const pidFile = path.join(DB_DATA_DIR, `${require('os').hostname()}.pid`);
+    if (fs.existsSync(pidFile)) {
+        log(`Found leftover PID file at ${pidFile}, removing...`);
+        try { fs.unlinkSync(pidFile); } catch (e) { }
+    }
+
     const args = [
+        '--no-defaults',
         '--console',
         `--port=${DB_PORT}`,
-        `--datadir=${DB_DATA_DIR}`,
-        '--skip-grant-tables',
-        '--bind-address=127.0.0.1',
+        `--datadir=${DB_DATA_DIR.replace(/\\/g, '/')}`,
+        '--bind-address=0.0.0.0', // Changed from 127.0.0.1 to allow LAN connections
         '--default-storage-engine=InnoDB',
+        '--innodb-flush-method=normal',
+        '--innodb-buffer-pool-size=32M',
+        `--plugin-dir=${path.join(BIN_PATH, 'mariadb', 'lib', 'plugin').replace(/\\/g, '/')}`,
         '--general-log=0'
     ];
 
@@ -121,6 +198,8 @@ async function startDatabase() {
 
     return new Promise((resolve, reject) => {
         let resolved = false;
+        let dbOutput = [];
+
         const tryResolve = () => {
             if (!resolved) {
                 resolved = true;
@@ -128,6 +207,14 @@ async function startDatabase() {
                 resolve();
             }
         };
+
+        if (!fs.existsSync(MYSQL_EXE)) {
+            const msg = `El archivo de la base de datos no se encuentra en: ${MYSQL_EXE}. Es posible que su antivirus lo haya eliminado o puesto en cuarentena.`;
+            log(msg);
+            const err = new Error(msg);
+            err.antivirus = true;
+            return reject(err);
+        }
 
         dbProcess = spawn(MYSQL_EXE, args, {
             cwd: path.dirname(MYSQL_EXE),
@@ -139,6 +226,9 @@ async function startDatabase() {
         const handleOutput = (data) => {
             const output = data.toString();
             console.log(`[DB] ${output}`);
+            dbOutput.push(output);
+            if (dbOutput.length > 50) dbOutput.shift(); // Keep last 50 lines
+
             // Check for various "ready" indicators from MariaDB
             if (output.includes('ready for connections') ||
                 output.includes('mysqld.exe: ready') ||
@@ -153,28 +243,38 @@ async function startDatabase() {
 
         dbProcess.on('error', (err) => {
             log(`DB spawn error: ${err.message}`);
+            if (err.code === 'EACCES') {
+                err.message = "Acceso denegado al iniciar la base de datos. Esto suele ser causado por un antivirus bloqueando la ejecución.";
+                err.antivirus = true;
+            }
+            err.dbLogs = dbOutput.join('\n');
             reject(err);
         });
 
         dbProcess.on('exit', (code) => {
             log(`DB process exited with code: ${code}`);
             if (!resolved) {
-                reject(new Error(`Database exited prematurely with code ${code}`));
+                const err = new Error(`Database exited prematurely with code ${code}`);
+                err.dbLogs = dbOutput.join('\n');
+                reject(err);
             }
         });
 
-        // Fallback timeout - assume ready after 6 seconds
+        // Fallback timeout - assume ready after 8 seconds
         setTimeout(() => {
             if (dbProcess && !dbProcess.killed) {
                 log('Database startup timeout - assuming ready (process still running)');
                 tryResolve();
-            } else {
+            } else if (!resolved) {
                 log('Database startup timeout - process not running!');
-                reject(new Error('Database process not running after timeout'));
+                const err = new Error('Database process not running after timeout');
+                err.dbLogs = dbOutput.join('\n');
+                reject(err);
             }
-        }, 6000);
+        }, 8000);
     });
 }
+
 
 // 2. Start PHP Server
 async function startPhpServer() {
@@ -187,13 +287,15 @@ async function startPhpServer() {
     const pkg = require('./package.json');
 
     const env = Object.assign({}, process.env, {
-        DB_HOST: '127.0.0.1',
+        DB_HOST: APP_MODE === 'server' ? '127.0.0.1' : REMOTE_HOST,
         DB_PORT: DB_PORT.toString(),
         DB_NAME: DB_NAME,
-        DB_USER: 'root',
-        DB_PASS: '',
+        DB_USER: DB_USER_SGEN,
+        DB_PASS: DB_PASS_SGEN,
         PHPRC: path.join(BIN_PATH, 'php'),
-        APP_VERSION: pkg.version // Pass version to PHP
+        APP_VERSION: pkg.version,
+        RESOURCES_PATH: resourcesPath,
+        APP_MODE: APP_MODE
     });
 
     return new Promise((resolve, reject) => {
@@ -205,11 +307,20 @@ async function startPhpServer() {
             }
         };
 
+        if (!fs.existsSync(PHP_EXE)) {
+            const msg = `El servidor PHP no se encuentra en: ${PHP_EXE}. Verifique si su antivirus lo ha bloqueado.`;
+            log(msg);
+            const err = new Error(msg);
+            err.antivirus = true;
+            return reject(err);
+        }
+
         const routerPath = path.join(PUBLIC_ROOT, 'router.php');
         log(`Router path: ${routerPath}`);
         phpProcess = spawn(PHP_EXE, ['-S', '127.0.0.1:0', routerPath], {
             env,
-            cwd: PUBLIC_ROOT
+            cwd: PUBLIC_ROOT,
+            windowsHide: true // Added for extra antivirus stealth
         });
 
         phpProcess.stdout.on('data', (data) => {
@@ -235,6 +346,10 @@ async function startPhpServer() {
 
         phpProcess.on('error', (err) => {
             log(`PHP spawn error: ${err.message}`);
+            if (err.code === 'EACCES') {
+                err.message = "Acceso denegado al iniciar el servidor PHP. Verifique las exclusiones de su antivirus.";
+                err.antivirus = true;
+            }
             reject(err);
         });
 
@@ -272,12 +387,14 @@ async function runMigrations() {
     return new Promise((resolve, reject) => {
         // CRITICAL: Pass DB environment to the migration process
         const migrationEnv = Object.assign({}, process.env, {
-            DB_HOST: '127.0.0.1',
+            DB_HOST: APP_MODE === 'server' ? '127.0.0.1' : REMOTE_HOST,
             DB_PORT: DB_PORT.toString(),
             DB_NAME: DB_NAME,
-            DB_USER: 'root',
-            DB_PASS: '',
-            PHPRC: path.join(BIN_PATH, 'php')
+            DB_USER: DB_USER_SGEN,
+            DB_PASS: DB_PASS_SGEN,
+            PHPRC: path.join(BIN_PATH, 'php'),
+            RESOURCES_PATH: resourcesPath,
+            APP_MODE: APP_MODE
         });
 
         const migrationProcess = spawn(PHP_EXE, [migrationScript], {
@@ -387,10 +504,15 @@ function createWindow() {
 
     // Intercept Close Event
     mainWindow.on('close', (e) => {
-        if (!isQuitting) {
+        // If we are in Splash/Wizard mode (file:// protocol) or forcing quit, allow close immediately
+        const currentUrl = mainWindow.webContents.getURL();
+        const isSplash = currentUrl.startsWith('file:') || currentUrl.includes('splash.html');
+
+        if (!isQuitting && !isSplash) {
             e.preventDefault();
             mainWindow.webContents.send('show-exit-confirm');
         }
+        // If it IS splash, we let it close naturally, which triggers 'closed' event -> app.quit()
     });
 
     // Check for updates (but don't download automatically)
@@ -398,7 +520,8 @@ function createWindow() {
 }
 
 // --- Process Lifecycle Management ---
-const PID_FILE = path.join(USER_DATA_PATH, 'running_pids.json');
+const isSimulation = process.argv.includes('--simulation');
+const PID_FILE = path.join(USER_DATA_PATH, isSimulation ? 'running_pids_client.json' : 'running_pids.json');
 
 // Helper: Kill a process by PID using tree-kill (kills entire process tree)
 function killProcess(pid, callback) {
@@ -494,57 +617,55 @@ function forceKillAllOurProcesses() {
 // 0. Cleanup Zombies from previous run
 async function forceCleanupProcesses() {
     log('Performing aggressive zombie cleanup...');
-    const targets = ['mysqld.exe', 'php.exe'];
-    const validRoots = [
-        path.resolve(BIN_PATH).toLowerCase(), // e.g. .../resources/bin
-    ];
 
-    // In dev, sometimes binaries might be elsewhere? usually resources/bin is correct even in dev for this setup.
-    log(`Cleanup Target Roots: ${JSON.stringify(validRoots)}`);
+    // 1. Kill any process using our DB port
+    try {
+        if (process.platform === 'win32') {
+            log(`Checking for processes on port ${DB_PORT}...`);
+            const netstatOutput = require('child_process').execSync(`netstat -ano | findstr :${DB_PORT}`, { encoding: 'utf8' }).catch(() => '');
+            if (netstatOutput) {
+                const lines = netstatOutput.trim().split('\n');
+                for (const line of lines) {
+                    const parts = line.trim().split(/\s+/);
+                    const pid = parts[parts.length - 1];
+                    if (pid && pid !== '0') {
+                        log(`Killing process ${pid} using port ${DB_PORT}`);
+                        try { require('child_process').execSync(`taskkill /pid ${pid} /f /t`, { stdio: 'ignore' }); } catch (e) { }
+                    }
+                }
+            }
+        }
+    } catch (e) { }
+
+    // 2. Kill by binary name and path using PowerShell (more robust than WMIC)
+    const targets = ['mysqld.exe', 'mariadbd.exe', 'php.exe'];
+    const binPathLower = path.resolve(BIN_PATH).toLowerCase();
 
     for (const target of targets) {
         try {
-            // WMIC is standard on Windows for querying process paths
-            const cmd = `wmic process where "name='${target}'" get ProcessId,ExecutablePath /FORMAT:CSV`;
-            const output = require('child_process').execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+            if (process.platform === 'win32') {
+                // Use PowerShell to get processes with their paths
+                const psCmd = `Get-Process -Name "${target.replace('.exe', '')}" -ErrorAction SilentlyContinue | Select-Object Id, Path | ConvertTo-Json`;
+                const output = require('child_process').execSync(`powershell -Command "${psCmd}"`, { encoding: 'utf8' }).trim();
 
-            const lines = output.trim().split('\r\n');
-            // CSV Format: Node,ExecutablePath,ProcessId
-            // Skip headers (usually 2 lines or until empty line is passed)
+                if (output) {
+                    const processes = JSON.parse(output);
+                    const procList = Array.isArray(processes) ? processes : [processes];
 
-            for (const line of lines) {
-                if (!line.trim() || line.startsWith('Node,')) continue;
-
-                // Parse CSV line simply
-                const parts = line.split(',');
-                if (parts.length < 3) continue;
-
-                // Parts are usually: [NodeName, Path, PID]
-                // But path might contain commas? WMIC CSV output is usually safeish but let's be careful.
-                // Better approach: pop the last element as PID, join the rest as path (minus the first Node element)
-                const pid = parts.pop();
-                // Remove NodeName (first element)
-                parts.shift();
-                const exePath = parts.join(',').trim(); // Rejoin in case path had commas
-
-                if (!exePath) continue;
-
-                // Check if this process belongs to us
-                const lowerExe = exePath.toLowerCase();
-                const isOurs = validRoots.some(root => lowerExe.includes(root));
-
-                if (isOurs) {
-                    log(`Found zombie ${target} (PID: ${pid}) at ${exePath}`);
-                    killProcess(pid);
-                } else {
-                    // log(`Skipping external process ${target} (PID: ${pid}) at ${exePath}`);
+                    for (const proc of procList) {
+                        if (proc.Path && proc.Path.toLowerCase().includes(binPathLower)) {
+                            log(`Found zombie ${target} (PID: ${proc.Id}) at ${proc.Path}`);
+                            try { require('child_process').execSync(`taskkill /pid ${proc.Id} /f /t`, { stdio: 'ignore' }); } catch (e) { }
+                        }
+                    }
                 }
             }
         } catch (e) {
-            log(`Cleanup check failed for ${target}: ${e.message}`);
+            log(`PowerShell cleanup failed for ${target} (this is normal if none found): ${e.message}`);
         }
     }
 }
+
 
 function cleanupZombies() {
     log('Checking for zombie processes via PID file...');
@@ -576,52 +697,264 @@ function savePids() {
     }
 }
 
-app.whenReady().then(async () => {
-    log('=== APP READY - Starting initialization ===');
+// --- Multi-Node Network Helpers ---
 
-    // Step 0: Aggressive Cleanup
-    cleanupZombies();
-    await forceCleanupProcesses();
+async function checkNetworkConfig() {
+    log('Checking for .env configuration...');
+    // In Dev: resourcesPath is '.../desktop'. We want '.../.env' (root)
+    // In Prod: resourcesPath is '.../resources'. We want '.../resources/.env' (next to app.asar)
 
-    try {
-        log('Step 1: Starting database process...');
-        await startDatabase();
-        savePids(); // Save immediately
-        log('Step 1 COMPLETE: Database process started');
+    // Use the same path resolution logic as config:save
+    const envPath = path.join(resourcesPath, isDev ? '../.env' : '.env');
+    log(`Reading .env from: ${envPath}`);
 
-        log('Step 2: Verifying database is accepting connections...');
-        await waitForDatabaseReady(DB_PORT);
-        log('Step 2 COMPLETE: Database verified ready');
+    if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const lines = envContent.split('\n');
+        let modeSet = false;
+        let hostSet = false;
 
-        log('Step 2.5: Running migrations...');
-        await runMigrations();
-        log('Step 2.5 COMPLETE: Migrations executed');
+        for (const line of lines) {
+            if (line.startsWith('APP_MODE=')) {
+                APP_MODE = line.split('=')[1].trim();
+                modeSet = true;
+            }
+            if (line.startsWith('DB_HOST=')) {
+                REMOTE_HOST = line.split('=')[1].trim();
+                hostSet = true;
+            }
+        }
 
-        log('Step 3: Starting PHP server...');
-        await startPhpServer();
-        savePids(); // Update with PHP PID
-        log('Step 3 COMPLETE: PHP server started');
-
-        log('Step 4: Creating window...');
-        createWindow();
-        log('Step 4 COMPLETE: Window created');
-    } catch (e) {
-        console.error("FATAL STARTUP ERROR:", e);
-        log(`FATAL ERROR: ${e.message}`);
-
-        // Force cleanup on failure too
-        if (dbProcess) killProcess(dbProcess.pid);
-        if (phpProcess) killProcess(phpProcess.pid);
-
-        const { dialog } = require('electron');
-        dialog.showErrorBox('Error de Inicio', `No se pudo iniciar el servicio interno.\n${e.message}`);
-        app.quit();
+        if (modeSet) {
+            log(`Network Config found: Mode=${APP_MODE}, Host=${REMOTE_HOST}`);
+            return true;
+        }
     }
 
-    app.on('activate', function () {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    log('.env not configured. Entering First Run Setup Mode.');
+    return false; // Do not auto-create. Allow Splash Screen to handle setup.
+}
+
+async function ensureFirewallRule() {
+    if (process.platform !== 'win32') return;
+
+    log('Ensuring Windows Firewall rule for port 3307...');
+    const cmd = `netsh advfirewall firewall show rule name="SGEN_Server_DB"`;
+
+    try {
+        require('child_process').execSync(cmd, { stdio: 'ignore' });
+        log('Firewall rule "SGEN_Server_DB" already exists.');
+    } catch (e) {
+        log('Firewall rule not found. Creating...');
+        const addCmd = `netsh advfirewall firewall add rule name="SGEN_Server_DB" dir=in action=allow protocol=TCP localport=3307`;
+        try {
+            require('child_process').execSync(addCmd);
+            log('Firewall rule created successfully.');
+        } catch (err) {
+            log('FAILED to create firewall rule. Administrative privileges might be required: ' + err.message);
+        }
+    }
+}
+
+async function verifyRemoteConnectivity(host, port, retries = 0) {
+    const net = require('net');
+
+    for (let i = 0; i <= retries; i++) {
+        const attempt = i + 1;
+        const msg = `[Connection] Attempt ${attempt}/${retries + 1} checking ${host}:${port}...`;
+        log(msg);
+        if (mainWindow) mainWindow.webContents.send('update-status', `Conectando al servidor... (Intento ${attempt}/${retries + 1})`);
+
+        try {
+            await new Promise((resolve, reject) => {
+                const socket = new net.Socket();
+                socket.setTimeout(3000);
+
+                socket.on('connect', () => {
+                    socket.destroy();
+                    resolve();
+                });
+
+                socket.on('error', (err) => {
+                    socket.destroy();
+                    reject(err);
+                });
+
+                socket.on('timeout', () => {
+                    socket.destroy();
+                    reject(new Error('Timeout'));
+                });
+
+                socket.connect(port, host);
+            });
+            log(`[Connection] Success to ${host}`);
+            return;
+        } catch (e) {
+            log(`[Connection] Check failed: ${e.message}`);
+            if (i < retries) {
+                if (mainWindow) mainWindow.webContents.send('update-status', `Servidor no encontrado. Reintentando en 2s...`);
+                await new Promise(r => setTimeout(r, 2000)); // Wait 2s between retries
+            } else {
+                throw new Error(`El servidor no responde. Verifique que esté encendido y conectado a la red.`);
+            }
+        }
+    }
+}
+// --- Simulation Mode Check ---
+if (isSimulation) {
+    APP_MODE = 'client';
+    REMOTE_HOST = '127.0.0.1';
+    log('!!! RUNNING IN SIMULATION MODE (CLIENT) !!!');
+}
+
+const gotTheLock = isSimulation ? true : app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+    log('Another instance is already running. Quitting.');
+    app.quit();
+} else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        // Someone tried to run a second instance, we should focus our window.
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.focus();
+        }
     });
-});
+
+    app.whenReady().then(async () => {
+        log('=== APP READY - Starting initialization ===');
+
+        // Step 0: Create Window IMMEDIATELY to show "Loading..."
+        createWindow();
+
+        // Wait for splash screen to be fully loaded and ready to receive IPC messages
+        if (mainWindow && mainWindow.webContents.isLoading()) {
+            await new Promise(resolve => mainWindow.webContents.once('did-finish-load', resolve));
+            // Small extra buffer to ensure JS execution
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        // Step 0.1: Aggressive Cleanup
+        if (!isSimulation) {
+            cleanupZombies();
+            await forceCleanupProcesses();
+        } else {
+            log('Skipping aggressive cleanup in Simulation Mode');
+        }
+
+
+        try {
+            log('Step 0.1: Checking Network Config...');
+            const hasConfig = await checkNetworkConfig(); // Now returns false if missing
+
+            // RE-FORCE Client Mode if Simulation is active (ignoring .env)
+            if (isSimulation) {
+                APP_MODE = 'client';
+                REMOTE_HOST = '127.0.0.1';
+            }
+
+            if (hasConfig === false && !isSimulation) {
+                log('No config found. Skipping backend startup for Setup Mode.');
+                // Window already created, just show wizard
+                setTimeout(() => {
+                    if (mainWindow) mainWindow.webContents.send('show-setup-wizard');
+                }, 1000);
+            } else {
+
+                if (APP_MODE === 'server') {
+                    log('Step 0.5: Finding available port...');
+                    DB_PORT = await findAvailablePort(3307);
+                    log(`Step 0.5 COMPLETE: Using port ${DB_PORT}`);
+
+                    log('Step 0.6: Ensuring Firewall Rule...');
+                    await ensureFirewallRule();
+
+                    log('Step 1: Starting database process...');
+                    await startDatabase();
+                    savePids(); // Save immediately
+
+                    log('Step 1 COMPLETE: Database process started');
+
+                    log('Step 2: Verifying database is accepting connections...');
+                    await waitForDatabaseReady(DB_PORT);
+                    log('Step 2 COMPLETE: Database verified ready');
+
+                    log('Step 2.1: Securing Database Users...');
+                    await createSecureUser();
+
+                    log('Step 2.2: Starting Network Discovery Service...');
+                    startDiscoveryService();
+                } else {
+                    log('Step 1/2: Running in CLIENT mode. Verifying connection to ' + REMOTE_HOST);
+                    // Perform STRICT connectivity check with RETRIES (10 retries ~40s wait)
+                    await verifyRemoteConnectivity(REMOTE_HOST, DB_PORT, 10);
+                    log('Connectivity OK. Starting local PHP server...');
+                }
+
+                log('Step 2.5: Running migrations...');
+                await runMigrations();
+                log('Step 2.5 COMPLETE: Migrations executed');
+
+                log('Step 3: Starting PHP server...');
+                await startPhpServer();
+                savePids(); // Update with PHP PID
+                log('Step 3 COMPLETE: PHP server started');
+
+                log('Step 4: Loading App...');
+                // Load PHP URL now that everything is ready
+                if (phpUrl) {
+                    mainWindow.loadURL(phpUrl);
+                }
+                log('Step 4 COMPLETE: App Loaded');
+            }
+        } catch (e) {
+            console.error("STARTUP ERROR:", e);
+            log(`STARTUP ERROR: ${e.message}`);
+
+            // Don't quit! Show the error in the splash screen so user can reconfigure
+            if (mainWindow) {
+                // Return to splash if we were somehow navigating away (unlikely at this stage)
+                // But mostly just send the error
+                const send = () => {
+                    mainWindow.webContents.send('startup-error', {
+                        message: e.message,
+                        details: e.dbLogs || '',
+                        config: { host: REMOTE_HOST, mode: APP_MODE }
+                    });
+                };
+
+                if (mainWindow.webContents.isLoading()) {
+                    mainWindow.webContents.once('did-finish-load', send);
+                } else {
+                    send();
+                }
+            } else {
+                // Fallback if window somehow died, we assume it's already created by now
+                // and we just need to send the error. If it truly died, the app will likely crash.
+                // No need to call createWindow() again.
+                const send = () => {
+                    if (mainWindow) { // Check if it somehow got created or exists
+                        mainWindow.webContents.send('startup-error', {
+                            message: e.message,
+                            details: e.dbLogs || ''
+                        });
+                    }
+                };
+
+                if (mainWindow && mainWindow.webContents.isLoading()) {
+                    mainWindow.webContents.once('did-finish-load', send);
+                } else {
+                    send();
+                }
+            }
+        }
+
+        app.on('activate', function () {
+            if (BrowserWindow.getAllWindows().length === 0) createWindow();
+        });
+    });
+}
+
 
 app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') app.quit();
@@ -703,3 +1036,170 @@ ipcMain.on('download-update', () => {
         autoUpdater.downloadUpdate();
     }
 });
+
+ipcMain.handle('check-connectivity', async () => {
+    log('check-connectivity IPC: Checking remote DB...');
+    try {
+        await verifyRemoteConnectivity(REMOTE_HOST, DB_PORT);
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+});
+
+ipcMain.handle('discovery:start', async () => {
+    return new Promise((resolve) => {
+        listenForServers((server) => {
+            resolve(server);
+        });
+        // Timeout after 5 seconds if no server found
+        setTimeout(() => resolve({ timeout: true }), 5000);
+    });
+});
+
+ipcMain.handle('config:save', async (event, config) => {
+    log(`config:save IPC: Updating .env with mode=${config.mode}, host=${config.host}`);
+
+    try {
+        const envPath = path.join(resourcesPath, isDev ? '../.env' : '.env');
+        let content = '';
+        if (fs.existsSync(envPath)) {
+            content = fs.readFileSync(envPath, 'utf8');
+        }
+
+        // Replace or Append vars
+        const vars = {
+            'APP_MODE': config.mode,
+            'DB_HOST': config.host
+        };
+        // Only save port if provided (Client mode with dynamic port)
+        if (config.port) {
+            vars['DB_PORT'] = config.port;
+        }
+
+        let lines = content.split('\n');
+        for (const [key, val] of Object.entries(vars)) {
+            let found = false;
+            lines = lines.map(line => {
+                if (line.startsWith(`${key}=`)) {
+                    found = true;
+                    return `${key}=${val}`;
+                }
+                return line;
+            });
+            if (!found) lines.push(`${key}=${val}`);
+        }
+
+        fs.writeFileSync(envPath, lines.join('\n'));
+        log('Config saved. Restarting...');
+
+        app.relaunch();
+        app.exit(0);
+        return { success: true };
+    } catch (e) {
+        log(`Error saving config: ${e.message}`);
+        return { success: false, error: e.message };
+    }
+});
+
+// --- Enterprise Infrastructure: Secure User & UDP Discovery ---
+
+async function createSecureUser() {
+    log('Securing MariaDB: Creating enterprise user...');
+
+    const setupScript = path.join(resourcesPath, isDev ? '../scripts/secure_db.php' : 'scripts/secure_db.php');
+
+    // Create direct security script
+    const scriptContent = `<?php
+    $host = '127.0.0.1';
+    $port = '${DB_PORT}';
+    $user = 'root'; 
+    $pass = ''; 
+    
+    try {
+        $pdo = new PDO("mysql:host=$host;port=$port", $user, $pass);
+        $pdo->exec("CREATE USER IF NOT EXISTS '${DB_USER_SGEN}'@'%' IDENTIFIED BY '${DB_PASS_SGEN}'");
+        $pdo->exec("GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_SGEN}'@'%' WITH GRANT OPTION");
+        $pdo->exec("GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_SGEN}'@'localhost' IDENTIFIED BY '${DB_PASS_SGEN}'");
+        $pdo->exec("FLUSH PRIVILEGES");
+        echo "Database SECURED with enterprise user";
+    } catch (Exception $e) { echo "Security Setup Warning: " . $e->getMessage(); }
+    ?>`;
+
+    const scriptDir = path.dirname(setupScript);
+    if (!fs.existsSync(scriptDir)) fs.mkdirSync(scriptDir, { recursive: true });
+    fs.writeFileSync(setupScript, scriptContent);
+
+    return new Promise((resolve) => {
+        const proc = spawn(PHP_EXE, [setupScript], {
+            env: Object.assign({}, process.env, { PHPRC: path.join(BIN_PATH, 'php') }),
+            windowsHide: true
+        });
+        proc.stdout.on('data', (d) => log(`[DB-Security] ${d.toString().trim()}`));
+        proc.on('close', resolve);
+    });
+}
+
+function startDiscoveryService() {
+    log('Starting UDP Discovery Service...');
+    try {
+        discoveryServer = dgram.createSocket('udp4');
+        discoveryServer.on('error', (err) => {
+            log(`Discovery Socket Error: ${err.message}`);
+            discoveryServer.close();
+        });
+
+        discoveryServer.on('message', (msg, rinfo) => {
+            if (msg.toString() === 'SGEN_DISCOVER') {
+                const os = require('os');
+                const interfaces = os.networkInterfaces();
+                let lanIp = '127.0.0.1';
+                for (const iface in interfaces) {
+                    for (const addr of interfaces[iface]) {
+                        if (addr.family === 'IPv4' && !addr.internal) {
+                            lanIp = addr.address;
+                            break;
+                        }
+                    }
+                }
+
+                const response = JSON.stringify({
+                    type: 'SGEN_SERVER',
+                    host: lanIp,
+                    port: DB_PORT,
+                    name: os.hostname()
+                });
+                discoveryServer.send(response, rinfo.port, rinfo.address);
+            }
+        });
+
+        discoveryServer.bind(DISCOVERY_PORT, () => {
+            discoveryServer.setBroadcast(true);
+            log(`Discovery Service active on port ${DISCOVERY_PORT}`);
+        });
+    } catch (e) { log('Discovery Error: ' + e.message); }
+}
+
+function listenForServers(callback) {
+    log('Listening for SGEN Servers via Broadcast...');
+    try {
+        if (discoveryClient) discoveryClient.close();
+        discoveryClient = dgram.createSocket('udp4');
+
+        discoveryClient.on('message', (msg) => {
+            try {
+                const data = JSON.parse(msg.toString());
+                if (data.type === 'SGEN_SERVER') {
+                    log(`Found server: ${data.name} at ${data.host}`);
+                    callback(data);
+                }
+            } catch (e) { }
+        });
+
+        discoveryClient.bind(() => {
+            discoveryClient.setBroadcast(true);
+            const message = Buffer.from('SGEN_DISCOVER');
+            discoveryClient.send(message, DISCOVERY_PORT, '255.255.255.255');
+        });
+    } catch (e) { log('Client Discovery Error: ' + e.message); }
+}

@@ -1,6 +1,6 @@
 {
   "name": "sgen-support-desktop",
-  "version": "1.0.17",
+  "version": "1.0.28",
   "description": "Aplicación de escritorio SGEN-Support (Standalone)",
   "main": "main.js",
   "author": "Jonas Mendoza",
@@ -26,6 +26,7 @@
     "nsis": {
       "oneClick": false,
       "perMachine": false,
+      "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
@@ -37,7 +38,8 @@
       "!bin/php/extras/**",
       "!bin/php/dev/**",
       "!bin/mariadb/mysql-test/**",
-      "!bin/mariadb/sql-bench/**"
+      "!bin/mariadb/sql-bench/**",
+      "scripts/**"
     ],
     "extraResources": [
       {
@@ -88,7 +90,10 @@
         "from": "../database",
         "to": "database",
         "filter": [
-          "schema.sql"
+          "schema.sql",
+          "sgen_db.sql",
+          "sgen_db_fixed.sql",
+          "seeds.php"
         ]
       }
     ],

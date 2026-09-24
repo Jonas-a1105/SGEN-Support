@@ -249,6 +249,22 @@
     /* Firefox */
     -ms-overflow-style: none;
     /* IE 10+ */
+    max-width: 400px;
+    /* Limit width to prevent overflow */
+    flex-shrink: 1;
+    /* Allow shrinking */
+}
+
+@media (min-width: 1024px) {
+    .dept-filters {
+        max-width: 500px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .dept-filters {
+        max-width: 600px;
+    }
 }
 
 .dept-filters::-webkit-scrollbar {

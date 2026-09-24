@@ -7,6 +7,7 @@ $val_id = $es_edicion ? $empleado->id : '';
 $val_nombre = $es_edicion ? $empleado->nombre : '';
 $val_apellido = $es_edicion ? $empleado->apellido : '';
 $val_cedula = $es_edicion ? $empleado->cedula : '';
+$val_cargo = $es_edicion ? ($empleado->cargo ?? '') : '';
 $val_email = $es_edicion ? $empleado->email : '';
 $val_departamento_id = $es_edicion && isset($empleado->departamento_id) ? $empleado->departamento_id : '';
 $current_user_id = $es_edicion ? $empleado->usuario_id : '';
@@ -85,6 +86,17 @@ if ($val_departamento_id && isset($departamentos)) {
                             <input type="text" name="cedula" id="cedula" required placeholder="V-12.345.678" value="<?= htmlspecialchars($val_cedula) ?>"
                                    oninput="updatePreview()"
                                    style="width: 100%; padding: 0.875rem 1rem 0.875rem 2.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-size: 1rem; font-weight: 500; font-family: monospace; color: #475569; outline: none;">
+                        </div>
+                    </div>
+
+                    <!-- Cargo (full width) -->
+                    <div style="display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1.25rem;">
+                        <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 0.25rem;">Cargo o Puesto</label>
+                        <div style="position: relative;">
+                            <i class="bi bi-briefcase" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #cbd5e1; font-size: 1.125rem;"></i>
+                            <input type="text" name="cargo" id="cargo" placeholder="Ej. Gerente de Ventas" value="<?= htmlspecialchars($val_cargo) ?>"
+                                   oninput="updatePreview()"
+                                   style="width: 100%; padding: 0.875rem 1rem 0.875rem 2.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-size: 1rem; font-weight: 500; color: #475569; outline: none;">
                         </div>
                     </div>
 
@@ -201,8 +213,11 @@ if ($val_departamento_id && isset($departamentos)) {
                         <h3 id="previewName" style="color: #0f172a; font-weight: 700; font-size: 1.125rem; margin: 0 0 0.25rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             <?= $val_nombre ? htmlspecialchars($val_nombre . ' ' . $val_apellido) : 'Nombre Apellido' ?>
                         </h3>
-                        <p id="previewEmail" style="color: #3b82f6; font-size: 0.875rem; margin: 0 0 1rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <p id="previewEmail" style="color: #3b82f6; font-size: 0.875rem; margin: 0 0 0.25rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             <?= $val_email ? htmlspecialchars($val_email) : 'correo@empresa.com' ?>
+                        </p>
+                        <p id="previewCargo" style="color: #64748b; font-size: 0.75rem; margin: 0 0 1rem 0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em;">
+                            <?= $val_cargo ? htmlspecialchars($val_cargo) : 'SIN CARGO' ?>
                         </p>
                         
                         <!-- Info Box -->

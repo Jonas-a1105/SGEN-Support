@@ -14,10 +14,9 @@
 return [
     'up' => function (PDO $pdo) {
         
-        echo "   🔄 Verificando si es primera instalación...\n";
+        echo "   🔄 Verificando estado de la base de datos...\n";
         
         // Check if this is a fresh install by looking for the soportes table
-        // (If it exists, schema was already loaded)
         try {
             $result = $pdo->query("SHOW TABLES LIKE 'soportes'");
             $exists = $result->rowCount() > 0;
@@ -25,69 +24,56 @@ return [
             $exists = false;
         }
         
-        if ($exists) {
-            echo "   ℹ️  Base de datos ya inicializada. Verificando usuario admin...\n";
+        if (!$exists) {
+            // --- FIRST TIME INSTALLATION ---
+            echo "   🆕 Primera instalación detectada. Buscando dump de base de datos...\n";
             
-            // Just ensure admin user exists
-            ensureAdminUser($pdo);
-            echo "   ✅ Verificación completada\n";
-            return;
-        }
-        
-        // --- FIRST TIME INSTALLATION ---
-        echo "   🆕 Primera instalación detectada. Cargando schema completo...\n";
-        
-        // Find schema.sql file
-        $schemaPath = findSchemaFile();
-        
-        if (!$schemaPath) {
-            echo "   ⚠️  No se encontró schema.sql. Creando tablas manualmente...\n";
-            createTablesManually($pdo);
-            return;
-        }
-        
-        echo "   📄 Usando: $schemaPath\n";
-        
-        // Read and execute schema.sql
-        $sql = file_get_contents($schemaPath);
-        
-        if (empty($sql)) {
-            echo "   ❌ Error: schema.sql está vacío\n";
-            createTablesManually($pdo);
-            return;
-        }
-        
-        // Remove comments and split by semicolons
-        $sql = removeComments($sql);
-        $statements = splitStatements($sql);
-        
-        echo "   📦 Ejecutando " . count($statements) . " sentencias SQL...\n";
-        
-        $errors = 0;
-        foreach ($statements as $stmt) {
-            $stmt = trim($stmt);
-            if (empty($stmt)) continue;
-            
-            try {
-                $pdo->exec($stmt);
-            } catch (PDOException $e) {
-                // Ignore duplicate key/table exists errors
-                if (strpos($e->getMessage(), 'Duplicate') === false && 
-                    strpos($e->getMessage(), 'already exists') === false) {
-                    echo "   ⚠️  Warning: " . substr($e->getMessage(), 0, 80) . "...\n";
-                    $errors++;
+            $schemaFile = findSchemaFile();
+            if ($schemaFile) {
+                echo "   📄 Usando archivo SQL: " . basename($schemaFile) . "\n";
+                
+                // Leer archivo con codificación UTF-8 explícita
+                $sql = file_get_contents($schemaFile);
+                
+                // Asegurar que está en UTF-8
+                if (!mb_check_encoding($sql, 'UTF-8')) {
+                    $sql = mb_convert_encoding($sql, 'UTF-8', 'auto');
                 }
+                
+                // Limpiar comentarios de MariaDB si existen (sandbox mode etc)
+                $sql = preg_replace('/\/\*M!.*?\*\//s', '', $sql);
+                
+                try {
+                    // Configurar conexión para UTF-8
+                    $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+                    $pdo->exec("SET CHARACTER SET utf8mb4");
+                    $pdo->exec("SET character_set_connection = utf8mb4");
+                    $pdo->exec("SET character_set_results = utf8mb4");
+                    $pdo->exec("SET collation_connection = utf8mb4_unicode_ci");
+                    $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+                    $pdo->exec($sql);
+                    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+                    echo "   ✅ Estructura y datos cargados desde el archivo SQL.\n";
+                } catch (Exception $e) {
+                    echo "   ⚠️ Error cargando SQL directo: " . $e->getMessage() . "\n";
+                    echo "   🔧 Reintentando con creación manual...\n";
+                    createTablesManually($pdo);
+                }
+            } else {
+                // Si no hay archivo SQL, usar fallback manual
+                createTablesManually($pdo);
             }
-        }
-        
-        if ($errors > 0) {
-            echo "   ⚠️  Hubo $errors advertencias (pueden ser ignorables)\n";
+
+            // Sincronizar seeds solo en la primera instalación
+            importSeedsIfAvailable($pdo);
+        } else {
+            echo "   ℹ️  Base de datos ya existe.\n";
         }
         
         // Ensure admin user exists
         ensureAdminUser($pdo);
         
-        echo "   ✅ Schema completo cargado exitosamente\n";
+        echo "   ✅ Base de datos sincronizada correctamente\n";
     },
     
     'down' => function (PDO $pdo) {
@@ -99,21 +85,29 @@ return [
  * Find the schema.sql file in various possible locations
  */
 function findSchemaFile(): ?string {
-    $possiblePaths = [
-        __DIR__ . '/../database/schema.sql',           // Development
-        __DIR__ . '/../../database/schema.sql',        // Alternative
-        dirname(__DIR__) . '/database/schema.sql',     // From migrations folder
-    ];
+    $resourcesPath = getenv('RESOURCES_PATH') ?: ($_ENV['RESOURCES_PATH'] ?? null);
     
-    // Also check in resources path for packaged app
-    if (isset($_ENV['RESOURCES_PATH'])) {
-        $possiblePaths[] = $_ENV['RESOURCES_PATH'] . '/database/schema.sql';
+    $possiblePaths = [];
+    
+    if ($resourcesPath) {
+        $possiblePaths[] = $resourcesPath . '/database/sgen_db_fixed.sql';
+        $possiblePaths[] = $resourcesPath . '/database/sgen_db.sql';
+        echo "   📁 RESOURCES_PATH detectado: $resourcesPath\n";
     }
     
+    // Rutas relativas al script
+    $possiblePaths[] = __DIR__ . '/../database/sgen_db_fixed.sql';
+    $possiblePaths[] = __DIR__ . '/../database/sgen_db.sql';
+    $possiblePaths[] = __DIR__ . '/../../database/sgen_db_fixed.sql';
+    $possiblePaths[] = __DIR__ . '/../../database/sgen_db.sql';
+    $possiblePaths[] = dirname(__DIR__) . '/database/sgen_db_fixed.sql';
+
     foreach ($possiblePaths as $path) {
-        $realPath = realpath($path);
-        if ($realPath && file_exists($realPath)) {
-            return $realPath;
+        if (file_exists($path)) {
+            echo "   🔍 Buscando SQL en: $path -> ✅ ENCONTRADO\n";
+            return $path;
+        } else {
+            // echo "   🔍 Buscando SQL en: $path -> ❌\n";
         }
     }
     
@@ -164,6 +158,95 @@ function ensureAdminUser(PDO $pdo): void {
 }
 
 /**
+ * Import seed data FORCING overwrite of existing data
+ * This ensures all users have the same database content
+ */
+function importSeedsIfAvailable(PDO $pdo): void {
+    // Find seeds file
+    $seedsPaths = [
+        __DIR__ . '/../database/seeds.php',
+        dirname(__DIR__) . '/database/seeds.php',
+    ];
+    
+    $resourcesPath = getenv('RESOURCES_PATH') ?: ($_ENV['RESOURCES_PATH'] ?? null);
+    if ($resourcesPath) {
+        array_unshift($seedsPaths, $resourcesPath . '/database/seeds.php');
+    }
+    
+    $seedsFile = null;
+    foreach ($seedsPaths as $path) {
+        if (file_exists($path)) {
+            $seedsFile = $path;
+            break;
+        }
+    }
+    
+    if (!$seedsFile) {
+        echo "   ℹ️  No se encontró archivo seeds.php (instalación vacía)\n";
+        return;
+    }
+    
+    echo "   📦 Sincronizando base de datos con datos del instalador...\n";
+    
+    try {
+        $seeds = require $seedsFile;
+        
+        if (!is_array($seeds)) {
+            return;
+        }
+        
+        // Disable foreign key checks temporarily for truncate
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+        
+        $totalImported = 0;
+        foreach ($seeds as $table => $rows) {
+            if (empty($rows)) continue;
+            
+            try {
+                // Check if table exists
+                $check = $pdo->query("SHOW TABLES LIKE '$table'");
+                if ($check->rowCount() === 0) {
+                    continue; // Table doesn't exist, skip
+                }
+                
+                // TRUNCATE the table to remove old data
+                $pdo->exec("TRUNCATE TABLE `$table`");
+                echo "   🔄 Sincronizando tabla '$table'...\n";
+                
+                // Import all rows
+                foreach ($rows as $row) {
+                    try {
+                        $columns = array_keys($row);
+                        $placeholders = array_fill(0, count($columns), '?');
+                        
+                        $sql = "INSERT INTO `$table` (`" . implode('`, `', $columns) . "`) VALUES (" . implode(', ', $placeholders) . ")";
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->execute(array_values($row));
+                        $totalImported++;
+                    } catch (Exception $e) {
+                        // Log but continue
+                        echo "   ⚠️ Error en registro: " . substr($e->getMessage(), 0, 50) . "\n";
+                    }
+                }
+            } catch (Exception $e) {
+                echo "   ⚠️ Error en tabla '$table': " . $e->getMessage() . "\n";
+            }
+        }
+        
+        // Re-enable foreign key checks
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+        
+        if ($totalImported > 0) {
+            echo "   ✅ $totalImported registros sincronizados\n";
+        }
+        
+    } catch (Exception $e) {
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 1"); // Ensure we re-enable
+        echo "   ⚠️  Error importando seeds: " . $e->getMessage() . "\n";
+    }
+}
+
+/**
  * Create tables manually if schema.sql is not found
  * This is a fallback for edge cases
  */
@@ -206,16 +289,16 @@ function createTablesManually(PDO $pdo): void {
         "CREATE TABLE IF NOT EXISTS `empleados` (
             `id` INT AUTO_INCREMENT PRIMARY KEY,
             `nombre` VARCHAR(100) NOT NULL,
-            `apellido` VARCHAR(100) NULL,
+            `apellido` VARCHAR(100) NOT NULL,
+            `email` VARCHAR(150) NOT NULL,
             `cedula` VARCHAR(15) NULL,
-            `email` VARCHAR(150) NULL,
-            `telefono` VARCHAR(20) NULL,
-            `cargo` VARCHAR(100) NULL,
+            `cargo` VARCHAR(150) NULL,
             `departamento_id` INT NULL,
+            `rol` ENUM('tecnico', 'administrador', 'consultor') NOT NULL DEFAULT 'tecnico',
             `usuario_id` INT NULL,
-            `activo` BOOLEAN DEFAULT TRUE,
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            `deleted_at` TIMESTAMP NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
         
         // equipos
@@ -241,6 +324,7 @@ function createTablesManually(PDO $pdo): void {
             `proveedor` VARCHAR(150) NULL,
             `proveedor_rif` VARCHAR(30) NULL,
             `observaciones` TEXT NULL,
+            `imagen` VARCHAR(255) NULL,
             `departamento_id` INT NULL,
             `empleado_id` INT NULL,
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -264,25 +348,28 @@ function createTablesManually(PDO $pdo): void {
             `fecha` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             `titulo` VARCHAR(255) NULL,
             `descripcion` TEXT NOT NULL,
-            `estado` ENUM('pendiente', 'asignado', 'en_proceso', 'resuelto', 'cerrado') NOT NULL DEFAULT 'pendiente',
+            `observaciones` TEXT NULL,
+            `firma` LONGTEXT NULL,
+            `estado` ENUM('pendiente', 'en_proceso', 'en_espera', 'resuelto') NOT NULL DEFAULT 'pendiente',
             `prioridad` ENUM('baja', 'media', 'alta', 'critica') DEFAULT 'media',
-            `categoria_id` INT NULL,
-            `equipo_id` INT NOT NULL,
-            `empleado_id` INT NULL,
-            `usuario_creacion_id` INT NULL,
-            `fecha_asignacion` DATETIME NULL,
-            `fecha_cierre` DATETIME NULL,
             `fecha_vencimiento` DATETIME NULL,
             `notificacion_vencimiento_enviada` BOOLEAN DEFAULT FALSE,
             `notificacion_vencimiento_fecha` DATETIME NULL,
             `solucion` TEXT NULL,
-            `observaciones` TEXT NULL,
-            `firma` LONGTEXT NULL,
-            `valoracion` TINYINT NULL,
+            `equipo_id` INT NOT NULL,
+            `categoria_id` INT NULL,
+            `empleado_id` INT NULL,
+            `usuario_creacion_id` INT NULL,
+            `fecha_asignacion` DATETIME NULL,
+            `fecha_cierre` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            `tiempo_atencion_minutos` INT NULL,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            `valoracion` ENUM('excelente', 'bueno', 'regular', 'malo') NULL,
             `valoracion_comentario` TEXT NULL,
             `valoracion_fecha` DATETIME NULL,
-            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            `comentario_valoracion` TEXT NULL,
+            `fecha_valoracion` DATETIME NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
         
         // mantenimientos
@@ -326,7 +413,7 @@ function createTablesManually(PDO $pdo): void {
         "CREATE TABLE IF NOT EXISTS `inventario_movimientos` (
             `id` INT AUTO_INCREMENT PRIMARY KEY,
             `item_id` INT NOT NULL,
-            `tipo` ENUM('entrada', 'salida', 'ajuste', 'transferencia', 'consumo', 'baja') NOT NULL,
+            `tipo_movimiento` ENUM('ENTRADA', 'SALIDA', 'AJUSTE', 'TRANSFERENCIA', 'CONSUMO', 'BAJA') NOT NULL,
             `cantidad` INT NOT NULL,
             `motivo` TEXT NULL,
             `usuario_id` INT NULL,

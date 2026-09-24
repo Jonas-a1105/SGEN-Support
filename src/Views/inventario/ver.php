@@ -1,5 +1,3 @@
-<?php require_once '../src/Views/layout/header.php'; ?>
-<?php require_once '../src/Views/layout/left-side-menu.php'; ?>
 
 <!-- Include Modern CSS -->
 <link rel="stylesheet" href="<?= BASE_URL ?>css/product-detail-modern.css?v=<?= time() ?>">
@@ -250,4 +248,3 @@
 <!-- Modal for Stock Adjustment (Maintained existing logic) -->
 
 
-<?php require_once '../src/Views/layout/footer.php'; ?>

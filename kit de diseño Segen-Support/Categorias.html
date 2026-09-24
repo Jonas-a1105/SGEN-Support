@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Gestión de Categorías — Clasificación de Incidencias y Soporte</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #0d6efd; /* Color de acento primario: Azul institucional */
+    --orange-rgb: 13, 110, 253;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica del sistema */
+    --green: #198754;
+    --blue: #0d6efd;
+    --yellow: #ffc107;
+    --red: #dc3545;
+    --gray: #6c757d;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CABECERA DEL MÓDULO GESTIÓN DE CATEGORÍAS */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--bg-card);
+    border: var(--stroke-w) solid var(--stroke);
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .module-subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .btn-new-category {
+    height: 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--blue);
+    background: var(--blue);
+    color: #ffffff;
+    padding: 0 18px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-new-category:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  /* FILA DE 3 KPIS OPERATIVAS COMPACTAS */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .glass-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    position: relative;
+    overflow: hidden;
+    transition: border-width 0.2s ease, border-color 0.2s ease;
+  }
+
+  .kpi {
+    cursor: pointer;
+    min-height: 94px;
+  }
+
+  .kpi .card-pad {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* TEXTO DE KPI EN MINÚSCULAS NORMALES (SIN UPPERCASE) */
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 600 !important;
+    color: var(--text-muted);
+    text-transform: none !important;
+    margin-bottom: 4px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700 !important;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .kpi-icon-bubble {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .kpi.total-cat .kpi-icon-bubble {
+    background: rgba(13, 110, 253, 0.12);
+    color: var(--blue);
+  }
+
+  .kpi.hardware-stat .kpi-icon-bubble {
+    background: rgba(220, 53, 69, 0.12);
+    color: var(--red);
+  }
+
+  .kpi.redes-stat .kpi-icon-bubble {
+    background: rgba(25, 135, 84, 0.12);
+    color: var(--green);
+  }
+
+  .kpi-icon-bubble svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .accent-bottom {
+    height: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    background: var(--blue);
+  }
+
+  .kpi:hover .accent-bottom {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* BARRA DE HERRAMIENTAS Y BÚSQUEDA */
+  .toolbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 14px 0 38px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--blue);
+  }
+
+  .table-info-counter {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* TABLA DE CATEGORÍAS */
+  .categories-table-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .custom-table th {
+    padding: 16px 20px;
+    font-size: 12px;
+    font-weight: 700 !important;
+    color: var(--text);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+    letter-spacing: 0.01em;
+  }
+
+  .custom-table td {
+    padding: 16px 20px;
+    font-size: 13px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .custom-table tr:hover td {
+    background: var(--stroke-subtle);
+  }
+
+  /* ICONO EN TABLA */
+  .cat-icon-container {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+  }
+
+  .cat-icon-container svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  /* BADGE DE COLOR EXACTO HEX */
+  .color-hex-pill {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
+    text-align: center;
+    min-width: 80px;
+  }
+
+  /* BOTONES DE ACCIÓN DE FILA (EDITAR Y ELIMINAR) */
+  .row-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .btn-row-action {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .btn-row-action.edit {
+    color: var(--blue);
+  }
+
+  .btn-row-action.edit:hover {
+    border-color: var(--blue);
+    background: rgba(13, 110, 253, 0.12);
+  }
+
+  .btn-row-action.delete {
+    color: var(--red);
+  }
+
+  .btn-row-action.delete:hover {
+    border-color: var(--red);
+    background: rgba(220, 53, 69, 0.12);
+  }
+
+  .btn-row-action svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* ESTADO VACÍO DE FILTRADO */
+  .empty-state-box {
+    padding: 56px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+  }
+
+  .empty-icon-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--stroke-subtle);
+    border: var(--stroke-w) solid var(--stroke);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+  }
+
+  .empty-icon-circle svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(520px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head, .appearance-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--blue);
+  }
+
+  /* SELECTOR DE ICONOS PREESTABLECIDOS */
+  .icon-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .icon-preset-btn {
+    height: 40px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .icon-preset-btn:hover {
+    border-color: var(--stroke-hover);
+    color: var(--text);
+  }
+
+  .icon-preset-btn.selected {
+    border-color: var(--blue);
+    background: rgba(13, 110, 253, 0.12);
+    color: var(--blue);
+  }
+
+  .icon-preset-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* SELECTOR DE PALETA DE COLORES */
+  .color-swatches-grid {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .color-swatch-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.16s ease;
+  }
+
+  .color-swatch-circle:hover {
+    transform: scale(1.18);
+  }
+
+  .color-swatch-circle.selected {
+    border-color: var(--text);
+    transform: scale(1.12);
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn.primary {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #ffffff;
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  .btn.danger {
+    background: var(--red);
+    border-color: var(--red);
+    color: #ffffff;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--blue);
+    color: var(--blue);
+    background: var(--accent-soft);
+  }
+
+  /* TOAST NOTIFICACIÓN */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--blue);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD TOTAL Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 1080px) {
+    .main {
+      margin-left: 78px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    /* KPIS EN 2 COLUMNAS ESTRICTAS EN MÓVIL */
+    .kpi-row {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px;
+    }
+
+    .toolbar-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .search-box {
+      max-width: 100%;
+    }
+
+    .custom-table th, .custom-table td {
+      padding: 12px 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .kpi-row {
+      grid-template-columns: 1fr !important;
+    }
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+    .icon-presets-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO FLOTANTE -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de navegación">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item" data-section="equipment">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+        </div>
+        <span class="nav-label">Equipos TI</span>
+      </div>
+      <div class="nav-item" data-section="maintenance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <span class="nav-label">Mantenimientos</span>
+      </div>
+      <div class="nav-item active" data-section="categories">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+        </div>
+        <span class="nav-label">Categorías</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#0d6efd" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="module-wrapper">
+
+        <!-- CABECERA DEL MÓDULO: GESTIÓN DE CATEGORÍAS -->
+        <section class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Gestión de Categorías</h1>
+              <p class="module-subtitle">Clasificación y tipificación de incidencias para soporte y tickets.</p>
+            </div>
+          </div>
+          <button class="btn-new-category" id="btnOpenNewCategory" type="button">
+            <span>+</span>
+            <span>Nueva Categoría</span>
+          </button>
+        </section>
+
+        <!-- FILA DE 3 KPIS OPERATIVAS COMPACTAS (SIN UPPERCASE) -->
+        <section class="kpi-row">
+          <div class="glass-card kpi total-cat" id="kpiTotalCard">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Total categorías activas</div>
+                <div class="kpi-value" id="kpiTotalCount">6</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi hardware-stat" id="kpiHardwareCard">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Incidencias de hardware</div>
+                <div class="kpi-value" id="kpiHardwareStat">42%</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi redes-stat" id="kpiRedCard">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Conectividad & redes</div>
+                <div class="kpi-value" id="kpiRedStat">Alta prioridad</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+        </section>
+
+        <!-- BARRA DE FILTRADO Y BÚSQUEDA -->
+        <section class="toolbar-card">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" class="search-input" id="searchCategoryInput" placeholder="Buscar categoría por nombre o descripción..." autocomplete="off" />
+          </div>
+          <div class="table-info-counter">
+            Mostrando <strong id="showingCategoriesCount">6</strong> de <strong id="totalCategoriesCount">6</strong> categorías
+          </div>
+        </section>
+
+        <!-- TABLA COMPLETA DE CATEGORÍAS -->
+        <section class="categories-table-card">
+          <div class="table-responsive">
+            <table class="custom-table" id="categoriesTable">
+              <thead>
+                <tr>
+                  <th style="width:70px;">Icono</th>
+                  <th style="width:180px;">Nombre</th>
+                  <th>Descripción</th>
+                  <th style="width:140px;">Color</th>
+                  <th style="width:120px;text-align:right;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyCategories">
+                <!-- Inyectado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ESTADO VACÍO CUANDO NO HAY COINCIDENCIAS -->
+          <div class="empty-state-box" id="emptyCategoryState" style="display:none;">
+            <div class="empty-icon-circle">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <div>
+              <strong style="font-size:14px;color:var(--text);display:block;">No se encontraron categorías</strong>
+              <span style="font-size:12px;color:var(--text-muted);">Prueba con otros términos de búsqueda.</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: REGISTRAR / EDITAR CATEGORÍA -->
+<div class="modal-backdrop" id="modalCategory">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalCategoryTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalCategoryTitle">Nueva Categoría</h3>
+      <button class="icon-close" id="closeCategoryModal" type="button">×</button>
+    </div>
+    <form id="formCategory">
+      <input type="hidden" id="editCategoryId" value="" />
+      
+      <div class="form-group">
+        <label class="form-label" for="inputCategoryName">Nombre de la Categoría</label>
+        <input type="text" class="form-input" id="inputCategoryName" placeholder="Ej: Hardware, Red, Servidores..." required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="inputCategoryDesc">Descripción</label>
+        <textarea class="form-textarea" id="inputCategoryDesc" rows="3" placeholder="Indique brevemente el tipo de incidencias que agrupa..." required></textarea>
+      </div>
+
+      <!-- SELECTOR DE ICONO PRESET -->
+      <div class="form-group">
+        <label class="form-label">Icono Representativo</label>
+        <div class="icon-presets-grid" id="iconPresetsGrid">
+          <button type="button" class="icon-preset-btn selected" data-icon="hardware" title="Hardware / Chip">
+            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>
+          </button>
+          <button type="button" class="icon-preset-btn" data-icon="printer" title="Impresora">
+            <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          </button>
+          <button type="button" class="icon-preset-btn" data-icon="help" title="Otro / Pregunta">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </button>
+          <button type="button" class="icon-preset-btn" data-icon="mouse" title="Periféricos / Mouse">
+            <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="7"></rect><line x1="12" y1="6" x2="12" y2="10"></line></svg>
+          </button>
+          <button type="button" class="icon-preset-btn" data-icon="wifi" title="Red / Conectividad">
+            <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+          </button>
+          <button type="button" class="icon-preset-btn" data-icon="window" title="Software / Sistema">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- SELECTOR DE COLOR DISTINTIVO -->
+      <div class="form-group">
+        <label class="form-label" for="inputCategoryHex">Color Identificador (Hex)</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="text" class="form-input" id="inputCategoryHex" value="#dc3545" style="max-width:140px;font-family:monospace;" required />
+          <input type="color" id="pickerCategoryColor" value="#dc3545" style="width:38px;height:38px;border:none;background:transparent;cursor:pointer;border-radius:8px;" />
+          <div class="color-swatches-grid" id="categoryColorSwatches">
+            <div class="color-swatch-circle selected" data-color="#dc3545" style="background:#dc3545;" title="Rojo Hardware"></div>
+            <div class="color-swatch-circle" data-color="#ffc107" style="background:#ffc107;" title="Amarillo Impresora"></div>
+            <div class="color-swatch-circle" data-color="#6c757d" style="background:#6c757d;" title="Gris Otro / Periféricos"></div>
+            <div class="color-swatch-circle" data-color="#198754" style="background:#198754;" title="Verde Red"></div>
+            <div class="color-swatch-circle" data-color="#0d6efd" style="background:#0d6efd;" title="Azul Software"></div>
+            <div class="color-swatch-circle" data-color="#8b5cf6" style="background:#8b5cf6;" title="Púrpura Servidores"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="cancelCategoryModal" type="button">Cancelar</button>
+        <button class="btn primary" type="submit">Guardar Categoría</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR ELIMINACIÓN (SIN ALERT NI CONFIRM) -->
+<div class="modal-backdrop" id="modalDeleteCategory">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteCatTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="deleteCatTitle">Eliminar Categoría</h3>
+      <button class="icon-close" id="closeDeleteModal" type="button">×</button>
+    </div>
+    <p style="margin:0 0 16px;font-size:14px;color:var(--text-muted);line-height:1.5;">
+      ¿Estás seguro de que deseas eliminar la categoría <strong id="deleteTargetName" style="color:var(--text);">Hardware</strong>?
+      Los tickets asociados mantendrán su histórico pero no podrán clasificarse bajo este concepto en nuevos reportes.
+    </p>
+    <div class="modal-actions">
+      <button class="btn" id="cancelDeleteBtn" type="button">Cancelar</button>
+      <button class="btn danger" id="confirmDeleteBtn" type="button">Eliminar Categoría</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APARIENCIA Y ESTILO -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn primary" id="doneAppearance" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Gestión de Categorías</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // NOTIFICADOR TOAST
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // ICONOS VECTORIALES SVG EXACTOS
+  const categoryIcons = {
+    hardware: `<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>`,
+    printer: `<svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>`,
+    help: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+    mouse: `<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="7"></rect><line x1="12" y1="6" x2="12" y2="10"></line></svg>`,
+    wifi: `<svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`,
+    window: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>`
+  };
+
+  // DATOS BASE DE CATEGORÍAS (IDÉNTICOS A LA CAPTURA)
+  let categorias = [
+    {
+      id: 'cat_hardware',
+      name: 'Hardware',
+      desc: 'Problemas físicos de equipos',
+      color: '#dc3545',
+      iconKey: 'hardware'
+    },
+    {
+      id: 'cat_impresora',
+      name: 'Impresora',
+      desc: 'Problemas de impresión',
+      color: '#ffc107',
+      iconKey: 'printer'
+    },
+    {
+      id: 'cat_otro',
+      name: 'Otro',
+      desc: 'Otros problemas',
+      color: '#6c757d',
+      iconKey: 'help'
+    },
+    {
+      id: 'cat_perifericos',
+      name: 'Periféricos',
+      desc: 'Mouse, teclado, monitor',
+      color: '#6c757d',
+      iconKey: 'mouse'
+    },
+    {
+      id: 'cat_red',
+      name: 'Red',
+      desc: 'Conectividad e internet',
+      color: '#198754',
+      iconKey: 'wifi'
+    },
+    {
+      id: 'cat_software',
+      name: 'Software',
+      desc: 'Errores de programas y SO',
+      color: '#0d6efd',
+      iconKey: 'window'
+    }
+  ];
+
+  let searchQuery = '';
+  let pendingDeleteId = null;
+  let selectedIconKey = 'hardware';
+
+  // RENDERIZADO DE LA TABLA
+  const renderCategoriesTable = () => {
+    const tbody = $('#tbodyCategories');
+    const emptyBox = $('#emptyCategoryState');
+    const q = searchQuery.toLowerCase().trim();
+
+    const filtered = categorias.filter(item => {
+      if (!q) return true;
+      return item.name.toLowerCase().includes(q) ||
+             item.desc.toLowerCase().includes(q) ||
+             item.color.toLowerCase().includes(q);
+    });
+
+    $('#showingCategoriesCount').textContent = filtered.length;
+    $('#totalCategoriesCount').textContent = categorias.length;
+    $('#kpiTotalCount').textContent = categorias.length;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      emptyBox.style.display = 'flex';
+      return;
+    }
+
+    emptyBox.style.display = 'none';
+    tbody.innerHTML = filtered.map(item => `
+      <tr data-id="${item.id}">
+        <td>
+          <div class="cat-icon-container" style="color:${item.color};">
+            ${categoryIcons[item.iconKey] || categoryIcons.hardware}
+          </div>
+        </td>
+        <td>
+          <strong style="color:var(--text);font-size:14px;">${item.name}</strong>
+        </td>
+        <td style="color:var(--text-muted);font-size:13px;">
+          ${item.desc}
+        </td>
+        <td>
+          <span class="color-hex-pill" style="background:${item.color};">
+            ${item.color}
+          </span>
+        </td>
+        <td>
+          <div class="row-actions-group">
+            <button class="btn-row-action edit btn-edit-cat" data-id="${item.id}" title="Editar categoría" type="button">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            <button class="btn-row-action delete btn-delete-cat" data-id="${item.id}" title="Eliminar categoría" type="button">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    attachRowEvents();
+  };
+
+  // EVENTOS DE LAS FILAS
+  const attachRowEvents = () => {
+    $$('.btn-edit-cat').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const item = categorias.find(x => x.id === id);
+        if (!item) return;
+
+        $('#modalCategoryTitle').textContent = `Editar Categoría: ${item.name}`;
+        $('#editCategoryId').value = item.id;
+        $('#inputCategoryName').value = item.name;
+        $('#inputCategoryDesc').value = item.desc;
+        $('#inputCategoryHex').value = item.color;
+        $('#pickerCategoryColor').value = item.color;
+
+        selectedIconKey = item.iconKey || 'hardware';
+        $$('.icon-preset-btn').forEach(b => b.classList.toggle('selected', b.dataset.icon === selectedIconKey));
+        syncSwatchesSelection(item.color);
+
+        $('#modalCategory').classList.add('show');
+      });
+    });
+
+    $$('.btn-delete-cat').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const item = categorias.find(x => x.id === id);
+        if (!item) return;
+
+        pendingDeleteId = id;
+        $('#deleteTargetName').textContent = item.name;
+        $('#modalDeleteCategory').classList.add('show');
+      });
+    });
+  };
+
+  // BÚSQUEDA EN TIEMPO REAL
+  $('#searchCategoryInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderCategoriesTable();
+  });
+
+  // SELECTOR DE ICONO PRESET
+  $$('.icon-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.icon-preset-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedIconKey = btn.dataset.icon;
+    });
+  });
+
+  // SELECTOR DE COLOR EN MODAL
+  const pickerCategoryColor = $('#pickerCategoryColor');
+  const inputCategoryHex = $('#inputCategoryHex');
+
+  const syncSwatchesSelection = hex => {
+    $$('.color-swatch-circle').forEach(sw => {
+      sw.classList.toggle('selected', sw.dataset.color.toLowerCase() === hex.toLowerCase());
+    });
+  };
+
+  pickerCategoryColor.addEventListener('input', e => {
+    const val = e.target.value;
+    inputCategoryHex.value = val;
+    syncSwatchesSelection(val);
+  });
+
+  inputCategoryHex.addEventListener('input', e => {
+    const val = e.target.value;
+    if (/^#[0-9A-F]{6}$/i.test(val)) {
+      pickerCategoryColor.value = val;
+      syncSwatchesSelection(val);
+    }
+  });
+
+  $$('.color-swatch-circle').forEach(sw => {
+    sw.addEventListener('click', () => {
+      const color = sw.dataset.color;
+      inputCategoryHex.value = color;
+      pickerCategoryColor.value = color;
+      syncSwatchesSelection(color);
+    });
+  });
+
+  // MODAL CREAR CATEGORÍA
+  const modalCategory = $('#modalCategory');
+  $('#btnOpenNewCategory').addEventListener('click', () => {
+    $('#formCategory').reset();
+    $('#editCategoryId').value = '';
+    $('#modalCategoryTitle').textContent = 'Nueva Categoría';
+    selectedIconKey = 'hardware';
+    $$('.icon-preset-btn').forEach(b => b.classList.toggle('selected', b.dataset.icon === selectedIconKey));
+    $('#inputCategoryHex').value = '#0d6efd';
+    $('#pickerCategoryColor').value = '#0d6efd';
+    syncSwatchesSelection('#0d6efd');
+    modalCategory.classList.add('show');
+  });
+
+  const closeCatModal = () => modalCategory.classList.remove('show');
+  $('#closeCategoryModal').addEventListener('click', closeCatModal);
+  $('#cancelCategoryModal').addEventListener('click', closeCatModal);
+
+  // GUARDAR CATEGORÍA (CREAR O EDITAR)
+  $('#formCategory').addEventListener('submit', e => {
+    e.preventDefault();
+    const editId = $('#editCategoryId').value;
+    const name = $('#inputCategoryName').value.trim();
+    const desc = $('#inputCategoryDesc').value.trim();
+    const color = $('#inputCategoryHex').value.trim();
+
+    if (!name || !desc) {
+      showToast('Campos requeridos', 'Por favor complete todos los datos.');
+      return;
+    }
+
+    if (editId) {
+      const idx = categorias.findIndex(x => x.id === editId);
+      if (idx !== -1) {
+        categorias[idx] = { id: editId, name, desc, color, iconKey: selectedIconKey };
+        showToast('Categoría Actualizada', `Se guardaron los cambios para ${name}.`);
+      }
+    } else {
+      const newId = `cat_${Date.now()}`;
+      categorias.push({ id: newId, name, desc, color, iconKey: selectedIconKey });
+      showToast('Categoría Registrada', `${name} añadida al catálogo.`);
+    }
+
+    renderCategoriesTable();
+    closeCatModal();
+  });
+
+  // MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
+  const modalDeleteCategory = $('#modalDeleteCategory');
+  const closeDeleteModal = () => {
+    modalDeleteCategory.classList.remove('show');
+    pendingDeleteId = null;
+  };
+
+  $('#closeDeleteModal').addEventListener('click', closeDeleteModal);
+  $('#cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+  $('#confirmDeleteBtn').addEventListener('click', () => {
+    if (pendingDeleteId) {
+      const item = categorias.find(x => x.id === pendingDeleteId);
+      categorias = categorias.filter(x => x.id !== pendingDeleteId);
+      renderCategoriesTable();
+      showToast('Categoría Eliminada', `La categoría ${item ? item.name : ''} fue retirada.`);
+    }
+    closeDeleteModal();
+  });
+
+  // CONTROL DEL GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('cat-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes del módulo fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // COLOR DE ACENTO GLOBAL
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+    localStorage.setItem('cat-accent-color', hex);
+    if (notify) showToast('Color de acento', `Acento ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('cat-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('cat-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('cat-border-width') || '2px';
+  const savedAccent = localStorage.getItem('cat-accent-color') || '#0d6efd';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // INICIALIZACIÓN DE LA TABLA
+  renderCategoriesTable();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      modalCategory.classList.remove('show');
+      modalDeleteCategory.classList.remove('show');
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

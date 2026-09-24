@@ -29,10 +29,30 @@
         const btnPrevPage = document.getElementById('btnPrevPage');
         const btnNextPage = document.getElementById('btnNextPage');
 
-        // Load saved preferences
+        // Helper function to get cookie value
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : null;
+        }
+
+        // Helper function to set cookie
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = name + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
+        }
+
+        // Load saved preferences from GLOBAL cookie (consistent with other modules)
         let currentView = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'view', 'grid') : 'grid';
-        const savedPerPage = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'perPage', 12) : 12;
+
+        // Read from global pagination cookie
+        const savedPerPage = getCookie('sgen_pagination_per_page');
+
+        // SAFE PARSE: Avoid NaN issues
         itemsPerPage = parseInt(savedPerPage);
+        if (isNaN(itemsPerPage) || itemsPerPage === 0) {
+            itemsPerPage = 12;
+        }
 
         // Set selector to saved value
         if (itemsPerPageSelector) {
@@ -88,58 +108,71 @@
 
         // Toggle view
         if (btnViewGrid) {
-            btnViewGrid.addEventListener('click', () => {
+            btnViewGrid.onclick = () => {
                 currentView = 'grid';
                 if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'grid');
                 applyView();
                 renderPage();
-            });
+            };
         }
 
         if (btnViewList) {
-            btnViewList.addEventListener('click', () => {
+            btnViewList.onclick = () => {
                 currentView = 'list';
                 if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'view', 'list');
                 applyView();
                 renderPage();
-            });
+            };
         }
 
         // Search
         if (searchInput) {
-            searchInput.addEventListener('input', () => {
+            searchInput.oninput = () => {
                 currentPage = 1;
                 filterAndRender();
-            });
+            };
         }
 
-        // Pagination controls
+        // Pagination controls - use bound functions for proper removal
         if (itemsPerPageSelector) {
-            itemsPerPageSelector.addEventListener('change', function () {
-                itemsPerPage = parseInt(this.value);
-                currentPage = 1;
-                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'perPage', itemsPerPage);
-                renderPage();
-            });
+            // Remove any previous handler
+            itemsPerPageSelector.removeEventListener('change', window._deptItemsPerPageHandler);
+            window._deptItemsPerPageHandler = function () {
+                const val = parseInt(this.value);
+                if (!isNaN(val)) {
+                    itemsPerPage = val;
+                    currentPage = 1;
+                    // Save to global cookie (consistent with other modules)
+                    setCookie('sgen_pagination_per_page', itemsPerPage, 365);
+                    renderPage();
+                }
+            };
+            itemsPerPageSelector.addEventListener('change', window._deptItemsPerPageHandler);
         }
 
         if (btnPrevPage) {
-            btnPrevPage.addEventListener('click', () => {
+            // Remove any previous handler
+            btnPrevPage.removeEventListener('click', window._deptPrevPageHandler);
+            window._deptPrevPageHandler = function () {
                 if (currentPage > 1) {
                     currentPage--;
                     renderPage();
                 }
-            });
+            };
+            btnPrevPage.addEventListener('click', window._deptPrevPageHandler);
         }
 
         if (btnNextPage) {
-            btnNextPage.addEventListener('click', () => {
-                const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(filteredItems.length / itemsPerPage);
+            // Remove any previous handler
+            btnNextPage.removeEventListener('click', window._deptNextPageHandler);
+            window._deptNextPageHandler = function () {
+                const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(filteredItems.length / itemsPerPage) || 1;
                 if (currentPage < totalPages) {
                     currentPage++;
                     renderPage();
                 }
-            });
+            };
+            btnNextPage.addEventListener('click', window._deptNextPageHandler);
         }
 
         function filterAndRender() {
@@ -148,7 +181,7 @@
             if (term === '') {
                 filteredItems = [...allItems];
             } else {
-                filteredItems = allItems.filter(item => item.searchText.includes(term));
+                filteredItems = allItems.filter(item => item.searchText.toLowerCase().includes(term));
             }
 
             renderPage();
@@ -217,13 +250,21 @@
         filterAndRender();
     };
 
-    // Initialize on Turbo navigation
+    // Clean initialization for Turbo compatibility
+    // Remove previous listener if exists to avoid double binding
+    if (window._deptInitHandler) {
+        document.removeEventListener('turbo:load', window._deptInitHandler);
+    }
+
+    window._deptInitHandler = init;
     document.addEventListener('turbo:load', init);
 
-    // Also run immediately if already loaded
+    // Also run immediately if the script is loaded after turbo:load (e.g. direct refresh)
     if (document.readyState !== 'loading') {
-        init();
+        // Check if we're on the departamentos page
+        if (document.getElementById('gridViewDept')) {
+            init();
+        }
     }
 })();
-
 

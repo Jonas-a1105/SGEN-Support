@@ -210,6 +210,7 @@ html {
 .id-toolbar {
     display: flex;
     flex-direction: column;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -219,6 +220,7 @@ html {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
     }
 }
 
@@ -256,6 +258,7 @@ html {
 
 .id-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     width: 100%;
 }
@@ -382,7 +385,7 @@ html {
     border-radius: 1rem;
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    overflow: hidden;
+    overflow-x: auto;
 }
 
 .id-table {
@@ -1012,4 +1015,7 @@ html {
     font-size: 0.875rem;
     font-weight: 600;
 }
-[data-theme='dark'] { --id-border: var(--border-color); }
+
+[data-theme='dark'] {
+    --id-border: var(--border-color);
+}

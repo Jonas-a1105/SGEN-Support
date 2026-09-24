@@ -19,26 +19,29 @@ return [
         $pdo->exec($sql);
         echo "✓ Tabla 'categorias' creada.\n";
 
-        // 2. Insertar categorías por defecto
-        $categorias = [
-            ['Hardware', 'Problemas físicos de equipos', 'bi-cpu', '#dc3545'], // Rojo
-            ['Software', 'Errores de programas y SO', 'bi-window', '#0d6efd'], // Azul
-            ['Red', 'Conectividad e internet', 'bi-wifi', '#198754'], // Verde
-            ['Impresora', 'Problemas de impresión', 'bi-printer', '#ffc107'], // Amarillo
-            ['Periféricos', 'Mouse, teclado, monitor', 'bi-mouse', '#6c757d'], // Gris
-            ['Otro', 'Otros problemas', 'bi-question-circle', '#6c757d']
-        ];
+        // 2. Verificar si la tabla ya tiene datos (de seeds.php)
+        $countCheck = $pdo->query("SELECT COUNT(*) FROM categorias");
+        $existingCount = (int)$countCheck->fetchColumn();
+        
+        if ($existingCount > 0) {
+            echo "✓ Tabla 'categorias' ya tiene $existingCount registros, omitiendo inserción.\n";
+        } else {
+            // Insertar categorías por defecto solo si la tabla está vacía
+            $categorias = [
+                ['Hardware', 'Problemas físicos de equipos', 'bi-cpu', '#dc3545'], // Rojo
+                ['Software', 'Errores de programas y SO', 'bi-window', '#0d6efd'], // Azul
+                ['Red', 'Conectividad e internet', 'bi-wifi', '#198754'], // Verde
+                ['Impresora', 'Problemas de impresión', 'bi-printer', '#ffc107'], // Amarillo
+                ['Periféricos', 'Mouse, teclado, monitor', 'bi-mouse', '#6c757d'], // Gris
+                ['Otro', 'Otros problemas', 'bi-question-circle', '#6c757d']
+            ];
 
-        $stmt = $pdo->prepare("INSERT INTO categorias (nombre, descripcion, icono, color) VALUES (?, ?, ?, ?)");
-        foreach ($categorias as $cat) {
-            // Verificar si ya existe para no duplicar
-            $check = $pdo->prepare("SELECT id FROM categorias WHERE nombre = ?");
-            $check->execute([$cat[0]]);
-            if (!$check->fetch()) {
+            $stmt = $pdo->prepare("INSERT INTO categorias (nombre, descripcion, icono, color) VALUES (?, ?, ?, ?)");
+            foreach ($categorias as $cat) {
                 $stmt->execute($cat);
             }
+            echo "✓ Categorías por defecto insertadas.\n";
         }
-        echo "✓ Categorías por defecto insertadas.\n";
 
         // 3. Agregar columna categoria_id a soportes
         $checkCol = $pdo->query("SHOW COLUMNS FROM soportes LIKE 'categoria_id'");

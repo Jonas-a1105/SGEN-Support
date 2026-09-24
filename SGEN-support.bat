@@ -35,6 +35,11 @@ timeout /t 5 /nobreak >nul
 echo [OK] Servicios listos.
 echo.
 
+echo [3.5/4] Sincronizando esquema de base de datos...
+php scripts/sync_schema.php
+echo [OK] Esquema actualizado.
+echo.
+
 echo [4/4] Abriendo el sistema en el navegador...
 start http://localhost/sgen-support/public
 echo.

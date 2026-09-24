@@ -1,0 +1,47 @@
+name: 🐛 Reporte de Error (Bug Report)
+description: Reporta un error o comportamiento inesperado en SGEN-Support.
+labels: ['bug', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por tomarte el tiempo de reportar este problema para mantener SGEN-Support en el más alto estándar de calidad.
+  - type: input
+    id: environment
+    attributes:
+      label: Entorno y Versión
+      description: ¿Qué versión de SGEN-Support estás utilizando? (ej. v1.1.0, Desktop Windows, Web Nginx/Apache, PHP 8.2)
+      placeholder: ej. Desktop v1.1.0 Windows 11
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción del Error
+      description: Describe de forma concisa qué falló.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para Reproducir
+      description: Pasos ordenados para replicar el problema.
+      placeholder: |
+        1. Ir a '...'
+        2. Hacer clic en '....'
+        3. Observar el error '....'
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamiento Esperado
+      description: ¿Qué debería haber ocurrido en su lugar?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Registros y Consola (Logs)
+      description: Pega aquí trazas de error de `storage/logs/laravel.log`, `debug.log` de Electron o la consola del navegador.
+      render: shell

@@ -11,6 +11,7 @@
         const apellido = document.getElementById('apellido')?.value || '';
         const email = document.getElementById('email')?.value || '';
         const cedula = document.getElementById('cedula')?.value || '';
+        const cargo = document.getElementById('cargo')?.value || '';
         const deptSelect = document.getElementById('departamento_id');
         const deptName = deptSelect && deptSelect.options[deptSelect.selectedIndex] ? deptSelect.options[deptSelect.selectedIndex].text : '---';
 
@@ -26,6 +27,10 @@
         // Update cedula
         const previewCedula = document.getElementById('previewCedula');
         if (previewCedula) previewCedula.textContent = cedula || '---';
+
+        // Update cargo
+        const previewCargo = document.getElementById('previewCargo');
+        if (previewCargo) previewCargo.textContent = cargo ? cargo.toUpperCase() : 'SIN CARGO';
 
         // Update department
         const previewDept = document.getElementById('previewDept');

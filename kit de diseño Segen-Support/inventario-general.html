@@ -1,0 +1,3650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Inventario General — Gestión Centralizada de Recursos</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #10b981; /* Color de acento de inventario: Esmeralda activo */
+    --orange-light: #34d399;
+    --orange-rgb: 16, 185, 129;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica */
+    --green: #16a34a;
+    --blue: #2563eb;
+    --yellow: #d97706;
+    --red: #dc2626;
+    --cyan: #0891b2;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title,
+  .item-hero-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .appearance-head h3 {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* CONTENEDOR PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .inventory-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CABECERA DEL MÓDULO */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--bg-card);
+    border: var(--stroke-w) solid var(--stroke);
+    color: var(--orange);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .module-subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .header-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-action-outline {
+    height: 38px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    padding: 0 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-action-outline:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn-action-solid {
+    height: 38px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--orange);
+    background: var(--orange);
+    color: #ffffff;
+    padding: 0 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+  }
+
+  .btn-action-solid:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  /* BARRA DE BÚSQUEDA GLOBAL */
+  .global-search-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    padding: 4px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .global-search-card svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--text-muted);
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+  }
+
+  .global-search-input {
+    width: 100%;
+    height: 38px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .global-search-input::placeholder {
+    color: var(--text-dim);
+  }
+
+  /* FILA DE 3 KPIS OPERATIVAS (NO UPPERCASE) */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .glass-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    position: relative;
+    overflow: hidden;
+    transition: border-width 0.2s ease, border-color 0.2s ease;
+  }
+
+  .kpi {
+    cursor: pointer;
+    min-height: 98px;
+  }
+
+  .kpi .card-pad {
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 600 !important;
+    color: var(--text-muted);
+    text-transform: none !important;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700 !important;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .kpi-icon-pill {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .kpi.articulos .kpi-icon-pill {
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--blue);
+  }
+
+  .kpi.stock-total .kpi-icon-pill {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--orange);
+  }
+
+  .kpi.stock-bajo .kpi-icon-pill {
+    background: rgba(217, 119, 6, 0.12);
+    color: var(--yellow);
+  }
+
+  .kpi-icon-pill svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+  }
+
+  .accent-bottom {
+    height: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .kpi.articulos .accent-bottom { background: var(--blue); }
+  .kpi.stock-total .accent-bottom { background: var(--orange); }
+  .kpi.stock-bajo .accent-bottom { background: var(--yellow); }
+
+  .kpi:hover .accent-bottom {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* BARRA DE SECCIÓN / PESTAÑAS PRINCIPALES */
+  .section-nav-strip {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-tab-btn {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .section-tab-btn:hover {
+    color: var(--text);
+    background: var(--stroke-subtle);
+  }
+
+  .section-tab-btn.active {
+    background: var(--bg-sub);
+    border-color: var(--stroke);
+    color: var(--text);
+  }
+
+  .tab-badge-pill {
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--stroke-subtle);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .section-tab-btn.active .tab-badge-pill {
+    background: rgba(var(--orange-rgb), 0.15);
+    color: var(--orange);
+  }
+
+  /* BARRA DE CONTROL (SWITCH Y VISTAS) */
+  .view-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .view-mode-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .switch-wrap {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    margin-right: 6px;
+  }
+
+  .switch-input { display: none; }
+
+  .switch-rail {
+    width: 42px;
+    height: 22px;
+    background: var(--stroke);
+    border-radius: 12px;
+    position: relative;
+    transition: background 0.2s ease;
+  }
+
+  .switch-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text);
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    transition: transform 0.2s ease;
+  }
+
+  .switch-input:checked + .switch-rail {
+    background: var(--orange);
+  }
+
+  .switch-input:checked + .switch-rail .switch-dot {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  .view-toggle-btn {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .view-toggle-btn.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #ffffff;
+  }
+
+  /* TABLA / CONTENEDOR DE DATOS */
+  .data-container-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .custom-table th {
+    padding: 14px 18px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+  }
+
+  .custom-table td {
+    padding: 14px 18px;
+    font-size: 13px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .custom-table tr:hover td {
+    background: var(--stroke-subtle);
+  }
+
+  .badge-code {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--stroke-subtle);
+    border: 1px solid var(--stroke);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .badge-category {
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(8, 145, 178, 0.12);
+    border: 1px solid rgba(8, 145, 178, 0.3);
+    color: var(--cyan);
+    font-size: 11px;
+    display: inline-block;
+  }
+
+  .badge-model-outline {
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(8, 145, 178, 0.4);
+    color: var(--cyan);
+    font-size: 11px;
+    display: inline-block;
+  }
+
+  .badge-stock-pill {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700 !important;
+    display: inline-block;
+  }
+
+  .badge-stock-pill.green {
+    background: rgba(22, 163, 74, 0.15);
+    color: var(--green);
+  }
+
+  .badge-stock-pill.red {
+    background: rgba(220, 38, 38, 0.15);
+    color: var(--red);
+  }
+
+  .status-available-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 700 !important;
+    display: inline-block;
+  }
+
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tbl-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .tbl-action-btn:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .tbl-action-btn.view:hover { color: var(--blue); border-color: var(--blue); }
+  .tbl-action-btn.edit:hover { color: var(--yellow); border-color: var(--yellow); }
+  .tbl-action-btn.stock:hover { color: var(--orange); border-color: var(--orange); }
+  .tbl-action-btn.delete:hover { color: var(--red); border-color: var(--red); }
+
+  .tbl-action-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* PIE DE PAGINACIÓN */
+  .pagination-footer {
+    padding: 14px 20px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-nav-btn {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .page-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* VISTA: DETALLE DE EQUIPO Y ARTÍCULO */
+  .detail-view-container {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .detail-view-container.active {
+    display: flex;
+  }
+
+  .detail-top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .back-link-btn {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .back-link-btn:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+  }
+
+  .detail-tabs-pillbar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .sub-tab-btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 18px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .sub-tab-btn:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+  }
+
+  .sub-tab-btn.active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+  }
+
+  .detail-layout-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .device-hero-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+
+  .qr-badge-corner {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--stroke-subtle);
+    display: grid;
+    place-items: center;
+    color: var(--text-dim);
+  }
+
+  .device-illustration-box {
+    width: 90px;
+    height: 90px;
+    border-radius: 20px;
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--blue);
+    display: grid;
+    place-items: center;
+    margin-bottom: 16px;
+  }
+
+  .device-illustration-box svg {
+    width: 44px;
+    height: 44px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  .device-meta-list {
+    width: 100%;
+    margin-top: 20px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .meta-key-val-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+
+  .spec-grid-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .spec-block {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: var(--card-radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .spec-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+  }
+
+  .spec-icon-box svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* DROPDOWN CONTEXTUAL DEL DETALLE */
+  .context-dropdown-wrap {
+    position: relative;
+  }
+
+  .context-dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 42px;
+    width: 190px;
+    background: var(--bg-card);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 12px;
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 70;
+  }
+
+  .context-dropdown-menu.show {
+    display: flex;
+  }
+
+  .ctx-item {
+    height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+  }
+
+  .ctx-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--orange);
+  }
+
+  /* VISTA: REGISTRO DE NUEVO ARTÍCULO Y ASISTENTE */
+  .form-card-panel {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 24px;
+  }
+
+  .form-grid-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .upload-drop-placeholder {
+    border: var(--stroke-w) dashed var(--stroke);
+    border-radius: var(--card-radius);
+    padding: 34px 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-sub);
+    cursor: pointer;
+  }
+
+  .upload-drop-placeholder svg {
+    width: 32px;
+    height: 32px;
+    stroke: var(--text-muted);
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  .stepper-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .step-item-btn {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+  }
+
+  .step-item-btn.active {
+    border-color: var(--blue);
+    background: rgba(37, 99, 235, 0.12);
+  }
+
+  .step-num-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700 !important;
+  }
+
+  .step-item-btn.active .step-num-circle {
+    background: var(--blue);
+    color: #ffffff;
+  }
+
+  /* MODALES Y CAPAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(520px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--orange);
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn.primary {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #ffffff;
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .context-dropdown-menu,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD Y DESBLOQUEO DE SCROLL */
+  @media (max-width: 1080px) {
+    .main {
+      margin-left: 78px;
+    }
+    .kpi-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .detail-layout-grid,
+    .form-grid-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    .kpi-row {
+      grid-template-columns: 1fr !important;
+    }
+
+    .form-row-2, .form-row-3, .spec-grid-cards {
+      grid-template-columns: 1fr !important;
+    }
+
+    .module-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .header-actions-row {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+  }
+
+  /* ESTILOS ESPECÍFICOS: DISTRIBUCIÓN DE STOCK E HISTORIAL */
+  .stock-kpi-badge-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .stock-kpi-icon-square {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--blue);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .stock-kpi-icon-square svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .history-badge-type {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700 !important;
+    display: inline-block;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+  }
+
+  .history-badge-type.entrada { background: var(--green); }
+  .history-badge-type.salida { background: var(--red); }
+  .history-badge-type.transferencia { background: var(--blue); }
+
+  .transfer-card-panel {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .arrow-down-divider {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-sub);
+    border: var(--stroke-w) solid var(--stroke);
+    display: grid;
+    place-items: center;
+    margin: 4px auto;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de inventario">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item active" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item" data-section="performance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M5 19V9m7 10V5m7 14v-8"></path></svg>
+        </div>
+        <span class="nav-label">Rendimiento</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#10b981" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      
+      <!-- ==========================================
+           VISTA 1: LISTADO PRINCIPAL DE INVENTARIO
+           ========================================== -->
+      <section class="inventory-wrapper" id="viewInventoryList">
+        
+        <!-- ENCABEZADO DEL MÓDULO -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box">
+              <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Inventario General</h1>
+              <p class="module-subtitle">Gestión centralizada de recursos</p>
+            </div>
+          </div>
+          <div class="header-actions-row">
+            <button class="btn-action-outline" id="btnOpenNewItem" type="button">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              <span>Nuevo Artículo</span>
+            </button>
+            <button class="btn-action-solid" id="btnOpenNewEquipment" type="button">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><rect x="2" y="3" width="20" height="14" rx="2"></line><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              <span>Nuevo Equipo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- BUSCADOR GLOBAL -->
+        <div class="global-search-card">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" class="global-search-input" id="inventorySearchInput" placeholder="Buscar por código, nombre, serial, marca, modelo..." autocomplete="off" />
+        </div>
+
+        <!-- FILA DE 3 KPIS -->
+        <div class="kpi-row">
+          <div class="glass-card kpi articulos" id="kpiCardArticulos" title="Filtrar catálogo de artículos">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Total artículos</div>
+                <div class="kpi-value" id="countArticulos">5</div>
+              </div>
+              <div class="kpi-icon-pill">
+                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi stock-total" id="kpiCardStockTotal" title="Stock acumulado en almacén">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Stock total</div>
+                <div class="kpi-value" id="countStockTotal">16 unidades</div>
+              </div>
+              <div class="kpi-icon-pill">
+                <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi stock-bajo" id="kpiCardStockBajo" title="Artículos por debajo del umbral mínimo">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Stock bajo</div>
+                <div class="kpi-value" id="countStockBajo">1 artículos</div>
+              </div>
+              <div class="kpi-icon-pill">
+                <svg viewBox="0 0 24 24"><path d="m10.29 3.86-8.6 14.86A2 2 0 0 0 3.42 22h17.16a2 2 0 0 0 1.73-3.28l-8.6-14.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+        </div>
+
+        <!-- PESTAÑAS PRINCIPALES: ARTÍCULOS VS EQUIPOS -->
+        <div class="section-nav-strip">
+          <button class="section-tab-btn active" id="tabBtnArticulos" type="button">
+            <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            <span>Artículos de Inventario</span>
+            <span class="tab-badge-pill" id="badgeCountArticulos">12</span>
+          </button>
+
+          <button class="section-tab-btn" id="tabBtnEquipos" type="button">
+            <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <span>Equipos en Stock</span>
+            <span class="tab-badge-pill" id="badgeCountEquipos">5</span>
+          </button>
+        </div>
+
+        <!-- BARRA DE VISTA: SWITCH Y TABLA/CARDS -->
+        <div class="view-controls-bar">
+          <div class="view-mode-group">
+            <label class="switch-wrap" title="Alternar modo denso">
+              <input type="checkbox" id="denseSwitch" class="switch-input" />
+              <div class="switch-rail"><div class="switch-dot"></div></div>
+            </label>
+            <button class="view-toggle-btn active" id="btnViewTable" type="button">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Tabla</span>
+            </button>
+            <button class="view-toggle-btn" id="btnViewCards" type="button">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>Cards</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TABLA DE ARTÍCULOS DE INVENTARIO -->
+        <div class="data-container-card" id="tableWrapArticulos">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>CÓDIGO</th>
+                  <th>ARTÍCULO</th>
+                  <th>CATEGORÍA</th>
+                  <th>UBICACIÓN</th>
+                  <th>STOCK</th>
+                  <th>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyArticulos">
+                <!-- Rellenado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-footer">
+            <div>
+              Mostrando <strong id="articulosShowingCount">5</strong> de <strong id="articulosTotalCount">12</strong> items
+              <span style="margin-left:14px">Mostrar:</span>
+              <select id="selectPerPageArticulos" style="background:transparent;border:var(--stroke-w) solid var(--stroke);color:var(--text);border-radius:6px;padding:2px 8px;font-size:12px;">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <div class="pagination-controls">
+              <button class="page-nav-btn" id="btnPrevArticulos" disabled type="button">‹ Anterior</button>
+              <span>Página <strong id="pageArticulosCurr">1</strong> / <span id="pageArticulosTotal">3</span></span>
+              <button class="page-nav-btn" id="btnNextArticulos" type="button">Siguiente ›</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLA DE EQUIPOS EN STOCK -->
+        <div class="data-container-card" id="tableWrapEquipos" style="display:none;">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>CÓDIGO</th>
+                  <th>EQUIPO</th>
+                  <th>MARCA / MODELO</th>
+                  <th>SERIAL</th>
+                  <th>ESTADO</th>
+                  <th>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyEquipos">
+                <!-- Rellenado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-footer">
+            <div>
+              Mostrando <strong id="equiposShowingCount">5</strong> de <strong id="equiposTotalCount">35</strong> equipos
+              <span style="margin-left:14px">Mostrar:</span>
+              <select id="selectPerPageEquipos" style="background:transparent;border:var(--stroke-w) solid var(--stroke);color:var(--text);border-radius:6px;padding:2px 8px;font-size:12px;">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <div class="pagination-controls">
+              <button class="page-nav-btn" id="btnPrevEquipos" disabled type="button">‹ Anterior</button>
+              <span>Página <strong id="pageEquiposCurr">1</strong> / <span id="pageEquiposTotal">7</span></span>
+              <button class="page-nav-btn" id="btnNextEquipos" type="button">Siguiente ›</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==========================================
+           VISTA 2: DETALLE DE EQUIPO
+           ========================================== -->
+      <section class="inventory-wrapper detail-view-container" id="viewEquipmentDetail">
+        <div class="detail-top-nav">
+          <button class="back-link-btn" id="btnBackFromEquipmentDetail" type="button">
+            <span>←</span>
+            <span>Volver a Inventario (Stock)</span>
+          </button>
+          <div class="header-actions-row">
+            <button class="btn-action-outline" id="btnEditFromDetail" type="button">
+              <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              <span>Editar</span>
+            </button>
+            <div class="context-dropdown-wrap">
+              <button class="btn-action-outline" id="btnEquipMenuToggle" style="width:38px;padding:0;justify-content:center;" type="button">⋮</button>
+              <div class="context-dropdown-menu" id="equipMenuDropdown">
+                <button class="ctx-item" id="ctxHistory" type="button">
+                  <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                  <span>Ver Historial de Cambios</span>
+                </button>
+                <button class="ctx-item" id="ctxPrint" type="button">
+                  <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                  <span>Imprimir Ficha</span>
+                </button>
+                <button class="ctx-item" id="ctxDuplicate" type="button">
+                  <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Duplicar Equipo</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PESTAÑAS INTERNAS DEL EQUIPO -->
+        <div class="detail-tabs-pillbar">
+          <button class="sub-tab-btn active" data-subtab="equipSpecs" type="button">
+            <span>⚙</span>
+            <span>Especificaciones</span>
+          </button>
+          <button class="sub-tab-btn" data-subtab="equipAcquisition" type="button">
+            <span>📄</span>
+            <span>Adquisición</span>
+          </button>
+          <button class="sub-tab-btn" data-subtab="equipTickets" type="button">
+            <span>💬</span>
+            <span>Soportes</span>
+          </button>
+          <button class="sub-tab-btn" data-subtab="equipMaintenance" type="button">
+            <span>🛠</span>
+            <span>Mantenimiento</span>
+          </button>
+        </div>
+
+        <!-- CONTENIDO DETALLE DE EQUIPO -->
+        <div class="detail-layout-grid">
+          
+          <!-- COLUMNA IZQUIERDA: HERO Y UBICACIÓN -->
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="device-hero-card">
+              <div class="qr-badge-corner" title="Código QR del equipo">
+                <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+              </div>
+              <div class="device-illustration-box">
+                <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><circle cx="12" cy="16" r="1.5"></circle></svg>
+              </div>
+              <span class="status-available-pill" id="detailEquipStatusBadge">● Disponible</span>
+              <h2 class="item-hero-title" style="margin-top:10px;" id="detailEquipBrandModel">EHD VISION 9056</h2>
+              <span style="font-size:12px;color:var(--text-muted);" id="detailEquipCategory">CAMARA</span>
+
+              <div class="device-meta-list">
+                <div class="meta-key-val-row">
+                  <span style="color:var(--text-muted);">Código</span>
+                  <span class="badge-code" id="detailEquipCode">CAM046</span>
+                </div>
+                <div class="meta-key-val-row">
+                  <span style="color:var(--text-muted);">Serial</span>
+                  <strong style="color:var(--text);" id="detailEquipSerial">00203</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- TARJETA UBICACIÓN ACTUAL -->
+            <div class="device-hero-card" style="align-items:flex-start;text-align:left;">
+              <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+                <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>Ubicación Actual</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:12px;width:100%;">
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                  <div class="spec-icon-box"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg></div>
+                  <div>
+                    <span style="font-size:11px;color:var(--text-muted);display:block;">Departamento</span>
+                    <strong style="font-size:13px;" id="detailEquipDept">No Asignado</strong>
+                    <span style="font-size:11px;color:var(--text-dim);display:block;">INVENTARIO DE INFORMATICA</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                  <div class="spec-icon-box"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                  <div>
+                    <span style="font-size:11px;color:var(--text-muted);display:block;">Asignado a</span>
+                    <span style="font-size:13px;color:var(--text-dim);" id="detailEquipUser">-- Sin asignar --</span>
+                  </div>
+                </div>
+
+                <button class="btn" id="btnChangeLocation" style="width:100%;margin-top:6px;" type="button">
+                  Cambiar Ubicación / Asignación
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: PANELES DINÁMICOS POR SUB-PESTAÑA -->
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            
+            <!-- SUB-PESTAÑA 1: ESPECIFICACIONES TÉCNICAS -->
+            <div id="subpaneSpecs" class="glass-card" style="padding:22px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <span style="color:#4f46e5;font-size:18px;">⚙</span>
+                <h3 class="panel-title">Especificaciones Técnicas</h3>
+              </div>
+
+              <div class="spec-grid-cards">
+                <div class="spec-block">
+                  <div class="spec-icon-box"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg></div>
+                  <div>
+                    <span class="form-label">Procesador</span>
+                    <strong style="font-size:13px;color:var(--text-dim);">No especificado</strong>
+                  </div>
+                </div>
+
+                <div class="spec-block">
+                  <div class="spec-icon-box"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="6" y2="12"></line><line x1="10" y1="12" x2="10" y2="12"></line></svg></div>
+                  <div>
+                    <span class="form-label">Memoria RAM</span>
+                    <strong style="font-size:13px;color:var(--text-dim);">No especificado</strong>
+                  </div>
+                </div>
+
+                <div class="spec-block">
+                  <div class="spec-icon-box"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg></div>
+                  <div>
+                    <span class="form-label">Almacenamiento</span>
+                    <strong style="font-size:13px;color:var(--text-dim);">No especificado</strong>
+                  </div>
+                </div>
+
+                <div class="spec-block">
+                  <div class="spec-icon-box"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"></rect><rect x="13" y="3" width="8" height="8"></rect><rect x="3" y="13" width="8" height="8"></rect><rect x="13" y="13" width="8" height="8"></rect></svg></div>
+                  <div>
+                    <span class="form-label">Sistema Operativo</span>
+                    <strong style="font-size:13px;color:var(--text-dim);">No especificado</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DETALLES DE RED -->
+              <div class="glass-card" style="padding:16px;margin-top:16px;background:var(--bg-sub);">
+                <span class="form-label" style="margin-bottom:10px;display:block;">Detalles de Red</span>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <span style="font-size:12px;color:var(--text-muted);display:block;">Dirección IP</span>
+                    <strong style="font-size:13px;">--</strong>
+                  </div>
+                  <div>
+                    <span style="font-size:12px;color:var(--text-muted);display:block;">MAC Address</span>
+                    <strong style="font-size:13px;">N/A</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-PESTAÑA 2: ADQUISICIÓN Y GARANTÍA -->
+            <div id="subpaneAcquisition" class="glass-card" style="padding:22px;display:none;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <span style="color:var(--green);font-size:18px;">📄</span>
+                <h3 class="panel-title">Adquisición y Garantía</h3>
+              </div>
+
+              <div class="glass-card" style="padding:18px;background:var(--bg-sub);display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <span style="font-size:12px;color:var(--text-muted);display:block;">Proveedor</span>
+                    <strong style="font-size:13px;">--</strong>
+                  </div>
+                  <div>
+                    <span style="font-size:12px;color:var(--text-muted);display:block;">Valor de Compra</span>
+                    <strong style="font-size:18px;color:var(--green);">N/A</strong>
+                  </div>
+                </div>
+
+                <div style="padding:12px;border:var(--stroke-w) solid var(--stroke);border-radius:10px;background:var(--bg-card);text-align:center;font-size:13px;color:var(--text-muted);">
+                  Sin información de garantía
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-PESTAÑA 3: SOPORTES ASOCIADOS -->
+            <div id="subpaneTickets" class="glass-card" style="padding:40px 22px;text-align:center;display:none;">
+              <div style="width:48px;height:48px;border-radius:50%;background:var(--stroke-subtle);display:grid;place-items:center;margin:0 auto 12px;color:var(--text-muted);">
+                <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              </div>
+              <h3 class="panel-title" style="margin-bottom:4px;">Sin tickets activos</h3>
+              <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">Este equipo funciona correctamente. No hay reportes de soporte pendientes.</p>
+              <a href="javascript:void(0)" class="btn primary" id="btnShortcutCreateTicket" style="text-decoration:none;">+ Crear Ticket</a>
+            </div>
+
+            <!-- SUB-PESTAÑA 4: HISTORIAL DE MANTENIMIENTO -->
+            <div id="subpaneMaintenance" class="glass-card" style="padding:40px 22px;text-align:center;display:none;">
+              <div style="width:48px;height:48px;border-radius:50%;background:var(--stroke-subtle);display:grid;place-items:center;margin:0 auto 12px;color:var(--text-muted);">
+                <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+              </div>
+              <h3 class="panel-title" style="margin-bottom:4px;">Sin historial de mantenimiento</h3>
+              <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">No hay mantenimientos registrados para este equipo.</p>
+              <button class="btn" id="btnAddMaintenance" type="button">+ Nuevo Mantenimiento</button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VISTA 3: DETALLE DE ARTÍCULO (CONSUMIBLE)
+           ========================================== -->
+      <section class="inventory-wrapper detail-view-container" id="viewItemDetail">
+        <div class="detail-top-nav">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="back-link-btn" id="btnBackFromItemDetail" type="button">
+              <span>←</span>
+              <span>Volver al inventario</span>
+            </button>
+            <h1 class="item-hero-title" id="detailItemHeroName">CINTA</h1>
+            <span class="badge-code" id="detailItemHeroSku">ID: CIN002</span>
+          </div>
+          <div class="header-actions-row">
+            <button class="btn-action-outline" id="btnEditItemDetail" type="button">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              <span>Editar</span>
+            </button>
+            <button class="btn-action-outline" id="btnHistoryItemDetail" type="button">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              <span>Ver Historial</span>
+            </button>
+            <button class="btn-action-solid" id="btnAdjustStockModalTrigger" type="button">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+              <span>Ajustar Stock</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="detail-layout-grid" style="grid-template-columns: 1fr 340px;">
+          <!-- COLUMNA IZQUIERDA: INFORMACIÓN GENERAL Y COMPRA -->
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="glass-card" style="padding:22px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <span style="color:#4f46e5;font-size:18px;">📦</span>
+                <h3 class="panel-title">Información General</h3>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                  <span class="form-label">Categoría</span>
+                  <div style="font-size:14px;color:var(--text);" id="detailItemCategory">Consumibles</div>
+                </div>
+                <div>
+                  <span class="form-label">Ubicación Actual</span>
+                  <div style="font-size:14px;color:var(--text);" id="detailItemLocation">Almacén Central</div>
+                </div>
+                <div>
+                  <span class="form-label">Marca</span>
+                  <div style="font-size:14px;color:var(--text);" id="detailItemBrand">GENERICO</div>
+                </div>
+                <div>
+                  <span class="form-label">Modelo</span>
+                  <div style="font-size:14px;color:var(--text);" id="detailItemModel">GENERICO</div>
+                </div>
+              </div>
+
+              <div style="margin-top:16px;padding-top:14px;border-top:var(--stroke-w) solid var(--stroke-subtle);">
+                <span class="form-label">Unidad de Medida</span>
+                <div style="font-size:14px;color:var(--text);">Unidad</div>
+              </div>
+            </div>
+
+            <!-- DETALLES DE COMPRA Y GARANTÍA -->
+            <div class="glass-card" style="padding:22px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <span style="color:#4f46e5;font-size:18px;">💲</span>
+                <h3 class="panel-title">Detalles de Compra y Garantía</h3>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;">
+                <div class="spec-block">
+                  <div class="spec-icon-box">📅</div>
+                  <div>
+                    <span style="font-size:10px;color:var(--text-muted);display:block;">Fecha Compra</span>
+                    <strong style="font-size:13px;">N/A</strong>
+                  </div>
+                </div>
+                <div class="spec-block">
+                  <div class="spec-icon-box">🏪</div>
+                  <div>
+                    <span style="font-size:10px;color:var(--text-muted);display:block;">Proveedor</span>
+                    <strong style="font-size:13px;">--</strong>
+                  </div>
+                </div>
+                <div class="spec-block">
+                  <div class="spec-icon-box">💵</div>
+                  <div>
+                    <span style="font-size:10px;color:var(--text-muted);display:block;">Costo</span>
+                    <strong style="font-size:13px;">$0.00</strong>
+                  </div>
+                </div>
+                <div class="spec-block">
+                  <div class="spec-icon-box">🛡</div>
+                  <div>
+                    <span style="font-size:10px;color:var(--text-muted);display:block;">Garantía</span>
+                    <strong style="font-size:13px;">No aplica</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: ESTADO DEL STOCK -->
+          <div class="glass-card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <h3 class="panel-title">Estado del Stock</h3>
+              <span class="status-available-pill" id="detailItemStockBadge">✓ Disponible</span>
+            </div>
+
+            <div style="text-align:center;padding:16px 0;">
+              <div style="font-size:48px;font-weight:700 !important;line-height:1;color:var(--text);" id="detailItemStockBigNum">2</div>
+              <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">UNIDADES DISPONIBLES</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;border-top:var(--stroke-w) solid var(--stroke-subtle);padding-top:14px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span style="color:var(--text-muted);">Mínimo Requerido</span>
+                <strong id="detailItemStockMin">1 u.</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span style="color:var(--text-muted);">Valor de Inventario</span>
+                <strong id="detailItemValuation">$0.00</strong>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:auto;">
+              <button class="btn-action-solid" id="btnRequestReplenishment" style="width:100%;justify-content:center;" type="button">
+                <span>📈</span>
+                <span>Solicitar Reposición</span>
+              </button>
+              <button class="btn" id="btnViewDistribution" style="width:100%;" type="button">
+                Ver Distribución
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VISTA 3B: DISTRIBUCIÓN DE STOCK
+           ========================================== -->
+      <section class="inventory-wrapper detail-view-container" id="viewStockDistribution">
+        <div class="detail-top-nav">
+          <div>
+            <button class="back-link-btn" id="btnBackFromDistribution" type="button" style="margin-bottom:8px;">
+              <span>←</span>
+              <span>Volver al detalle</span>
+            </button>
+            <h1 class="item-hero-title">
+              Distribución de Stock &gt; <span id="distribItemName" style="color:var(--blue);">CINTA</span>
+            </h1>
+          </div>
+
+          <!-- WIDGET SUPERIOR DERECHO TOTAL GLOBAL -->
+          <div class="stock-kpi-badge-card">
+            <div class="stock-kpi-icon-square">
+              <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            </div>
+            <div>
+              <span style="font-size:10px;color:var(--text-muted);display:block;letter-spacing:0.05em;">TOTAL GLOBAL</span>
+              <strong style="font-size:24px;line-height:1;color:var(--text);" id="distribGlobalTotal">2</strong>
+            </div>
+            <div style="margin-left:14px;padding-left:14px;border-left:var(--stroke-w) solid var(--stroke-subtle);text-align:right;">
+              <span style="font-size:10px;color:var(--text-muted);display:block;">ID Ref</span>
+              <strong style="font-size:12px;color:var(--text-dim);" id="distribRefCode">CIN002</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-layout-grid" style="grid-template-columns: 1.4fr 1fr;">
+          <!-- COLUMNA IZQUIERDA: STOCK POR UBICACIÓN -->
+          <div class="glass-card" style="padding:22px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="color:var(--blue);font-size:16px;">📍</span>
+                  <h3 class="panel-title">Stock por Ubicación</h3>
+                </div>
+                <span style="font-size:12px;color:var(--text-muted);margin-top:2px;display:block;">Vista global de existencias en todas las sedes</span>
+              </div>
+              <div style="position:relative;width:200px;">
+                <input type="text" class="form-input" id="searchDistributionInput" placeholder="🔍 Filtrar sede..." style="height:34px;padding-left:10px;font-size:12px;" />
+              </div>
+            </div>
+
+            <div class="table-responsive" style="margin-top:6px;">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>UBICACIÓN</th>
+                    <th>TIPO</th>
+                    <th>DISPONIBILIDAD</th>
+                    <th>ESTADO</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyDistribution">
+                  <!-- Rellenado dinámicamente -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: TRANSFERIR STOCK -->
+          <div class="transfer-card-panel">
+            <div style="display:flex;align-items:center;gap:12px;border-bottom:var(--stroke-w) solid var(--stroke-subtle);padding-bottom:14px;">
+              <div class="stock-kpi-icon-square" style="background:#2563eb;color:#ffffff;">
+                <svg viewBox="0 0 24 24"><path d="M17 2.1l4 4-4 4"></path><path d="M3 12.2v-2a4 4 0 0 1 4-4h14"></path><path d="M7 21.9l-4-4 4-4"></path><path d="M21 11.8v2a4 4 0 0 1-4 4H3"></path></svg>
+              </div>
+              <div>
+                <h3 class="panel-title">Transferir Stock</h3>
+                <span style="font-size:12px;color:var(--text-muted);">Mover items entre almacenes</span>
+              </div>
+            </div>
+
+            <form id="formTransferStock" style="display:flex;flex-direction:column;gap:14px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="transferOriginSelect">ORIGEN</label>
+                <select class="form-select" id="transferOriginSelect">
+                  <option value="Almacén Central">🏢 Almacén Central (Principal)</option>
+                </select>
+              </div>
+
+              <div class="arrow-down-divider">↓</div>
+
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="transferDestSelect">DESTINO <span style="color:var(--red);">*</span></label>
+                <select class="form-select" id="transferDestSelect" required>
+                  <option value="" disabled selected>📍 Seleccione un destino...</option>
+                  <option value="Sede Norte">Sede Norte - Depósito Secundario</option>
+                  <option value="Taller de Informática">Taller de Informática</option>
+                  <option value="Oficina Administrativa">Oficina Administrativa</option>
+                  <option value="Laboratorio TI">Laboratorio TI</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="transferQtyInput">CANTIDAD</label>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <input type="number" class="form-input" id="transferQtyInput" value="1" min="1" max="100" style="width:120px;" required />
+                  <span style="font-size:13px;color:var(--text-muted);">Unidades</span>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="transferReasonInput">MOTIVO</label>
+                <textarea class="form-textarea" id="transferReasonInput" rows="3" placeholder="Ej: Reabastecimiento regular..."></textarea>
+              </div>
+
+              <button class="btn primary" id="btnSubmitTransfer" style="width:100%;height:40px;background:#2563eb;border-color:#2563eb;margin-top:6px;" type="submit">
+                <span>✔</span>
+                <span>Confirmar Transferencia</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VISTA 3C: HISTORIAL DE MOVIMIENTOS
+           ========================================== -->
+      <section class="inventory-wrapper detail-view-container" id="viewItemHistory">
+        <div class="detail-top-nav">
+          <div>
+            <button class="back-link-btn" id="btnBackFromHistory" type="button" style="margin-bottom:8px;">
+              <span>←</span>
+              <span>Volver al Artículo</span>
+            </button>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:rgba(37,99,235,0.12);color:var(--blue);display:grid;place-items:center;">
+                <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              </div>
+              <h1 class="item-hero-title">Historial: <span id="histItemName">CINTA</span></h1>
+              <span class="badge-code" id="histItemCode">ID: CIN002</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="padding:22px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:var(--stroke-w) solid var(--stroke-subtle);padding-bottom:14px;margin-bottom:14px;">
+            <h3 class="panel-title">Movimientos Registrados</h3>
+            <span style="font-size:12px;color:var(--text-muted);">Listado completo de entradas, salidas y ajustes de stock.</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>FECHA</th>
+                  <th>TIPO</th>
+                  <th>CANTIDAD</th>
+                  <th>MOTIVO</th>
+                  <th>USUARIO</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyHistory">
+                <!-- Rellenado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-footer">
+            <div>
+              Mostrando <strong id="histShowingCount">1</strong> de <strong id="histTotalCount">1</strong> movimientos
+              <span style="margin-left:14px">Mostrar:</span>
+              <select id="selectPerPageHistory" style="background:transparent;border:var(--stroke-w) solid var(--stroke);color:var(--text);border-radius:6px;padding:2px 8px;font-size:12px;">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <div class="pagination-controls">
+              <button class="page-nav-btn" disabled type="button">‹ Anterior</button>
+              <span>Página <strong>1</strong> / 1</span>
+              <button class="page-nav-btn" disabled type="button">Siguiente ›</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VISTA 4: FORMULARIO REGISTRAR NUEVO ARTÍCULO
+           ========================================== -->
+      <section class="inventory-wrapper detail-view-container" id="viewNewItemForm">
+        <div class="form-card-panel">
+          <div class="module-header" style="margin-bottom:20px;border-bottom:var(--stroke-w) solid var(--stroke-subtle);padding-bottom:14px;">
+            <div class="module-title-wrap">
+              <div class="module-icon-box" style="background:#2563eb;color:#ffffff;border:none;">
+                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+              </div>
+              <div>
+                <h1 class="module-title">Registrar Nuevo Artículo</h1>
+                <p class="module-subtitle">Agrega un nuevo producto al catálogo global.</p>
+              </div>
+            </div>
+            <div class="header-actions-row">
+              <button class="btn" id="btnCancelNewItem" type="button">Cancelar</button>
+              <button class="btn-action-solid" id="btnSaveNewItem" type="button">
+                <span>✓</span>
+                <span>Guardar Producto</span>
+              </button>
+            </div>
+          </div>
+
+          <form id="formCreateItem" class="form-grid-layout">
+            <!-- COLUMNA IZQUIERDA: IMAGEN, SKU, NOTAS -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div class="upload-drop-placeholder" id="dropzoneItemImage">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <div>
+                  <strong style="font-size:13px;display:block;">Subir Imagen Principal</strong>
+                  <span style="font-size:11px;color:var(--text-muted);">PNG, JPG hasta 5MB</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputItemSku">Código SKU / Barras <span style="color:var(--red)">*</span></label>
+                <input type="text" class="form-input" id="inputItemSku" placeholder="Auto-generar..." />
+                <span style="font-size:11px;color:var(--text-dim);margin-top:4px;">ℹ Si se deja vacío, el sistema generará uno automáticamente.</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputItemNotes">Descripción / Notas</label>
+                <textarea class="form-textarea" id="inputItemNotes" rows="3" placeholder="Detalles técnicos, compatibilidad, color..."></textarea>
+              </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: FICHA TÉCNICA Y CONTROL DE STOCK -->
+            <div style="display:flex;flex-direction:column;gap:18px;">
+              <div>
+                <span class="form-label" style="font-size:12px;color:var(--text);margin-bottom:12px;display:block;">🏷 Ficha Técnica</span>
+                
+                <div class="form-group">
+                  <label class="form-label" for="inputItemName">Nombre del Artículo <span style="color:var(--red)">*</span></label>
+                  <input type="text" class="form-input" id="inputItemName" placeholder="Ej: Cable HDMI 4K Trenzado 2m" required />
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="selectItemCategory">Categoría</label>
+                    <select class="form-select" id="selectItemCategory">
+                      <option value="Consumibles">Consumibles</option>
+                      <option value="Cables & Red">Cables & Red</option>
+                      <option value="Hardware">Hardware</option>
+                      <option value="Periféricos">Periféricos</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="selectItemUnit">Unidad de Medida</label>
+                    <select class="form-select" id="selectItemUnit">
+                      <option value="Unidad" selected>Unidad</option>
+                      <option value="Metro">Metro</option>
+                      <option value="Caja">Caja</option>
+                      <option value="Pieza">Pieza</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="inputItemBrand">Marca</label>
+                    <input type="text" class="form-input" id="inputItemBrand" placeholder="Ej: Belkin" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inputItemModel">Modelo</label>
+                    <input type="text" class="form-input" id="inputItemModel" placeholder="Ej: F3Y021bt2M" />
+                  </div>
+                </div>
+              </div>
+
+              <div style="border-top:var(--stroke-w) solid var(--stroke-subtle);padding-top:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                  <span class="form-label" style="font-size:12px;color:var(--text);margin:0;">📦 Control de Stock</span>
+                  <span class="badge-code" style="color:var(--blue);">📍 Asignación: Almacén Central</span>
+                </div>
+
+                <div class="form-row-3">
+                  <div class="form-group">
+                    <label class="form-label" for="inputItemStockInit">Stock Inicial</label>
+                    <input type="number" class="form-input" id="inputItemStockInit" value="0" min="0" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inputItemStockAlert">Stock Mínimo (Alerta)</label>
+                    <input type="number" class="form-input" id="inputItemStockAlert" value="5" min="1" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inputItemCost">Costo Unitario ($)</label>
+                    <input type="number" class="form-input" id="inputItemCost" value="0.00" step="0.01" />
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="inputItemVendor">Proveedor</label>
+                    <input type="text" class="form-input" id="inputItemVendor" placeholder="Ej: TecnoSupply C.A." />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inputItemPurchaseDate">Fecha de Compra</label>
+                    <input type="date" class="form-input" id="inputItemPurchaseDate" />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="inputItemWarrantyExp">Vencimiento Garantía</label>
+                  <input type="date" class="form-input" id="inputItemWarrantyExp" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VISTA 5: ASISTENTE DE EDICIÓN DE EQUIPO
+           ========================================== -->
+      <section class="inventory-wrapper detail-view-container" id="viewEditEquipmentWizard">
+        <div class="form-card-panel">
+          <div class="form-grid-layout" style="grid-template-columns: 260px 1fr;">
+            
+            <!-- LATERAL DEL ASISTENTE -->
+            <div style="display:flex;flex-direction:column;gap:18px;">
+              <div>
+                <button class="back-link-btn" id="btnBackFromWizard" style="margin-bottom:12px;" type="button">
+                  <span>← Volver</span>
+                </button>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="spec-icon-box" style="background:#2563eb;color:#ffffff;"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div>
+                  <div>
+                    <h2 class="module-title" style="font-size:16px !important;" id="wizardTitle">Editar Equipo</h2>
+                    <span style="font-size:11px;color:var(--text-muted);">Complete los datos del activo.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stepper-col">
+                <div class="step-item-btn active" data-step="1">
+                  <div class="step-num-circle">1</div>
+                  <div>
+                    <strong style="font-size:13px;display:block;">Información Básica</strong>
+                    <span style="font-size:11px;color:var(--text-muted);">Identificación del activo</span>
+                  </div>
+                </div>
+                <div class="step-item-btn" data-step="2">
+                  <div class="step-num-circle">2</div>
+                  <div>
+                    <strong style="font-size:13px;display:block;">Especificaciones</strong>
+                    <span style="font-size:11px;color:var(--text-muted);">Hardware y Software</span>
+                  </div>
+                </div>
+                <div class="step-item-btn" data-step="3">
+                  <div class="step-num-circle">3</div>
+                  <div>
+                    <strong style="font-size:13px;display:block;">Ubicación</strong>
+                    <span style="font-size:11px;color:var(--text-muted);">Asignación física</span>
+                  </div>
+                </div>
+                <div class="step-item-btn" data-step="4">
+                  <div class="step-num-circle">4</div>
+                  <div>
+                    <strong style="font-size:13px;display:block;">Adquisición</strong>
+                    <span style="font-size:11px;color:var(--text-muted);">Garantía y Costos</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="upload-drop-placeholder" style="padding:20px 10px;">
+                <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <span style="font-size:12px;color:var(--text-muted);">Subir foto</span>
+              </div>
+            </div>
+
+            <!-- CONTENIDO DERECHO DEL ASISTENTE -->
+            <div style="border-left:var(--stroke-w) solid var(--stroke-subtle);padding-left:24px;display:flex;flex-direction:column;justify-content:space-between;min-height:420px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+                  <h3 class="panel-title" id="wizardStepHeader">Información Básica</h3>
+                  <span class="badge-code" id="wizardStepIndicator">Paso 1 de 4</span>
+                </div>
+
+                <div id="wizardStep1">
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label class="form-label" for="wizCode">Código Inventario <span style="color:var(--red)">*</span></label>
+                      <input type="text" class="form-input" id="wizCode" value="CAM046" required />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="wizSerial">Nro de Serie <span style="color:var(--red)">*</span></label>
+                      <input type="text" class="form-input" id="wizSerial" value="00203" required />
+                    </div>
+                  </div>
+
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label class="form-label" for="wizType">Tipo de Equipo <span style="color:var(--red)">*</span></label>
+                      <select class="form-select" id="wizType">
+                        <option value="CAMARA" selected>CAMARA</option>
+                        <option value="Computadora">Computadora</option>
+                        <option value="Impresora">Impresora</option>
+                        <option value="Servidor">Servidor</option>
+                        <option value="Otro">Otro</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="wizStatus">Estado Inicial <span style="color:var(--red)">*</span></label>
+                      <select class="form-select" id="wizStatus">
+                        <option value="Disponible" selected>Disponible</option>
+                        <option value="En uso">En uso</option>
+                        <option value="Reparación">Reparación</option>
+                        <option value="Baja">Baja</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label class="form-label" for="wizBrand">Marca <span style="color:var(--red)">*</span></label>
+                      <input type="text" class="form-input" id="wizBrand" value="EHD VISION" required />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="wizModel">Modelo <span style="color:var(--red)">*</span></label>
+                      <input type="text" class="form-input" id="wizModel" value="9056" required />
+                    </div>
+                  </div>
+                </div>
+
+                <div id="wizardStep2" style="display:none;">
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label class="form-label" for="wizCpu">Procesador</label>
+                      <input type="text" class="form-input" id="wizCpu" placeholder="Ej: Intel Core i5 / N/A" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="wizRam">Memoria RAM</label>
+                      <input type="text" class="form-input" id="wizRam" placeholder="Ej: 8GB DDR4 / N/A" />
+                    </div>
+                  </div>
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label class="form-label" for="wizStorage">Almacenamiento</label>
+                      <input type="text" class="form-input" id="wizStorage" placeholder="Ej: SSD 256GB / MicroSD" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="wizOs">Sistema Operativo / Firmware</label>
+                      <input type="text" class="form-input" id="wizOs" placeholder="Ej: Windows 11 Pro / Firmware v2.1" />
+                    </div>
+                  </div>
+                </div>
+
+                <div id="wizardStep3" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label" for="wizDept">Departamento Asignado</label>
+                    <select class="form-select" id="wizDept">
+                      <option value="No Asignado" selected>No Asignado (Almacén Informática)</option>
+                      <option value="Dpto. de Recursos Humanos">Dpto. de Recursos Humanos</option>
+                      <option value="Dpto. de Contabilidad">Dpto. de Contabilidad</option>
+                      <option value="Dpto. de Producción">Dpto. de Producción</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="wizUser">Funcionario Responsable</label>
+                    <input type="text" class="form-input" id="wizUser" placeholder="Nombre de quien tiene el equipo asignado" />
+                  </div>
+                </div>
+
+                <div id="wizardStep4" style="display:none;">
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label class="form-label" for="wizCost">Valor de Compra ($)</label>
+                      <input type="number" class="form-input" id="wizCost" placeholder="0.00" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="wizVendor">Proveedor</label>
+                      <input type="text" class="form-input" id="wizVendor" placeholder="Empresa proveedora" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BOTONES DEL ASISTENTE -->
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:var(--stroke-w) solid var(--stroke-subtle);padding-top:14px;margin-top:20px;">
+                <button class="btn" id="btnWizardPrev" disabled type="button">Atrás</button>
+                <button class="btn-action-solid" id="btnWizardNext" type="button">Siguiente ›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ==========================================
+     MODAL: AJUSTAR STOCK RÁPIDO
+     ========================================== -->
+<div class="modal-backdrop" id="modalAdjustStock">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalStockTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalStockTitle">Ajustar Stock de Inventario</h3>
+      <button class="icon-close" id="closeAdjustStock" type="button">×</button>
+    </div>
+    <form id="formAdjustStock">
+      <div style="margin-bottom:14px;background:var(--bg-sub);padding:12px;border-radius:10px;border:var(--stroke-w) solid var(--stroke);">
+        <strong style="font-size:14px;display:block;" id="stockModalItemName">CINTA</strong>
+        <span style="font-size:12px;color:var(--text-muted);">Código: <span id="stockModalSku">CIN002</span></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tipo de Movimiento</label>
+        <select class="form-select" id="adjustMovementType">
+          <option value="entry">Entrada (+) Ingreso de mercadería</option>
+          <option value="exit">Salida (-) Consumo o merma</option>
+          <option value="audit">Conteo de Auditoría (Fijar exacto)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cantidad</label>
+        <input type="number" class="form-input" id="adjustAmount" value="1" min="1" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Motivo o Justificación</label>
+        <input type="text" class="form-input" id="adjustReason" placeholder="Ej: Compra nueva orden #440, reposición de oficina..." required />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="cancelAdjustStock" type="button">Cancelar</button>
+        <button class="btn primary" type="submit">Aplicar Movimiento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==========================================
+     MODAL: CAMBIAR UBICACIÓN DE EQUIPO
+     ========================================== -->
+<div class="modal-backdrop" id="modalLocationAssign">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalLocTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalLocTitle">Reasignar Ubicación del Equipo</h3>
+      <button class="icon-close" id="closeLocModal" type="button">×</button>
+    </div>
+    <form id="formReassignLocation">
+      <div class="form-group">
+        <label class="form-label">Nuevo Departamento</label>
+        <select class="form-select" id="reassignDept">
+          <option value="No Asignado">No Asignado (Almacén Informática)</option>
+          <option value="Dpto. de Recursos Humanos">Dpto. de Recursos Humanos</option>
+          <option value="Dpto. de Contabilidad">Dpto. de Contabilidad</option>
+          <option value="Dpto. de Producción">Dpto. de Producción</option>
+          <option value="Servidores & TI">Servidores & TI</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Usuario Asignado</label>
+        <input type="text" class="form-input" id="reassignUser" placeholder="Nombre completo del custodio" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="cancelLocModal" type="button">Cancelar</button>
+        <button class="btn primary" type="submit">Actualizar Asignación</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==========================================
+     MODAL: APARIENCIA Y ESTILO
+     ========================================== -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="btn border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="btn border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="btn mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="btn mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn primary" id="doneAppearance" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Inventario</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // NOTIFICADOR TOAST
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // DATOS REACTIVOS DE ARTÍCULOS DE INVENTARIO (SEGÚN SCREENSHOTS)
+  let articulos = [
+    {
+      code: 'CIN002',
+      name: 'CINTA',
+      category: 'Consumibles',
+      location: 'Almacén Central',
+      stock: 2,
+      brand: 'GENERICO',
+      model: 'GENERICO',
+      locations: [
+        { name: 'Almacén Central', type: 'Almacén Principal', stock: 2, status: 'Sede Central' }
+      ],
+      history: [
+        { date: '17/12/2025 15:05', type: 'ENTRADA', qty: '+2', reason: 'Stock Inicial', user: 'admin' }
+      ]
+    },
+    {
+      code: 'CIN001',
+      name: 'CINTA',
+      category: 'Consumibles',
+      location: 'Almacén Central',
+      stock: 10,
+      brand: 'GENERICO',
+      model: 'GENERICO',
+      locations: [
+        { name: 'Almacén Central', type: 'Almacén Principal', stock: 10, status: 'Sede Central' }
+      ],
+      history: [
+        { date: '10/12/2025 10:30', type: 'ENTRADA', qty: '+10', reason: 'Compra Proveedor', user: 'admin' }
+      ]
+    },
+    {
+      code: 'CRT004',
+      name: 'CARTUCHO DE TONER D111L',
+      category: 'Consumibles',
+      location: 'Almacén Central',
+      stock: 2,
+      brand: 'SAMSUNG',
+      model: 'MLT-D111L',
+      locations: [
+        { name: 'Almacén Central', type: 'Almacén Principal', stock: 2, status: 'Sede Central' }
+      ],
+      history: [
+        { date: '05/12/2025 14:20', type: 'ENTRADA', qty: '+2', reason: 'Reabastecimiento', user: 'admin' }
+      ]
+    },
+    {
+      code: 'CRT003',
+      name: 'CARTUCHO DE TONER',
+      category: 'Consumibles',
+      location: 'Almacén Central',
+      stock: 2,
+      brand: 'HP',
+      model: '85A CE285A',
+      locations: [
+        { name: 'Almacén Central', type: 'Almacén Principal', stock: 2, status: 'Sede Central' }
+      ],
+      history: [
+        { date: '02/12/2025 09:15', type: 'ENTRADA', qty: '+2', reason: 'Stock Inicial', user: 'admin' }
+      ]
+    },
+    {
+      code: 'CRT002',
+      name: 'CARTUVHO DE TONER GENERICO P/ HP-CANON',
+      category: 'Consumibles',
+      location: 'Almacén Central',
+      stock: 0,
+      brand: 'GENERICO',
+      model: 'HP-CANON',
+      locations: [
+        { name: 'Almacén Central', type: 'Almacén Principal', stock: 0, status: 'Sede Central' }
+      ],
+      history: [
+        { date: '01/12/2025 11:00', type: 'SALIDA', qty: '-2', reason: 'Consumo Oficina General', user: 'admin' }
+      ]
+    }
+  ];
+
+  // DATOS REACTIVOS DE EQUIPOS EN STOCK (SEGÚN SCREENSHOTS)
+  let equipos = [
+    { code: 'CAM046', name: 'CAMARA', brandModel: 'EHD VISION - 9056', serial: '00203', status: 'Disponible', dept: 'No Asignado', user: '-- Sin asignar --' },
+    { code: 'CAM045', name: 'CAMARA', brandModel: 'HIVIKSION - DS2', serial: '00202', status: 'Disponible', dept: 'No Asignado', user: '-- Sin asignar --' },
+    { code: 'CAM044', name: 'CAMARA', brandModel: 'HIVIKSION - DS2', serial: '00201', status: 'Disponible', dept: 'No Asignado', user: '-- Sin asignar --' },
+    { code: 'CAM043', name: 'CAMARA', brandModel: 'HIVIKSION - DS2', serial: '00200', status: 'Disponible', dept: 'No Asignado', user: '-- Sin asignar --' },
+    { code: 'CAM042', name: 'CAMARA', brandModel: 'HIVIKSION - DS2', serial: '00199', status: 'Disponible', dept: 'No Asignado', user: '-- Sin asignar --' }
+  ];
+
+  let currentActiveTab = 'articulos'; // 'articulos' o 'equipos'
+  let activeDetailEquipment = equipos[0];
+  let activeDetailItem = articulos[0];
+  let wizardCurrentStep = 1;
+
+  // NAVEGACIÓN ENTRE VISTAS PRINCIPALES
+  const hideAllViews = () => {
+    $('#viewInventoryList').style.display = 'none';
+    $('#viewEquipmentDetail').classList.remove('active');
+    $('#viewItemDetail').classList.remove('active');
+    $('#viewNewItemForm').classList.remove('active');
+    $('#viewEditEquipmentWizard').classList.remove('active');
+    $('#viewStockDistribution').classList.remove('active');
+    $('#viewItemHistory').classList.remove('active');
+  };
+
+  const showView = viewId => {
+    hideAllViews();
+    if (viewId === 'viewInventoryList') {
+      $('#viewInventoryList').style.display = 'flex';
+    } else {
+      const target = $(`#${viewId}`);
+      if (target) target.classList.add('active');
+    }
+  };
+
+  // ACTUALIZACIÓN DE CONTADORES DE KPI
+  const updateKPIs = () => {
+    const totalArt = articulos.length;
+    const totalStock = articulos.reduce((acc, curr) => acc + curr.stock, 0);
+    const lowStock = articulos.filter(a => a.stock <= 1).length;
+
+    $('#countArticulos').textContent = totalArt;
+    $('#countStockTotal').textContent = `${totalStock} unidades`;
+    $('#countStockBajo').textContent = `${lowStock} artículos`;
+    $('#badgeCountArticulos').textContent = totalArt;
+    $('#badgeCountEquipos').textContent = equipos.length;
+  };
+
+  // RENDERIZADO DE TABLA DE ARTÍCULOS
+  const renderTableArticulos = (filterQuery = '') => {
+    const tbody = $('#tbodyArticulos');
+    tbody.innerHTML = '';
+    const q = filterQuery.toLowerCase().trim();
+
+    const filtered = articulos.filter(item => {
+      if (!q) return true;
+      return item.code.toLowerCase().includes(q) ||
+             item.name.toLowerCase().includes(q) ||
+             item.category.toLowerCase().includes(q) ||
+             item.location.toLowerCase().includes(q);
+    });
+
+    $('#articulosShowingCount').textContent = filtered.length;
+
+    filtered.forEach(item => {
+      const tr = document.createElement('tr');
+      const stockColorClass = item.stock === 0 ? 'red' : 'green';
+
+      tr.innerHTML = `
+        <td><span class="badge-code">${item.code}</span></td>
+        <td><strong style="color:var(--text);">${item.name}</strong></td>
+        <td><span class="badge-category">${item.category}</span></td>
+        <td style="color:var(--text-muted);">${item.location}</td>
+        <td><span class="badge-stock-pill ${stockColorClass}">${item.stock}</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="tbl-action-btn view" title="Ver detalle del artículo" data-code="${item.code}">
+              <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+            <button class="tbl-action-btn stock" title="Ajustar Stock" data-code="${item.code}">
+              <svg viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+            </button>
+            <button class="tbl-action-btn edit" title="Descargar / Exportar ficha" data-code="${item.code}">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </button>
+            <button class="tbl-action-btn delete" title="Eliminar artículo" data-code="${item.code}">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.tbl-action-btn.view').addEventListener('click', () => openItemDetail(item));
+      tr.querySelector('.tbl-action-btn.stock').addEventListener('click', () => openStockModal(item));
+      tr.querySelector('.tbl-action-btn.delete').addEventListener('click', () => {
+        articulos = articulos.filter(a => a.code !== item.code);
+        updateKPIs();
+        renderTableArticulos(filterQuery);
+        showToast('Artículo Retirado', `El artículo ${item.name} (${item.code}) fue eliminado.`);
+      });
+
+      tbody.appendChild(tr);
+    });
+  };
+
+  // RENDERIZADO DE TABLA DE EQUIPOS
+  const renderTableEquipos = (filterQuery = '') => {
+    const tbody = $('#tbodyEquipos');
+    tbody.innerHTML = '';
+    const q = filterQuery.toLowerCase().trim();
+
+    const filtered = equipos.filter(item => {
+      if (!q) return true;
+      return item.code.toLowerCase().includes(q) ||
+             item.name.toLowerCase().includes(q) ||
+             item.brandModel.toLowerCase().includes(q) ||
+             item.serial.toLowerCase().includes(q);
+    });
+
+    $('#equiposShowingCount').textContent = filtered.length;
+
+    filtered.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="badge-code">${item.code}</span></td>
+        <td><strong style="color:var(--text);">${item.name}</strong></td>
+        <td><span class="badge-model-outline">${item.brandModel}</span></td>
+        <td style="color:var(--text-muted);">${item.serial}</td>
+        <td><span class="status-available-pill">${item.status}</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="tbl-action-btn view" title="Ver detalles del equipo" data-code="${item.code}">
+              <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+            <button class="tbl-action-btn edit" title="Editar equipo" data-code="${item.code}">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            <button class="tbl-action-btn delete" title="Eliminar equipo" data-code="${item.code}">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.tbl-action-btn.view').addEventListener('click', () => openEquipmentDetail(item));
+      tr.querySelector('.tbl-action-btn.edit').addEventListener('click', () => openEditEquipmentWizard(item));
+      tr.querySelector('.tbl-action-btn.delete').addEventListener('click', () => {
+        equipos = equipos.filter(e => e.code !== item.code);
+        updateKPIs();
+        renderTableEquipos(filterQuery);
+        showToast('Equipo Retirado', `Equipo ${item.name} (${item.code}) eliminado del stock.`);
+      });
+
+      tbody.appendChild(tr);
+    });
+  };
+
+  // CONTROL DE PESTAÑAS (ARTÍCULOS VS EQUIPOS)
+  const tabBtnArticulos = $('#tabBtnArticulos');
+  const tabBtnEquipos = $('#tabBtnEquipos');
+  const tableWrapArticulos = $('#tableWrapArticulos');
+  const tableWrapEquipos = $('#tableWrapEquipos');
+
+  tabBtnArticulos.addEventListener('click', () => {
+    currentActiveTab = 'articulos';
+    tabBtnArticulos.classList.add('active');
+    tabBtnEquipos.classList.remove('active');
+    tableWrapArticulos.style.display = 'block';
+    tableWrapEquipos.style.display = 'none';
+    showToast('Catálogo', 'Visualizando catálogo de Artículos de Inventario.');
+  });
+
+  tabBtnEquipos.addEventListener('click', () => {
+    currentActiveTab = 'equipos';
+    tabBtnEquipos.classList.add('active');
+    tabBtnArticulos.classList.remove('active');
+    tableWrapEquipos.style.display = 'block';
+    tableWrapArticulos.style.display = 'none';
+    showToast('Stock Físico', 'Visualizando Equipos en Stock.');
+  });
+
+  // BÚSQUEDA GLOBAL
+  $('#inventorySearchInput').addEventListener('input', e => {
+    const q = e.target.value;
+    if (currentActiveTab === 'articulos') {
+      renderTableArticulos(q);
+    } else {
+      renderTableEquipos(q);
+    }
+  });
+
+  // APERTURA DE VISTA DETALLE DE EQUIPO
+  const openEquipmentDetail = item => {
+    activeDetailEquipment = item;
+    $('#detailEquipBrandModel').textContent = item.brandModel || item.name;
+    $('#detailEquipCategory').textContent = item.name;
+    $('#detailEquipCode').textContent = item.code;
+    $('#detailEquipSerial').textContent = item.serial;
+    $('#detailEquipStatusBadge').textContent = `● ${item.status}`;
+    $('#detailEquipDept').textContent = item.dept || 'No Asignado';
+    $('#detailEquipUser').textContent = item.user || '-- Sin asignar --';
+
+    showView('viewEquipmentDetail');
+    showToast('Ficha de Equipo', `Cargando detalles de ${item.code}.`);
+  };
+
+  $('#btnBackFromEquipmentDetail').addEventListener('click', () => showView('viewInventoryList'));
+
+  // SUB-PESTAÑAS DE DETALLE DE EQUIPO
+  $$('.sub-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const target = btn.dataset.subtab;
+
+      $('#subpaneSpecs').style.display = target === 'equipSpecs' ? 'block' : 'none';
+      $('#subpaneAcquisition').style.display = target === 'equipAcquisition' ? 'block' : 'none';
+      $('#subpaneTickets').style.display = target === 'equipTickets' ? 'block' : 'none';
+      $('#subpaneMaintenance').style.display = target === 'equipMaintenance' ? 'block' : 'none';
+    });
+  });
+
+  // MENÚ CONTEXTUAL DEL EQUIPO (⋮)
+  const btnEquipMenuToggle = $('#btnEquipMenuToggle');
+  const equipMenuDropdown = $('#equipMenuDropdown');
+
+  btnEquipMenuToggle.addEventListener('click', e => {
+    e.stopPropagation();
+    equipMenuDropdown.classList.toggle('show');
+  });
+
+  document.addEventListener('click', () => equipMenuDropdown.classList.remove('show'));
+
+  $('#ctxHistory').addEventListener('click', () => showToast('Historial', 'No hay modificaciones recientes en este registro.'));
+  $('#ctxPrint').addEventListener('click', () => {
+    window.print();
+  });
+  $('#ctxDuplicate').addEventListener('click', () => {
+    const dup = { ...activeDetailEquipment, code: `CAM0${equipos.length + 43}`, serial: `00${parseInt(activeDetailEquipment.serial) + 1}` };
+    equipos.unshift(dup);
+    updateKPIs();
+    renderTableEquipos();
+    showToast('Equipo Duplicado', `Nuevo clon creado con código ${dup.code}.`);
+  });
+
+  // APERTURA DE VISTA DETALLE DE ARTÍCULO
+  const openItemDetail = item => {
+    activeDetailItem = item;
+    $('#detailItemHeroName').textContent = item.name;
+    $('#detailItemHeroSku').textContent = `ID: ${item.code}`;
+    $('#detailItemCategory').textContent = item.category;
+    $('#detailItemLocation').textContent = item.location;
+    $('#detailItemBrand').textContent = item.brand;
+    $('#detailItemModel').textContent = item.model;
+    $('#detailItemStockBigNum').textContent = item.stock;
+
+    showView('viewItemDetail');
+    showToast('Ficha de Consumible', `Cargando especificaciones de ${item.code}.`);
+  };
+
+  $('#btnBackFromItemDetail').addEventListener('click', () => showView('viewInventoryList'));
+
+  // VISTA: DISTRIBUCIÓN DE STOCK
+  const openStockDistribution = item => {
+    activeDetailItem = item;
+    $('#distribItemName').textContent = item.name;
+    $('#distribGlobalTotal').textContent = item.stock;
+    $('#distribRefCode').textContent = item.code;
+    $('#transferQtyInput').max = item.stock;
+
+    renderDistributionTable(item);
+    showView('viewStockDistribution');
+    showToast('Distribución', `Existencias multisede de ${item.name}.`);
+  };
+
+  const renderDistributionTable = (item, filterQuery = '') => {
+    const tbody = $('#tbodyDistribution');
+    tbody.innerHTML = '';
+    const q = filterQuery.toLowerCase().trim();
+
+    const locs = item.locations || [
+      { name: item.location || 'Almacén Central', type: 'Almacén Principal', stock: item.stock, status: 'Sede Central' }
+    ];
+
+    const filtered = locs.filter(l => !q || l.name.toLowerCase().includes(q) || l.type.toLowerCase().includes(q));
+
+    filtered.forEach(loc => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(37,99,235,0.12);color:var(--blue);display:grid;place-items:center;">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+            </div>
+            <strong>${loc.name}</strong>
+          </div>
+        </td>
+        <td style="color:var(--text-muted);">${loc.type}</td>
+        <td>
+          <span style="padding:3px 12px;border-radius:12px;background:rgba(37,99,235,0.15);color:var(--blue);font-weight:700;">${loc.stock}</span>
+        </td>
+        <td>
+          <span class="badge-code" style="border:1px solid var(--stroke);">${loc.status}</span>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  };
+
+  $('#searchDistributionInput').addEventListener('input', e => {
+    if (activeDetailItem) renderDistributionTable(activeDetailItem, e.target.value);
+  });
+
+  $('#btnViewDistribution').addEventListener('click', () => openStockDistribution(activeDetailItem));
+  $('#btnBackFromDistribution').addEventListener('click', () => showView('viewItemDetail'));
+
+  // FORMULARIO: TRANSFERENCIA DE STOCK
+  $('#formTransferStock').addEventListener('submit', e => {
+    e.preventDefault();
+    const dest = $('#transferDestSelect').value;
+    const qty = parseInt($('#transferQtyInput').value, 10) || 0;
+    const reason = $('#transferReasonInput').value.trim() || 'Transferencia entre almacenes';
+
+    if (!dest) {
+      showToast('Selección requerida', 'Por favor seleccione una sede de destino.');
+      return;
+    }
+
+    if (qty <= 0 || qty > activeDetailItem.stock) {
+      showToast('Cantidad inválida', `La cantidad a transferir debe estar entre 1 y ${activeDetailItem.stock}.`);
+      return;
+    }
+
+    // Actualizar o añadir la ubicación destino
+    if (!activeDetailItem.locations) {
+      activeDetailItem.locations = [
+        { name: 'Almacén Central', type: 'Almacén Principal', stock: activeDetailItem.stock, status: 'Sede Central' }
+      ];
+    }
+
+    // Descontar del origen
+    activeDetailItem.locations[0].stock -= qty;
+
+    // Sumar al destino
+    const destLoc = activeDetailItem.locations.find(l => l.name === dest);
+    if (destLoc) {
+      destLoc.stock += qty;
+    } else {
+      activeDetailItem.locations.push({
+        name: dest,
+        type: 'Sede Remota',
+        stock: qty,
+        status: 'Operativo'
+      });
+    }
+
+    // Agregar registro al historial
+    const now = new Date();
+    const dateFormatted = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    if (!activeDetailItem.history) activeDetailItem.history = [];
+    activeDetailItem.history.unshift({
+      date: dateFormatted,
+      type: 'TRANSFERENCIA',
+      qty: `-${qty}`,
+      reason: `Hacia ${dest}: ${reason}`,
+      user: 'admin'
+    });
+
+    renderDistributionTable(activeDetailItem);
+    $('#formTransferStock').reset();
+    showToast('Transferencia Realizada', `${qty} unidad(es) enviadas a ${dest}.`);
+  });
+
+  // VISTA: HISTORIAL DE MOVIMIENTOS
+  const openItemHistory = item => {
+    activeDetailItem = item;
+    $('#histItemName').textContent = item.name;
+    $('#histItemCode').textContent = `ID: ${item.code}`;
+
+    renderHistoryTable(item);
+    showView('viewItemHistory');
+    showToast('Historial de Movimientos', `Bitácora de ${item.name}.`);
+  };
+
+  const renderHistoryTable = item => {
+    const tbody = $('#tbodyHistory');
+    tbody.innerHTML = '';
+
+    const list = item.history || [
+      { date: '17/12/2025 15:05', type: 'ENTRADA', qty: `+${item.stock}`, reason: 'Stock Inicial', user: 'admin' }
+    ];
+
+    $('#histShowingCount').textContent = list.length;
+    $('#histTotalCount').textContent = list.length;
+
+    list.forEach(mov => {
+      const tr = document.createElement('tr');
+      const isEntrada = mov.type === 'ENTRADA';
+      const badgeClass = isEntrada ? 'entrada' : (mov.type === 'SALIDA' ? 'salida' : 'transferencia');
+      const qtyColor = isEntrada ? 'var(--green)' : (mov.type === 'SALIDA' ? 'var(--red)' : 'var(--blue)');
+
+      tr.innerHTML = `
+        <td style="color:var(--text-muted);">${mov.date}</td>
+        <td>
+          <span class="history-badge-type ${badgeClass}">${mov.type}</span>
+        </td>
+        <td>
+          <strong style="color:${qtyColor};font-size:14px;">${mov.qty}</strong>
+        </td>
+        <td>${mov.reason}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--text-muted);">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg>
+            <span>${mov.user}</span>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  };
+
+  $('#btnHistoryItemDetail').addEventListener('click', () => openItemHistory(activeDetailItem));
+  $('#btnBackFromHistory').addEventListener('click', () => showView('viewItemDetail'));
+
+  // VISTA: REGISTRO DE NUEVO ARTÍCULO
+  $('#btnOpenNewItem').addEventListener('click', () => {
+    $('#formCreateItem').reset();
+    showView('viewNewItemForm');
+  });
+
+  $('#btnCancelNewItem').addEventListener('click', () => showView('viewInventoryList'));
+
+  $('#btnSaveNewItem').addEventListener('click', () => {
+    const name = $('#inputItemName').value.trim();
+    if (!name) {
+      showToast('Campo requerido', 'Por favor indique el nombre del artículo.');
+      return;
+    }
+    const sku = $('#inputItemSku').value.trim() || `ART0${articulos.length + 10}`;
+    const newItem = {
+      code: sku,
+      name: name,
+      category: $('#selectItemCategory').value,
+      location: 'Almacén Central',
+      stock: parseInt($('#inputItemStockInit').value, 10) || 0,
+      brand: $('#inputItemBrand').value.trim() || 'GENERICO',
+      model: $('#inputItemModel').value.trim() || 'GENERICO'
+    };
+
+    articulos.unshift(newItem);
+    updateKPIs();
+    renderTableArticulos();
+    showView('viewInventoryList');
+    showToast('Artículo Guardado', `${newItem.name} fue añadido al inventario global.`);
+  });
+
+  // VISTA: ASISTENTE DE EDICIÓN DE EQUIPO (WIZARD)
+  const openEditEquipmentWizard = (item = null) => {
+    const target = item || activeDetailEquipment;
+    $('#wizardTitle').textContent = item ? 'Editar Equipo' : 'Nuevo Equipo en Stock';
+    $('#wizCode').value = target.code || `EQP0${equipos.length + 1}`;
+    $('#wizSerial').value = target.serial || `00${200 + equipos.length}`;
+    $('#wizBrand').value = target.brandModel ? target.brandModel.split(' - ')[0] : 'MARCA';
+    $('#wizModel').value = target.brandModel ? target.brandModel.split(' - ')[1] || '' : 'MODELO';
+
+    wizardCurrentStep = 1;
+    updateWizardStepUI();
+    showView('viewEditEquipmentWizard');
+  };
+
+  $('#btnOpenNewEquipment').addEventListener('click', () => openEditEquipmentWizard(null));
+  $('#btnEditFromDetail').addEventListener('click', () => openEditEquipmentWizard(activeDetailEquipment));
+  $('#btnBackFromWizard').addEventListener('click', () => showView('viewInventoryList'));
+
+  const updateWizardStepUI = () => {
+    $$('.step-item-btn').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.step, 10) === wizardCurrentStep);
+    });
+
+    $('#wizardStep1').style.display = wizardCurrentStep === 1 ? 'block' : 'none';
+    $('#wizardStep2').style.display = wizardCurrentStep === 2 ? 'block' : 'none';
+    $('#wizardStep3').style.display = wizardCurrentStep === 3 ? 'block' : 'none';
+    $('#wizardStep4').style.display = wizardCurrentStep === 4 ? 'block' : 'none';
+
+    $('#wizardStepIndicator').textContent = `Paso ${wizardCurrentStep} de 4`;
+    $('#btnWizardPrev').disabled = wizardCurrentStep === 1;
+    $('#btnWizardNext').textContent = wizardCurrentStep === 4 ? 'Guardar Cambios ✓' : 'Siguiente ›';
+
+    const stepTitles = {
+      1: 'Información Básica',
+      2: 'Especificaciones Técnicas',
+      3: 'Ubicación y Asignación',
+      4: 'Adquisición y Garantía'
+    };
+    $('#wizardStepHeader').textContent = stepTitles[wizardCurrentStep];
+  };
+
+  $$('.step-item-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      wizardCurrentStep = parseInt(btn.dataset.step, 10);
+      updateWizardStepUI();
+    });
+  });
+
+  $('#btnWizardPrev').addEventListener('click', () => {
+    if (wizardCurrentStep > 1) {
+      wizardCurrentStep--;
+      updateWizardStepUI();
+    }
+  });
+
+  $('#btnWizardNext').addEventListener('click', () => {
+    if (wizardCurrentStep < 4) {
+      wizardCurrentStep++;
+      updateWizardStepUI();
+    } else {
+      // Guardar equipo editado/creado
+      const code = $('#wizCode').value;
+      const serial = $('#wizSerial').value;
+      const brand = $('#wizBrand').value;
+      const model = $('#wizModel').value;
+      const name = $('#wizType').value;
+      const status = $('#wizStatus').value;
+      const dept = $('#wizDept').value;
+      const user = $('#wizUser').value.trim() || '-- Sin asignar --';
+
+      const existingIndex = equipos.findIndex(e => e.code === code);
+      const dataObj = { code, serial, brandModel: `${brand} - ${model}`, name, status, dept, user };
+
+      if (existingIndex >= 0) {
+        equipos[existingIndex] = dataObj;
+      } else {
+        equipos.unshift(dataObj);
+      }
+
+      updateKPIs();
+      renderTableEquipos();
+      showView('viewInventoryList');
+      showToast('Equipo Guardado', `Ficha del equipo ${code} actualizada.`);
+    }
+  });
+
+  // MODAL AJUSTAR STOCK
+  const modalAdjustStock = $('#modalAdjustStock');
+  const openStockModal = item => {
+    activeDetailItem = item;
+    $('#stockModalItemName').textContent = item.name;
+    $('#stockModalSku').textContent = item.code;
+    modalAdjustStock.classList.add('show');
+  };
+
+  $('#closeAdjustStock').addEventListener('click', () => modalAdjustStock.classList.remove('show'));
+  $('#cancelAdjustStock').addEventListener('click', () => modalAdjustStock.classList.remove('show'));
+  $('#btnAdjustStockModalTrigger').addEventListener('click', () => openStockModal(activeDetailItem));
+
+  $('#formAdjustStock').addEventListener('submit', e => {
+    e.preventDefault();
+    const type = $('#adjustMovementType').value;
+    const qty = parseInt($('#adjustAmount').value, 10) || 1;
+    const reason = $('#adjustReason').value.trim() || 'Ajuste manual de stock';
+
+    let prevStock = activeDetailItem.stock;
+    if (type === 'entry') activeDetailItem.stock += qty;
+    else if (type === 'exit') activeDetailItem.stock = Math.max(0, activeDetailItem.stock - qty);
+    else if (type === 'audit') activeDetailItem.stock = qty;
+
+    const diff = activeDetailItem.stock - prevStock;
+    const now = new Date();
+    const dateFormatted = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+    if (!activeDetailItem.history) activeDetailItem.history = [];
+    activeDetailItem.history.unshift({
+      date: dateFormatted,
+      type: diff >= 0 ? 'ENTRADA' : 'SALIDA',
+      qty: diff >= 0 ? `+${diff}` : `${diff}`,
+      reason: reason,
+      user: 'admin'
+    });
+
+    if (activeDetailItem.locations && activeDetailItem.locations[0]) {
+      activeDetailItem.locations[0].stock = activeDetailItem.stock;
+    }
+
+    $('#detailItemStockBigNum').textContent = activeDetailItem.stock;
+    updateKPIs();
+    renderTableArticulos();
+    modalAdjustStock.classList.remove('show');
+    showToast('Stock Actualizado', `Nuevo balance para ${activeDetailItem.code}: ${activeDetailItem.stock} unidades.`);
+  });
+
+  // MODAL REASIGNAR UBICACIÓN
+  const modalLocationAssign = $('#modalLocationAssign');
+  $('#btnChangeLocation').addEventListener('click', () => {
+    $('#reassignDept').value = activeDetailEquipment.dept || 'No Asignado';
+    $('#reassignUser').value = activeDetailEquipment.user === '-- Sin asignar --' ? '' : activeDetailEquipment.user;
+    modalLocationAssign.classList.add('show');
+  });
+
+  $('#closeLocModal').addEventListener('click', () => modalLocationAssign.classList.remove('show'));
+  $('#cancelLocModal').addEventListener('click', () => modalLocationAssign.classList.remove('show'));
+
+  $('#formReassignLocation').addEventListener('submit', e => {
+    e.preventDefault();
+    const newDept = $('#reassignDept').value;
+    const newUser = $('#reassignUser').value.trim() || '-- Sin asignar --';
+
+    activeDetailEquipment.dept = newDept;
+    activeDetailEquipment.user = newUser;
+
+    $('#detailEquipDept').textContent = newDept;
+    $('#detailEquipUser').textContent = newUser;
+
+    modalLocationAssign.classList.remove('show');
+    renderTableEquipos();
+    showToast('Ubicación Reasignada', `Equipo asignado a ${newDept}.`);
+  });
+
+  // CONTROL DEL GROSOR DE BORDES (2PX / 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('inv-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('inv-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('inv-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('inv-border-width') || '2px';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+
+  // INICIALIZACIÓN DE LA APLICACIÓN
+  updateKPIs();
+  renderTableArticulos();
+  renderTableEquipos();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      modalAdjustStock.classList.remove('show');
+      modalLocationAssign.classList.remove('show');
+      appearanceBackdrop.classList.remove('show');
+      equipMenuDropdown.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

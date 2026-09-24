@@ -1,0 +1,2374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Reportes & Analíticas — Generación y Exportación</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #4f46e5; /* Color de acento institucional / analítica */
+    --orange-rgb: 79, 70, 229;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica */
+    --blue: #4f46e5;
+    --blue-bright: #3b82f6;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .group-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 40;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1240px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1240px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CABECERA DEL MÓDULO */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(var(--orange-rgb), 0.14);
+    color: var(--orange);
+    border: var(--stroke-w) solid var(--stroke);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .module-subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .btn-nav-history {
+    height: 38px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    padding: 0 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-nav-history:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn-nav-history svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* TARJETA GENERADOR DE REPORTES */
+  .generator-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .generator-head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .generator-head-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .generator-head-title svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--orange);
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* PESTAÑAS SEGMENTADAS DE REPORTE */
+  .report-scope-tabs {
+    display: inline-flex;
+    align-items: center;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .scope-tab-btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+  }
+
+  .scope-tab-btn.active {
+    background: var(--bg-card);
+    color: var(--text);
+  }
+
+  /* CUADRÍCULA INTERNA DEL GENERADOR */
+  .generator-body-grid {
+    display: grid;
+    grid-template-columns: 1.45fr 0.85fr;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .generator-inputs-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-row-2cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-field-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  .date-range-inputs-pair {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .date-range-separator {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  .custom-field-input,
+  .custom-field-select {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 11px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .custom-field-input:focus,
+  .custom-field-select:focus {
+    border-color: var(--orange);
+  }
+
+  /* RESUMEN PREVIO BAR */
+  .preview-summary-card {
+    border: var(--stroke-w) solid rgba(var(--orange-rgb), 0.25);
+    background: rgba(var(--orange-rgb), 0.08);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .preview-summary-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .preview-summary-text span.kicker {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #818cf8;
+  }
+
+  .preview-summary-text strong {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .mini-bars-illustration {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .mini-bar {
+    width: 5px;
+    border-radius: 2px;
+    background: var(--orange);
+  }
+
+  /* COLUMNA DERECHA DEL GENERADOR: BOTONES DE EXPORTACIÓN */
+  .generator-actions-col {
+    border-left: var(--stroke-w) solid var(--stroke-subtle);
+    padding-left: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .btn-export-solid {
+    height: 44px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #6366f1;
+    background: #6366f1;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+    width: 100%;
+  }
+
+  .btn-export-solid:hover {
+    filter: brightness(1.12) !important;
+    transform: translateY(-1px);
+  }
+
+  .btn-export-outline {
+    height: 44px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+
+  .btn-export-outline:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+    transform: translateY(-1px);
+  }
+
+  .btn-export-outline svg {
+    color: #10b981;
+  }
+
+  .export-caption-note {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin: 2px 0 0;
+  }
+
+  /* SECCIÓN: REPORTES PREDEFINIDOS */
+  .predefined-section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .predefined-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .predefined-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+
+  .predefined-card:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .predefined-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .predefined-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .predefined-icon-box.inventory {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+  }
+
+  .predefined-icon-box.maintenance {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+  }
+
+  .predefined-icon-box.performance {
+    background: rgba(99, 102, 241, 0.12);
+    color: #6366f1;
+  }
+
+  .predefined-icon-box svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .predefined-download-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .predefined-download-btn:hover {
+    color: var(--text);
+    border-color: var(--stroke);
+  }
+
+  .predefined-download-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .predefined-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .predefined-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .predefined-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  .predefined-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .predefined-status-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .predefined-status-time svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .predefined-action-link {
+    font-size: 12px;
+    font-weight: 700 !important;
+    color: #6366f1;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: gap 0.16s ease;
+  }
+
+  .predefined-action-link:hover {
+    gap: 7px;
+  }
+
+  /* ========================================================
+     VISTA 2: HISTORIAL DE REPORTES
+     ======================================================== */
+  .view-pane-container {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .view-pane-container.active {
+    display: flex;
+  }
+
+  /* FILA DE 4 KPIS OPERATIVAS (EN MINÚSCULAS NORMALES) */
+  .kpi-row-4cols {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .glass-card-kpi {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .glass-card-kpi:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .kpi-card-pad {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .kpi-bubble-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .kpi-bubble-icon.blue {
+    background: rgba(99, 102, 241, 0.12);
+    color: #6366f1;
+  }
+
+  .kpi-bubble-icon.red {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+  }
+
+  .kpi-bubble-icon.green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+  }
+
+  .kpi-bubble-icon.yellow {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+  }
+
+  .kpi-bubble-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .kpi-copy-data {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* TEXTO DE KPI EN MINÚSCULAS NORMALES (SIN UPPERCASE) */
+  .kpi-label-text {
+    font-size: 12px;
+    font-weight: 600 !important;
+    color: var(--text-muted);
+    text-transform: none !important;
+  }
+
+  .kpi-value-num {
+    font-size: 26px;
+    font-weight: 700 !important;
+    color: var(--text);
+    line-height: 1.1;
+  }
+
+  /* BARRA INFERIOR DE ACENTO DE 4PX EN HOVER */
+  .kpi-accent-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+
+  .glass-card-kpi.total .kpi-accent-bottom { background: #6366f1; }
+  .glass-card-kpi.pdfs .kpi-accent-bottom { background: #ef4444; }
+  .glass-card-kpi.excel .kpi-accent-bottom { background: #10b981; }
+  .glass-card-kpi.today .kpi-accent-bottom { background: #f59e0b; }
+
+  .glass-card-kpi:hover .kpi-accent-bottom {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* PANEL DE DESCARGAS RECIENTES */
+  .history-table-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .history-toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .search-history-box {
+    position: relative;
+    width: 280px;
+  }
+
+  .search-history-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .search-history-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 36px;
+    border-radius: 11px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-history-input:focus {
+    border-color: var(--orange);
+  }
+
+  /* TABLA DE AUDITORÍA DE REPORTES */
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .custom-table th {
+    padding: 12px 16px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+  }
+
+  .custom-table td {
+    padding: 14px 16px;
+    font-size: 13px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .custom-table tr:hover td {
+    background: var(--stroke-subtle);
+  }
+
+  .report-identity-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .report-icon-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .report-icon-thumb.tickets {
+    background: rgba(99, 102, 241, 0.14);
+    color: #6366f1;
+  }
+
+  .report-icon-thumb.inventory {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+  }
+
+  .report-icon-thumb.maintenance {
+    background: rgba(245, 158, 11, 0.14);
+    color: #f59e0b;
+  }
+
+  .report-icon-thumb svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* FORMAT BADGES */
+  .format-badge-pill {
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.04em;
+  }
+
+  .format-badge-pill.pdf {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .format-badge-pill.excel {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .user-badge-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--bg-sub);
+    border: 1px solid var(--stroke);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .user-badge-mini svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* ACCIONES DE FILA */
+  .table-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .table-action-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    color: #6366f1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .table-action-icon-btn:hover {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.14);
+    transform: translateY(-1px);
+  }
+
+  .table-action-icon-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* PIE DE PAGINACIÓN */
+  .pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .pagination-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .page-step-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .page-step-btn:hover:not(:disabled) {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .page-step-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* MODAL DE APARIENCIA */
+  .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 120;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .appearance-panel {
+    width: min(500px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* NOTIFICACIÓN TOAST */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 150;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD TOTAL Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 980px) {
+    .generator-body-grid {
+      grid-template-columns: 1fr;
+    }
+    .generator-actions-col {
+      border-left: none;
+      border-top: var(--stroke-w) solid var(--stroke-subtle);
+      padding-left: 0;
+      padding-top: 18px;
+    }
+    .predefined-cards-grid {
+      grid-template-columns: 1fr;
+    }
+    .kpi-row-4cols {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    .kpi-row-4cols {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px;
+    }
+
+    .form-row-2cols {
+      grid-template-columns: 1fr;
+    }
+
+    .search-history-box {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .kpi-row-4cols {
+      grid-template-columns: 1fr !important;
+    }
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO FLOTANTE -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de navegación">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item" data-section="maintenance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <span class="nav-label">Mantenimientos</span>
+      </div>
+      <div class="nav-item active" data-section="reports">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+        </div>
+        <span class="nav-label">Reportes</span>
+      </div>
+      <div class="nav-item" data-section="settings">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10"></path></svg>
+        </div>
+        <span class="nav-label">Apariencia</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#4f46e5" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      
+      <!-- ==============================================================
+           VISTA 1: GENERADOR DE REPORTES Y ANALÍTICAS (ACTIVA)
+           ============================================================== -->
+      <section class="module-wrapper view-pane-container active" id="viewReportGenerator">
+        
+        <!-- CABECERA DEL MÓDULO -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Reportes & Analíticas</h1>
+              <p class="module-subtitle">Genera, exporta y analiza el rendimiento de tu operación.</p>
+            </div>
+          </div>
+          <button class="btn-nav-history" id="btnGoToHistory" type="button">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Historial</span>
+          </button>
+        </div>
+
+        <!-- TARJETA PRINCIPAL: GENERADOR DE REPORTES -->
+        <div class="generator-card">
+          <div class="generator-head-row">
+            <div class="generator-head-title">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <h2 class="panel-title" style="font-size:16px !important;">Generador de Reportes</h2>
+            </div>
+
+            <div class="report-scope-tabs">
+              <button class="scope-tab-btn active" data-scope="Soportes" type="button">Soportes</button>
+              <button class="scope-tab-btn" data-scope="Inventario" type="button">Inventario</button>
+              <button class="scope-tab-btn" data-scope="Mantenimiento" type="button">Mantenimiento</button>
+            </div>
+          </div>
+
+          <div class="generator-body-grid">
+            <!-- COLUMNA IZQUIERDA: CONTROLES DE FILTRADO -->
+            <div class="generator-inputs-col">
+              
+              <div class="form-row-2cols">
+                <div class="form-group-block">
+                  <span class="form-field-kicker">RANGO DE FECHAS</span>
+                  <div class="date-range-inputs-pair">
+                    <input type="date" class="custom-field-input" id="inputDateFrom" value="2026-09-01" />
+                    <span class="date-range-separator">-</span>
+                    <input type="date" class="custom-field-input" id="inputDateTo" value="2026-09-22" />
+                  </div>
+                </div>
+
+                <div class="form-group-block">
+                  <span class="form-field-kicker">CATEGORÍA</span>
+                  <select class="custom-field-select" id="selectReportCategory">
+                    <option value="all" selected>Todas las categorías</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="impresora">Impresora</option>
+                    <option value="red">Red</option>
+                    <option value="software">Software</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row-2cols">
+                <div class="form-group-block">
+                  <span class="form-field-kicker">ESTADO</span>
+                  <select class="custom-field-select" id="selectReportStatus">
+                    <option value="all" selected>Cualquier estado</option>
+                    <option value="resolved">Resuelto / Entregado</option>
+                    <option value="process">En Proceso</option>
+                    <option value="pending">Pendiente</option>
+                    <option value="critical">Crítico</option>
+                  </select>
+                </div>
+
+                <div class="form-group-block">
+                  <span class="form-field-kicker">PRIORIDAD</span>
+                  <select class="custom-field-select" id="selectReportPriority">
+                    <option value="all" selected>Todas</option>
+                    <option value="baja">Baja</option>
+                    <option value="media">Media</option>
+                    <option value="alta">Alta</option>
+                    <option value="critica">Crítica</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- BARRA DE RESUMEN PREVIO -->
+              <div class="preview-summary-card">
+                <div class="preview-summary-text">
+                  <span class="kicker">RESUMEN PREVIO</span>
+                  <strong id="previewSummaryMessage">Se exportarán los registros basados en tu selección actual.</strong>
+                </div>
+
+                <div class="mini-bars-illustration" aria-hidden="true">
+                  <div class="mini-bar" style="height:10px;"></div>
+                  <div class="mini-bar" style="height:18px;"></div>
+                  <div class="mini-bar" style="height:24px;"></div>
+                  <div class="mini-bar" style="height:14px;"></div>
+                  <div class="mini-bar" style="height:20px;"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- COLUMNA DERECHA: BOTONES DE ACCIÓN DE DESCARGA -->
+            <div class="generator-actions-col">
+              <button class="btn-export-solid" id="btnDownloadPDF" type="button">
+                <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span>Descargar PDF</span>
+              </button>
+
+              <button class="btn-export-outline" id="btnExportCSV" type="button">
+                <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                <span>Exportar CSV / Excel</span>
+              </button>
+
+              <p class="export-caption-note">El reporte incluirá gráficos y tablas detalladas.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: REPORTES PREDEFINIDOS -->
+        <div class="predefined-section-block">
+          <h2 class="panel-title" style="font-size:16px !important;">Reportes Predefinidos</h2>
+
+          <div class="predefined-cards-grid">
+            
+            <!-- TARJETA 1: INVENTARIO GENERAL -->
+            <div class="predefined-card" data-preset="inventory">
+              <div class="predefined-card-head">
+                <div class="predefined-icon-box inventory">
+                  <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                </div>
+                <button class="predefined-download-btn btn-preset-download" title="Descargar reporte rápido" type="button">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
+              </div>
+
+              <div class="predefined-copy">
+                <h3 class="predefined-title">Inventario General</h3>
+                <p class="predefined-desc">Valoración total, stock por almacén y alertas de stock bajo.</p>
+              </div>
+
+              <div class="predefined-footer-row">
+                <span class="predefined-status-time">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span>Actualizado</span>
+                </span>
+                <span class="predefined-action-link">
+                  <span>Generar</span>
+                  <span>→</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- TARJETA 2: MANTENIMIENTOS -->
+            <div class="predefined-card" data-preset="maintenance">
+              <div class="predefined-card-head">
+                <div class="predefined-icon-box maintenance">
+                  <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                </div>
+                <button class="predefined-download-btn btn-preset-download" title="Descargar reporte rápido" type="button">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
+              </div>
+
+              <div class="predefined-copy">
+                <h3 class="predefined-title">Mantenimientos</h3>
+                <p class="predefined-desc">Historial de reparaciones, costos acumulados y proyecciones.</p>
+              </div>
+
+              <div class="predefined-footer-row">
+                <span class="predefined-status-time">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span>Actualizado</span>
+                </span>
+                <span class="predefined-action-link">
+                  <span>Generar</span>
+                  <span>→</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- TARJETA 3: RENDIMIENTO DEL EQUIPO -->
+            <div class="predefined-card" data-preset="performance">
+              <div class="predefined-card-head">
+                <div class="predefined-icon-box performance">
+                  <svg viewBox="0 0 24 24"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+                </div>
+                <button class="predefined-download-btn btn-preset-download" title="Descargar reporte rápido" type="button">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
+              </div>
+
+              <div class="predefined-copy">
+                <h3 class="predefined-title">Rendimiento del Equipo</h3>
+                <p class="predefined-desc">KPIs de técnicos, tiempos de respuesta y cierre de tickets.</p>
+              </div>
+
+              <div class="predefined-footer-row">
+                <span class="predefined-status-time">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span>Tiempo real</span>
+                </span>
+                <span class="predefined-action-link">
+                  <span>Generar</span>
+                  <span>→</span>
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==============================================================
+           VISTA 2: HISTORIAL DE REPORTES
+           ============================================================== -->
+      <section class="module-wrapper view-pane-container" id="viewReportHistory">
+        
+        <!-- CABECERA DEL HISTORIAL -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" style="background:rgba(99,102,241,0.14);color:#6366f1;">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Historial de Reportes</h1>
+              <p class="module-subtitle">Registro de todos los reportes generados.</p>
+            </div>
+          </div>
+          <button class="btn-nav-history" id="btnBackToGenerator" type="button">
+            <span>←</span>
+            <span>Volver a Reportes</span>
+          </button>
+        </div>
+
+        <!-- FILA DE 4 KPIS OPERATIVAS (EN MINÚSCULAS NORMALES) CON BORDE INFERIOR EN HOVER -->
+        <div class="kpi-row-4cols">
+          
+          <div class="glass-card-kpi total" data-kpi="all">
+            <div class="kpi-card-pad">
+              <div class="kpi-bubble-icon blue">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              </div>
+              <div class="kpi-copy-data">
+                <span class="kpi-label-text">Total reportes</span>
+                <span class="kpi-value-num" id="kpiTotalReports">4</span>
+              </div>
+            </div>
+            <div class="kpi-accent-bottom"></div>
+          </div>
+
+          <div class="glass-card-kpi pdfs" data-kpi="pdf">
+            <div class="kpi-card-pad">
+              <div class="kpi-bubble-icon red">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              </div>
+              <div class="kpi-copy-data">
+                <span class="kpi-label-text">PDFs</span>
+                <span class="kpi-value-num" id="kpiPdfCount">3</span>
+              </div>
+            </div>
+            <div class="kpi-accent-bottom"></div>
+          </div>
+
+          <div class="glass-card-kpi excel" data-kpi="excel">
+            <div class="kpi-card-pad">
+              <div class="kpi-bubble-icon green">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+              </div>
+              <div class="kpi-copy-data">
+                <span class="kpi-label-text">Excel/CSV</span>
+                <span class="kpi-value-num" id="kpiExcelCount">1</span>
+              </div>
+            </div>
+            <div class="kpi-accent-bottom"></div>
+          </div>
+
+          <div class="glass-card-kpi today" data-kpi="today">
+            <div class="kpi-card-pad">
+              <div class="kpi-bubble-icon yellow">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </div>
+              <div class="kpi-copy-data">
+                <span class="kpi-label-text">Hoy</span>
+                <span class="kpi-value-num" id="kpiTodayCount">2</span>
+              </div>
+            </div>
+            <div class="kpi-accent-bottom"></div>
+          </div>
+
+        </div>
+
+        <!-- PANEL DE DESCARGAS RECIENTES -->
+        <div class="history-table-card">
+          <div class="history-toolbar-row">
+            <h2 class="panel-title" style="font-size:16px !important;">Descargas Recientes</h2>
+
+            <div class="search-history-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" class="search-history-input" id="searchHistoryInput" placeholder="Buscar..." autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>REPORTE</th>
+                  <th>FORMATO</th>
+                  <th>FECHA</th>
+                  <th>USUARIO</th>
+                  <th>FILTROS</th>
+                  <th style="text-align:right;">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyHistoryReports">
+                <!-- Inyectado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- PAGINACIÓN -->
+          <div class="pagination-footer">
+            <div>
+              Mostrando <strong id="showingReportsCount">4</strong> de <strong id="totalReportsCount">4</strong> registros
+              <span style="margin-left:14px">Mostrar:</span>
+              <select id="selectPerPageReports" style="background:transparent;border:var(--stroke-w) solid var(--stroke);color:var(--text);border-radius:6px;padding:2px 8px;font-size:12px;">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+              </select>
+            </div>
+            <div class="pagination-controls-row">
+              <button class="page-step-btn" disabled type="button">← Anterior</button>
+              <span>Página <strong>1</strong> / 1</span>
+              <button class="page-step-btn" disabled type="button">Siguiente →</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: APARIENCIA RÁPIDA -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:var(--stroke-w) solid var(--stroke-subtle);padding-bottom:14px;margin-bottom:18px;">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle" style="margin:0;font-size:16px;">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-field-kicker" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-field-kicker" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn-export-solid" id="doneAppearance" style="height:36px;padding:0 16px;width:auto;" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Reportes & Analíticas</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFICADOR
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // BASE DE DATOS DE DESCARGAS RECIENTES (FIEL A LA CAPTURA)
+  let reportHistory = [
+    {
+      id: 'rep_01',
+      title: 'Reporte de Soportes',
+      category: 'tickets',
+      format: 'PDF',
+      date: '22/09/2026 14:58',
+      user: 'admin',
+      filters: 'Estado: Todos, Prioridad: Alta',
+      iconClass: 'tickets'
+    },
+    {
+      id: 'rep_02',
+      title: 'Reporte de Inventario',
+      category: 'inventory',
+      format: 'PDF',
+      date: '22/09/2026 12:58',
+      user: 'admin',
+      filters: 'Completo',
+      iconClass: 'inventory'
+    },
+    {
+      id: 'rep_03',
+      title: 'Reporte de Soportes',
+      category: 'tickets',
+      format: 'Excel',
+      date: '21/09/2026 15:58',
+      user: 'admin',
+      filters: 'Fecha: Último mes',
+      iconClass: 'tickets'
+    },
+    {
+      id: 'rep_04',
+      title: 'Reporte de Mantenimientos',
+      category: 'maintenance',
+      format: 'PDF',
+      date: '20/09/2026 15:58',
+      user: 'admin',
+      filters: 'Completo',
+      iconClass: 'maintenance'
+    }
+  ];
+
+  let currentScope = 'Soportes';
+  let historySearchQuery = '';
+  let kpiFilter = 'all';
+
+  // ACTUALIZACIÓN DE KPIS
+  const updateKPIs = () => {
+    const total = reportHistory.length;
+    const pdfs = reportHistory.filter(r => r.format === 'PDF').length;
+    const excels = reportHistory.filter(r => r.format === 'Excel').length;
+    const today = reportHistory.filter(r => r.date.startsWith('22/09/2026')).length;
+
+    $('#kpiTotalReports').textContent = total;
+    $('#kpiPdfCount').textContent = pdfs;
+    $('#kpiExcelCount').textContent = excels;
+    $('#kpiTodayCount').textContent = today;
+  };
+
+  // ICONOS POR CATEGORÍA
+  const getCategoryThumbIcon = category => {
+    if (category === 'tickets') {
+      return `<svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>`;
+    } else if (category === 'inventory') {
+      return `<svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
+    } else {
+      return `<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>`;
+    }
+  };
+
+  // RENDERIZADO DE TABLA DE DESCARGAS RECIENTES
+  const renderHistoryTable = () => {
+    const tbody = $('#tbodyHistoryReports');
+    const q = historySearchQuery.toLowerCase().trim();
+
+    const filtered = reportHistory.filter(r => {
+      if (kpiFilter === 'pdf' && r.format !== 'PDF') return false;
+      if (kpiFilter === 'excel' && r.format !== 'Excel') return false;
+      if (kpiFilter === 'today' && !r.date.startsWith('22/09/2026')) return false;
+
+      if (!q) return true;
+      return r.title.toLowerCase().includes(q) ||
+             r.filters.toLowerCase().includes(q) ||
+             r.user.toLowerCase().includes(q) ||
+             r.format.toLowerCase().includes(q) ||
+             r.date.includes(q);
+    });
+
+    $('#showingReportsCount').textContent = filtered.length;
+    $('#totalReportsCount').textContent = reportHistory.length;
+
+    tbody.innerHTML = filtered.map(item => `
+      <tr data-id="${item.id}">
+        <td>
+          <div class="report-identity-cell">
+            <div class="report-icon-thumb ${item.iconClass}">
+              ${getCategoryThumbIcon(item.category)}
+            </div>
+            <strong style="color:var(--text);font-size:13px;">${item.title}</strong>
+          </div>
+        </td>
+        <td>
+          <span class="format-badge-pill ${item.format.toLowerCase()}">
+            ${item.format === 'PDF' ? `
+              <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            ` : `
+              <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+            `}
+            <span>${item.format}</span>
+          </span>
+        </td>
+        <td style="color:var(--text-muted);font-size:12px;">
+          <div style="display:inline-flex;align-items:center;gap:6px;">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>${item.date}</span>
+          </div>
+        </td>
+        <td>
+          <div class="user-badge-mini">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>${item.user}</span>
+          </div>
+        </td>
+        <td style="color:var(--text-muted);font-size:12px;">
+          ${item.filters}
+        </td>
+        <td style="text-align:right;">
+          <div class="table-row-actions">
+            <button class="table-action-icon-btn btn-regenerate" data-id="${item.id}" title="Volver a generar" type="button">
+              <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            </button>
+            <button class="table-action-icon-btn btn-redownload" data-id="${item.id}" title="Descargar copia" type="button">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    attachTableEvents();
+  };
+
+  const attachTableEvents = () => {
+    $$('.btn-regenerate').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = reportHistory.find(r => r.id === btn.dataset.id);
+        if (item) {
+          showToast('Regenerando Reporte', `Actualizando datos para "${item.title}".`);
+        }
+      });
+    });
+
+    $$('.btn-redownload').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = reportHistory.find(r => r.id === btn.dataset.id);
+        if (item) {
+          showToast('Descargando Archivo', `Descarga de "${item.title}.${item.format.toLowerCase() === 'pdf' ? 'pdf' : 'xlsx'}" iniciada.`);
+        }
+      });
+    });
+  };
+
+  // CAMBIO ENTRE VISTA GENERADOR Y VISTA HISTORIAL
+  const viewGenerator = $('#viewReportGenerator');
+  const viewHistory = $('#viewReportHistory');
+
+  $('#btnGoToHistory').addEventListener('click', () => {
+    viewGenerator.classList.remove('active');
+    viewHistory.classList.add('active');
+    updateKPIs();
+    renderHistoryTable();
+    showToast('Historial', 'Visualizando descargas recientes de reportes.');
+  });
+
+  $('#btnBackToGenerator').addEventListener('click', () => {
+    viewHistory.classList.remove('active');
+    viewGenerator.classList.add('active');
+  });
+
+  // PESTAÑAS DE ÁMBITO (SOPORTES / INVENTARIO / MANTENIMIENTO)
+  $$('.scope-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.scope-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentScope = btn.dataset.scope;
+      $('#previewSummaryMessage').textContent = `Se exportarán los registros de ${currentScope} basados en tu selección actual.`;
+      showToast('Ámbito de Reporte', `Configurando generador para: ${currentScope}.`);
+    });
+  });
+
+  // DESCARGA PDF / EXPORTAR CSV
+  const registerNewReport = (format) => {
+    const scopeNames = {
+      Soportes: 'Reporte de Soportes',
+      Inventario: 'Reporte de Inventario',
+      Mantenimiento: 'Reporte de Mantenimientos'
+    };
+    const categoryMap = {
+      Soportes: 'tickets',
+      Inventario: 'inventory',
+      Mantenimiento: 'maintenance'
+    };
+
+    const statusVal = $('#selectReportStatus').value;
+    const priorityVal = $('#selectReportPriority').value;
+    const filterText = statusVal === 'all' && priorityVal === 'all' ? 'Completo' : `Estado: ${statusVal}, Prioridad: ${priorityVal}`;
+
+    const newRep = {
+      id: `rep_${Date.now()}`,
+      title: scopeNames[currentScope] || 'Reporte del Sistema',
+      category: categoryMap[currentScope] || 'tickets',
+      format: format,
+      date: '22/09/2026 16:00',
+      user: 'admin',
+      filters: filterText,
+      iconClass: categoryMap[currentScope] || 'tickets'
+    };
+
+    reportHistory.unshift(newRep);
+    updateKPIs();
+    showToast(`Exportación ${format}`, `El ${newRep.title} se ha generado y registrado en el historial.`);
+  };
+
+  $('#btnDownloadPDF').addEventListener('click', () => registerNewReport('PDF'));
+  $('#btnExportCSV').addEventListener('click', () => registerNewReport('Excel'));
+
+  // REPORTES PREDEFINIDOS
+  $$('.predefined-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const preset = card.dataset.preset;
+      const names = {
+        inventory: { title: 'Reporte de Inventario', cat: 'inventory' },
+        maintenance: { title: 'Reporte de Mantenimientos', cat: 'maintenance' },
+        performance: { title: 'Reporte de Soportes', cat: 'tickets' }
+      };
+      const info = names[preset];
+      const newRep = {
+        id: `rep_${Date.now()}`,
+        title: info.title,
+        category: info.cat,
+        format: 'PDF',
+        date: '22/09/2026 16:05',
+        user: 'admin',
+        filters: 'Plantilla Predefinida',
+        iconClass: info.cat
+      };
+      reportHistory.unshift(newRep);
+      updateKPIs();
+      showToast('Plantilla Generada', `Descarga de ${info.title} completada con éxito.`);
+    });
+  });
+
+  // FILTRADO POR KPIS EN HISTORIAL
+  $$('.glass-card-kpi').forEach(kpi => {
+    kpi.addEventListener('click', () => {
+      const type = kpi.dataset.kpi;
+      kpiFilter = kpiFilter === type ? 'all' : type;
+      renderHistoryTable();
+      showToast('Filtro por Métrica', `Mostrando: ${kpi.querySelector('.kpi-label-text').textContent}`);
+    });
+  });
+
+  // BÚSQUEDA EN HISTORIAL
+  $('#searchHistoryInput').addEventListener('input', e => {
+    historySearchQuery = e.target.value;
+    renderHistoryTable();
+  });
+
+  // CONTROL DEL GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('reports-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes del módulo fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // COLOR DE ACENTO GLOBAL
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+    localStorage.setItem('reports-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('reports-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('reports-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('reports-border-width') || '2px';
+  const savedAccent = localStorage.getItem('reports-accent-color') || '#4f46e5';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // INICIALIZACIÓN
+  updateKPIs();
+  renderHistoryTable();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

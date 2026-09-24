@@ -1,0 +1,2666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Gestión de Usuarios — Control de Acceso y Roles</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #4f46e5; /* Color de acento institucional: Azul / Índigo */
+    --orange-rgb: 79, 70, 229;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica por roles y estados */
+    --blue: #2563eb;
+    --purple: #8b5cf6;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .preview-user-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CABECERA DEL MÓDULO GESTIÓN DE USUARIOS */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(79, 70, 229, 0.14);
+    color: var(--orange);
+    border: var(--stroke-w) solid var(--stroke);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .module-subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .btn-new-user {
+    height: 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #4f46e5;
+    background: #4f46e5;
+    color: #ffffff;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-new-user:hover {
+    filter: brightness(1.15) !important;
+    transform: translateY(-1px);
+  }
+
+  /* FILA DE 3 KPIS OPERATIVAS (SIN UPPERCASE) */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .glass-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    position: relative;
+    overflow: hidden;
+    transition: border-width 0.2s ease, border-color 0.2s ease;
+  }
+
+  .kpi {
+    cursor: pointer;
+    min-height: 94px;
+  }
+
+  .kpi .card-pad {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 600 !important;
+    color: var(--text-muted);
+    text-transform: none !important;
+    margin-bottom: 4px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700 !important;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .kpi-icon-bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .kpi.total-users .kpi-icon-bubble {
+    background: rgba(79, 70, 229, 0.12);
+    color: #4f46e5;
+  }
+
+  .kpi.admins-users .kpi-icon-bubble {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+    border: var(--stroke-w) solid rgba(139, 92, 246, 0.25);
+  }
+
+  .kpi.techs-users .kpi-icon-bubble {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: var(--stroke-w) solid rgba(16, 185, 129, 0.25);
+  }
+
+  .kpi-icon-bubble svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .accent-bottom {
+    height: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    background: var(--orange);
+  }
+
+  .kpi:hover .accent-bottom {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* BARRA DE HERRAMIENTAS, FILTROS Y VISTAS */
+  .toolbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .switch-wrap {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .switch-input { display: none; }
+
+  .switch-rail {
+    width: 44px;
+    height: 24px;
+    background: var(--stroke);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .switch-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease;
+  }
+
+  .switch-input:checked + .switch-rail {
+    background: var(--orange);
+    border-color: var(--orange);
+  }
+
+  .switch-input:checked + .switch-rail .switch-dot {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    margin-right: auto;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 14px 0 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--orange);
+  }
+
+  .view-mode-toggle-group {
+    display: inline-flex;
+    align-items: center;
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+
+  .view-mode-btn {
+    height: 38px;
+    padding: 0 14px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    transition: all 0.18s ease;
+  }
+
+  .view-mode-btn.active {
+    background: #4f46e5;
+    color: #ffffff;
+  }
+
+  .view-mode-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* TABLA PRINCIPAL DE USUARIOS */
+  .users-table-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .custom-table th {
+    padding: 14px 18px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+  }
+
+  .custom-table td {
+    padding: 14px 18px;
+    font-size: 13px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .custom-table tr:hover td {
+    background: var(--stroke-subtle);
+  }
+
+  /* AVATARES DE USUARIO CON INICIALES */
+  .user-avatar-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700 !important;
+    flex-shrink: 0;
+  }
+
+  .user-avatar-circle.tint-blue {
+    background: rgba(79, 70, 229, 0.15);
+    color: #4f46e5;
+  }
+
+  .user-avatar-circle.tint-cyan {
+    background: rgba(6, 182, 212, 0.15);
+    color: #06b6d4;
+  }
+
+  .user-avatar-circle.tint-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+
+  /* BADGES DE ROL */
+  .role-badge-pill {
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.02em;
+  }
+
+  .role-badge-pill.admin {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+  }
+
+  .role-badge-pill.tecnico {
+    background: rgba(79, 70, 229, 0.15);
+    color: #4f46e5;
+    border: 1px solid rgba(79, 70, 229, 0.35);
+  }
+
+  .role-badge-pill.consultor {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+  }
+
+  .role-badge-pill.operador {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+  }
+
+  .status-active-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .status-active-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+  }
+
+  .action-buttons-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .action-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .action-icon-btn.edit {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.25);
+  }
+
+  .action-icon-btn.edit:hover {
+    background: rgba(245, 158, 11, 0.22);
+  }
+
+  .action-icon-btn.delete {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.25);
+  }
+
+  .action-icon-btn.delete:hover {
+    background: rgba(239, 68, 68, 0.22);
+  }
+
+  .action-icon-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* VISTA EN TARJETAS (CARDS VIEW) */
+  .users-cards-grid {
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+  }
+
+  .user-card-item {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    position: relative;
+    transition: border-color 0.2s ease;
+  }
+
+  .user-card-item:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  /* PIE DE PAGINACIÓN */
+  .pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-nav-btn {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .page-nav-btn:hover:not(:disabled) {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .page-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* =========================================================
+     VISTA 2: CREAR / EDITAR USUARIO (CON LIVE DIGITAL CARD)
+     ========================================================= */
+  .user-form-view {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .user-form-view.active {
+    display: flex;
+  }
+
+  .form-grid-layout {
+    display: grid;
+    grid-template-columns: 1.35fr 0.85fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .form-card-panel {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-with-icon svg {
+    position: absolute;
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input.has-icon {
+    padding-left: 40px;
+  }
+
+  .form-input:focus, .form-select:focus {
+    border-color: var(--orange);
+  }
+
+  /* CHECKBOX VINCULAR ORGANIZACIÓN */
+  .checkbox-card-wrap {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .checkbox-card-wrap input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--orange);
+  }
+
+  .checkbox-copy-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .checkbox-title {
+    font-size: 13px;
+    font-weight: 700 !important;
+    color: var(--text);
+  }
+
+  .checkbox-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* BANNER CREDENCIAL DIGITAL */
+  .digital-credential-banner {
+    border: var(--stroke-w) solid rgba(79, 70, 229, 0.3);
+    background: rgba(79, 70, 229, 0.08);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .digital-credential-copy strong {
+    font-size: 13px;
+    color: #818cf8;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .digital-credential-copy span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .qr-badge-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(79, 70, 229, 0.15);
+    color: #818cf8;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .qr-badge-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .form-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .btn-submit-user {
+    height: 42px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #0f172a;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 0 24px;
+    font-size: 13px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn-submit-user:hover {
+    filter: brightness(1.2) !important;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    height: 42px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 20px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  /* PANEL DERECHO: VISTA PREVIA DE CREDENCIAL DIGITAL (LIVE PREVIEW) */
+  .preview-wrapper-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .preview-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .badge-preview-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--stroke-subtle);
+    border: 1px solid var(--stroke);
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .live-credential-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .credential-top-banner {
+    height: 94px;
+    background: #3b82f6;
+    width: 100%;
+    position: relative;
+  }
+
+  .credential-avatar-wrapper {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    margin: -38px auto 14px;
+  }
+
+  .credential-avatar-circle {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: var(--bg-sub);
+    border: 4px solid var(--bg-card);
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    font-weight: 700 !important;
+  }
+
+  .credential-avatar-circle svg {
+    width: 32px;
+    height: 32px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  .badge-credential-verified {
+    position: absolute;
+    right: -2px;
+    bottom: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #10b981;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--bg-card);
+  }
+
+  .credential-body-content {
+    padding: 0 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .credential-user-name {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .credential-user-handle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 4px 0 14px;
+  }
+
+  .credential-pills-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .cred-role-pill {
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: var(--stroke-subtle);
+    border: 1px solid var(--stroke);
+    font-size: 11px;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+
+  .cred-dept-pill {
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+
+  .credential-stats-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding-top: 16px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    text-align: left;
+  }
+
+  .cred-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .cred-stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .cred-stat-value {
+    font-size: 13px;
+    font-weight: 700 !important;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .credential-card-footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--bg-sub);
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .cred-verified-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .cred-verified-line svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .cred-qr-box {
+    color: var(--text-dim);
+    display: grid;
+    place-items: center;
+  }
+
+  .cred-qr-box svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .preview-footer-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(520px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head, .appearance-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn-modal-danger {
+    background: #ef4444;
+    border: var(--stroke-w) solid #ef4444;
+    color: #ffffff;
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* TOAST NOTIFICACIÓN */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD TOTAL Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 980px) {
+    .form-grid-layout {
+      grid-template-columns: 1fr;
+    }
+    .users-cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    /* KPIS EN 2 COLUMNAS ESTRICTAS EN MÓVIL */
+    .kpi-row {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px;
+    }
+
+    .toolbar-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .search-box {
+      max-width: 100%;
+    }
+
+    .users-cards-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .form-actions-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .kpi-row {
+      grid-template-columns: 1fr !important;
+    }
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO FLOTANTE -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de navegación">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item active" data-section="users">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <span class="nav-label">Usuarios</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item" data-section="departments">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+        </div>
+        <span class="nav-label">Departamentos</span>
+      </div>
+      <div class="nav-item" data-section="categories">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+        </div>
+        <span class="nav-label">Categorías</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#4f46e5" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      
+      <!-- ==============================================================
+           VISTA 1: GESTIÓN DE USUARIOS (LISTADO / TABLA / CARDS)
+           ============================================================== -->
+      <section class="module-wrapper" id="viewUsersDirectory">
+        
+        <!-- CABECERA DEL MÓDULO -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Gestión de Usuarios</h1>
+              <p class="module-subtitle">Administra el acceso y roles de tu equipo.</p>
+            </div>
+          </div>
+          <button class="btn-new-user" id="btnOpenNewUser" type="button">
+            <span>+</span>
+            <span>Nuevo Usuario</span>
+          </button>
+        </div>
+
+        <!-- FILA DE 3 KPIS OPERATIVAS COMPACTAS (SIN UPPERCASE) -->
+        <div class="kpi-row">
+          <div class="glass-card kpi total-users" data-kpi="all">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Total usuarios</div>
+                <div class="kpi-value" id="kpiTotalUsers">4</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi admins-users" data-kpi="admin">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Administradores</div>
+                <div class="kpi-value" id="kpiAdminsCount">2</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi techs-users" data-kpi="tecnico">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Técnicos</div>
+                <div class="kpi-value" id="kpiTechsCount">1</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+        </div>
+
+        <!-- BARRA DE HERRAMIENTAS, FILTROS Y VISTAS -->
+        <div class="toolbar-card">
+          <label class="switch-wrap" title="Alternar modo de visualización">
+            <input type="checkbox" id="denseSwitch" class="switch-input" />
+            <div class="switch-rail"><div class="switch-dot"></div></div>
+          </label>
+
+          <div class="search-box">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" class="search-input" id="searchUserInput" placeholder="Buscar usuario..." autocomplete="off" />
+          </div>
+
+          <div class="view-mode-toggle-group">
+            <button class="view-mode-btn active" id="btnToggleTableView" type="button" title="Vista en tabla">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Tabla</span>
+            </button>
+            <button class="view-mode-btn" id="btnToggleGridView" type="button" title="Vista en tarjetas">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>Cards</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TABLA DE USUARIOS -->
+        <div class="users-table-card" id="usersTableContainer">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>USUARIO</th>
+                  <th>ROL & DEPTO</th>
+                  <th>ESTADO</th>
+                  <th style="text-align:right;">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyUsers">
+                <!-- Inyectado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-footer">
+            <div>
+              Mostrando <strong id="showingCountText">4</strong> de <strong id="totalCountText">4</strong>
+              <span style="margin-left:14px">Mostrar:</span>
+              <select id="selectPerPage" style="background:transparent;border:var(--stroke-w) solid var(--stroke);color:var(--text);border-radius:6px;padding:2px 8px;font-size:12px;">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <div class="pagination-controls">
+              <button class="page-nav-btn" id="btnPrevPage" disabled type="button">‹ Anterior</button>
+              <span>Página <strong>1</strong> / 1</span>
+              <button class="page-nav-btn" id="btnNextPage" disabled type="button">Siguiente ›</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CUADRÍCULA DE TARJETAS (CARDS VIEW) -->
+        <div class="users-cards-grid" id="usersCardsContainer">
+          <!-- Inyectado dinámicamente -->
+        </div>
+
+        <!-- ESTADO VACÍO DE BÚSQUEDA -->
+        <div class="glass-card" id="emptyUsersState" style="padding:56px 20px;text-align:center;display:none;flex-direction:column;align-items:center;gap:12px;">
+          <div style="width:52px;height:52px;border-radius:50%;background:var(--stroke-subtle);border:var(--stroke-w) solid var(--stroke);display:grid;place-items:center;color:var(--text-muted);">
+            <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <div>
+            <strong style="font-size:14px;color:var(--text);display:block;">No se encontraron usuarios</strong>
+            <span style="font-size:12px;color:var(--text-muted);">Prueba con otros términos de búsqueda o revisa los filtros.</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==============================================================
+           VISTA 2: CREAR / EDITAR USUARIO (CON DIGITAL CARD LIVE PREVIEW)
+           ============================================================== -->
+      <section class="module-wrapper user-form-view" id="viewUserForm">
+        
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" style="background:#4f46e5;color:#ffffff;">
+              <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+            </div>
+            <div>
+              <h1 class="module-title" id="formViewTitle">Crear Usuario</h1>
+              <p class="module-subtitle">Ingresa los datos para generar la credencial digital.</p>
+            </div>
+          </div>
+          <button class="btn-secondary" id="btnBackToDirectory" type="button">
+            <span>←</span>
+            <span>Volver al Directorio</span>
+          </button>
+        </div>
+
+        <form id="formUserRecord" class="form-grid-layout">
+          <input type="hidden" id="editUserId" value="" />
+
+          <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+          <div class="form-card-panel">
+            
+            <div class="form-group">
+              <label class="form-label" for="inputUsername">Nombre de Usuario</label>
+              <input type="text" class="form-input" id="inputUsername" placeholder="Ej: jperez" required autocomplete="off" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inputPassword">Contraseña</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <input type="password" class="form-input has-icon" id="inputPassword" placeholder="Contraseña segura" autocomplete="new-password" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="selectRole">Nivel de Acceso (Rol)</label>
+              <select class="form-select" id="selectRole" required>
+                <option value="Tecnico" selected>Tecnico</option>
+                <option value="Admin">Admin</option>
+                <option value="Consultor">Consultor</option>
+                <option value="Operador">Operador</option>
+              </select>
+            </div>
+
+            <!-- CHECKBOX CARD: VINCULAR A LA ORGANIZACIÓN -->
+            <label class="checkbox-card-wrap">
+              <input type="checkbox" id="checkLinkOrg" />
+              <div class="checkbox-copy-block">
+                <span class="checkbox-title">Vincular a la organización</span>
+                <span class="checkbox-desc">Asignar departamento y vincular a un empleado existente.</span>
+              </div>
+            </label>
+
+            <!-- SELECTORES DINÁMICOS DE ORGANIZACIÓN (OCULTOS SI NO ESTÁ MARCADO) -->
+            <div id="orgSelectorsWrap" style="display:none;flex-direction:column;gap:14px;border:var(--stroke-w) solid var(--stroke-subtle);padding:14px;border-radius:12px;background:var(--bg-sub);">
+              <div class="form-group">
+                <label class="form-label" for="selectDepartment">Departamento Asignado</label>
+                <select class="form-select" id="selectDepartment">
+                  <option value="Sin Asignar" selected>Sin Asignar</option>
+                  <option value="Dpto. de Informática">Dpto. de Informática</option>
+                  <option value="DPTO. De Produccion">DPTO. De Produccion</option>
+                  <option value="Dpto. de Contabilidad">Dpto. de Contabilidad</option>
+                  <option value="DPTO. De Seguridad">DPTO. De Seguridad</option>
+                  <option value="Dpto. de Recursos Humanos">Dpto. de Recursos Humanos</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputFullName">Nombre Completo del Colaborador</label>
+                <input type="text" class="form-input" id="inputFullName" placeholder="Ej: Juan Pérez" autocomplete="off" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputEmail">Correo Electrónico</label>
+                <input type="email" class="form-input" id="inputEmail" placeholder="juan.perez@produmil.com" autocomplete="off" />
+              </div>
+            </div>
+
+            <!-- BANNER DE CREDENCIAL DIGITAL -->
+            <div class="digital-credential-banner">
+              <div class="digital-credential-copy">
+                <strong>Credencial Digital</strong>
+                <span>La vista previa se actualiza en tiempo real.</span>
+              </div>
+              <div class="qr-badge-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+              </div>
+            </div>
+
+            <div class="form-actions-row">
+              <button class="btn-submit-user" id="btnSubmitUser" type="submit">
+                <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span id="btnSubmitLabel">Crear Usuario</span>
+              </button>
+              <button class="btn-secondary" id="btnCancelFormAction" type="button">Cancelar</button>
+            </div>
+
+          </div>
+
+          <!-- COLUMNA DERECHA: TARJETA DE CREDENCIAL DIGITAL (LIVE PREVIEW) -->
+          <div class="preview-wrapper-col">
+            <div class="preview-header-bar">
+              <span class="badge-preview-tag" style="margin-left:auto;">VISTA PREVIA</span>
+            </div>
+
+            <div class="live-credential-card">
+              <div class="credential-top-banner"></div>
+              
+              <div class="credential-avatar-wrapper">
+                <div class="credential-avatar-circle" id="previewAvatarBox">
+                  <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                </div>
+                <div class="badge-credential-verified" id="previewVerifiedIcon">
+                  <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+              </div>
+
+              <div class="credential-body-content">
+                <h2 class="credential-user-name" id="previewDisplayName">Nombre Usuario</h2>
+                <div class="credential-user-handle" id="previewHandle">@username</div>
+
+                <div class="credential-pills-row">
+                  <span class="cred-role-pill" id="previewRolePill">TÉCNICO</span>
+                  <span class="cred-dept-pill" id="previewDeptPill">SIN DEPTO</span>
+                </div>
+
+                <div class="credential-stats-grid">
+                  <div class="cred-stat-item">
+                    <span class="cred-stat-label">ESTADO</span>
+                    <span class="cred-stat-value" style="color:#10b981;">
+                      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <span>Activo</span>
+                    </span>
+                  </div>
+                  <div class="cred-stat-item">
+                    <span class="cred-stat-label">ID USUARIO</span>
+                    <span class="cred-stat-value" id="previewUserIdCode">#USR-NUEVO</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="credential-card-footer">
+                <div class="cred-verified-line">
+                  <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  <span>Acceso Verificado</span>
+                </div>
+                <div class="cred-qr-box">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-footer-note">
+              Esta es la visualización de cómo aparecerá el usuario en el directorio global.
+            </div>
+          </div>
+
+        </form>
+
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: CONFIRMAR ELIMINACIÓN DE USUARIO -->
+<div class="modal-backdrop" id="modalDeleteUser">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteUserTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="deleteUserTitle">Eliminar Usuario</h3>
+      <button class="icon-close" id="closeDeleteModal" type="button">×</button>
+    </div>
+    <p style="margin:0 0 16px;font-size:14px;color:var(--text-muted);line-height:1.5;">
+      ¿Estás seguro de que deseas retirar el acceso para <strong id="deleteTargetUsername" style="color:var(--text);">@usuario</strong>?
+      Esta cuenta ya no podrá iniciar sesión en el sistema ni gestionar tickets o inventario.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelDeleteBtn" type="button">Cancelar</button>
+      <button class="btn-modal-danger" id="confirmDeleteBtn" type="button">Eliminar Usuario</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APARIENCIA Y ESTILO -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn-new-user" id="doneAppearance" style="height:36px;padding:0 16px;" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Gestión de Usuarios</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFIER
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // BASE DE DATOS DE USUARIOS (FIEL A LA CAPTURA)
+  let usuarios = [
+    {
+      id: 'usr_01',
+      username: 'admin',
+      fullName: 'admin',
+      handle: '@admin',
+      email: null,
+      role: 'Admin',
+      department: 'Sin Asignar',
+      status: 'Activo',
+      initials: 'AD',
+      tint: 'tint-blue',
+      canDelete: false
+    },
+    {
+      id: 'usr_02',
+      username: 'Alejandro Medina',
+      fullName: 'Alejandro Medina',
+      handle: '@Alejandro Medina',
+      email: null,
+      role: 'Admin',
+      department: 'Sin Asignar',
+      status: 'Activo',
+      initials: 'AL',
+      tint: 'tint-blue',
+      canDelete: true
+    },
+    {
+      id: 'usr_03',
+      username: 'alexisd',
+      fullName: 'Alexis Datica',
+      handle: '@alexisd',
+      email: 'informatica.produmil1@gmail.com',
+      role: 'Tecnico',
+      department: 'Dpto. de Informática',
+      status: 'Activo',
+      initials: 'AL',
+      tint: 'tint-cyan',
+      canDelete: true
+    },
+    {
+      id: 'usr_04',
+      username: 'Jonas',
+      fullName: 'Jonas Mendes',
+      handle: '@Jonas',
+      email: 'jonas@gamil.com',
+      role: 'Consultor',
+      department: 'DPTO. De Produccion',
+      status: 'Activo',
+      initials: 'JO',
+      tint: 'tint-green',
+      canDelete: true
+    }
+  ];
+
+  let searchQuery = '';
+  let activeViewMode = 'table'; // 'table' | 'cards'
+  let pendingDeleteId = null;
+  let roleKpiFilter = 'all';
+
+  const updateKPIs = () => {
+    const total = usuarios.length;
+    const admins = usuarios.filter(u => u.role.toLowerCase() === 'admin').length;
+    const techs = usuarios.filter(u => u.role.toLowerCase() === 'tecnico').length;
+
+    $('#kpiTotalUsers').textContent = total;
+    $('#kpiAdminsCount').textContent = admins;
+    $('#kpiTechsCount').textContent = techs;
+
+    $('#showingCountText').textContent = total;
+    $('#totalCountText').textContent = total;
+  };
+
+  const getRoleBadge = role => {
+    const r = role.toLowerCase();
+    if (r === 'admin') {
+      return `
+        <span class="role-badge-pill admin">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Admin
+        </span>`;
+    } else if (r === 'tecnico') {
+      return `
+        <span class="role-badge-pill tecnico">
+          Tecnico
+        </span>`;
+    } else if (r === 'consultor') {
+      return `
+        <span class="role-badge-pill consultor">
+          Consultor
+        </span>`;
+    }
+    return `<span class="role-badge-pill operador">Operador</span>`;
+  };
+
+  const renderUsers = () => {
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = usuarios.filter(u => {
+      if (roleKpiFilter !== 'all' && u.role.toLowerCase() !== roleKpiFilter) return false;
+      if (!q) return true;
+      return u.username.toLowerCase().includes(q) ||
+             u.fullName.toLowerCase().includes(q) ||
+             u.handle.toLowerCase().includes(q) ||
+             (u.email && u.email.toLowerCase().includes(q)) ||
+             u.department.toLowerCase().includes(q) ||
+             u.role.toLowerCase().includes(q);
+    });
+
+    const tbody = $('#tbodyUsers');
+    const cardsContainer = $('#usersCardsContainer');
+    const tableContainer = $('#usersTableContainer');
+    const emptyBox = $('#emptyUsersState');
+
+    if (filtered.length === 0) {
+      tableContainer.style.display = 'none';
+      cardsContainer.style.display = 'none';
+      emptyBox.style.display = 'flex';
+      return;
+    }
+
+    emptyBox.style.display = 'none';
+
+    if (activeViewMode === 'table') {
+      tableContainer.style.display = 'block';
+      cardsContainer.style.display = 'none';
+
+      tbody.innerHTML = filtered.map(u => `
+        <tr data-id="${u.id}">
+          <td>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="user-avatar-circle ${u.tint}">${u.initials}</div>
+              <div>
+                <strong style="font-size:14px;color:var(--text);display:block;">${u.fullName}</strong>
+                <span style="font-size:12px;color:var(--text-muted);display:block;">${u.handle}</span>
+                ${u.email ? `<span style="font-size:11px;color:var(--text-dim);display:inline-flex;align-items:center;gap:4px;margin-top:2px;"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>${u.email}</span>` : ''}
+              </div>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+              ${getRoleBadge(u.role)}
+              <span style="font-size:12px;color:var(--text-muted);display:inline-flex;align-items:center;gap:5px;">
+                <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+                ${u.department}
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="status-active-tag">
+              <span class="status-active-dot"></span>
+              <span>${u.status}</span>
+            </div>
+          </td>
+          <td style="text-align:right;">
+            <div class="action-buttons-group">
+              <button class="action-icon-btn edit btn-edit-user" data-id="${u.id}" title="Editar usuario" type="button">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              ${u.canDelete ? `
+                <button class="action-icon-btn delete btn-delete-user" data-id="${u.id}" title="Eliminar usuario" type="button">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    } else {
+      tableContainer.style.display = 'none';
+      cardsContainer.style.display = 'grid';
+
+      cardsContainer.innerHTML = filtered.map(u => `
+        <article class="user-card-item" data-id="${u.id}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+            <div class="user-avatar-circle ${u.tint}">${u.initials}</div>
+            ${getRoleBadge(u.role)}
+          </div>
+
+          <div>
+            <strong style="font-size:15px;color:var(--text);display:block;">${u.fullName}</strong>
+            <span style="font-size:12px;color:var(--text-muted);display:block;">${u.handle}</span>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text-dim);">
+              <span style="display:inline-flex;align-items:center;gap:6px;">
+                <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+                ${u.department}
+              </span>
+              ${u.email ? `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.email}</span>` : ''}
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);">
+            <div class="status-active-tag">
+              <span class="status-active-dot"></span>
+              <span style="font-size:12px;">${u.status}</span>
+            </div>
+            <div class="action-buttons-group">
+              <button class="action-icon-btn edit btn-edit-user" data-id="${u.id}" title="Editar" type="button">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              ${u.canDelete ? `
+                <button class="action-icon-btn delete btn-delete-user" data-id="${u.id}" title="Eliminar" type="button">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    attachActionEvents();
+  };
+
+  const attachActionEvents = () => {
+    $$('.btn-edit-user').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const u = usuarios.find(x => x.id === id);
+        if (!u) return;
+        openUserForm(u);
+      });
+    });
+
+    $$('.btn-delete-user').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const u = usuarios.find(x => x.id === id);
+        if (!u || !u.canDelete) return;
+
+        pendingDeleteId = id;
+        $('#deleteTargetUsername').textContent = u.handle || u.username;
+        $('#modalDeleteUser').classList.add('show');
+      });
+    });
+  };
+
+  // CONTROL DE VISTAS (DIRECTORIO ↔ FORMULARIO)
+  const showDirectoryView = () => {
+    $('#viewUserForm').classList.remove('active');
+    $('#viewUsersDirectory').style.display = 'flex';
+  };
+
+  const openUserForm = (u = null) => {
+    $('#viewUsersDirectory').style.display = 'none';
+    $('#viewUserForm').classList.add('active');
+
+    const form = $('#formUserRecord');
+    form.reset();
+
+    if (u) {
+      $('#formViewTitle').textContent = `Editar Usuario: ${u.username}`;
+      $('#btnSubmitLabel').textContent = 'Guardar Cambios';
+      $('#editUserId').value = u.id;
+      $('#inputUsername').value = u.username;
+      $('#inputPassword').value = '********';
+      $('#selectRole').value = u.role;
+
+      const isLinked = u.department !== 'Sin Asignar' || Boolean(u.email);
+      $('#checkLinkOrg').checked = isLinked;
+      $('#orgSelectorsWrap').style.display = isLinked ? 'flex' : 'none';
+      $('#selectDepartment').value = u.department || 'Sin Asignar';
+      $('#inputFullName').value = u.fullName || u.username;
+      $('#inputEmail').value = u.email || '';
+    } else {
+      $('#formViewTitle').textContent = 'Crear Usuario';
+      $('#btnSubmitLabel').textContent = 'Crear Usuario';
+      $('#editUserId').value = '';
+      $('#checkLinkOrg').checked = false;
+      $('#orgSelectorsWrap').style.display = 'none';
+      $('#selectRole').value = 'Tecnico';
+      $('#selectDepartment').value = 'Sin Asignar';
+    }
+
+    updateLivePreview();
+  };
+
+  $('#btnOpenNewUser').addEventListener('click', () => openUserForm(null));
+  $('#btnBackToDirectory').addEventListener('click', showDirectoryView);
+  $('#btnCancelFormAction').addEventListener('click', showDirectoryView);
+
+  // CHECKBOX VINCULAR A LA ORGANIZACIÓN
+  $('#checkLinkOrg').addEventListener('change', e => {
+    $('#orgSelectorsWrap').style.display = e.target.checked ? 'flex' : 'none';
+    updateLivePreview();
+  });
+
+  const updateLivePreview = () => {
+    const rawUser = $('#inputUsername').value.trim() || 'username';
+    const cleanUser = rawUser.startsWith('@') ? rawUser.substring(1) : rawUser;
+    const fullName = $('#inputFullName').value.trim() || cleanUser || 'Nombre Usuario';
+    const role = $('#selectRole').value || 'Tecnico';
+    const isLinked = $('#checkLinkOrg').checked;
+    const dept = isLinked ? ($('#selectDepartment').value || 'SIN DEPTO') : 'SIN DEPTO';
+
+    $('#previewDisplayName').textContent = fullName;
+    $('#previewHandle').textContent = `@${cleanUser}`;
+    $('#previewRolePill').textContent = role.toUpperCase();
+    $('#previewDeptPill').textContent = dept.toUpperCase();
+
+    // Initials in avatar if full name exists, else camera icon
+    const previewAvatarBox = $('#previewAvatarBox');
+    if (fullName && fullName !== 'Nombre Usuario') {
+      const parts = fullName.split(' ').filter(Boolean);
+      const init = (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+      previewAvatarBox.textContent = init;
+    } else {
+      previewAvatarBox.innerHTML = `
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      `;
+    }
+
+    const editId = $('#editUserId').value;
+    $('#previewUserIdCode').textContent = editId ? `#USR-0${editId.replace('usr_', '')}` : '#USR-NUEVO';
+  };
+
+  ['#inputUsername', '#inputFullName', '#selectRole', '#selectDepartment', '#inputEmail'].forEach(sel => {
+    $(sel).addEventListener('input', updateLivePreview);
+    $(sel).addEventListener('change', updateLivePreview);
+  });
+
+  $('#formUserRecord').addEventListener('submit', e => {
+    e.preventDefault();
+    const editId = $('#editUserId').value;
+    const rawUser = $('#inputUsername').value.trim();
+    const cleanUser = rawUser.startsWith('@') ? rawUser.substring(1) : rawUser;
+    const role = $('#selectRole').value;
+    const isLinked = $('#checkLinkOrg').checked;
+    const department = isLinked ? ($('#selectDepartment').value || 'Sin Asignar') : 'Sin Asignar';
+    const fullName = $('#inputFullName').value.trim() || cleanUser;
+    const email = isLinked ? ($('#inputEmail').value.trim() || null) : null;
+
+    if (!cleanUser) {
+      showToast('Campo Requerido', 'Por favor ingresa un nombre de usuario válido.');
+      return;
+    }
+
+    const parts = fullName.split(' ').filter(Boolean);
+    const initials = (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase() || cleanUser.substring(0, 2).toUpperCase();
+
+    const tintMap = {
+      Admin: 'tint-blue',
+      Tecnico: 'tint-cyan',
+      Consultor: 'tint-green',
+      Operador: 'tint-blue'
+    };
+    const tint = tintMap[role] || 'tint-blue';
+
+    if (editId) {
+      const idx = usuarios.findIndex(x => x.id === editId);
+      if (idx !== -1) {
+        usuarios[idx] = {
+          ...usuarios[idx],
+          username: cleanUser,
+          fullName,
+          handle: `@${cleanUser}`,
+          email,
+          role,
+          department,
+          initials,
+          tint
+        };
+        showToast('Usuario Actualizado', `Se guardaron los cambios para @${cleanUser}.`);
+      }
+    } else {
+      const newUser = {
+        id: `usr_${Date.now()}`,
+        username: cleanUser,
+        fullName,
+        handle: `@${cleanUser}`,
+        email,
+        role,
+        department,
+        status: 'Activo',
+        initials,
+        tint,
+        canDelete: true
+      };
+      usuarios.push(newUser);
+      showToast('Usuario Creado', `@${cleanUser} registrado en la plataforma.`);
+    }
+
+    updateKPIs();
+    renderUsers();
+    showDirectoryView();
+  });
+
+  // CONFIRMACIÓN DE ELIMINACIÓN
+  const modalDelete = $('#modalDeleteUser');
+  const closeDeleteModal = () => {
+    modalDelete.classList.remove('show');
+    pendingDeleteId = null;
+  };
+
+  $('#closeDeleteModal').addEventListener('click', closeDeleteModal);
+  $('#cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+  $('#confirmDeleteBtn').addEventListener('click', () => {
+    if (pendingDeleteId) {
+      const u = usuarios.find(x => x.id === pendingDeleteId);
+      usuarios = usuarios.filter(x => x.id !== pendingDeleteId);
+      updateKPIs();
+      renderUsers();
+      showToast('Usuario Retirado', `${u ? u.handle : 'El usuario'} fue eliminado.`);
+    }
+    closeDeleteModal();
+  });
+
+  // FILTRADO POR KPIS
+  $$('.kpi').forEach(kpi => {
+    kpi.addEventListener('click', () => {
+      const filter = kpi.dataset.kpi;
+      roleKpiFilter = roleKpiFilter === filter ? 'all' : filter;
+      renderUsers();
+      showToast('Filtro por Rol', `Filtrando por: ${kpi.querySelector('.kpi-label').textContent}`);
+    });
+  });
+
+  // BÚSQUEDA EN TIEMPO REAL
+  $('#searchUserInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderUsers();
+  });
+
+  // TOGGLE VISTA TABLA / CARDS
+  $('#btnToggleTableView').addEventListener('click', () => {
+    activeViewMode = 'table';
+    $('#btnToggleTableView').classList.add('active');
+    $('#btnToggleGridView').classList.remove('active');
+    renderUsers();
+    showToast('Visualización', 'Modo tabla activado.');
+  });
+
+  $('#btnToggleGridView').addEventListener('click', () => {
+    activeViewMode = 'cards';
+    $('#btnToggleGridView').classList.add('active');
+    $('#btnToggleTableView').classList.remove('active');
+    renderUsers();
+    showToast('Visualización', 'Modo cards activado.');
+  });
+
+  // CONTROL DEL GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('users-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes del sistema fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // COLOR DE ACENTO
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+    localStorage.setItem('users-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('users-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('users-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('users-border-width') || '2px';
+  const savedAccent = localStorage.getItem('users-accent-color') || '#4f46e5';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // INICIALIZACIÓN
+  updateKPIs();
+  renderUsers();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeDeleteModal();
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

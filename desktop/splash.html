@@ -1,53 +1,532 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Iniciando SGEN Support...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --surface: #ffffff;
+            --bg: #f8fafc;
+            --text: #334155;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
         body {
-            background-color: #f8fafc;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            color: #334155;
+            color: var(--text);
             user-select: none;
+            overflow: hidden;
         }
+
         .container {
+            background: var(--surface);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            width: 400px;
             text-align: center;
+            transition: all 0.3s ease;
         }
+
+        .logo-area {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Loading State */
+        .state-loading {
+            display: block;
+        }
+
         .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid #e2e8f0;
-            border-bottom-color: #3b82f6;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-bottom-color: var(--primary);
             border-radius: 50%;
             display: inline-block;
             box-sizing: border-box;
             animation: rotation 1s linear infinite;
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
+
         h2 {
-            margin: 0 0 10px 0;
-            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #1e293b;
         }
+
         p {
-            color: #64748b;
-            font-size: 0.9rem;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
         }
+
+        /* Config State (Hidden by default) */
+        .state-config {
+            display: none;
+            text-align: left;
+        }
+
+        .error-banner {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #b91c1c;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 0.75rem;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+        }
+
+        .server-list {
+            margin: 1rem 0;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+        }
+
+        .server-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: background 0.1s;
+        }
+
+        .server-item:last-child {
+            border-bottom: none;
+        }
+
+        .server-item:hover {
+            background: #f1f5f9;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .divider::before {
+            margin-right: .5em;
+        }
+
+        .divider::after {
+            margin-left: .5em;
+        }
+
         @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Fade animation */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <span class="loader"></span>
-        <h2>Iniciando Sistema</h2>
-        <p>Cargando servidor y base de datos...</p>
+
+        <div class="logo-area">
+            <div class="app-icon">
+                <i class="bi bi-hdd-network"></i>
+            </div>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div id="loadingState" class="state-loading">
+            <span class="loader"></span>
+            <h2>Iniciando Sistema</h2>
+            <p id="loadingStatus">Cargando servidor y base de datos...</p>
+        </div>
+
+        <!-- WIZARD STATE (First Run) -->
+        <div id="wizardState" class="state-config fade-in" style="display: none;">
+            <h2 style="text-align: center;">Bienvenido</h2>
+            <p style="text-align: center; margin-bottom: 2rem;">
+                Configuremos este equipo para comenzar.
+            </p>
+
+            <button onclick="setupAsServer()" class="btn btn-primary"
+                style="padding: 1.5rem; text-align: left; display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div
+                    style="background: rgba(255,255,255,0.2); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bi bi-hdd-fill" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.1rem; font-weight: 700;">Crear Nuevo Servidor</div>
+                    <div style="font-size: 0.85rem; opacity: 0.9; font-weight: normal;">Este es el equipo principal
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="showConfigUI(null, true)" class="btn btn-outline"
+                style="padding: 1.5rem; text-align: left; display: flex; align-items: center; gap: 1rem;">
+                <div
+                    style="background: var(--border); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-light);">
+                    <i class="bi bi-pc-display" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.1rem; font-weight: 700;">Conectar Cliente</div>
+                    <div style="font-size: 0.85rem; color: var(--text-light); font-weight: normal;">Me conectaré a otro
+                        equipo</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- CONFIG STATE (Error/Setup) -->
+        <div id="configState" class="state-config fade-in">
+            <h2 id="configTitle" style="text-align: center;">Configuración de Red</h2>
+
+            <div id="errorMsg" class="error-banner" style="display: none;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span id="errorText">No se pudo conectar al servidor.</span>
+            </div>
+
+            <p style="text-align: center; margin-bottom: 1.5rem;">
+                Seleccione un modo de conexión para continuar.
+            </p>
+
+            <button id="btnRetry" onclick="saveConfig(currentConfig.host, currentConfig.mode)" class="btn btn-outline"
+                style="border-color: var(--error); color: var(--error); display: none;">
+                <i class="bi bi-arrow-clockwise"></i> Reintentar Ahora
+            </button>
+
+            <button onclick="startAutoDiscovery()" id="btnDiscover" class="btn btn-primary">
+                <i class="bi bi-radar"></i> Escanear Servidores
+            </button>
+
+            <div id="scanStatus" style="display: none; text-align: center; margin: 1rem 0; color: var(--primary);">
+                <span class="loader"
+                    style="width: 20px; height: 20px; border-width: 2px; margin-bottom: 0.5rem;"></span>
+                <br>Buscando...
+            </div>
+
+            <div id="serverList" class="server-list" style="display: none;">
+                <!-- Filled dynamically -->
+            </div>
+
+            <div class="divider">O MANUALMENTE</div>
+
+            <div class="input-group">
+                <label>Dirección IP del Servidor</label>
+                <input type="text" id="manualIp" class="form-input" placeholder="Ej: 192.168.1.10">
+            </div>
+
+            <button onclick="saveManualConfig()" class="btn btn-outline">
+                Conectar
+            </button>
+        </div>
+
     </div>
+
+    <script>
+        console.log("Splash Screen Script Loaded");
+        document.getElementById('loadingStatus').innerText = "Inicializando scripts...";
+
+        try {
+            const { electronAPI } = window;
+            if (!electronAPI) {
+                console.error("electronAPI missing!");
+                document.getElementById('loadingStatus').innerText = "Error crítico: electronAPI no disponible";
+                throw new Error("electronAPI missing");
+            }
+            console.log("electronAPI found", electronAPI);
+        } catch (e) {
+            console.error("Script Initialization Error:", e);
+            document.getElementById('loadingStatus').innerText = "Error de script: " + e.message;
+        }
+
+        let currentConfig = null;
+        let retryTimer = null;
+        let countdownVal = 30;
+
+        // Listen for startup errors
+        electronAPI.onStartupError((data) => {
+            console.log("Startup Error Received:", data);
+            currentConfig = data.config || { mode: 'client', host: 'unknown' }; // Fallback to ensure UI works
+            console.log("Current Config set to:", currentConfig);
+
+            showConfigUI(data.message);
+
+            // Only auto-retry if in client mode
+            if (currentConfig.mode === 'client') {
+                startAutoRetryCountdown();
+            }
+        });
+
+        function startAutoRetryCountdown() {
+            const btn = document.getElementById('btnRetry');
+            if (!btn) return; // Should exist
+
+            countdownVal = 30;
+            clearInterval(retryTimer);
+
+            btn.innerHTML = `<i class="bi bi-arrow-clockwise"></i> Reintentando en ${countdownVal}s`;
+
+            retryTimer = setInterval(() => {
+                countdownVal--;
+                if (countdownVal <= 0) {
+                    clearInterval(retryTimer);
+                    btn.innerHTML = `<i class="bi bi-arrow-clockwise"></i> Reintentando...`;
+                    saveConfig(currentConfig.host, currentConfig.mode);
+                } else {
+                    btn.innerHTML = `<i class="bi bi-arrow-clockwise"></i> Reintentando en ${countdownVal}s`;
+                }
+            }, 1000);
+        }
+
+        function cancelRetry() {
+            clearInterval(retryTimer);
+            const btn = document.getElementById('btnRetry');
+            if (btn) btn.innerHTML = `<i class="bi bi-arrow-clockwise"></i> Reintentar Ahora`;
+        }
+
+        electronAPI.onShowSetupWizard(() => {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('wizardState').style.display = 'block';
+        });
+
+        electronAPI.onUpdateStatus((text) => {
+            const statusEl = document.getElementById('loadingStatus');
+            if (statusEl) statusEl.innerText = text;
+        });
+
+        // --- UI Functions ---
+
+        function setupAsServer() {
+            saveConfig('127.0.0.1', 'server');
+        }
+
+        function showConfigUI(errorText, isSetupClient = false) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('wizardState').style.display = 'none';
+            document.getElementById('configState').style.display = 'block';
+
+            if (isSetupClient) {
+                document.getElementById('configTitle').innerText = 'Conectar a Servidor'; // Need to add ID to H2
+                document.getElementById('errorMsg').style.display = 'none';
+            } else {
+                const errDiv = document.getElementById('errorMsg');
+                if (errorText) {
+                    document.getElementById('errorText').innerText = errorText;
+                    errDiv.style.display = 'flex';
+
+                    // Show retry button if we have config
+                    const btnRetry = document.getElementById('btnRetry');
+                    if (currentConfig && currentConfig.mode === 'client') {
+                        btnRetry.style.display = 'block';
+                    } else {
+                        btnRetry.style.display = 'none';
+                    }
+                }
+            }
+
+            document.getElementById('manualIp').addEventListener('focus', cancelRetry);
+            document.getElementById('btnDiscover').addEventListener('click', cancelRetry);
+        }
+
+        async function startAutoDiscovery() {
+            const btn = document.getElementById('btnDiscover');
+            const status = document.getElementById('scanStatus');
+            const list = document.getElementById('serverList');
+
+            btn.disabled = true;
+            status.style.display = 'block';
+            list.style.display = 'none';
+            list.innerHTML = '';
+
+            try {
+                // Call main process discovery
+                const result = await electronAPI.discovery();
+
+                status.style.display = 'none';
+                btn.disabled = false;
+
+                if (result.timeout) {
+                    alert('No se encontraron servidores automáticamente. Verifique que el servidor esté encendido o ingrese la IP manualmente.');
+                } else {
+                    list.style.display = 'block';
+                    addServerToList(result);
+                }
+            } catch (e) {
+                console.error(e);
+                status.style.display = 'none';
+                btn.disabled = false;
+                alert('Error al escanear: ' + e.message);
+            }
+        }
+
+        function addServerToList(server) {
+            const list = document.getElementById('serverList');
+            const item = document.createElement('div');
+            item.className = 'server-item';
+            item.innerHTML = `
+                <i class="bi bi-hdd-rack-fill" style="color: var(--primary); font-size: 1.2rem;"></i>
+                <div style="flex: 1;">
+                    <strong style="display: block; font-size: 0.9rem;">${server.name}</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-light);">${server.host}</span>
+                </div>
+                <i class="bi bi-chevron-right" style="color: var(--border);"></i>
+            `;
+            item.onclick = () => saveConfig(server.host, 'client', server.port);
+            list.appendChild(item);
+        }
+
+        function saveManualConfig() {
+            const ip = document.getElementById('manualIp').value.trim();
+            if (!ip) return alert('Por favor ingrese una dirección IP válida');
+            saveConfig(ip);
+        }
+
+        async function saveConfig(ip, mode = 'client', port = null) {
+            document.getElementById('configState').innerHTML = `
+                <div class="state-loading">
+                    <span class="loader"></span>
+                    <h2>Guardando Configuración</h2>
+                    <p>La aplicación se reiniciará...</p>
+                </div>
+            `;
+
+            await electronAPI.saveConfig({
+                mode: mode,
+                host: ip,
+                port: port
+            });
+        }
+    </script>
 </body>
+
 </html>

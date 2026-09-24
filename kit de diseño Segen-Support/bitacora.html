@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Bitácora del Sistema — Registro de Auditoría y Movimientos</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #3b82f6; /* Color de acento de auditoría: Azul Zafiro */
+    --orange-rgb: 59, 130, 246;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica para tipos de eventos */
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CABECERA DEL MÓDULO BITÁCORA DEL SISTEMA */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(59, 130, 246, 0.14);
+    color: var(--orange);
+    border: var(--stroke-w) solid var(--stroke);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .module-subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* BARRA SUPERIOR DE HERRAMIENTAS Y BÚSQUEDA */
+  .header-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .search-box {
+    position: relative;
+    width: 280px;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 14px 0 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--orange);
+  }
+
+  .btn-filter-action {
+    height: 38px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    padding: 0 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-filter-action:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn-filter-action.active-filter {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  .btn-filter-action svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* PANEL PRINCIPAL DE LA BITÁCORA */
+  .audit-card-panel {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* SEPARADOR DE FECHA */
+  .date-separator-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+    margin-bottom: 4px;
+  }
+
+  .date-label-subtle {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  .date-badge-pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--bg-sub);
+    border: var(--stroke-w) solid var(--stroke);
+    font-size: 12px;
+    font-weight: 700 !important;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  /* CONTENEDOR DEL TIMELINE */
+  .timeline-group-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    padding-left: 10px;
+  }
+
+  /* ELEMENTO DE FILA DEL TIMELINE */
+  .timeline-event-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+  }
+
+  /* COLUMNA DE LA HORA */
+  .timeline-time-col {
+    width: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700 !important;
+    color: var(--text);
+    line-height: 1.15;
+    flex-shrink: 0;
+  }
+
+  .timeline-time-col span.ampm {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600 !important;
+  }
+
+  /* NODO Y LÍNEA GUÍA VERTICAL */
+  .timeline-node-wrapper {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+  }
+
+  /* LÍNEA VERTICAL CONECTORA */
+  .timeline-event-row::before {
+    content: "";
+    position: absolute;
+    left: 103px;
+    top: -14px;
+    bottom: -14px;
+    width: 2px;
+    background: var(--stroke-subtle);
+    z-index: 1;
+  }
+
+  .timeline-event-row:first-of-type::before {
+    top: 50%;
+  }
+
+  .timeline-event-row:last-of-type::before {
+    bottom: 50%;
+  }
+
+  /* BURBUJA DE ICONO DEL NODO */
+  .timeline-node-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    z-index: 2;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .timeline-node-circle.type-user {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.35);
+  }
+
+  .timeline-node-circle.type-dept {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+    border-color: rgba(139, 92, 246, 0.35);
+  }
+
+  .timeline-node-circle.type-ticket {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+
+  .timeline-node-circle.type-security {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+
+  .timeline-node-circle svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* TARJETA DEL EVENTO */
+  .timeline-event-card {
+    flex: 1;
+    min-width: 0;
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: var(--card-radius);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .timeline-event-card:hover {
+    border-color: var(--stroke);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .timeline-event-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .timeline-event-title {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.35;
+    margin: 0;
+    word-break: break-word;
+  }
+
+  .timeline-event-title strong {
+    color: var(--text);
+    font-weight: 700 !important;
+  }
+
+  .timeline-event-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .timeline-event-meta span.dot-sep {
+    color: var(--text-dim);
+  }
+
+  /* BOTÓN FLECHA DERECHA */
+  .btn-inspect-arrow {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+    color: #3b82f6;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-inspect-arrow:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.12);
+    transform: translateX(2px);
+  }
+
+  .btn-inspect-arrow svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+  }
+
+  /* PIE DE PAGINACIÓN */
+  .pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 18px;
+    margin-top: 10px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .pagination-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .page-step-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .page-step-btn:hover:not(:disabled) {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .page-step-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(560px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head, .appearance-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn-modal-primary {
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #3b82f6;
+    background: #3b82f6;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700 !important;
+  }
+
+  .btn-secondary {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  /* ESTILO DE INSPECCIÓN DETALLADA DE AUDITORÍA */
+  .audit-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .audit-detail-item {
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .audit-detail-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+  }
+
+  .audit-detail-val {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 700 !important;
+  }
+
+  .audit-diff-box {
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: monospace !important;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .audit-diff-box strong {
+    color: var(--orange);
+  }
+
+  /* ESTADO VACÍO DE BÚSQUEDA */
+  .empty-log-state {
+    padding: 56px 20px;
+    text-align: center;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* NOTIFICACIÓN TOAST */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD TOTAL Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    .header-actions-bar {
+      width: 100%;
+    }
+
+    .search-box {
+      width: 100%;
+      flex: 1;
+    }
+
+    /* LÍNEA DE TIEMPO EN MÓVIL */
+    .timeline-event-row::before {
+      display: none;
+    }
+
+    .timeline-event-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .timeline-time-col {
+      width: auto;
+      flex-direction: row;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .timeline-node-wrapper {
+      display: none;
+    }
+
+    .audit-detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO FLOTANTE -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de navegación">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item" data-section="staff">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <span class="nav-label">Personal</span>
+      </div>
+      <div class="nav-item" data-section="departments">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+        </div>
+        <span class="nav-label">Departamentos</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item active" data-section="audit">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        </div>
+        <span class="nav-label">Bitácora</span>
+      </div>
+      <div class="nav-item" data-section="settings">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+        </div>
+        <span class="nav-label">Apariencia</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#3b82f6" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      
+      <!-- ==============================================================
+           MÓDULO: BITÁCORA DEL SISTEMA
+           ============================================================== -->
+      <section class="module-wrapper">
+        
+        <!-- CABECERA DEL MÓDULO CON ACCIONES -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Bitácora del Sistema</h1>
+              <p class="module-subtitle">Historial detallado de cambios y movimientos en el sistema.</p>
+            </div>
+          </div>
+
+          <div class="header-actions-bar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" class="search-input" id="searchAuditInput" placeholder="Buscar en bitácora..." autocomplete="off" />
+            </div>
+            <button class="btn-filter-action" id="btnOpenFilterModal" type="button">
+              <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+              <span>Filtros</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TARJETA PRINCIPAL DE LÍNEA DE TIEMPO -->
+        <div class="audit-card-panel">
+          
+          <div id="timelineContent">
+            <!-- GRUPO 1: 20 Jan 2026 -->
+            <div class="date-separator-wrap">
+              <span class="date-label-subtle">FECHA</span>
+              <span class="date-badge-pill">20 Jan 2026</span>
+            </div>
+
+            <div class="timeline-group-container">
+              
+              <!-- EVENTO 1 -->
+              <div class="timeline-event-row" data-id="evt_01" data-user="admin" data-action="Actualizó al usuario Jonas" data-module="Usuario" data-time="01:15 PM" data-date="20 Jan 2026">
+                <div class="timeline-time-col">
+                  <span>01:15</span>
+                  <span class="ampm">PM</span>
+                </div>
+                <div class="timeline-node-wrapper">
+                  <div class="timeline-node-circle type-user" title="Módulo: Usuario">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </div>
+                </div>
+                <div class="timeline-event-card btn-view-event-detail">
+                  <div class="timeline-event-content">
+                    <h3 class="timeline-event-title"><strong>admin</strong> Actualizó al usuario Jonas</h3>
+                    <div class="timeline-event-meta">
+                      <span>Usuario</span>
+                      <span class="dot-sep">•</span>
+                      <span>Hace un momento</span>
+                    </div>
+                  </div>
+                  <button class="btn-inspect-arrow" type="button" title="Ver detalles del evento">
+                    <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- EVENTO 2 -->
+              <div class="timeline-event-row" data-id="evt_02" data-user="admin" data-action="Actualizó al usuario Jonas" data-module="Usuario" data-time="01:15 PM" data-date="20 Jan 2026">
+                <div class="timeline-time-col">
+                  <span>01:15</span>
+                  <span class="ampm">PM</span>
+                </div>
+                <div class="timeline-node-wrapper">
+                  <div class="timeline-node-circle type-user" title="Módulo: Usuario">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </div>
+                </div>
+                <div class="timeline-event-card btn-view-event-detail">
+                  <div class="timeline-event-content">
+                    <h3 class="timeline-event-title"><strong>admin</strong> Actualizó al usuario Jonas</h3>
+                    <div class="timeline-event-meta">
+                      <span>Usuario</span>
+                      <span class="dot-sep">•</span>
+                      <span>Hace un momento</span>
+                    </div>
+                  </div>
+                  <button class="btn-inspect-arrow" type="button" title="Ver detalles del evento">
+                    <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- EVENTO 3 -->
+              <div class="timeline-event-row" data-id="evt_03" data-user="admin" data-action="Creó al usuario Jonas" data-module="Usuario" data-time="01:14 PM" data-date="20 Jan 2026">
+                <div class="timeline-time-col">
+                  <span>01:14</span>
+                  <span class="ampm">PM</span>
+                </div>
+                <div class="timeline-node-wrapper">
+                  <div class="timeline-node-circle type-user" title="Módulo: Usuario">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </div>
+                </div>
+                <div class="timeline-event-card btn-view-event-detail">
+                  <div class="timeline-event-content">
+                    <h3 class="timeline-event-title"><strong>admin</strong> Creó al usuario Jonas</h3>
+                    <div class="timeline-event-meta">
+                      <span>Usuario</span>
+                      <span class="dot-sep">•</span>
+                      <span>Hace un momento</span>
+                    </div>
+                  </div>
+                  <button class="btn-inspect-arrow" type="button" title="Ver detalles del evento">
+                    <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- GRUPO 2: 22 Dec 2025 -->
+            <div class="date-separator-wrap" style="margin-top:18px;">
+              <span class="date-label-subtle">FECHA</span>
+              <span class="date-badge-pill">22 Dec 2025</span>
+            </div>
+
+            <div class="timeline-group-container">
+              
+              <!-- EVENTO 4 -->
+              <div class="timeline-event-row" data-id="evt_04" data-user="admin" data-action="Actualizó el departamento Dpto. de Compras" data-module="Departamento" data-time="03:21 PM" data-date="22 Dec 2025">
+                <div class="timeline-time-col">
+                  <span>03:21</span>
+                  <span class="ampm">PM</span>
+                </div>
+                <div class="timeline-node-wrapper">
+                  <div class="timeline-node-circle type-dept" title="Módulo: Departamento">
+                    <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+                  </div>
+                </div>
+                <div class="timeline-event-card btn-view-event-detail">
+                  <div class="timeline-event-content">
+                    <h3 class="timeline-event-title"><strong>admin</strong> Actualizó el departamento Dpto. de Compras</h3>
+                    <div class="timeline-event-meta">
+                      <span>Departamento</span>
+                      <span class="dot-sep">•</span>
+                      <span>Hace un momento</span>
+                    </div>
+                  </div>
+                  <button class="btn-inspect-arrow" type="button" title="Ver detalles del evento">
+                    <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- EVENTO 5 -->
+              <div class="timeline-event-row" data-id="evt_05" data-user="admin" data-action="Actualizó el departamento Dpto. de Compras" data-module="Departamento" data-time="03:21 PM" data-date="22 Dec 2025">
+                <div class="timeline-time-col">
+                  <span>03:21</span>
+                  <span class="ampm">PM</span>
+                </div>
+                <div class="timeline-node-wrapper">
+                  <div class="timeline-node-circle type-dept" title="Módulo: Departamento">
+                    <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+                  </div>
+                </div>
+                <div class="timeline-event-card btn-view-event-detail">
+                  <div class="timeline-event-content">
+                    <h3 class="timeline-event-title"><strong>admin</strong> Actualizó el departamento Dpto. de Compras</h3>
+                    <div class="timeline-event-meta">
+                      <span>Departamento</span>
+                      <span class="dot-sep">•</span>
+                      <span>Hace un momento</span>
+                    </div>
+                  </div>
+                  <button class="btn-inspect-arrow" type="button" title="Ver detalles del evento">
+                    <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ESTADO VACÍO CUANDO NO HAY COINCIDENCIAS -->
+          <div class="empty-log-state" id="emptyLogState">
+            <div style="width:52px;height:52px;border-radius:50%;background:var(--stroke-subtle);border:var(--stroke-w) solid var(--stroke);display:grid;place-items:center;color:var(--text-muted);">
+              <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <div>
+              <strong style="font-size:14px;color:var(--text);display:block;">No se encontraron registros en la bitácora</strong>
+              <span style="font-size:12px;color:var(--text-muted);">Intenta ajustar los filtros de búsqueda o revisar los parámetros ingresados.</span>
+            </div>
+          </div>
+
+          <!-- PIE DE PAGINACIÓN -->
+          <div class="pagination-footer">
+            <div>
+              Mostrando <strong id="showingEventsCount">5</strong> de <strong id="totalEventsCount">5</strong> eventos
+              <span style="margin-left:14px">Mostrar:</span>
+              <select id="selectPerPage" style="background:transparent;border:var(--stroke-w) solid var(--stroke);color:var(--text);border-radius:6px;padding:2px 8px;font-size:12px;">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+              </select>
+            </div>
+            <div class="pagination-controls-row">
+              <button class="page-step-btn" id="btnPrevPage" disabled type="button">← Anterior</button>
+              <span>Página <strong>1</strong> / 104</span>
+              <button class="page-step-btn" id="btnNextPage" type="button">Siguiente →</button>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: DETALLE DEL EVENTO DE AUDITORÍA -->
+<div class="modal-backdrop" id="modalAuditDetail">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalAuditTitle">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="timeline-node-circle type-user" id="modalBadgeIcon">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div>
+          <h3 class="modal-title" id="modalAuditTitle">Detalle de Actividad</h3>
+          <span style="font-size:11px;color:var(--text-muted);" id="modalAuditSub">ID Evento: #LOG-88219</span>
+        </div>
+      </div>
+      <button class="icon-close" id="closeDetailModal" type="button">×</button>
+    </div>
+
+    <div class="audit-detail-grid">
+      <div class="audit-detail-item">
+        <span class="audit-detail-label">Usuario Responsable</span>
+        <span class="audit-detail-val" id="modalEventUser">admin</span>
+      </div>
+      <div class="audit-detail-item">
+        <span class="audit-detail-label">Módulo Afectado</span>
+        <span class="audit-detail-val" id="modalEventModule">Usuario</span>
+      </div>
+      <div class="audit-detail-item">
+        <span class="audit-detail-label">Fecha y Hora</span>
+        <span class="audit-detail-val" id="modalEventTimestamp">20 Jan 2026 • 01:15 PM</span>
+      </div>
+      <div class="audit-detail-item">
+        <span class="audit-detail-label">Dirección IP</span>
+        <span class="audit-detail-val">192.168.1.145 (LAN)</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <span class="audit-detail-label" style="display:block;margin-bottom:6px;">Registro de Cambios (Payload Diff)</span>
+      <div class="audit-diff-box" id="modalEventDiff">
+        {<br>
+        &nbsp;&nbsp;<strong>"entity"</strong>: "Jonas Mendes",<br>
+        &nbsp;&nbsp;<strong>"action"</strong>: "UPDATE_RECORD",<br>
+        &nbsp;&nbsp;<strong>"field"</strong>: "department",<br>
+        &nbsp;&nbsp;<strong>"previous"</strong>: "Sin Asignar",<br>
+        &nbsp;&nbsp;<strong>"current"</strong>: "DPTO. De Produccion"<br>
+        }
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-modal-primary" id="btnCloseDetailAction" type="button">Cerrar Inspección</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FILTROS AVANZADOS DE BITÁCORA -->
+<div class="modal-backdrop" id="modalAuditFilters">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalFilterTitle">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(59,130,246,0.12);color:var(--orange);display:grid;place-items:center;">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+        </div>
+        <h3 class="modal-title" id="modalFilterTitle">Filtrar Historial</h3>
+      </div>
+      <button class="icon-close" id="closeFilterModal" type="button">×</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label class="form-label" style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;" for="selectModuleFilter">Módulo</label>
+        <select id="selectModuleFilter" style="width:100%;height:38px;padding:0 12px;border-radius:10px;border:var(--stroke-w) solid var(--stroke);background:var(--bg-sub);color:var(--text);font-size:13px;outline:none;">
+          <option value="all" selected>Todos los módulos</option>
+          <option value="Usuario">Usuarios y Cuentas</option>
+          <option value="Departamento">Departamentos</option>
+          <option value="Inventario">Inventario y Activos</option>
+          <option value="Tickets">Soportes y Tickets</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label" style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;" for="selectActionTypeFilter">Tipo de Acción</label>
+        <select id="selectActionTypeFilter" style="width:100%;height:38px;padding:0 12px;border-radius:10px;border:var(--stroke-w) solid var(--stroke);background:var(--bg-sub);color:var(--text);font-size:13px;outline:none;">
+          <option value="all" selected>Todas las acciones</option>
+          <option value="Actualizó">Modificaciones (Actualizó)</option>
+          <option value="Creó">Creaciones (Creó)</option>
+          <option value="Eliminó">Bajas (Eliminó)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label" style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:6px;" for="selectUserFilter">Usuario Ejecutor</label>
+        <select id="selectUserFilter" style="width:100%;height:38px;padding:0 12px;border-radius:10px;border:var(--stroke-w) solid var(--stroke);background:var(--bg-sub);color:var(--text);font-size:13px;outline:none;">
+          <option value="all" selected>Cualquier usuario</option>
+          <option value="admin">admin</option>
+          <option value="alexisd">alexisd</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btnResetFiltersAction" type="button">Restablecer</button>
+      <button class="btn-modal-primary" id="btnApplyFiltersAction" type="button">Aplicar Filtros</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APARIENCIA Y ESTILO -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn-modal-primary" id="doneAppearance" style="height:36px;padding:0 16px;" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Bitácora del Sistema</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFICADOR
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // DATOS BASE DE EVENTOS DE AUDITORÍA
+  const auditEvents = [
+    {
+      id: 'evt_01',
+      user: 'admin',
+      action: 'Actualizó al usuario Jonas',
+      module: 'Usuario',
+      time: '01:15 PM',
+      date: '20 Jan 2026',
+      iconType: 'type-user',
+      diff: `{\n  "entity": "Jonas Mendes",\n  "action": "UPDATE_RECORD",\n  "field": "department",\n  "previous": "Sin Asignar",\n  "current": "DPTO. De Produccion"\n}`
+    },
+    {
+      id: 'evt_02',
+      user: 'admin',
+      action: 'Actualizó al usuario Jonas',
+      module: 'Usuario',
+      time: '01:15 PM',
+      date: '20 Jan 2026',
+      iconType: 'type-user',
+      diff: `{\n  "entity": "Jonas Mendes",\n  "action": "UPDATE_ROLE",\n  "field": "role",\n  "previous": "Operador",\n  "current": "Consultor"\n}`
+    },
+    {
+      id: 'evt_03',
+      user: 'admin',
+      action: 'Creó al usuario Jonas',
+      module: 'Usuario',
+      time: '01:14 PM',
+      date: '20 Jan 2026',
+      iconType: 'type-user',
+      diff: `{\n  "entity": "Jonas Mendes",\n  "action": "CREATE_USER",\n  "username": "@Jonas",\n  "role": "Operador",\n  "status": "Activo"\n}`
+    },
+    {
+      id: 'evt_04',
+      user: 'admin',
+      action: 'Actualizó el departamento Dpto. de Compras',
+      module: 'Departamento',
+      time: '03:21 PM',
+      date: '22 Dec 2025',
+      iconType: 'type-dept',
+      diff: `{\n  "entity": "Dpto. de Compras",\n  "action": "ASSIGN_MANAGER",\n  "manager": "Dailiana Luna",\n  "location": "Edificio Central, Piso 2"\n}`
+    },
+    {
+      id: 'evt_05',
+      user: 'admin',
+      action: 'Actualizó el departamento Dpto. de Compras',
+      module: 'Departamento',
+      time: '03:21 PM',
+      date: '22 Dec 2025',
+      iconType: 'type-dept',
+      diff: `{\n  "entity": "Dpto. de Compras",\n  "action": "UPDATE_INVENTORY_ALLOCATION",\n  "assignedEquipos": 7,\n  "coverage": "77%"\n}`
+    }
+  ];
+
+  let searchQuery = '';
+  let filterModule = 'all';
+  let filterAction = 'all';
+  let filterUser = 'all';
+
+  // RENDERIZADO REACTIVO DEL TIMELINE
+  const filterAndRenderTimeline = () => {
+    const q = searchQuery.toLowerCase().trim();
+    const rows = $$('.timeline-event-row');
+    const dateHeaders = $$('.date-separator-wrap');
+    const emptyState = $('#emptyLogState');
+    const timelineBox = $('#timelineContent');
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const user = row.dataset.user.toLowerCase();
+      const action = row.dataset.action.toLowerCase();
+      const moduleName = row.dataset.module;
+      const date = row.dataset.date.toLowerCase();
+
+      let matchesSearch = !q || user.includes(q) || action.includes(q) || moduleName.toLowerCase().includes(q) || date.includes(q);
+      let matchesModule = filterModule === 'all' || moduleName === filterModule;
+      let matchesAction = filterAction === 'all' || action.includes(filterAction.toLowerCase());
+      let matchesUser = filterUser === 'all' || user === filterUser.toLowerCase();
+
+      if (matchesSearch && matchesModule && matchesAction && matchesUser) {
+        row.style.display = 'flex';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Ocultar cabeceras de fecha si ningún evento hijo está visible
+    dateHeaders.forEach(dh => {
+      const groupContainer = dh.nextElementSibling;
+      if (groupContainer && groupContainer.classList.contains('timeline-group-container')) {
+        const visibleChild = [...groupContainer.children].some(c => c.style.display !== 'none');
+        dh.style.display = visibleChild ? 'flex' : 'none';
+        groupContainer.style.display = visibleChild ? 'flex' : 'none';
+      }
+    });
+
+    $('#showingEventsCount').textContent = visibleCount;
+
+    if (visibleCount === 0) {
+      emptyState.style.display = 'flex';
+    } else {
+      emptyState.style.display = 'none';
+    }
+  };
+
+  // BUSCADOR EN TIEMPO REAL
+  $('#searchAuditInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    filterAndRenderTimeline();
+  });
+
+  // MODAL DE DETALLE DE AUDITORÍA
+  const modalDetail = $('#modalAuditDetail');
+  const openDetailModal = eventId => {
+    const evt = auditEvents.find(x => x.id === eventId) || auditEvents[0];
+    $('#modalAuditTitle').textContent = evt.action;
+    $('#modalAuditSub').textContent = `ID Evento: #${evt.id.toUpperCase()}`;
+    $('#modalEventUser').textContent = evt.user;
+    $('#modalEventModule').textContent = evt.module;
+    $('#modalEventTimestamp').textContent = `${evt.date} • ${evt.time}`;
+    $('#modalEventDiff').innerHTML = evt.diff.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;');
+
+    const badgeIcon = $('#modalBadgeIcon');
+    badgeIcon.className = `timeline-node-circle ${evt.iconType}`;
+    if (evt.module === 'Usuario') {
+      badgeIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    } else {
+      badgeIcon.innerHTML = `<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>`;
+    }
+
+    modalDetail.classList.add('show');
+  };
+
+  const closeDetailModal = () => modalDetail.classList.remove('show');
+  $('#closeDetailModal').addEventListener('click', closeDetailModal);
+  $('#btnCloseDetailAction').addEventListener('click', closeDetailModal);
+
+  $$('.btn-view-event-detail').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.timeline-event-row');
+      if (row) openDetailModal(row.dataset.id);
+    });
+  });
+
+  // MODAL DE FILTROS AVANZADOS
+  const modalFilters = $('#modalAuditFilters');
+  const openFilterModal = () => modalFilters.classList.add('show');
+  const closeFilterModal = () => modalFilters.classList.remove('show');
+
+  $('#btnOpenFilterModal').addEventListener('click', openFilterModal);
+  $('#closeFilterModal').addEventListener('click', closeFilterModal);
+
+  $('#btnResetFiltersAction').addEventListener('click', () => {
+    $('#selectModuleFilter').value = 'all';
+    $('#selectActionTypeFilter').value = 'all';
+    $('#selectUserFilter').value = 'all';
+    filterModule = 'all';
+    filterAction = 'all';
+    filterUser = 'all';
+    $('#btnOpenFilterModal').classList.remove('active-filter');
+    filterAndRenderTimeline();
+    closeFilterModal();
+    showToast('Filtros Limpiados', 'Mostrando el historial completo.');
+  });
+
+  $('#btnApplyFiltersAction').addEventListener('click', () => {
+    filterModule = $('#selectModuleFilter').value;
+    filterAction = $('#selectActionTypeFilter').value;
+    filterUser = $('#selectUserFilter').value;
+
+    const hasFilters = filterModule !== 'all' || filterAction !== 'all' || filterUser !== 'all';
+    $('#btnOpenFilterModal').classList.toggle('active-filter', hasFilters);
+
+    filterAndRenderTimeline();
+    closeFilterModal();
+    showToast('Filtros Aplicados', 'La bitácora se ha actualizado.');
+  });
+
+  // CONTROL DEL GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('audit-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // COLOR DE ACENTO GLOBAL
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+    localStorage.setItem('audit-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('audit-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('audit-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('audit-border-width') || '2px';
+  const savedAccent = localStorage.getItem('audit-accent-color') || '#3b82f6';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeDetailModal();
+      closeFilterModal();
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

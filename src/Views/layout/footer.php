@@ -4,7 +4,7 @@
 <footer class="text-center py-3 mt-auto" style="background: var(--glass); border-top: 1px solid var(--border);">
     <div class="container">
         <p style="font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin: 0;">
-            SGEN-Support &copy; <?= date('Y') ?>
+            Sgen-support &copy; <?= date('Y') ?>
         </p>
     </div>
 </footer>

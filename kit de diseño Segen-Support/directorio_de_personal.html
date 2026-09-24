@@ -1,0 +1,2704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Directorio de Personal — Talento Humano y Accesos</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #3b82f6; /* Color de acento de Talento Humano: Azul Eléctrico */
+    --orange-rgb: 59, 130, 246;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica */
+    --blue: #3b82f6;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .preview-card-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CABECERA DEL MÓDULO */
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #3b82f6;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .module-subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .btn-new-employee {
+    height: 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #3b82f6;
+    background: #3b82f6;
+    color: #ffffff;
+    padding: 0 18px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-new-employee:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  /* FILA DE 3 KPIS OPERATIVAS COMPACTAS (SIN UPPERCASE) */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .glass-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    position: relative;
+    overflow: hidden;
+    transition: border-width 0.2s ease, border-color 0.2s ease;
+  }
+
+  .kpi {
+    cursor: pointer;
+    min-height: 94px;
+  }
+
+  .kpi .card-pad {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* TEXTO DE KPI EN MINÚSCULAS NORMALES */
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 600 !important;
+    color: var(--text-muted);
+    text-transform: none !important;
+    margin-bottom: 4px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700 !important;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .kpi-icon-bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .kpi.total-emp .kpi-icon-bubble {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+  }
+
+  .kpi.active-users .kpi-icon-bubble {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: var(--stroke-w) solid rgba(16, 185, 129, 0.3);
+    border-radius: 14px;
+  }
+
+  .kpi.no-users .kpi-icon-bubble {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: var(--stroke-w) solid rgba(245, 158, 11, 0.3);
+    border-radius: 14px;
+  }
+
+  .kpi-icon-bubble svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .accent-bottom {
+    height: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    background: var(--orange);
+  }
+
+  .kpi:hover .accent-bottom {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* BARRA DE HERRAMIENTAS, FILTROS Y VISTAS */
+  .toolbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .switch-wrap {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .switch-input { display: none; }
+
+  .switch-rail {
+    width: 44px;
+    height: 24px;
+    background: var(--stroke);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .switch-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease;
+  }
+
+  .switch-input:checked + .switch-rail {
+    background: var(--orange);
+    border-color: var(--orange);
+  }
+
+  .switch-input:checked + .switch-rail .switch-dot {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 20px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .filter-pill:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+  }
+
+  .filter-pill.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+
+  body.light .filter-pill.active {
+    background: #191c21;
+    border-color: #191c21;
+    color: #ffffff;
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 280px;
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 14px 0 38px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--orange);
+  }
+
+  .view-mode-toggle-group {
+    display: inline-flex;
+    align-items: center;
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+
+  .view-mode-btn {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .view-mode-btn.active {
+    background: var(--stroke-subtle);
+    color: var(--orange);
+  }
+
+  .view-mode-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* CUADRÍCULA DE TARJETAS DE EMPLEADO (CARDS VIEW) */
+  .employee-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+  }
+
+  .employee-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    transition: border-color 0.2s ease;
+    position: relative;
+  }
+
+  .employee-card:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .card-top-identity {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card-user-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .emp-avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    font-weight: 700 !important;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+
+  .emp-avatar-circle.blue-tint { background: #3b82f6; }
+  .emp-avatar-circle.green-tint { background: #10b981; }
+  .emp-avatar-circle.purple-tint { background: #8b5cf6; }
+
+  .emp-identity-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .emp-name-text {
+    font-size: 14px;
+    font-weight: 700 !important;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .emp-position-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shield-status-indicator {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .shield-status-indicator svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .shield-verified {
+    color: #10b981;
+  }
+
+  .shield-unverified {
+    color: var(--stroke);
+  }
+
+  .card-body-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dept-badge-pill {
+    align-self: flex-start;
+    padding: 3px 10px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    font-size: 11px;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dept-badge-pill svg {
+    width: 13px;
+    height: 13px;
+    stroke: var(--text-muted);
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+  }
+
+  .meta-info-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .meta-info-line svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+  }
+
+  .card-bottom-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .access-status-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .access-pill {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700 !important;
+    display: inline-block;
+  }
+
+  .access-pill.inactive {
+    background: var(--stroke-subtle);
+    color: var(--text-muted);
+    border: 1px solid var(--stroke);
+  }
+
+  .access-pill.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+  }
+
+  .card-action-btns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-mini-action {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: var(--bg-sub);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .btn-mini-action:hover {
+    color: var(--text);
+    background: var(--stroke);
+  }
+
+  .btn-mini-action.edit:hover {
+    color: var(--orange);
+  }
+
+  .btn-mini-action.delete:hover {
+    color: var(--red);
+    background: rgba(239, 68, 68, 0.12);
+  }
+
+  .btn-mini-action svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* VISTA EN TABLA DE EMPLEADOS */
+  .employee-table-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+    display: none;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .custom-table th {
+    padding: 14px 18px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+  }
+
+  .custom-table td {
+    padding: 14px 18px;
+    font-size: 13px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .custom-table tr:hover td {
+    background: var(--stroke-subtle);
+  }
+
+  .badge-code {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--stroke-subtle);
+    border: 1px solid var(--stroke);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* =========================================================
+     VISTA 2: NUEVO EMPLEADO (FORMULARIO CON PREVIEW EN VIVO)
+     ========================================================= */
+  .employee-form-view {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .employee-form-view.active {
+    display: flex;
+  }
+
+  .form-grid-layout {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .form-card-panel {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .form-label-tag {
+    color: var(--orange);
+    font-size: 10px;
+    margin-left: 4px;
+  }
+
+  .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-with-icon svg {
+    position: absolute;
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px 0 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input.no-icon, .form-select.no-icon {
+    padding-left: 14px;
+  }
+
+  .form-input:focus, .form-select:focus {
+    border-color: var(--orange);
+  }
+
+  /* TARJETA CHECKBOX DE CORREO COMPARTIDO */
+  .checkbox-card-wrap {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    cursor: pointer;
+  }
+
+  .checkbox-card-wrap input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--orange);
+  }
+
+  .checkbox-copy-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .checkbox-title {
+    font-size: 13px;
+    font-weight: 700 !important;
+    color: var(--text);
+  }
+
+  .checkbox-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* PANEL LATERAL: VISTA PREVIA EN VIVO */
+  .preview-wrapper-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .preview-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .preview-card-box {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+
+  .preview-avatar-badge-wrap {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 16px;
+  }
+
+  .preview-avatar-main {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    font-weight: 700 !important;
+  }
+
+  .preview-avatar-badge-verified {
+    position: absolute;
+    right: 0;
+    bottom: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #10b981;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--bg-card);
+  }
+
+  .preview-name-display {
+    font-size: 16px;
+    font-weight: 700 !important;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .preview-email-display {
+    font-size: 13px;
+    color: #3b82f6;
+    margin: 4px 0 2px;
+    word-break: break-all;
+  }
+
+  .preview-job-tag {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .preview-details-subcard {
+    width: 100%;
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    font-size: 12px;
+  }
+
+  .preview-key-val-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .preview-key-label {
+    color: var(--text-muted);
+  }
+
+  .preview-val-text {
+    color: var(--text);
+    font-weight: 700 !important;
+  }
+
+  .preview-footer-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  /* ACCIONES Y BOTONES DE FORMULARIO */
+  .form-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .btn-submit-employee {
+    height: 42px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #3b82f6;
+    background: #3b82f6;
+    color: #ffffff;
+    padding: 0 24px;
+    font-size: 13px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+  }
+
+  .btn-submit-employee:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  .btn-secondary {
+    height: 42px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 20px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(520px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head, .appearance-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn-modal-danger {
+    background: var(--red);
+    border: var(--stroke-w) solid var(--red);
+    color: #ffffff;
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* TOAST NOTIFICACIÓN */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD TOTAL Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 1200px) {
+    .employee-cards-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 980px) {
+    .employee-cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .form-grid-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    /* KPIS EN 2 COLUMNAS ESTRICTAS EN MÓVIL */
+    .kpi-row {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px;
+    }
+
+    .employee-cards-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .form-row-2 {
+      grid-template-columns: 1fr !important;
+    }
+
+    .toolbar-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .toolbar-right {
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .search-box {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .kpi-row {
+      grid-template-columns: 1fr !important;
+    }
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO FLOTANTE -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de navegación">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item active" data-section="staff">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <span class="nav-label">Personal</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item" data-section="maintenance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <span class="nav-label">Mantenimientos</span>
+      </div>
+      <div class="nav-item" data-section="categories">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+        </div>
+        <span class="nav-label">Categorías</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#3b82f6" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      
+      <!-- ==============================================================
+           VISTA 1: DIRECTORIO DE PERSONAL (LISTADO EN TARJETAS / TABLA)
+           ============================================================== -->
+      <section class="module-wrapper" id="viewStaffDirectory">
+        
+        <!-- CABECERA DEL MÓDULO -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Directorio de Personal</h1>
+              <p class="module-subtitle">Gestiona el talento humano de la organización.</p>
+            </div>
+          </div>
+          <button class="btn-new-employee" id="btnOpenNewEmployee" type="button">
+            <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+            <span>+ Nuevo Empleado</span>
+          </button>
+        </div>
+
+        <!-- FILA DE 3 KPIS OPERATIVAS COMPACTAS (SIN UPPERCASE) -->
+        <div class="kpi-row">
+          <div class="glass-card kpi total-emp" data-kpi="all">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Total empleados</div>
+                <div class="kpi-value" id="kpiTotalEmp">34</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi active-users" data-kpi="active">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Usuarios activos</div>
+                <div class="kpi-value" id="kpiActiveUsers">2</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi no-users" data-kpi="inactive">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Sin usuario</div>
+                <div class="kpi-value" id="kpiNoUsers">32</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+        </div>
+
+        <!-- BARRA DE HERRAMIENTAS, FILTROS Y VISTAS -->
+        <div class="toolbar-card">
+          <div class="toolbar-left">
+            <label class="switch-wrap" title="Alternar modo de visualización">
+              <input type="checkbox" id="denseSwitch" class="switch-input" />
+              <div class="switch-rail"><div class="switch-dot"></div></div>
+            </label>
+            <div class="filter-pills" id="filterPillsGroup">
+              <button class="filter-pill active" data-dept="all" type="button">Todos</button>
+              <button class="filter-pill" data-dept="Dpto. de Contabilidad" type="button">Dpto. de Contabilidad</button>
+              <button class="filter-pill" data-dept="Dpto. de Informática" type="button">Dpto. de Informática</button>
+              <button class="filter-pill" data-dept="DPTO. De Seguridad" type="button">DPTO. De Seguridad</button>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" class="search-input" id="searchStaffInput" placeholder="Buscar empleado..." autocomplete="off" />
+            </div>
+
+            <div class="view-mode-toggle-group">
+              <button class="view-mode-btn" id="btnToggleTableView" type="button" title="Vista en lista">
+                <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              </button>
+              <button class="view-mode-btn active" id="btnToggleGridView" type="button" title="Vista en tarjetas">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTENEDOR EN TARJETAS (CARDS VIEW) -->
+        <div class="employee-cards-grid" id="staffCardsContainer">
+          <!-- Tarjetas renderizadas dinámicamente -->
+        </div>
+
+        <!-- CONTENEDOR EN TABLA (TABLE VIEW) -->
+        <div class="employee-table-card" id="staffTableContainer">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>EMPLEADO</th>
+                  <th>CARGO</th>
+                  <th>DEPARTAMENTO</th>
+                  <th>CORREO</th>
+                  <th>CÉDULA / ID</th>
+                  <th>ESTADO ACCESO</th>
+                  <th>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyStaff">
+                <!-- Rellenado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ESTADO VACÍO DE BÚSQUEDA -->
+        <div class="glass-card" id="emptyStaffState" style="padding:56px 20px;text-align:center;display:none;flex-direction:column;align-items:center;gap:12px;">
+          <div style="width:52px;height:52px;border-radius:50%;background:var(--stroke-subtle);border:var(--stroke-w) solid var(--stroke);display:grid;place-items:center;color:var(--text-muted);">
+            <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <div>
+            <strong style="font-size:14px;color:var(--text);display:block;">No se encontraron empleados</strong>
+            <span style="font-size:12px;color:var(--text-muted);">Prueba con otros términos de búsqueda o selecciona otro departamento.</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==============================================================
+           VISTA 2: NUEVO EMPLEADO (FORMULARIO CON LIVE PREVIEW EN VIVO)
+           ============================================================== -->
+      <section class="module-wrapper employee-form-view" id="viewNewEmployee">
+        
+        <!-- CABECERA DE LA VISTA DE REGISTRO -->
+        <div class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" style="background:#3b82f6;">
+              <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+            </div>
+            <div>
+              <h1 class="module-title" id="formViewTitle">Nuevo Empleado</h1>
+              <p class="module-subtitle">Registra el talento humano de tu organización.</p>
+            </div>
+          </div>
+          <button class="btn-secondary" id="btnBackToDirectory" type="button">
+            <span>←</span>
+            <span>Volver al Directorio</span>
+          </button>
+        </div>
+
+        <form id="formEmployeeRecord" class="form-grid-layout">
+          <input type="hidden" id="editEmployeeId" value="" />
+
+          <!-- COLUMNA IZQUIERDA: CAMPOS DEL FORMULARIO -->
+          <div class="form-card-panel">
+            
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="inputFirstName">Nombre</label>
+                <div class="input-with-icon">
+                  <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <input type="text" class="form-input" id="inputFirstName" placeholder="Ej. Ana" required autocomplete="off" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputLastName">Apellido</label>
+                <div class="input-with-icon">
+                  <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <input type="text" class="form-input" id="inputLastName" placeholder="Ej. García" required autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inputIdDoc">Documento de Identidad (Cédula)</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><line x1="7" y1="16" x2="10" y2="16"></line></svg>
+                <input type="text" class="form-input" id="inputIdDoc" placeholder="V-12.345.678" required autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inputJobTitle">Cargo o Puesto</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                <input type="text" class="form-input" id="inputJobTitle" placeholder="Ej. Gerente de Ventas" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inputEmail">Correo Electrónico</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <input type="email" class="form-input" id="inputEmail" placeholder="empleado@empresa.com" required autocomplete="off" />
+              </div>
+            </div>
+
+            <!-- CHECKBOX DE CORREO COMPARTIDO -->
+            <label class="checkbox-card-wrap">
+              <input type="checkbox" id="checkSharedEmail" />
+              <div class="checkbox-copy-block">
+                <span class="checkbox-title">Permitir correo compartido</span>
+                <span class="checkbox-desc">Habilita esta opción si múltiples empleados usarán esta misma dirección.</span>
+              </div>
+            </label>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="selectDepartment">Departamento</label>
+                <div class="input-with-icon">
+                  <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+                  <select class="form-select" id="selectDepartment" required>
+                    <option value="" disabled selected>-- Seleccionar --</option>
+                    <option value="Dpto. de Contabilidad">Dpto. de Contabilidad</option>
+                    <option value="Dpto. de Informática">Dpto. de Informática</option>
+                    <option value="DPTO. De Seguridad">DPTO. De Seguridad</option>
+                    <option value="Dpto. de Produccion">Dpto. de Produccion</option>
+                    <option value="Dpto. de Recursos Humanos">Dpto. de Recursos Humanos</option>
+                    <option value="DPTO. De Compras">DPTO. De Compras</option>
+                    <option value="Dpto. de Logistica">Dpto. de Logistica</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="selectUserAccount">
+                  <span>Cuenta de Usuario</span>
+                  <span class="form-label-tag">OPCIONAL</span>
+                </label>
+                <div class="input-with-icon">
+                  <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                  <select class="form-select" id="selectUserAccount">
+                    <option value="none" selected>-- No vincular --</option>
+                    <option value="@alexisd">Vincular a @alexisd (Activo)</option>
+                    <option value="@admin">Vincular a @admin</option>
+                    <option value="generate">Crear nuevo usuario del sistema...</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions-row">
+              <button class="btn-secondary" id="btnCancelFormAction" type="button">Cancelar</button>
+              <button class="btn-submit-employee" id="btnSubmitEmployee" type="submit">
+                <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                <span id="btnSubmitLabel">Registrar Empleado</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- COLUMNA DERECHA: TARJETA DE VISTA PREVIA EN VIVO -->
+          <div class="preview-wrapper-col">
+            <div class="preview-header-bar">
+              <span style="font-size:12px;color:var(--text-muted);">Registra el talento humano de tu organización.</span>
+              <span class="badge-code">VISTA PREVIA</span>
+            </div>
+
+            <div class="preview-card-box">
+              <div class="preview-avatar-badge-wrap">
+                <div class="preview-avatar-main" id="previewAvatar">
+                  <svg viewBox="0 0 24 24" style="width:36px;height:36px;stroke:currentColor;fill:none;stroke-width:1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <div class="preview-avatar-badge-verified" id="previewVerifiedBadge" style="display:none;">
+                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+              </div>
+
+              <h2 class="preview-name-display" id="previewFullName">Nombre Apellido</h2>
+              <div class="preview-email-display" id="previewEmail">correo@empresa.com</div>
+              <div class="preview-job-tag" id="previewJobTag">SIN CARGO</div>
+
+              <div class="preview-details-subcard">
+                <div class="preview-key-val-row">
+                  <span class="preview-key-label">ID:</span>
+                  <span class="preview-val-text" id="previewIdDoc">---</span>
+                </div>
+                <div class="preview-key-val-row">
+                  <span class="preview-key-label">Depto:</span>
+                  <span class="preview-val-text" id="previewDept">---</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-footer-note">
+              La vista previa se actualiza en tiempo real.
+            </div>
+          </div>
+
+        </form>
+
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: CONFIRMAR ELIMINACIÓN (SIN ALERT NI CONFIRM) -->
+<div class="modal-backdrop" id="modalDeleteStaff">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteStaffTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="deleteStaffTitle">Eliminar Registro de Personal</h3>
+      <button class="icon-close" id="closeDeleteModal" type="button">×</button>
+    </div>
+    <p style="margin:0 0 16px;font-size:14px;color:var(--text-muted);line-height:1.5;">
+      ¿Estás seguro de que deseas retirar del directorio a <strong id="deleteTargetStaffName" style="color:var(--text);">Abigail Chirinos</strong>?
+      Esta acción cancelará cualquier vinculación a tickets o inventario que tenga asociada.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelDeleteBtn" type="button">Cancelar</button>
+      <button class="btn-modal-danger" id="confirmDeleteBtn" type="button">Eliminar Empleado</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APARIENCIA Y ESTILO -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn-submit-employee" id="doneAppearance" style="height:36px;padding:0 16px;" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Directorio de Personal</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFIER
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // BASE DE DATOS DE EMPLEADOS (IDÉNTICA A LA CAPTURA)
+  let empleados = [
+    {
+      id: 'emp_01',
+      firstName: 'Abigail',
+      lastName: 'Chirinos',
+      fullName: 'Abigail Chirinos',
+      position: 'Sin cargo',
+      dept: 'Dpto. de Contabilidad',
+      email: 'A.CHIRINOS@GMAIL.COM',
+      idDoc: '20539484',
+      userAccount: null,
+      initials: 'AC',
+      tint: 'blue-tint'
+    },
+    {
+      id: 'emp_02',
+      firstName: 'Alejandro',
+      lastName: 'Medina',
+      fullName: 'Alejandro Medina',
+      position: 'Especialista en Informática',
+      dept: 'Dpto. de Informática',
+      email: 'informatica.produmil@gmail.com',
+      idDoc: '20256417',
+      userAccount: null,
+      initials: 'AM',
+      tint: 'blue-tint'
+    },
+    {
+      id: 'emp_03',
+      firstName: 'Alexis',
+      lastName: 'Datica',
+      fullName: 'Alexis Datica',
+      position: 'Sin cargo',
+      dept: 'Dpto. de Informática',
+      email: 'informatica.produmil1@gmail.com',
+      idDoc: '24711842',
+      userAccount: '@alexisd',
+      initials: 'AD',
+      tint: 'green-tint'
+    },
+    {
+      id: 'emp_04',
+      firstName: 'Ana',
+      lastName: 'Sanchez',
+      fullName: 'Ana Sanchez',
+      position: 'Sin cargo',
+      dept: 'DPTO. De Seguridad',
+      email: 'A.SANCHEZ@GMAIL.COM',
+      idDoc: '20241684',
+      userAccount: null,
+      initials: 'AS',
+      tint: 'blue-tint'
+    },
+    {
+      id: 'emp_05',
+      firstName: 'Angelo',
+      lastName: 'Silva',
+      fullName: 'Angelo Silva',
+      position: 'Sin cargo',
+      dept: 'DPTO. De Logistica y Suministros',
+      email: 'A.SILVA@gmail.com',
+      idDoc: '9606884',
+      userAccount: null,
+      initials: 'AS',
+      tint: 'purple-tint'
+    },
+    {
+      id: 'emp_06',
+      firstName: 'Carmen',
+      lastName: 'Perez',
+      fullName: 'Carmen Perez',
+      position: 'Sin cargo',
+      dept: 'Dpto. de Contabilidad',
+      email: 'c.perez@gmail.com',
+      idDoc: '10774408',
+      userAccount: null,
+      initials: 'CP',
+      tint: 'purple-tint'
+    },
+    {
+      id: 'emp_07',
+      firstName: 'Cesar',
+      lastName: 'Singer',
+      fullName: 'Cesar Singer',
+      position: 'Sin cargo',
+      dept: 'Dpto. de Produccion',
+      email: 'c.singer@gmail.com',
+      idDoc: '17319637',
+      userAccount: null,
+      initials: 'CS',
+      tint: 'purple-tint'
+    },
+    {
+      id: 'emp_08',
+      firstName: 'Dailiana',
+      lastName: 'Luna',
+      fullName: 'Dailiana Luna',
+      position: 'Sin cargo',
+      dept: 'Dpto. de Compras',
+      email: 'd.luna@gmail.com',
+      idDoc: '20670001',
+      userAccount: null,
+      initials: 'DL',
+      tint: 'green-tint'
+    }
+  ];
+
+  let currentDeptFilter = 'all';
+  let currentKpiFilter = 'all';
+  let searchQuery = '';
+  let activeViewMode = 'grid'; // 'grid' | 'table'
+  let pendingDeleteId = null;
+
+  // ACTUALIZACIÓN DE CONTADORES DE KPI
+  const updateKPIs = () => {
+    const total = 34; // Conteo institucional referencial
+    const active = empleados.filter(e => e.userAccount).length;
+    const inactive = total - active;
+
+    $('#kpiTotalEmp').textContent = total;
+    $('#kpiActiveUsers').textContent = active;
+    $('#kpiNoUsers').textContent = inactive;
+  };
+
+  // ICONO DE ESCUDO SVG VERIFICADO VS NO VERIFICADO
+  const getShieldIcon = userAccount => {
+    if (userAccount) {
+      return `
+        <div class="shield-status-indicator shield-verified" title="Usuario activo en el sistema">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <polyline points="9 12 11 14 15 10"></polyline>
+          </svg>
+        </div>`;
+    }
+    return `
+      <div class="shield-status-indicator shield-unverified" title="Sin cuenta de usuario activa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <polyline points="9 12 11 14 15 10" style="opacity:0.3;"></polyline>
+        </svg>
+      </div>`;
+  };
+
+  // RENDERIZADO PRINCIPAL DEL DIRECTORIO
+  const renderDirectory = () => {
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = empleados.filter(emp => {
+      // Filtro por departamento
+      if (currentDeptFilter !== 'all' && emp.dept !== currentDeptFilter) {
+        return false;
+      }
+      // Filtro por KPI
+      if (currentKpiFilter === 'active' && !emp.userAccount) return false;
+      if (currentKpiFilter === 'inactive' && emp.userAccount) return false;
+
+      // Filtro por búsqueda
+      if (q) {
+        const matchName = emp.fullName.toLowerCase().includes(q);
+        const matchDept = emp.dept.toLowerCase().includes(q);
+        const matchEmail = emp.email.toLowerCase().includes(q);
+        const matchDoc = emp.idDoc.toLowerCase().includes(q);
+        const matchPos = emp.position.toLowerCase().includes(q);
+        return matchName || matchDept || matchEmail || matchDoc || matchPos;
+      }
+      return true;
+    });
+
+    const cardsContainer = $('#staffCardsContainer');
+    const tableContainer = $('#staffTableContainer');
+    const emptyBox = $('#emptyStaffState');
+    const tbody = $('#tbodyStaff');
+
+    if (filtered.length === 0) {
+      cardsContainer.style.display = 'none';
+      tableContainer.style.display = 'none';
+      emptyBox.style.display = 'flex';
+      return;
+    }
+
+    emptyBox.style.display = 'none';
+
+    if (activeViewMode === 'grid') {
+      cardsContainer.style.display = 'grid';
+      tableContainer.style.display = 'none';
+      cardsContainer.innerHTML = filtered.map(emp => `
+        <article class="employee-card" data-id="${emp.id}">
+          <div>
+            <div class="card-top-identity">
+              <div class="card-user-row">
+                <div class="emp-avatar-circle ${emp.tint}">
+                  ${emp.initials}
+                </div>
+                <div class="emp-identity-info">
+                  <h3 class="emp-name-text">${emp.fullName}</h3>
+                  <span class="emp-position-sub">${emp.position}</span>
+                </div>
+              </div>
+              ${getShieldIcon(emp.userAccount)}
+            </div>
+
+            <div class="card-body-meta" style="margin-top:14px;">
+              <span class="dept-badge-pill" title="${emp.dept}">
+                <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+                <span>${emp.dept}</span>
+              </span>
+
+              <div class="meta-info-line" title="${emp.email}">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <span>${emp.email}</span>
+              </div>
+
+              <div class="meta-info-line">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><line x1="7" y1="16" x2="10" y2="16"></line></svg>
+                <span>${emp.idDoc}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-bottom-actions-row">
+            <div class="access-status-wrap">
+              <span>ACCESO</span>
+              <span class="access-pill ${emp.userAccount ? 'active' : 'inactive'}">
+                ${emp.userAccount ? emp.userAccount : 'Inactivo'}
+              </span>
+            </div>
+
+            <div class="card-action-btns">
+              <button class="btn-mini-action edit btn-edit-emp" data-id="${emp.id}" title="Editar ficha" type="button">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button class="btn-mini-action delete btn-delete-emp" data-id="${emp.id}" title="Eliminar registro" type="button">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    } else {
+      cardsContainer.style.display = 'none';
+      tableContainer.style.display = 'block';
+      tbody.innerHTML = filtered.map(emp => `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="emp-avatar-circle ${emp.tint}" style="width:32px;height:32px;font-size:11px;">
+                ${emp.initials}
+              </div>
+              <div>
+                <strong style="color:var(--text);display:block;">${emp.fullName}</strong>
+                <span style="font-size:11px;color:var(--text-muted);">${emp.id}</span>
+              </div>
+            </div>
+          </td>
+          <td>${emp.position}</td>
+          <td><span class="badge-code">${emp.dept}</span></td>
+          <td style="color:var(--text-muted);">${emp.email}</td>
+          <td>${emp.idDoc}</td>
+          <td>
+            <span class="access-pill ${emp.userAccount ? 'active' : 'inactive'}">
+              ${emp.userAccount ? emp.userAccount : 'Inactivo'}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-mini-action edit btn-edit-emp" data-id="${emp.id}" title="Editar" type="button">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button class="btn-mini-action delete btn-delete-emp" data-id="${emp.id}" title="Eliminar" type="button">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    attachCardActionEvents();
+  };
+
+  // EVENTOS DE LAS TARJETAS (EDITAR Y ELIMINAR)
+  const attachCardActionEvents = () => {
+    $$('.btn-edit-emp').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const emp = empleados.find(x => x.id === id);
+        if (!emp) return;
+
+        openFormView(emp);
+      });
+    });
+
+    $$('.btn-delete-emp').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const emp = empleados.find(x => x.id === id);
+        if (!emp) return;
+
+        pendingDeleteId = id;
+        $('#deleteTargetStaffName').textContent = emp.fullName;
+        $('#modalDeleteStaff').classList.add('show');
+      });
+    });
+  };
+
+  // CONTROL DE NAVEGACIÓN ENTRE VISTAS (DIRECTORIO ↔ FORMULARIO)
+  const showDirectoryView = () => {
+    $('#viewNewEmployee').classList.remove('active');
+    $('#viewStaffDirectory').style.display = 'flex';
+  };
+
+  const openFormView = (emp = null) => {
+    $('#viewStaffDirectory').style.display = 'none';
+    $('#viewNewEmployee').classList.add('active');
+
+    const form = $('#formEmployeeRecord');
+    form.reset();
+
+    if (emp) {
+      $('#formViewTitle').textContent = `Editar: ${emp.fullName}`;
+      $('#btnSubmitLabel').textContent = 'Guardar Cambios';
+      $('#editEmployeeId').value = emp.id;
+      $('#inputFirstName').value = emp.firstName;
+      $('#inputLastName').value = emp.lastName;
+      $('#inputIdDoc').value = emp.idDoc;
+      $('#inputJobTitle').value = emp.position === 'Sin cargo' ? '' : emp.position;
+      $('#inputEmail').value = emp.email;
+      $('#selectDepartment').value = emp.dept;
+      $('#selectUserAccount').value = emp.userAccount ? emp.userAccount : 'none';
+    } else {
+      $('#formViewTitle').textContent = 'Nuevo Empleado';
+      $('#btnSubmitLabel').textContent = 'Registrar Empleado';
+      $('#editEmployeeId').value = '';
+    }
+
+    updateLivePreview();
+  };
+
+  $('#btnOpenNewEmployee').addEventListener('click', () => openFormView(null));
+  $('#btnBackToDirectory').addEventListener('click', showDirectoryView);
+  $('#btnCancelFormAction').addEventListener('click', showDirectoryView);
+
+  // ACTUALIZACIÓN DE LA VISTA PREVIA EN VIVO EN TIEMPO REAL
+  const updateLivePreview = () => {
+    const first = $('#inputFirstName').value.trim() || 'Nombre';
+    const last = $('#inputLastName').value.trim() || 'Apellido';
+    const fullName = `${first} ${last}`;
+    const email = $('#inputEmail').value.trim() || 'correo@empresa.com';
+    const job = $('#inputJobTitle').value.trim() || 'SIN CARGO';
+    const doc = $('#inputIdDoc').value.trim() || '---';
+    const dept = $('#selectDepartment').value || '---';
+    const account = $('#selectUserAccount').value;
+
+    $('#previewFullName').textContent = fullName;
+    $('#previewEmail').textContent = email;
+    $('#previewJobTag').textContent = job.toUpperCase();
+    $('#previewIdDoc').textContent = doc;
+    $('#previewDept').textContent = dept;
+
+    // Iniciales en el avatar
+    const initials = (first.charAt(0) + last.charAt(0)).toUpperCase();
+    $('#previewAvatar').textContent = initials || 'NA';
+
+    // Badge verificado si tiene cuenta de usuario
+    const hasAccount = account !== 'none';
+    $('#previewVerifiedBadge').style.display = hasAccount ? 'grid' : 'none';
+  };
+
+  // ESCUCHADORES DE ENTRADA PARA LA VISTA PREVIA
+  ['#inputFirstName', '#inputLastName', '#inputEmail', '#inputJobTitle', '#inputIdDoc', '#selectDepartment', '#selectUserAccount'].forEach(sel => {
+    $(sel).addEventListener('input', updateLivePreview);
+    $(sel).addEventListener('change', updateLivePreview);
+  });
+
+  // GUARDAR EMPLEADO (CREAR O EDITAR)
+  $('#formEmployeeRecord').addEventListener('submit', e => {
+    e.preventDefault();
+    const editId = $('#editEmployeeId').value;
+    const firstName = $('#inputFirstName').value.trim();
+    const lastName = $('#inputLastName').value.trim();
+    const idDoc = $('#inputIdDoc').value.trim();
+    const position = $('#inputJobTitle').value.trim() || 'Sin cargo';
+    const email = $('#inputEmail').value.trim();
+    const dept = $('#selectDepartment').value;
+    const accountVal = $('#selectUserAccount').value;
+
+    if (!dept) {
+      showToast('Campo Requerido', 'Por favor selecciona un departamento.');
+      return;
+    }
+
+    const fullName = `${firstName} ${lastName}`;
+    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    const userAccount = accountVal === 'none' ? null : (accountVal === 'generate' ? `@${firstName.toLowerCase()}` : accountVal);
+    const tint = userAccount ? 'green-tint' : 'blue-tint';
+
+    if (editId) {
+      const idx = empleados.findIndex(x => x.id === editId);
+      if (idx !== -1) {
+        empleados[idx] = {
+          ...empleados[idx],
+          firstName,
+          lastName,
+          fullName,
+          position,
+          dept,
+          email,
+          idDoc,
+          userAccount,
+          initials,
+          tint
+        };
+        showToast('Empleado Actualizado', `Se guardaron los cambios para ${fullName}.`);
+      }
+    } else {
+      const newEmp = {
+        id: `emp_${Date.now()}`,
+        firstName,
+        lastName,
+        fullName,
+        position,
+        dept,
+        email,
+        idDoc,
+        userAccount,
+        initials,
+        tint
+      };
+      empleados.unshift(newEmp);
+      showToast('Nuevo Empleado', `${fullName} registrado exitosamente.`);
+    }
+
+    updateKPIs();
+    renderDirectory();
+    showDirectoryView();
+  });
+
+  // CONFIRMACIÓN DE ELIMINACIÓN
+  const modalDeleteStaff = $('#modalDeleteStaff');
+  const closeDeleteModal = () => {
+    modalDeleteStaff.classList.remove('show');
+    pendingDeleteId = null;
+  };
+
+  $('#closeDeleteModal').addEventListener('click', closeDeleteModal);
+  $('#cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+  $('#confirmDeleteBtn').addEventListener('click', () => {
+    if (pendingDeleteId) {
+      const item = empleados.find(x => x.id === pendingDeleteId);
+      empleados = empleados.filter(x => x.id !== pendingDeleteId);
+      updateKPIs();
+      renderDirectory();
+      showToast('Registro Eliminado', `${item ? item.fullName : 'El empleado'} fue retirado.`);
+    }
+    closeDeleteModal();
+  });
+
+  // FILTRADO POR PÍLDORAS
+  $$('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      $$('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      currentDeptFilter = pill.dataset.dept;
+      currentKpiFilter = 'all';
+      renderDirectory();
+      showToast('Filtro', `Departamento: ${pill.textContent}`);
+    });
+  });
+
+  // FILTRADO POR KPIS
+  $$('.kpi').forEach(kpi => {
+    kpi.addEventListener('click', () => {
+      currentKpiFilter = kpi.dataset.kpi;
+      currentDeptFilter = 'all';
+      $$('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.dept === 'all'));
+      renderDirectory();
+      showToast('Métrica', `Filtrando por: ${kpi.querySelector('.kpi-label').textContent}`);
+    });
+  });
+
+  // BÚSQUEDA EN TIEMPO REAL
+  $('#searchStaffInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderDirectory();
+  });
+
+  // TOGGLE VISTA CARDS / TABLA
+  $('#btnToggleGridView').addEventListener('click', () => {
+    activeViewMode = 'grid';
+    $('#btnToggleGridView').classList.add('active');
+    $('#btnToggleTableView').classList.remove('active');
+    renderDirectory();
+    showToast('Visualización', 'Modo cuadrícula de tarjetas activado.');
+  });
+
+  $('#btnToggleTableView').addEventListener('click', () => {
+    activeViewMode = 'table';
+    $('#btnToggleTableView').classList.add('active');
+    $('#btnToggleGridView').classList.remove('active');
+    renderDirectory();
+    showToast('Visualización', 'Modo tabla activado.');
+  });
+
+  // CONTROL DEL GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('staff-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes del módulo fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // COLOR DE ACENTO
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+    localStorage.setItem('staff-accent-color', hex);
+    if (notify) showToast('Color de acento', `Acento ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('staff-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('staff-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('staff-border-width') || '2px';
+  const savedAccent = localStorage.getItem('staff-accent-color') || '#3b82f6';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // INICIALIZACIÓN
+  updateKPIs();
+  renderDirectory();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      modalDeleteStaff.classList.remove('show');
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -15,6 +15,7 @@ use App\Controllers\BitacoraController;
 use App\Controllers\InventarioController;
 use App\Controllers\MantenimientosController;
 use App\Controllers\AboutController;
+use App\Controllers\PracticaController;
 
 // $router está disponible porque lo pasamos desde el Router::load()
 
@@ -52,6 +53,7 @@ $router->get('/soportes/eliminar_comentario/{id}', [SoportesController::class, '
 $router->post('/soportes/editar_comentario', [SoportesController::class, 'editar_comentario']);
 $router->post('/soportes/eliminar_comentarios_masivos', [SoportesController::class, 'eliminar_comentarios_masivos']);
 $router->get('/soportes/eliminar_archivo/{id}', [SoportesController::class, 'eliminar_archivo']);
+$router->get('/soportes/fix-data', [SoportesController::class, 'fix_encoding_data']);
 
 $router->post('/soportes/eliminar_tickets_masivos', [SoportesController::class, 'eliminar_tickets_masivos']);
 
@@ -169,3 +171,6 @@ $router->get('/mantenimientos/completar/{id}', [MantenimientosController::class,
 
 // Acerca de
 $router->get('/about', [AboutController::class, 'index']);
+
+// --- RUTA DE APRENDIZAJE ---
+$router->get('/practica', [PracticaController::class, 'index']);

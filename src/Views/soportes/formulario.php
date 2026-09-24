@@ -91,6 +91,7 @@ $estados = [
 
         <form action="<?= BASE_URL ?>soportes/guardar" method="POST" id="ticketForm">
             <input type="hidden" name="id" value="<?= htmlspecialchars($valor_id) ?>">
+            <input type="hidden" name="version_id" value="<?= htmlspecialchars($soporte->version_id ?? 1) ?>">
             <input type="hidden" id="equipo_id" name="equipo_id" value="<?= htmlspecialchars($valor_equipo_id) ?>" required>
             <input type="hidden" id="departamento_id" name="departamento_id" value="">
 

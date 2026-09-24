@@ -84,6 +84,7 @@ class EmpleadosController extends Controller {
         $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_SPECIAL_CHARS);
         $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_SPECIAL_CHARS);
         $cedula = filter_input(INPUT_POST, 'cedula', FILTER_SANITIZE_SPECIAL_CHARS);
+        $cargo = filter_input(INPUT_POST, 'cargo', FILTER_SANITIZE_SPECIAL_CHARS);
         $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
         $usuario_id = filter_input(INPUT_POST, 'usuario_id', FILTER_SANITIZE_NUMBER_INT);
         $departamento_id = filter_input(INPUT_POST, 'departamento_id', FILTER_SANITIZE_NUMBER_INT);
@@ -98,6 +99,7 @@ class EmpleadosController extends Controller {
             'nombre' => $nombre,
             'apellido' => $apellido,
             'cedula' => $cedula,
+            'cargo' => $cargo,
             'email' => $email,
             'usuario_id' => $usuario_id ?: null,
             'departamento_id' => $departamento_id ?: null

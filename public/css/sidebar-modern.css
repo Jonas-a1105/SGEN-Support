@@ -18,6 +18,9 @@
     /* Keep specific highlight color or map to something else */
     --ms-blue-600: var(--info);
     --ms-white: var(--bg-card);
+
+    /* Animation Speed */
+    --ms-transition-speed: 0.15s;
 }
 
 [data-theme="dark"] {
@@ -40,7 +43,7 @@
     border-radius: 1.5rem;
     z-index: 1040;
     /* Lowered from 1060 to sit behind bootstrap modals (1050) */
-    transition: all 0.1s ease;
+    transition: width var(--ms-transition-speed) ease-in-out, box-shadow var(--ms-transition-speed) ease-in-out;
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -91,7 +94,7 @@
     /* tracking-wider */
     margin-bottom: 0.5rem;
     padding: 0 0.75rem;
-    transition: opacity 0.1s;
+    transition: opacity var(--ms-transition-speed) ease-in-out;
     opacity: 0;
     white-space: nowrap;
     display: none;
@@ -112,13 +115,14 @@
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    /* Center by default */
+    justify-content: flex-start;
+    /* Center by default -> changed to flex-start + padding */
     height: 3rem;
-    padding: 0;
-    /* Remove padding by default */
+    padding-left: 1rem;
+    /* (5.5rem - 2rem)/2 - 0.75rem (parent padding) = 1rem */
+    /* Remove padding by default -> now using specific padding */
     border-radius: 0.5rem;
-    transition: all 0.1s;
+    transition: max-width var(--ms-transition-speed) ease-in-out, background-color var(--ms-transition-speed), color var(--ms-transition-speed);
     text-decoration: none;
     color: var(--ms-slate-500);
     overflow: hidden;
@@ -127,6 +131,11 @@
     cursor: pointer;
 }
 
+.ms-link:active {
+    transform: scale(0.98);
+}
+
+
 .ms-link:hover {
     background-color: var(--ms-slate-50);
     color: var(--ms-slate-800);
@@ -134,8 +143,12 @@
 
 .ms-sidebar:hover .ms-link {
     justify-content: flex-start;
-    padding: 0 0.75rem;
-    /* Restore padding on hover */
+    /* padding-left stays 1.75rem to keep icon static */
+}
+
+.ms-link:hover .ms-icon-box {
+    transform: scale(1.1);
+    color: var(--ms-slate-800);
 }
 
 .ms-link.active {
@@ -156,7 +169,7 @@
     /* w-8 */
     height: 2rem;
     /* h-8 */
-    transition: transform 0.1s;
+    transition: transform var(--ms-transition-speed) ease-in-out;
 }
 
 .ms-link.active .ms-icon-box {
@@ -164,23 +177,30 @@
     /* translate-x-1 */
 }
 
+.ms-link.active:hover .ms-icon-box {
+    transform: translateX(0.25rem) scale(1.1);
+}
+
 .ms-link-text {
     margin-left: 0;
     /* Remove margin by default */
-    width: 0;
+    max-width: 0;
     /* Ensure width is 0 */
     font-weight: 500;
     font-size: 0.875rem;
     white-space: nowrap;
-    transition: all 0.1s;
+    transition: max-width var(--ms-transition-speed) ease-in-out, opacity var(--ms-transition-speed) ease-in-out, transform var(--ms-transition-speed) ease-in-out, margin-left var(--ms-transition-speed) ease-in-out;
     transform-origin: left;
     opacity: 0;
-    transform: translateX(-2.5rem);
+    transform: translateX(-1rem);
+    display: inline-block;
+    vertical-align: middle;
+    overflow: hidden;
 }
 
 .ms-sidebar:hover .ms-link-text {
     opacity: 1;
-    width: auto;
+    max-width: 12rem;
     /* Restore width */
     margin-left: 0.75rem;
     /* Restore margin */
@@ -199,13 +219,15 @@
 .ms-user-btn {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0;
     /* Align fix: No gap when collapsed */
     width: 100%;
     padding: 0.5rem;
+    padding-left: 0.625rem;
+    /* (5.5 - 2.25)/2 - 1rem (parent padding) = 0.625rem */
     border-radius: 0.75rem;
-    transition: all 0.1s;
+    transition: all var(--ms-transition-speed) ease-in-out;
     border: none;
     background: transparent;
     cursor: pointer;
@@ -226,17 +248,20 @@
     height: 3.5rem;
     display: flex;
     align-items: center;
-    justify-content: center;
-    /* Center logo by default */
+    justify-content: flex-start;
+    /* Center logo by default -> changed to flex-start + padding */
     padding: 0;
+    padding-left: 1.875rem;
+    /* (5.5 - 1.75) / 2 = 1.875rem */
     border-bottom: 1px solid var(--ms-slate-50);
     flex-shrink: 0;
-    transition: all 0.1s;
+    transition: all var(--ms-transition-speed) ease-in-out;
 }
 
 .ms-sidebar:hover .ms-brand-area {
     justify-content: flex-start;
-    padding: 0 1.5rem;
+    justify-content: flex-start;
+    /* padding-left stays 1.875rem */
 }
 
 .ms-brand-group {
@@ -246,7 +271,7 @@
     /* Align fix: No gap when collapsed */
     text-decoration: none;
     overflow: hidden;
-    transition: gap 0.1s;
+    transition: gap var(--ms-transition-speed) ease-in-out;
 }
 
 .ms-sidebar:hover .ms-brand-group {
@@ -272,14 +297,16 @@
     color: var(--ms-slate-900);
     letter-spacing: -0.025em;
     white-space: nowrap;
-    width: 0;
+    max-width: 0;
     opacity: 0;
     transform: translateX(-10px);
-    transition: all 0.1s;
+    transition: max-width var(--ms-transition-speed) ease-in-out, opacity var(--ms-transition-speed) ease-in-out, transform var(--ms-transition-speed) ease-in-out;
+    overflow: hidden;
+    display: block;
 }
 
 .ms-sidebar:hover .ms-brand-text {
-    width: auto;
+    max-width: 12rem;
     opacity: 1;
     transform: translateX(0);
 }
@@ -302,13 +329,13 @@
     text-align: left;
     overflow: hidden;
     white-space: nowrap;
-    transition: all 0.1s;
-    width: 0;
+    transition: max-width var(--ms-transition-speed) ease-in-out, opacity var(--ms-transition-speed) ease-in-out;
+    max-width: 0;
     opacity: 0;
 }
 
 .ms-sidebar:hover .ms-user-info {
-    width: auto;
+    max-width: 10rem;
     opacity: 1;
 }
 
@@ -358,7 +385,7 @@
     color: var(--ms-slate-400);
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.1s;
+    transition: all var(--ms-transition-speed) ease-in-out;
 }
 
 .ms-search-trigger:hover {
@@ -375,14 +402,14 @@
 .ms-search-label {
     white-space: nowrap;
     opacity: 0;
-    width: 0;
+    max-width: 0;
     overflow: hidden;
-    transition: all 0.1s;
+    transition: max-width var(--ms-transition-speed) ease-in-out, opacity var(--ms-transition-speed) ease-in-out;
 }
 
 .ms-sidebar:hover .ms-search-label {
     opacity: 1;
-    width: auto;
+    max-width: 10rem;
 }
 
 .ms-search-kbd {
@@ -393,17 +420,20 @@
     border-radius: 0.25rem;
     font-size: 0.625rem;
     font-weight: 600;
-    color: var(--ms-slate-400);
     font-family: inherit;
     opacity: 0;
-    width: 0;
+    max-width: 0;
     overflow: hidden;
-    transition: all 0.1s;
+    padding: 0;
+    border: none;
+    transition: max-width var(--ms-transition-speed) ease-in-out, opacity var(--ms-transition-speed) ease-in-out, padding var(--ms-transition-speed) ease-in-out;
 }
 
 .ms-sidebar:hover .ms-search-kbd {
     opacity: 1;
-    width: auto;
+    max-width: 3rem;
+    padding: 0.125rem 0.375rem;
+    border: 1px solid var(--ms-slate-200);
 }
 
 /* Search Modal Overlay */

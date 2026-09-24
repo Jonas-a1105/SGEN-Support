@@ -1,0 +1,2819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Configuración del Sistema — Preferencias y Cuenta</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #4f46e5; /* Color de acento institucional */
+    --orange-rgb: 79, 70, 229;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica */
+    --blue: #2563eb;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title,
+  .config-section-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .group-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 40;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1240px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  /* BOTÓN DE NOTIFICACIONES CON POPOVER */
+  .btn-notification-trigger {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: var(--stroke-w) solid var(--stroke);
+    background: rgba(var(--orange-rgb), 0.12);
+    color: var(--orange);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .btn-notification-trigger:hover {
+    border-color: var(--orange);
+    transform: translateY(-1px);
+  }
+
+  .btn-notification-trigger svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .notification-bell-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 2px solid var(--bg);
+  }
+
+  /* POPOVER DE NOTIFICACIONES */
+  .notification-popover {
+    position: absolute;
+    top: 52px;
+    right: 0;
+    width: 330px;
+    background: var(--bg-card);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 20px;
+    padding: 16px 14px 12px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+  }
+
+  .notification-popover.show {
+    display: flex;
+  }
+
+  .notif-popover-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+  }
+
+  .notif-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 8px;
+  }
+
+  .notif-pill-btn {
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.16s ease;
+  }
+
+  .notif-pill-btn.active {
+    background: var(--bg-sub);
+    border-color: var(--stroke);
+    color: var(--text);
+  }
+
+  .notif-popover-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 290px;
+    overflow-y: auto;
+  }
+
+  .notif-popover-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid transparent;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease;
+  }
+
+  .notif-popover-item:hover {
+    background: var(--stroke-subtle);
+    border-color: var(--stroke-subtle);
+  }
+
+  .notif-check-bubble {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .notif-check-bubble svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+  }
+
+  .notif-popover-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .notif-popover-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 8px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .notif-link-history {
+    font-size: 12px;
+    color: var(--orange);
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 1.5px solid transparent;
+    transition: border-color 0.2s ease;
+  }
+
+  .notif-link-history:hover {
+    border-bottom-color: var(--orange);
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1240px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* PANEL PRINCIPAL DIVIDIDO DE CONFIGURACIÓN */
+  .config-layout-grid {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 640px;
+  }
+
+  /* COLUMNA IZQUIERDA DE CONFIGURACIÓN */
+  .config-sidebar-col {
+    border-right: var(--stroke-w) solid var(--stroke-subtle);
+    padding: 24px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--bg-card);
+  }
+
+  .config-header-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .config-gear-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(var(--orange-rgb), 0.15);
+    color: var(--orange);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .config-gear-badge svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .config-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .config-tab-btn {
+    height: 48px;
+    border-radius: 14px;
+    border: var(--stroke-w) solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+  }
+
+  .config-tab-btn:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .config-tab-btn.active {
+    border-color: var(--stroke);
+    background: var(--bg-sub);
+    color: var(--orange);
+  }
+
+  .config-tab-btn .tab-icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .config-tab-btn .tab-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .config-tab-copy {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .config-tab-copy strong {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .config-tab-btn.active .config-tab-copy strong {
+    color: var(--orange);
+  }
+
+  .config-tab-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .system-version-tag {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  /* COLUMNA DERECHA: VISTAS DE CONFIGURACIÓN */
+  .config-content-col {
+    padding: 28px 36px;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    overflow-y: auto;
+  }
+
+  .section-action-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+  }
+
+  .section-action-head-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .section-action-head-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-restore {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-restore:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn-save-primary {
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #0f172a;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+  }
+
+  .btn-save-primary:hover {
+    filter: brightness(1.2) !important;
+  }
+
+  /* PANELES DE CONTENIDO */
+  .config-tab-pane {
+    display: none;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .config-tab-pane.active {
+    display: flex;
+  }
+
+  /* ========================================================
+     VISTA 1: APARIENCIA
+     ======================================================== */
+  .theme-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 10px;
+  }
+
+  .theme-card-choice {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .theme-card-choice:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .theme-card-choice.selected {
+    border-color: var(--orange);
+  }
+
+  .theme-card-preview {
+    height: 100px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  .theme-card-preview.light-preview {
+    background: #f8fafc;
+  }
+
+  .theme-card-preview.dark-preview {
+    background: #0b0f19;
+  }
+
+  .theme-card-preview.auto-preview {
+    background: linear-gradient(135deg, #f8fafc 50%, #0b0f19 50%);
+  }
+
+  .preview-dummy-window {
+    width: 85%;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .light-preview .preview-dummy-window {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #f59e0b;
+  }
+
+  .dark-preview .preview-dummy-window {
+    background: #182234;
+    border: 1px solid #23354f;
+    color: #93c5fd;
+  }
+
+  .auto-preview .preview-dummy-window {
+    width: 44px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #0f172a;
+    color: #0f172a;
+  }
+
+  .theme-card-bottom {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+  }
+
+  .radio-bubble {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: var(--stroke-w) solid var(--stroke);
+    display: grid;
+    place-items: center;
+  }
+
+  .theme-card-choice.selected .radio-bubble {
+    border-color: var(--orange);
+    background: var(--orange);
+  }
+
+  .theme-card-choice.selected .radio-bubble::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ffffff;
+  }
+
+  /* COLOR DE ACENTO CIRCULAR */
+  .color-swatches-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .accent-swatch-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform 0.18s ease, outline 0.18s ease;
+    border: 2px solid transparent;
+  }
+
+  .accent-swatch-circle:hover {
+    transform: scale(1.1);
+  }
+
+  .accent-swatch-circle.selected {
+    outline: 3px solid var(--orange);
+    outline-offset: 3px;
+  }
+
+  .accent-swatch-circle svg {
+    width: 18px;
+    height: 18px;
+    stroke: #ffffff;
+    fill: none;
+    stroke-width: 3;
+    opacity: 0;
+  }
+
+  .accent-swatch-circle.selected svg {
+    opacity: 1;
+  }
+
+  /* DENSIDAD DE INFORMACIÓN */
+  .density-segmented-group {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 14px;
+    padding: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .density-segment-btn {
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .density-segment-btn.active {
+    background: var(--bg-card);
+    color: var(--text);
+  }
+
+  /* ========================================================
+     VISTA 2: GENERAL (REGIONALIZACIÓN Y SISTEMA)
+     ======================================================== */
+  .form-grid-2cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 12px;
+  }
+
+  .form-group-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-field-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  .input-select-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-select-wrap svg.field-icon {
+    position: absolute;
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .custom-select-input, .custom-text-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px 0 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .custom-select-input:focus, .custom-text-input:focus {
+    border-color: var(--orange);
+  }
+
+  /* TARJETA MODO MANTENIMIENTO */
+  .maintenance-switch-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 14px;
+  }
+
+  .cone-icon-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .cone-icon-badge svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .switch-rail-toggle {
+    width: 44px;
+    height: 24px;
+    background: var(--stroke);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .switch-rail-toggle .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease;
+  }
+
+  .switch-rail-toggle.checked {
+    background: #ef4444;
+    border-color: #ef4444;
+  }
+
+  .switch-rail-toggle.checked .dot {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  /* ========================================================
+     VISTA 3: NOTIFICACIONES
+     ======================================================== */
+  .subnav-tabs-line {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 2px;
+    margin-bottom: 16px;
+  }
+
+  .subnav-tab-item {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding-bottom: 10px;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .subnav-tab-item.active {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+  }
+
+  .notif-toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .notif-pills-filter-box {
+    display: inline-flex;
+    align-items: center;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 12px;
+    padding: 3px;
+    gap: 4px;
+  }
+
+  .filter-pill-tab {
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .filter-pill-tab.active {
+    background: var(--bg-card);
+    color: var(--text);
+  }
+
+  .notif-search-field {
+    position: relative;
+    width: 240px;
+  }
+
+  .notif-search-field svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .notif-search-input {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px 0 34px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+  }
+
+  .notif-inbox-stack {
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .notif-inbox-card {
+    padding: 16px 20px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.16s ease;
+    background: var(--bg-card);
+  }
+
+  .notif-inbox-card:last-child {
+    border-bottom: none;
+  }
+
+  .notif-inbox-card:hover {
+    background: var(--stroke-subtle);
+  }
+
+  .notif-inbox-card.unread {
+    border-left: 4px solid var(--orange) !important;
+  }
+
+  .notif-inbox-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .notif-bubble-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .notif-bubble-icon.red { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+  .notif-bubble-icon.blue { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+  .notif-bubble-icon.gray { background: var(--stroke-subtle); color: var(--text-muted); }
+  .notif-bubble-icon.green { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+
+  .notif-bubble-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .badge-category-mini {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--bg-sub);
+    border: 1px solid var(--stroke);
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    display: inline-block;
+    margin-top: 4px;
+  }
+
+  /* ========================================================
+     VISTA 4: SEGURIDAD
+     ======================================================== */
+  .security-layout-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 0.85fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .security-form-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .security-hero-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+
+  .security-shield-bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(var(--orange-rgb), 0.14);
+    color: var(--orange);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .security-shield-bubble svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .password-field-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .password-field-wrap svg.lock-icon {
+    position: absolute;
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .btn-toggle-eye {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+
+  .btn-toggle-eye svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .security-checklist-panel {
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .req-item-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .req-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+  }
+
+  .req-item-line.valid {
+    color: #10b981;
+  }
+
+  .req-item-line.valid .req-dot {
+    background: #10b981;
+  }
+
+  /* ========================================================
+     VISTA 5: MI CUENTA
+     ======================================================== */
+  .profile-hero-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 24px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    margin-bottom: 20px;
+  }
+
+  .profile-avatar-large-wrap {
+    position: relative;
+    width: 82px;
+    height: 82px;
+  }
+
+  .avatar-large-circle {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    color: #334155;
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    font-weight: 700 !important;
+  }
+
+  .camera-badge-btn {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--orange);
+    color: #ffffff;
+    border: 2px solid var(--bg-card);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .camera-badge-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .profile-badge-pill {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .profile-badge-pill.active {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+  }
+
+  .profile-badge-pill.membership {
+    background: var(--bg-sub);
+    border: 1px solid var(--stroke);
+    color: var(--text-muted);
+  }
+
+  .corporate-details-box {
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-sub);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 10px;
+  }
+
+  /* MODAL DE APARIENCIA */
+  .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 120;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .appearance-panel {
+    width: min(500px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* NOTIFICACIÓN TOAST */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 150;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .notification-popover,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD TOTAL Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 980px) {
+    .config-layout-grid {
+      grid-template-columns: 1fr;
+    }
+    .config-sidebar-col {
+      border-right: none;
+      border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    }
+    .security-layout-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    .theme-cards-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-grid-2cols {
+      grid-template-columns: 1fr;
+    }
+
+    .corporate-details-box {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+    .notification-popover {
+      width: 290px;
+      right: -20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO FLOTANTE -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de navegación">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">UA</div>
+      <div class="profile-copy">
+        <b>Usuario Admin</b>
+        <span>IT Manager • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item" data-section="staff">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <span class="nav-label">Personal</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item active" data-section="settings">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Configuración</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización rápida">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes UI</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#4f46e5" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+
+          <!-- BOTÓN CAMPANA DE NOTIFICACIONES CON POPOVER -->
+          <button class="btn-notification-trigger" id="btnNotificationTrigger" type="button" title="Notificaciones del sistema" aria-expanded="false">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-bell-badge"></span>
+          </button>
+
+          <!-- POPOVER DE NOTIFICACIONES (CAPTURADO DE LA IMAGEN) -->
+          <div class="notification-popover" id="notificationPopover" role="dialog" aria-label="Notificaciones">
+            <div class="notif-popover-head">
+              <h4 style="margin:0;font-size:15px;color:var(--text);">Notificaciones</h4>
+              <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:13px;">
+                <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+              </div>
+            </div>
+
+            <div class="notif-pills-row">
+              <button class="notif-pill-btn active" data-filter="all" type="button">Todas</button>
+              <button class="notif-pill-btn" data-filter="unread" type="button">No leídas</button>
+              <button class="notif-pill-btn" data-filter="alerts" type="button">Alertas</button>
+            </div>
+
+            <div class="notif-popover-list">
+              <div class="notif-popover-item">
+                <div class="notif-check-bubble">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="notif-popover-copy">
+                  <strong style="font-size:12px;color:var(--text);">Actualización de Ticket</strong>
+                  <span style="font-size:11px;color:var(--text-muted);">Tu ticket #96 ha sido resuelto.</span>
+                </div>
+                <span style="font-size:10px;color:var(--text-dim);white-space:nowrap;">Hace 9 min</span>
+              </div>
+
+              <div class="notif-popover-item">
+                <div class="notif-check-bubble">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="notif-popover-copy">
+                  <strong style="font-size:12px;color:var(--text);">Actualización de Ticket</strong>
+                  <span style="font-size:11px;color:var(--text-muted);">Tu ticket #95 ha sido resuelto.</span>
+                </div>
+                <span style="font-size:10px;color:var(--text-dim);white-space:nowrap;">Hace 9 min</span>
+              </div>
+
+              <div class="notif-popover-item">
+                <div class="notif-check-bubble">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="notif-popover-copy">
+                  <strong style="font-size:12px;color:var(--text);">Actualización de Ticket</strong>
+                  <span style="font-size:11px;color:var(--text-muted);">Tu ticket #94 ha sido resuelto.</span>
+                </div>
+                <span style="font-size:10px;color:var(--text-dim);white-space:nowrap;">Hace 9 min</span>
+              </div>
+
+              <div class="notif-popover-item">
+                <div class="notif-check-bubble">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="notif-popover-copy">
+                  <strong style="font-size:12px;color:var(--text);">Actualización de Ticket</strong>
+                  <span style="font-size:11px;color:var(--text-muted);">Tu ticket #93 ha sido resuelto.</span>
+                </div>
+                <span style="font-size:10px;color:var(--text-dim);white-space:nowrap;">Hace 9 min</span>
+              </div>
+
+              <div class="notif-popover-item">
+                <div class="notif-check-bubble">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="notif-popover-copy">
+                  <strong style="font-size:12px;color:var(--text);">Actualización de Ticket</strong>
+                  <span style="font-size:11px;color:var(--text-muted);">Tu ticket #92 ha sido resuelto.</span>
+                </div>
+                <span style="font-size:10px;color:var(--text-dim);white-space:nowrap;">Hace 9 min</span>
+              </div>
+            </div>
+
+            <div class="notif-popover-footer">
+              <a href="javascript:void(0)" class="notif-link-history" id="linkFullHistoryNotif">
+                <span>Ver historial completo</span>
+                <span>›</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="module-wrapper">
+        
+        <div class="config-layout-grid">
+          
+          <!-- COLUMNA IZQUIERDA: MENÚ DE CONFIGURACIÓN -->
+          <div class="config-sidebar-col">
+            <div>
+              <div class="config-header-box">
+                <div class="config-gear-badge" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+                </div>
+                <div>
+                  <h2 class="module-title" style="font-size:16px !important;">Configuración</h2>
+                  <span style="font-size:11px;color:var(--text-muted);">Gestiona tus preferencias globales.</span>
+                </div>
+              </div>
+
+              <div class="config-nav-list" role="tablist">
+                <button class="config-tab-btn" data-target="tabGeneral" type="button" role="tab">
+                  <div class="tab-icon">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                  </div>
+                  <div class="config-tab-copy">
+                    <strong>General</strong>
+                    <span>Idioma y región</span>
+                  </div>
+                </button>
+
+                <button class="config-tab-btn active" data-target="tabApariencia" type="button" role="tab">
+                  <div class="tab-icon">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"></path></svg>
+                  </div>
+                  <div class="config-tab-copy">
+                    <strong>Apariencia</strong>
+                    <span>Temas y colores</span>
+                  </div>
+                </button>
+
+                <button class="config-tab-btn" data-target="tabNotificaciones" type="button" role="tab">
+                  <div class="tab-icon">
+                    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  </div>
+                  <div class="config-tab-copy">
+                    <strong>Notificaciones</strong>
+                    <span>Alertas y correos</span>
+                  </div>
+                </button>
+
+                <button class="config-tab-btn" data-target="tabSeguridad" type="button" role="tab">
+                  <div class="tab-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  </div>
+                  <div class="config-tab-copy">
+                    <strong>Seguridad</strong>
+                    <span>Contraseña y acceso</span>
+                  </div>
+                </button>
+
+                <button class="config-tab-btn" data-target="tabMiCuenta" type="button" role="tab">
+                  <div class="tab-icon">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </div>
+                  <div class="config-tab-copy">
+                    <strong>Mi Cuenta</strong>
+                    <span>Perfil y datos</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="system-version-tag">
+              Versión del Sistema v2.4.0
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: PANELES DE CONTENIDO -->
+          <div class="config-content-col">
+            
+            <!-- ENCABEZADO SUPERIOR DERECHO COMÚN CON BOTONES RESTAURAR Y GUARDAR -->
+            <div class="section-action-head">
+              <div class="section-action-head-left">
+                <h1 class="config-section-title" id="paneHeaderTitle">Apariencia</h1>
+                <span style="font-size:13px;color:var(--text-muted);" id="paneHeaderSubtitle">Personaliza cómo se ve y se siente la aplicación.</span>
+              </div>
+              <div class="section-action-head-buttons">
+                <button class="btn-restore" id="btnRestoreDefaults" type="button">
+                  <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                  <span>Restaurar</span>
+                </button>
+                <button class="btn-save-primary" id="btnSaveConfig" type="button">
+                  <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:3;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Guardar</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ==============================================
+                 PANEL 1: APARIENCIA (ACTIVO POR DEFECTO)
+                 ============================================== -->
+            <div class="config-tab-pane active" id="tabApariencia">
+              
+              <!-- TEMA DEL INTERFAZ -->
+              <div>
+                <span class="form-field-label" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                  <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                  <span>TEMA DEL INTERFAZ</span>
+                </span>
+
+                <div class="theme-cards-grid">
+                  <!-- MODO CLARO -->
+                  <div class="theme-card-choice" data-theme-choice="light">
+                    <div class="theme-card-preview light-preview">
+                      <div class="preview-dummy-window">
+                        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line></svg>
+                      </div>
+                    </div>
+                    <div class="theme-card-bottom">
+                      <strong style="font-size:13px;">Modo Claro</strong>
+                      <div class="radio-bubble"></div>
+                    </div>
+                  </div>
+
+                  <!-- MODO OSCURO (SELECCIONADO POR DEFECTO) -->
+                  <div class="theme-card-choice selected" data-theme-choice="dark">
+                    <div class="theme-card-preview dark-preview">
+                      <div class="preview-dummy-window">
+                        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                      </div>
+                    </div>
+                    <div class="theme-card-bottom">
+                      <strong style="font-size:13px;">Modo Oscuro</strong>
+                      <div class="radio-bubble"></div>
+                    </div>
+                  </div>
+
+                  <!-- MODO AUTOMÁTICO -->
+                  <div class="theme-card-choice" data-theme-choice="auto">
+                    <div class="theme-card-preview auto-preview">
+                      <div class="preview-dummy-window">
+                        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                      </div>
+                    </div>
+                    <div class="theme-card-bottom">
+                      <strong style="font-size:13px;">Automático</strong>
+                      <div class="radio-bubble"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- COLOR DE ACENTO -->
+              <div>
+                <span class="form-field-label" style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                  <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+                  <span>COLOR DE ACENTO</span>
+                </span>
+                <span style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:10px;">Elige el color principal para botones, enlaces y estados activos.</span>
+
+                <div class="color-swatches-row">
+                  <div class="accent-swatch-circle selected" data-color="#4f46e5" style="background:#4f46e5;" title="Índigo">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <div class="accent-swatch-circle" data-color="#2563eb" style="background:#2563eb;" title="Azul">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <div class="accent-swatch-circle" data-color="#10b981" style="background:#10b981;" title="Esmeralda">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <div class="accent-swatch-circle" data-color="#f43f5e" style="background:#f43f5e;" title="Rosa / Carmín">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <div class="accent-swatch-circle" data-color="#f59e0b" style="background:#f59e0b;" title="Ámbar">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <div class="accent-swatch-circle" data-color="#475569" style="background:#475569;" title="Pizarra">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DENSIDAD DE INFORMACIÓN -->
+              <div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                  <span class="form-field-label">DENSIDAD DE INFORMACIÓN</span>
+                  <span style="font-size:10px;padding:2px 8px;border-radius:6px;background:var(--stroke-subtle);color:var(--text-dim);">Próximamente</span>
+                </div>
+
+                <div class="density-segmented-group">
+                  <button class="density-segment-btn" data-density="compact" type="button">Compacta</button>
+                  <button class="density-segment-btn active" data-density="comfortable" type="button">Confortable</button>
+                  <button class="density-segment-btn" data-density="spacious" type="button">Amplia</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ==============================================
+                 PANEL 2: GENERAL (IDIOMA Y REGIÓN)
+                 ============================================== -->
+            <div class="config-tab-pane" id="tabGeneral">
+              
+              <!-- REGIONALIZACIÓN -->
+              <div>
+                <h3 class="group-title" style="margin-bottom:2px;">Configuración General</h3>
+                <span style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:14px;">Define los parámetros globales del sistema y preferencias regionales.</span>
+
+                <span class="form-field-label" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                  <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                  <span>REGIONALIZACIÓN</span>
+                </span>
+
+                <div class="form-grid-2cols">
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="selectSystemLanguage">IDIOMA DEL SISTEMA</label>
+                    <div class="input-select-wrap">
+                      <svg class="field-icon" viewBox="0 0 24 24"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"></path></svg>
+                      <select class="custom-select-input" id="selectSystemLanguage">
+                        <option value="es-LA" selected>Español (Latinoamérica)</option>
+                        <option value="es-ES">Español (España)</option>
+                        <option value="en-US">English (United States)</option>
+                        <option value="pt-BR">Português (Brasil)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="selectSystemTimezone">ZONA HORARIA</label>
+                    <div class="input-select-wrap">
+                      <svg class="field-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      <select class="custom-select-input" id="selectSystemTimezone">
+                        <option value="America/Caracas" selected>America/Caracas (GMT-4)</option>
+                        <option value="America/Bogota">America/Bogota (GMT-5)</option>
+                        <option value="America/Mexico_City">America/Mexico_City (GMT-6)</option>
+                        <option value="America/Argentina/Buenos_Aires">America/Buenos_Aires (GMT-3)</option>
+                        <option value="Europe/Madrid">Europe/Madrid (GMT+1)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SISTEMA -->
+              <div style="border-top:var(--stroke-w) solid var(--stroke-subtle);padding-top:20px;">
+                <span class="form-field-label" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                  <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>
+                  <span>SISTEMA</span>
+                </span>
+
+                <div class="form-grid-2cols">
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="selectRecordsPerPage">REGISTROS POR PÁGINA</label>
+                    <div class="input-select-wrap">
+                      <svg class="field-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                      <select class="custom-select-input" id="selectRecordsPerPage">
+                        <option value="10">10 registros</option>
+                        <option value="25" selected>25 registros</option>
+                        <option value="50">50 registros</option>
+                        <option value="100">100 registros</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="inputSessionTimeout">TIEMPO DE SESIÓN (MINUTOS)</label>
+                    <div class="input-select-wrap">
+                      <svg class="field-icon" viewBox="0 0 24 24"><path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
+                      <input type="number" class="custom-text-input" id="inputSessionTimeout" value="120" min="15" max="720" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- MODO MANTENIMIENTO CONMUTABLE -->
+                <div class="maintenance-switch-card">
+                  <div style="display:flex;align-items:center;gap:14px;">
+                    <div class="cone-icon-badge">
+                      <svg viewBox="0 0 24 24"><polygon points="12 2 2 22 22 22"></polygon><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    </div>
+                    <div>
+                      <strong style="font-size:14px;color:var(--text);display:block;">Modo Mantenimiento</strong>
+                      <span style="font-size:12px;color:var(--text-muted);">Impide el acceso a usuarios no administradores.</span>
+                    </div>
+                  </div>
+
+                  <div class="switch-rail-toggle" id="toggleMaintenanceMode" role="switch" aria-checked="false">
+                    <div class="dot"></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ==============================================
+                 PANEL 3: NOTIFICACIONES
+                 ============================================== -->
+            <div class="config-tab-pane" id="tabNotificaciones">
+              
+              <div class="subnav-tabs-line">
+                <div class="subnav-tab-item active" id="subtabInbox">
+                  <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  <span>Bandeja de Entrada</span>
+                </div>
+                <div class="subnav-tab-item" id="subtabChannels">
+                  <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+                  <span>Configuración y Canales</span>
+                </div>
+              </div>
+
+              <!-- BARRA DE FILTROS Y BÚSQUEDA DE NOTIFICACIONES -->
+              <div class="notif-toolbar-row">
+                <div class="notif-pills-filter-box">
+                  <button class="filter-pill-tab active" data-notif-filter="all" type="button">Todas</button>
+                  <button class="filter-pill-tab" data-notif-filter="unread" type="button">No Leídas</button>
+                  <button class="filter-pill-tab" data-notif-filter="alerts" type="button">Solo Alertas</button>
+                </div>
+
+                <div class="notif-search-field">
+                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <input type="text" class="notif-search-input" id="searchInboxInput" placeholder="Buscar..." autocomplete="off" />
+                </div>
+              </div>
+
+              <!-- LISTADO DE BANDEJA DE ENTRADA -->
+              <div class="notif-inbox-stack" id="notifInboxStack">
+                <!-- NOTIFICACIÓN 1 (CRÍTICA/UNREAD) -->
+                <div class="notif-inbox-card unread" data-type="alerts" data-title="Stock Crítico Detectado">
+                  <div class="notif-inbox-left">
+                    <div class="notif-bubble-icon red">
+                      <svg viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    </div>
+                    <div>
+                      <strong style="font-size:13px;color:var(--text);display:block;">Stock Crítico Detectado</strong>
+                      <span style="font-size:12px;color:var(--text-muted);display:block;margin-top:2px;">El artículo "Mousepack" ha alcanzado 0 unidades en Almacén Central.</span>
+                      <span class="badge-category-mini">Inventario</span>
+                    </div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-dim);white-space:nowrap;">Hace 10 min</span>
+                </div>
+
+                <!-- NOTIFICACIÓN 2 (TICKET) -->
+                <div class="notif-inbox-card unread" data-type="tickets" data-title="Nuevo Ticket Asignado">
+                  <div class="notif-inbox-left">
+                    <div class="notif-bubble-icon blue">
+                      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div>
+                      <strong style="font-size:13px;color:var(--text);display:block;">Nuevo Ticket Asignado</strong>
+                      <span style="font-size:12px;color:var(--text-muted);display:block;margin-top:2px;">Has sido asignado al ticket #455: "Fallo de Impresora RRHH".</span>
+                      <span class="badge-category-mini">Soporte</span>
+                    </div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-dim);white-space:nowrap;">Hace 45 min</span>
+                </div>
+
+                <!-- NOTIFICACIÓN 3 (SISTEMA) -->
+                <div class="notif-inbox-card" data-type="system" data-title="Backup Completado">
+                  <div class="notif-inbox-left">
+                    <div class="notif-bubble-icon gray">
+                      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </div>
+                    <div>
+                      <strong style="font-size:13px;color:var(--text);display:block;">Backup Completado</strong>
+                      <span style="font-size:12px;color:var(--text-muted);display:block;margin-top:2px;">La copia de seguridad semanal del sistema finalizó con éxito.</span>
+                      <span class="badge-category-mini">Sistema</span>
+                    </div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-dim);white-space:nowrap;">Ayer, 02:00 AM</span>
+                </div>
+
+                <!-- NOTIFICACIÓN 4 (MANTENIMIENTO VENCIDO) -->
+                <div class="notif-inbox-card" data-type="alerts" data-title="Mantenimiento Vencido">
+                  <div class="notif-inbox-left">
+                    <div class="notif-bubble-icon red">
+                      <svg viewBox="0 0 24 24"><polygon points="12 2 2 22 22 22"></polygon><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    </div>
+                    <div>
+                      <strong style="font-size:13px;color:var(--text);display:block;">Mantenimiento Vencido</strong>
+                      <span style="font-size:12px;color:var(--text-muted);display:block;margin-top:2px;">El mantenimiento preventivo del Servidor Dell está retrasado 2 días.</span>
+                      <span class="badge-category-mini">Mantenimiento</span>
+                    </div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-dim);white-space:nowrap;">Ayer, 09:30 AM</span>
+                </div>
+
+                <!-- NOTIFICACIÓN 5 (SOLICITUD APROBADA) -->
+                <div class="notif-inbox-card" data-type="requests" data-title="Solicitud Aprobada">
+                  <div class="notif-inbox-left">
+                    <div class="notif-bubble-icon green">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <div>
+                      <strong style="font-size:13px;color:var(--text);display:block;">Solicitud Aprobada</strong>
+                      <span style="font-size:12px;color:var(--text-muted);display:block;margin-top:2px;">Tu solicitud de compra de periféricos #REQ-099 ha sido aprobada.</span>
+                      <span class="badge-category-mini">Compras</span>
+                    </div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-dim);white-space:nowrap;">2 días atrás</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ==============================================
+                 PANEL 4: SEGURIDAD
+                 ============================================== -->
+            <div class="config-tab-pane" id="tabSeguridad">
+              
+              <div class="security-layout-grid">
+                
+                <!-- COLUMNA IZQUIERDA: FORMULARIO DE CONTRASEÑA -->
+                <div class="security-form-panel">
+                  
+                  <div class="security-hero-banner">
+                    <div class="security-shield-bubble">
+                      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                    <div>
+                      <h3 class="group-title" style="margin-bottom:2px;">Seguridad de la Cuenta</h3>
+                      <span style="font-size:12px;color:var(--text-muted);">Actualiza tu contraseña periódicamente para mantener tu cuenta segura.</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="inputCurrentPassword">CONTRASEÑA ACTUAL</label>
+                    <div class="password-field-wrap">
+                      <svg class="lock-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      <input type="password" class="custom-text-input" id="inputCurrentPassword" placeholder="••••••••••••" style="padding-right:40px;" />
+                      <button class="btn-toggle-eye" data-target="inputCurrentPassword" type="button" aria-label="Mostrar contraseña">
+                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      </button>
+                    </div>
+                    <a href="javascript:void(0)" class="notif-link-history" id="linkForgotPassword" style="align-self:flex-end;margin-top:4px;">
+                      ¿Olvidaste tu contraseña?
+                    </a>
+                  </div>
+
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="inputNewPassword">NUEVA CONTRASEÑA</label>
+                    <div class="password-field-wrap">
+                      <svg class="lock-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      <input type="password" class="custom-text-input" id="inputNewPassword" placeholder="Nueva contraseña segura" style="padding-right:40px;" />
+                      <button class="btn-toggle-eye" data-target="inputNewPassword" type="button" aria-label="Mostrar contraseña">
+                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="inputConfirmPassword">CONFIRMAR CONTRASEÑA</label>
+                    <div class="password-field-wrap">
+                      <svg class="lock-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      <input type="password" class="custom-text-input" id="inputConfirmPassword" placeholder="Repite la nueva contraseña" style="padding-right:40px;" />
+                    </div>
+                  </div>
+
+                  <button class="btn-restore" id="btnUpdatePassword" style="width:100%;justify-content:center;height:42px;background:var(--stroke-subtle);margin-top:6px;" type="button">
+                    <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Actualizar Contraseña</span>
+                  </button>
+
+                </div>
+
+                <!-- COLUMNA DERECHA: REQUISITOS DE SEGURIDAD -->
+                <div class="security-checklist-panel">
+                  <div style="display:flex;align-items:center;gap:8px;color:var(--text);">
+                    <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--orange);fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <strong style="font-size:13px;">Requisitos de seguridad</strong>
+                  </div>
+
+                  <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+                    <div class="req-item-line" id="reqLength">
+                      <span class="req-dot"></span>
+                      <span>Mínimo 8 caracteres</span>
+                    </div>
+                    <div class="req-item-line" id="reqNumber">
+                      <span class="req-dot"></span>
+                      <span>Al menos un número (0-9)</span>
+                    </div>
+                    <div class="req-item-line" id="reqSpecial">
+                      <span class="req-dot"></span>
+                      <span>Un carácter especial (!@#$)</span>
+                    </div>
+                    <div class="req-item-line" id="reqMatch">
+                      <span class="req-dot"></span>
+                      <span>Las contraseñas coinciden</span>
+                    </div>
+                  </div>
+
+                  <div style="border-top:var(--stroke-w) solid var(--stroke-subtle);padding-top:12px;margin-top:6px;">
+                    <strong style="font-size:11px;color:var(--text);display:block;margin-bottom:3px;">Nota de Seguridad:</strong>
+                    <p style="font-size:11px;color:var(--text-muted);margin:0;line-height:1.4;">
+                      Al cambiar tu contraseña, tu sesión se mantendrá activa en este dispositivo, pero podrías ser desconectado de otros.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- ==============================================
+                 PANEL 5: MI CUENTA (PERFIL Y DETALLES)
+                 ============================================== -->
+            <div class="config-tab-pane" id="tabMiCuenta">
+              
+              <!-- HERO DEL PERFIL -->
+              <div class="profile-hero-card">
+                <div class="profile-avatar-large-wrap">
+                  <div class="avatar-large-circle" id="profileInitialsBadge">UA</div>
+                  <button class="camera-badge-btn" id="btnUploadProfilePic" type="button" title="Cambiar avatar">
+                    <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  </button>
+                </div>
+                <div>
+                  <h3 class="module-title" style="margin-bottom:4px;" id="profileDisplayName">Usuario Administrador</h3>
+                  <span style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:10px;">IT Manager • Nivel 1</span>
+                  
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span class="profile-badge-pill active">
+                      <span style="width:6px;height:6px;border-radius:50%;background:#10b981;"></span>
+                      Activo
+                    </span>
+                    <span class="profile-badge-pill membership">
+                      <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                      <span>Miembro desde 2023</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- INFORMACIÓN PERSONAL -->
+              <div>
+                <span class="form-field-label" style="display:block;margin-bottom:12px;">INFORMACIÓN PERSONAL</span>
+
+                <div class="form-grid-2cols">
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="inputFullName">NOMBRE COMPLETO</label>
+                    <input type="text" class="custom-text-input" id="inputFullName" value="Jonas Mendoza" style="padding-left:14px;" />
+                  </div>
+
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="inputJobTitle">CARGO / TÍTULO</label>
+                    <div class="input-select-wrap">
+                      <svg class="field-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                      <input type="text" class="custom-text-input" id="inputJobTitle" value="IT Manager" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-grid-2cols" style="margin-top:14px;">
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="inputEmailAddress">CORREO ELECTRÓNICO</label>
+                    <div class="input-select-wrap">
+                      <svg class="field-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                      <input type="email" class="custom-text-input" id="inputEmailAddress" value="admin@sgen.com" />
+                    </div>
+                  </div>
+
+                  <div class="form-group-block">
+                    <label class="form-field-label" for="inputPhoneNumber">TELÉFONO</label>
+                    <div class="input-select-wrap">
+                      <svg class="field-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                      <input type="text" class="custom-text-input" id="inputPhoneNumber" value="+58 (412) 555-0199" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group-block" style="margin-top:14px;">
+                  <label class="form-field-label" for="inputBioNotes">BIO / NOTAS</label>
+                  <textarea id="inputBioNotes" class="custom-text-input" style="height:80px;padding:10px 14px;resize:none;">Administrador principal del sistema SGEN. Encargado de la supervisión de infraestructura y soporte técnico.</textarea>
+                </div>
+              </div>
+
+              <!-- DETALLES CORPORATIVOS -->
+              <div style="border-top:var(--stroke-w) solid var(--stroke-subtle);padding-top:20px;">
+                <span class="form-field-label" style="display:block;margin-bottom:6px;">DETALLES CORPORATIVOS</span>
+
+                <div class="corporate-details-box">
+                  <div>
+                    <span class="form-field-label" style="display:block;margin-bottom:4px;">ID DE EMPLEADO</span>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);">
+                      <span style="color:var(--text-muted);">#</span>
+                      <strong>SGEN-001</strong>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span class="form-field-label" style="display:block;margin-bottom:4px;">DEPARTAMENTO</span>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);">
+                      <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-muted);fill:none;stroke-width:2;"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
+                      <strong>Tecnología e Informática</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: APARIENCIA RÁPIDA -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:var(--stroke-w) solid var(--stroke-subtle);padding-bottom:14px;margin-bottom:18px;">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle" style="margin:0;font-size:16px;">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-field-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-field-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn-save-primary" id="doneAppearance" style="height:36px;padding:0 16px;" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Configuración</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFICADOR
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // NAVEGACIÓN ENTRE PANELES DE CONFIGURACIÓN
+  const tabTitles = {
+    tabGeneral: { title: 'General', subtitle: 'Configuración de idioma y región.' },
+    tabApariencia: { title: 'Apariencia', subtitle: 'Personaliza cómo se ve y se siente la aplicación.' },
+    tabNotificaciones: { title: 'Notificaciones', subtitle: 'Configura alertas y notificaciones del sistema.' },
+    tabSeguridad: { title: 'Seguridad', subtitle: 'Gestiona contraseña y opciones de acceso.' },
+    tabMiCuenta: { title: 'Mi Cuenta', subtitle: 'Administra tu perfil y datos personales.' }
+  };
+
+  const switchConfigTab = targetId => {
+    $$('.config-tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.target === targetId);
+    });
+
+    $$('.config-tab-pane').forEach(pane => {
+      pane.classList.toggle('active', pane.id === targetId);
+    });
+
+    const info = tabTitles[targetId] || tabTitles.tabApariencia;
+    $('#paneHeaderTitle').textContent = info.title;
+    $('#paneHeaderSubtitle').textContent = info.subtitle;
+
+    showToast('Configuración', `Sección ${info.title} cargada.`);
+  };
+
+  $$('.config-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchConfigTab(btn.dataset.target);
+    });
+  });
+
+  // POPOVER DE NOTIFICACIONES EN TOPBAR
+  const notifTrigger = $('#btnNotificationTrigger');
+  const notifPopover = $('#notificationPopover');
+
+  const toggleNotifPopover = () => {
+    const isShown = notifPopover.classList.toggle('show');
+    notifTrigger.setAttribute('aria-expanded', isShown);
+  };
+
+  notifTrigger.addEventListener('click', e => {
+    e.stopPropagation();
+    toggleNotifPopover();
+  });
+
+  document.addEventListener('click', e => {
+    if (!notifPopover.contains(e.target) && e.target !== notifTrigger) {
+      notifPopover.classList.remove('show');
+      notifTrigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  $('#linkFullHistoryNotif').addEventListener('click', () => {
+    notifPopover.classList.remove('show');
+    switchConfigTab('tabNotificaciones');
+  });
+
+  // FILTRADO DE NOTIFICACIONES EN POPOVER
+  $$('.notif-pill-btn').forEach(pill => {
+    pill.addEventListener('click', () => {
+      $$('.notif-pill-btn').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      showToast('Filtro de Notificaciones', `Mostrando: ${pill.textContent}`);
+    });
+  });
+
+  // GESTIÓN DE TEMAS (CLARO / OSCURO / AUTOMÁTICO)
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+
+    $$('.theme-card-choice').forEach(card => {
+      card.classList.toggle('selected', card.dataset.themeChoice === theme);
+    });
+
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('config-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $$('.theme-card-choice').forEach(card => {
+    card.addEventListener('click', () => {
+      const mode = card.dataset.themeChoice;
+      if (mode === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light', true);
+        $$('.theme-card-choice').forEach(c => c.classList.toggle('selected', c.dataset.themeChoice === 'auto'));
+      } else {
+        setTheme(mode, true);
+      }
+    });
+  });
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // COLOR DE ACENTO
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+
+    $$('.accent-swatch-circle').forEach(sw => {
+      sw.classList.toggle('selected', sw.dataset.color.toLowerCase() === hex.toLowerCase());
+    });
+
+    localStorage.setItem('config-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  $$('.accent-swatch-circle').forEach(sw => {
+    sw.addEventListener('click', () => setAccent(sw.dataset.color, true));
+  });
+
+  // GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('config-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // MODO MANTENIMIENTO CONMUTABLE
+  const toggleMaint = $('#toggleMaintenanceMode');
+  toggleMaint.addEventListener('click', () => {
+    const isChecked = toggleMaint.classList.toggle('checked');
+    toggleMaint.setAttribute('aria-checked', isChecked);
+    showToast('Modo Mantenimiento', isChecked ? 'Activado: Solo administradores pueden ingresar.' : 'Desactivado: Acceso normal.');
+  });
+
+  // DENSIDAD DE INFORMACIÓN
+  $$('.density-segment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.density-segment-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showToast('Densidad', `Previsualización de densidad ${btn.textContent} aplicada.`);
+    });
+  });
+
+  // VALIDACIÓN DE CONTRASEÑA EN TIEMPO REAL
+  const newPass = $('#inputNewPassword');
+  const confirmPass = $('#inputConfirmPassword');
+
+  const checkPasswordRules = () => {
+    const p = newPass.value;
+    const cp = confirmPass.value;
+
+    const hasLen = p.length >= 8;
+    const hasNum = /\d/.test(p);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(p);
+    const doesMatch = p.length > 0 && p === cp;
+
+    $('#reqLength').classList.toggle('valid', hasLen);
+    $('#reqNumber').classList.toggle('valid', hasNum);
+    $('#reqSpecial').classList.toggle('valid', hasSpecial);
+    $('#reqMatch').classList.toggle('valid', doesMatch);
+  };
+
+  newPass.addEventListener('input', checkPasswordRules);
+  confirmPass.addEventListener('input', checkPasswordRules);
+
+  $$('.btn-toggle-eye').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = $(`#${btn.dataset.target}`);
+      if (target) {
+        const isPass = target.type === 'password';
+        target.type = isPass ? 'text' : 'password';
+        btn.style.color = isPass ? 'var(--orange)' : 'var(--text-muted)';
+      }
+    });
+  });
+
+  $('#btnUpdatePassword').addEventListener('click', () => {
+    const p = newPass.value;
+    const cp = confirmPass.value;
+    if (p.length >= 8 && p === cp) {
+      showToast('Seguridad', 'Contraseña actualizada exitosamente.');
+      newPass.value = '';
+      confirmPass.value = '';
+      $('#inputCurrentPassword').value = '';
+      checkPasswordRules();
+    } else {
+      showToast('Error de Validación', 'Verifica que cumplas con todos los requisitos.');
+    }
+  });
+
+  // GUARDAR Y RESTAURAR CONFIGURACIÓN
+  $('#btnSaveConfig').addEventListener('click', () => {
+    const name = $('#inputFullName').value.trim();
+    if (name) {
+      $('#profileDisplayName').textContent = name;
+      const parts = name.split(' ').filter(Boolean);
+      const init = (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+      $('#profileInitialsBadge').textContent = init;
+    }
+    showToast('Configuración Guardada', 'Todos los cambios fueron actualizados.');
+  });
+
+  $('#btnRestoreDefaults').addEventListener('click', () => {
+    setTheme('dark', false);
+    setAccent('#4f46e5', false);
+    setBorderWidth('2px', false);
+    $('#selectSystemLanguage').value = 'es-LA';
+    $('#selectSystemTimezone').value = 'America/Caracas';
+    $('#selectRecordsPerPage').value = '25';
+    $('#inputSessionTimeout').value = '120';
+    toggleMaint.classList.remove('checked');
+    showToast('Valores Restablecidos', 'Se restauraron los parámetros predeterminados.');
+  });
+
+  // MODAL APARIENCIA RÁPIDA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('config-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('config-border-width') || '2px';
+  const savedAccent = localStorage.getItem('config-accent-color') || '#4f46e5';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      notifPopover.classList.remove('show');
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

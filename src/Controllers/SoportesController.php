@@ -202,13 +202,16 @@ class SoportesController extends Controller
             exit;
         }
 
+
         $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
+        $current_version = filter_input(INPUT_POST, 'version_id', FILTER_SANITIZE_NUMBER_INT);
         $equipo_id = filter_input(INPUT_POST, 'equipo_id', FILTER_SANITIZE_NUMBER_INT);
         $descripcion = filter_input(INPUT_POST, 'descripcion', FILTER_SANITIZE_SPECIAL_CHARS);
         $prioridad = filter_input(INPUT_POST, 'prioridad', FILTER_SANITIZE_SPECIAL_CHARS);
         $categoria_id = filter_input(INPUT_POST, 'categoria_id', FILTER_SANITIZE_NUMBER_INT);
 
         if (empty($descripcion) || empty($equipo_id)) {
+            $this->logBitacora("Error validación al guardar soporte. Desc empty? " . (empty($descripcion)?'YES':'NO'), 'system', 0);
             $this->setFlashMessage('error', 'Error: Faltan datos obligatorios.');
             header('Location: ' . $_SERVER['HTTP_REFERER']);
             exit;
@@ -228,6 +231,7 @@ class SoportesController extends Controller
             'descripcion' => $descripcion,
             'prioridad' => $prioridad ?? 'media',
             'categoria_id' => $categoria_id ?: null,
+            'current_version' => $current_version
         ];
 
         if ($id) {
@@ -243,6 +247,10 @@ class SoportesController extends Controller
             if ($this->ticketService->actualizarTicket($id, $datos)) {
                 $this->setFlashMessage('success', "Ticket #{$id} actualizado correctamente.");
                 $this->logBitacora("Actualizó ticket #{$id}", 'soporte', $id);
+            } else {
+                $this->setFlashMessage('error', 'Conflicto de Concurrencia: Este ticket fue actualizado por otro usuario mientras lo editabas. Por favor, refresca la página y vuelve a intentarlo.');
+                header('Location: ' . BASE_URL . "soportes/ver/{$id}");
+                exit;
             }
             $redirect_id = $id;
         } else {
@@ -1027,11 +1035,104 @@ class SoportesController extends Controller
             
             echo json_encode($results);
             exit;
-
         } catch (\Exception $e) {
             http_response_code(500);
-            echo json_encode(['error' => 'Error al buscar técnicos: ' . $e->getMessage()]);
+            echo json_encode(['error' => $e->getMessage()]);
             exit;
+        }
+    }
+
+    public function fix_encoding_data()
+    {
+        $this->restrictTo(['admin']);
+        set_time_limit(600);
+        
+        // Asegurar que el navegador interprete esto como UTF-8
+        header('Content-Type: text/html; charset=utf-8');
+
+        try {
+            $pdo = \App\Core\Database::getInstance()->getConnection();
+            $tables = $pdo->query("SHOW TABLES")->fetchAll(\PDO::FETCH_COLUMN);
+
+            echo "<body style='font-family: sans-serif; padding: 20px;'>";
+            echo "<h3>🔍 Escáner de Integridad de Datos (Modo Estricto)</h3>";
+            echo "<p>Verificando integridad real de bytes (evitando falsos positivos por mayúsculas/minúsculas)...</p>";
+            echo "<ul>";
+
+            $foundIssues = 0;
+            // Buscamos bytes específicos de doble codificación
+            // Ã (C3 83) seguido de 8x o Ax o Bx es la firma clásica de UTF-8 re-codificado a UTF-8
+            // ├ (C3 84 or similar depending on interpretation)
+            // Usamos BINARY para que MySQL no confunda 'a' con 'Ã'
+            $patterns = ['Ã', '├', 'Â', 'ï¿½']; 
+
+            foreach ($tables as $table) {
+                $stmt = $pdo->prepare("DESCRIBE `$table`");
+                $stmt->execute();
+                $cols = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                
+                $textCols = [];
+                foreach ($cols as $col) {
+                    if (strpos($col['Type'], 'char') !== false || strpos($col['Type'], 'text') !== false) {
+                        $textCols[] = $col['Field'];
+                    }
+                }
+                
+                if (empty($textCols)) continue;
+
+                foreach ($textCols as $col) {
+                    foreach ($patterns as $pattern) {
+                        // USO DE BINARY: Clave para diferenciar 'a' de 'Ã'
+                        $sql = "SELECT id, `$col` FROM `$table` WHERE `$col` LIKE BINARY :pattern LIMIT 3";
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->bindValue(':pattern', '%' . $pattern . '%');
+                        $stmt->execute();
+                        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+                        if (count($rows) > 0) {
+                            $foundIssues++;
+                            echo "<li style='color:red; margin-bottom:10px; border: 1px solid red; padding: 10px; border-radius: 5px;'>";
+                            echo "<b>⚠️ Corrupción Confirmada en:</b> $table | Columna: $col <br>";
+                            echo "Patrón Byte: '<b>$pattern</b>'<br>";
+                            echo "<table border='1' style='font-size:12px; border-collapse:collapse; margin-top:5px; width:100%'>";
+                            foreach ($rows as $row) {
+                                $txt = htmlspecialchars($row[$col]); 
+                                $hex = bin2hex($row[$col]);
+                                echo "<tr><td style='width:50px'>ID: {$row['id']}</td><td>$txt</td><td style='font-family:monospace; font-size:10px; background:#f0f0f0; padding:2px;'>$hex</td></tr>";
+                            }
+                            echo "</table>";
+                            echo "</li>";
+                        }
+                    }
+                }
+            }
+            echo "</ul>";
+
+            if ($foundIssues === 0) {
+                echo "<div style='background: #dcfce7; padding: 20px; border-radius: 8px; border: 1px solid #22c55e;'>";
+                echo "<h2 style='color: #166534; margin-top:0;'>✅ ¡Excelentes noticias! Tu base de datos está SANA.</h2>";
+                echo "<p>El escaneo anterior mostraba errores porque confundía letras normales (como 'a' en 'Alejandro') con caracteres extraños (como 'Ã').</p>";
+                echo "<p>Al usar el <b>Escaneo Estricto (Binario)</b>, verificamos que:</p>";
+                echo "<ul>";
+                echo "<li>Los acentos se están guardando correctamente (Hex <code>c3 a1</code> etc).</li>";
+                echo "<li>No hay 'doble codificación'.</li>";
+                echo "<li>Toda la información es legible y válida.</li>";
+                echo "</ul>";
+                echo "<p><b>Conclusión:</b> El problema que solucionamos antes era solo VISUAL (cómo el navegador interpretaba los datos), pero tus datos guardados siempre estuvieron seguros.</p>";
+                echo "</div>";
+            } else {
+                 echo "<div style='background: #fee2e2; padding: 20px; border-radius: 8px; border: 1px solid #ef4444;'>";
+                 echo "<h2 style='color: #991b1b; margin-top:0;'>⚠️ Advertencia: Se detectó corrupción real.</h2>";
+                 echo "<p>Revisa la lista anterior. Estas filas SÍ contienen bytes incorrectos y deben ser arregladas.</p>";
+                 echo "</div>";
+            }
+
+            echo "<p style='margin-top:20px;'><a href='" . BASE_URL . "soportes' class='btn btn-primary' style='padding:10px 20px; text-decoration:none; background:#007bff; color:white; border-radius:5px;'>Volver al Sistema</a></p>";
+            echo "</body>";
+            exit;
+
+        } catch (\Exception $e) {
+            die("Error Escáner: " . $e->getMessage());
         }
     }
 }

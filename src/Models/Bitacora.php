@@ -21,11 +21,14 @@ class Bitacora extends Model
      */
     public function createLog(int $usuario_id, string $username, string $accion, ?string $enlace_tipo = null, ?int $enlace_id = null)
     {
-        $sql = "INSERT INTO {$this->table} (usuario_id, username, accion, enlace_tipo, enlace_id) 
-                VALUES (?, ?, ?, ?, ?)";
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $machine = gethostbyaddr($ip) ?? 'Unknown';
+
+        $sql = "INSERT INTO {$this->table} (usuario_id, username, ip_address, machine_name, accion, enlace_tipo, enlace_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$usuario_id, $username, $accion, $enlace_tipo, $enlace_id]);
+        return $stmt->execute([$usuario_id, $username, $ip, $machine, $accion, $enlace_tipo, $enlace_id]);
     }
 
     /**

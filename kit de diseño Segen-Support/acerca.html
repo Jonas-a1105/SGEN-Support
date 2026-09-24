@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>SGEN-Support — Acceso & Acerca del Sistema</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #2563eb; /* Azul SGEN Corporativo */
+    --orange-rgb: 37, 99, 235;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica */
+    --blue: #2563eb;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --cyan: #06b6d4;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+    /* Matriz de puntos de fondo */
+    --dot-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title,
+  .auth-title,
+  .about-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 40;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1240px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .btn-logout-trigger {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-logout-trigger:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+  }
+
+  .btn-logout-trigger svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1240px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ========================================================
+     VISTA 1: INICIO DE SESIÓN (LOGIN SCREEN)
+     ======================================================== */
+  .auth-view-container {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background-color: var(--bg);
+    background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .auth-view-container.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .auth-card {
+    width: min(440px, 100%);
+    background: var(--bg-card);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    position: relative;
+  }
+
+  .auth-brand-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .logo-rhombus-icon {
+    width: 32px;
+    height: 32px;
+    background: #0f172a;
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+  }
+
+  .logo-rhombus-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+  }
+
+  .auth-brand-name {
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .auth-greeting-block {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .auth-title {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    color: var(--text);
+  }
+
+  .auth-kicker-sub {
+    font-size: 11px;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .auth-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .auth-field-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  .auth-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .auth-input-wrapper svg.field-icon {
+    position: absolute;
+    left: 14px;
+    width: 17px;
+    height: 17px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .auth-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 42px 0 42px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .auth-input:focus {
+    border-color: var(--orange);
+  }
+
+  .auth-btn-eye {
+    position: absolute;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+
+  .auth-btn-eye svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .btn-auth-enter {
+    height: 44px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--orange);
+    background: var(--orange);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn-auth-enter:hover {
+    filter: brightness(1.12) !important;
+    transform: translateY(-1px);
+  }
+
+  .auth-divider-line {
+    height: 1px;
+    background: var(--stroke-subtle);
+    margin: 4px 0 2px;
+  }
+
+  .auth-footer-tag {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  /* ========================================================
+     VISTA 2: ACERCA DEL SISTEMA (SYSTEM INFO DASHBOARD)
+     ======================================================== */
+  .about-layout-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 20px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 600px;
+  }
+
+  /* COLUMNA IZQUIERDA: NAVEGACIÓN Y CRÉDITOS */
+  .about-sidebar-col {
+    border-right: var(--stroke-w) solid var(--stroke-subtle);
+    padding: 24px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--bg-card);
+  }
+
+  .about-brand-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .about-logo-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #0f172a;
+    border: var(--stroke-w) solid var(--stroke);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .about-logo-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .about-brand-copy b {
+    font-size: 14px;
+    color: var(--text);
+    display: block;
+  }
+
+  .about-brand-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .about-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .about-nav-tab {
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: all 0.18s ease;
+  }
+
+  .about-nav-tab:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .about-nav-tab.active {
+    background: var(--bg-sub);
+    border-color: var(--stroke);
+    color: var(--orange);
+  }
+
+  .about-nav-tab svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+  }
+
+  .about-footer-col {
+    padding-top: 16px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .license-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .license-link svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* COLUMNA DERECHA: CONTENIDO DE INFORMACIÓN */
+  .about-main-col {
+    padding: 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+  }
+
+  .about-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .about-description {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 820px;
+  }
+
+  /* CUADRÍCULA DE 4 TARJETAS TÉCNICAS */
+  .tech-specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tech-spec-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: border-color 0.2s ease;
+  }
+
+  .tech-spec-card:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .tech-spec-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .tech-spec-icon-box.backend {
+    background: rgba(99, 102, 241, 0.12);
+    color: #6366f1;
+  }
+
+  .tech-spec-icon-box.frontend {
+    background: rgba(6, 182, 212, 0.12);
+    color: #06b6d4;
+  }
+
+  .tech-spec-icon-box.database {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+  }
+
+  .tech-spec-icon-box.architecture {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+  }
+
+  .tech-spec-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .tech-spec-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .tech-spec-kicker {
+    font-size: 10px;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  .tech-spec-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .tech-spec-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* TARJETA ANCHA DE ESTADO GENERAL */
+  .system-health-banner {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: border-color 0.2s ease;
+  }
+
+  .system-health-banner:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .health-pulse-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .health-pulse-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+  }
+
+  .health-copy-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .health-kicker {
+    font-size: 10px;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  .health-status-value {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #10b981;
+    margin: 0;
+  }
+
+  /* PANELES DE OTRAS SUBPESTAÑAS DE INFORMACIÓN */
+  .about-subpane-view {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .about-subpane-view.active {
+    display: flex;
+  }
+
+  /* ========================================================
+     VISTA 3: MODAL DE FINALIZAR SESIÓN (LOGOUT CONFIRMATION)
+     ======================================================== */
+  .logout-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: grid;
+    place-items: center;
+    z-index: 120;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .logout-modal-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .logout-modal-box {
+    width: min(400px, calc(100vw - 32px));
+    background: var(--bg-card);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 24px;
+    padding: 28px 24px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    gap: 14px;
+  }
+
+  .btn-close-modal-icon {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .logout-hero-bubble {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: var(--stroke-w) solid var(--stroke);
+    display: grid;
+    place-items: center;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .logout-hero-bubble svg.main-exit-icon {
+    width: 26px;
+    height: 26px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+    transform: translateX(2px);
+  }
+
+  .shield-badge-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--bg-card);
+    display: grid;
+    place-items: center;
+    color: #10b981;
+  }
+
+  .shield-badge-dot svg {
+    width: 14px;
+    height: 14px;
+    stroke: #10b981;
+    fill: none;
+    stroke-width: 2.5;
+  }
+
+  .logout-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .logout-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 300px;
+  }
+
+  .logout-actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .btn-confirm-logout-solid {
+    height: 44px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid #0f172a;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+    width: 100%;
+  }
+
+  .btn-confirm-logout-solid:hover {
+    filter: brightness(1.2) !important;
+    transform: translateY(-1px);
+  }
+
+  .btn-cancel-logout-outline {
+    height: 44px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+
+  .btn-cancel-logout-outline:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  /* MODAL DE APARIENCIA */
+  .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 130;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .appearance-panel {
+    width: min(500px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* NOTIFICACIÓN TOAST */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 150;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+    --dot-color: rgba(0, 0, 0, 0.08);
+  }
+
+  body.light .topbar,
+  body.light .auth-card,
+  body.light .about-layout-card,
+  body.light .logout-modal-box,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  body.light .logo-rhombus-icon,
+  body.light .about-logo-box {
+    background: #0f172a;
+    color: #ffffff;
+  }
+
+  body.light .btn-confirm-logout-solid {
+    background: #0f172a;
+    color: #ffffff;
+  }
+
+  /* RESPONSIVIDAD TOTAL Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 980px) {
+    .about-layout-card {
+      grid-template-columns: 1fr;
+    }
+    .about-sidebar-col {
+      border-right: none;
+      border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    }
+    .tech-specs-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    .auth-card {
+      padding: 28px 20px 22px;
+    }
+
+    .about-main-col {
+      padding: 20px 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO FLOTANTE -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de navegación">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item active" data-section="about">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        </div>
+        <span class="nav-label">Acerca de</span>
+      </div>
+      <div class="nav-item" data-section="settings">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10"></path></svg>
+        </div>
+        <span class="nav-label">Apariencia</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#2563eb" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+            <button class="btn-logout-trigger" id="btnOpenLogoutDialog" type="button" title="Finalizar sesión">
+              <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      
+      <!-- ==============================================================
+           VISTA 2: ACERCA DEL SISTEMA (DASHBOARD COMPLETO)
+           ============================================================== -->
+      <section class="module-wrapper">
+        <div class="about-layout-card">
+          
+          <!-- COLUMNA IZQUIERDA: MENÚ DE NAVEGACIÓN Y METADATOS -->
+          <div class="about-sidebar-col">
+            <div>
+              <div class="about-brand-wrap">
+                <div class="about-logo-box" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <div class="about-brand-copy">
+                  <b>SGEN-Support</b>
+                  <span>v1.0.28 (Stable)</span>
+                </div>
+              </div>
+
+              <div class="about-nav-list" role="tablist">
+                <button class="about-nav-tab active" data-tab="tabOverview" type="button">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  <span>Visión General</span>
+                </button>
+
+                <button class="about-nav-tab" data-tab="tabModules" type="button">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                  <span>Módulos</span>
+                </button>
+
+                <button class="about-nav-tab" data-tab="tabTechnical" type="button">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                  <span>Info. Técnica</span>
+                </button>
+
+                <button class="about-nav-tab" data-tab="tabVersions" type="button">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span>Versiones</span>
+                </button>
+
+                <button class="about-nav-tab" data-tab="tabCredits" type="button">
+                  <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  <span>Créditos</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="about-footer-col">
+              <a href="javascript:void(0)" class="license-link" id="linkLicense">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Licencia MIT</span>
+              </a>
+              <span>© 2026 SGEN-Support Inc.</span>
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: PANELES DE CONTENIDO -->
+          <div class="about-main-col">
+            
+            <!-- SUBPESTAÑA 1: VISIÓN GENERAL (ACTIVA POR DEFECTO) -->
+            <div class="about-subpane-view active" id="tabOverview">
+              <div class="about-header-text">
+                <h1 class="about-title">Acerca del Sistema</h1>
+                <p class="about-description">
+                  Sistema de Gestión de Soporte Técnico y Mantenimiento. Centraliza incidencias, inventario y personal en una plataforma unificada y escalable.
+                </p>
+              </div>
+
+              <!-- CUADRÍCULA DE 4 TARJETAS TÉCNICAS -->
+              <div class="tech-specs-grid">
+                
+                <!-- TARJETA 1: BACKEND -->
+                <div class="tech-spec-card">
+                  <div class="tech-spec-icon-box backend">
+                    <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                  </div>
+                  <div class="tech-spec-copy">
+                    <span class="tech-spec-kicker">BACKEND</span>
+                    <h3 class="tech-spec-title">PHP 8.2.12</h3>
+                    <span class="tech-spec-sub">Laravel Like (MVC)</span>
+                  </div>
+                </div>
+
+                <!-- TARJETA 2: FRONTEND -->
+                <div class="tech-spec-card">
+                  <div class="tech-spec-icon-box frontend">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                  </div>
+                  <div class="tech-spec-copy">
+                    <span class="tech-spec-kicker">FRONTEND</span>
+                    <h3 class="tech-spec-title">Vanilla JS / CSS</h3>
+                    <span class="tech-spec-sub">Modern UI System</span>
+                  </div>
+                </div>
+
+                <!-- TARJETA 3: BASE DE DATOS -->
+                <div class="tech-spec-card">
+                  <div class="tech-spec-icon-box database">
+                    <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                  </div>
+                  <div class="tech-spec-copy">
+                    <span class="tech-spec-kicker">BASE DE DATOS</span>
+                    <h3 class="tech-spec-title">MySQL</h3>
+                    <span class="tech-spec-sub">MySQL (PDO)</span>
+                  </div>
+                </div>
+
+                <!-- TARJETA 4: ARQUITECTURA -->
+                <div class="tech-spec-card">
+                  <div class="tech-spec-icon-box architecture">
+                    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>
+                  </div>
+                  <div class="tech-spec-copy">
+                    <span class="tech-spec-kicker">ARQUITECTURA</span>
+                    <h3 class="tech-spec-title">MVC Modular</h3>
+                    <span class="tech-spec-sub">Scalable Design</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- TARJETA ANCHA: ESTADO GENERAL -->
+              <div class="system-health-banner">
+                <div class="health-pulse-icon-box">
+                  <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </div>
+                <div class="health-copy-block">
+                  <span class="health-kicker">ESTADO GENERAL</span>
+                  <h3 class="health-status-value">100% Operativo</h3>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- SUBPESTAÑA 2: MÓDULOS -->
+            <div class="about-subpane-view" id="tabModules">
+              <div class="about-header-text">
+                <h2 class="about-title">Módulos del Sistema</h2>
+                <p class="about-description">Estructura modular activa en esta instancia institucional.</p>
+              </div>
+              <div class="tech-specs-grid">
+                <div class="tech-spec-card">
+                  <div class="tech-spec-icon-box backend">
+                    <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+                  </div>
+                  <div class="tech-spec-copy">
+                    <h3 class="tech-spec-title">Gestión de Soportes</h3>
+                    <span class="tech-spec-sub">Tickets, SLA, bitácora y asignación técnica</span>
+                  </div>
+                </div>
+                <div class="tech-spec-card">
+                  <div class="tech-spec-icon-box frontend">
+                    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                  </div>
+                  <div class="tech-spec-copy">
+                    <h3 class="tech-spec-title">Inventario General</h3>
+                    <span class="tech-spec-sub">Consumibles, activos tecnológicos y stock</span>
+                  </div>
+                </div>
+                <div class="tech-spec-card">
+                  <div class="tech-spec-icon-box architecture">
+                    <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                  </div>
+                  <div class="tech-spec-copy">
+                    <h3 class="tech-spec-title">Mantenimientos</h3>
+                    <span class="tech-spec-sub">Programación preventiva, correctiva y recurrencia</span>
+                  </div>
+                </div>
+                <div class="tech-spec-card">
+                  <div class="tech-spec-icon-box database">
+                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  </div>
+                  <div class="tech-spec-copy">
+                    <h3 class="tech-spec-title">Auditoría y Bitácora</h3>
+                    <span class="tech-spec-sub">Registro de movimientos, sesiones y seguridad</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUBPESTAÑA 3: INFO. TÉCNICA -->
+            <div class="about-subpane-view" id="tabTechnical">
+              <div class="about-header-text">
+                <h2 class="about-title">Especificaciones Técnicas</h2>
+                <p class="about-description">Parámetros de ejecución del entorno servidor y cliente.</p>
+              </div>
+              <div style="border:var(--stroke-w) solid var(--stroke-subtle);background:var(--bg-sub);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--stroke-subtle);padding-bottom:8px;">
+                  <span style="color:var(--text-muted);">Servidor Web:</span>
+                  <strong style="color:var(--text);">Apache 2.4.58 / Nginx Proxy</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--stroke-subtle);padding-bottom:8px;">
+                  <span style="color:var(--text-muted);">Versión PHP:</span>
+                  <strong style="color:var(--text);">8.2.12-cli (Zend Engine v4.2.12)</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--stroke-subtle);padding-bottom:8px;">
+                  <span style="color:var(--text-muted);">Codificación:</span>
+                  <strong style="color:var(--text);">UTF-8 Unicode (CI Multilingual)</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Tiempo de Actividad (Uptime):</span>
+                  <strong style="color:#10b981;">99.98% Anual</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUBPESTAÑA 4: VERSIONES -->
+            <div class="about-subpane-view" id="tabVersions">
+              <div class="about-header-text">
+                <h2 class="about-title">Historial de Versiones</h2>
+                <p class="about-description">Ciclo de lanzamientos y actualizaciones del core.</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="border:var(--stroke-w) solid var(--stroke-subtle);background:var(--bg-sub);border-radius:12px;padding:14px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <strong style="color:var(--orange);">v1.0.28 (Actual Estable)</strong>
+                    <span style="font-size:11px;color:var(--text-dim);">Septiembre 2026</span>
+                  </div>
+                  <span style="font-size:12px;color:var(--text-muted);">Optimización del panel de inicio de sesión, nuevo modal de confirmación de logout y consolidación del sistema de diseño unificado.</span>
+                </div>
+                <div style="border:var(--stroke-w) solid var(--stroke-subtle);background:var(--bg-sub);border-radius:12px;padding:14px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <strong style="color:var(--text);">v1.0.24</strong>
+                    <span style="font-size:11px;color:var(--text-dim);">Mayo 2026</span>
+                  </div>
+                  <span style="font-size:12px;color:var(--text-muted);">Módulo de reportes y exportación en formato PDF y CSV integrado.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUBPESTAÑA 5: CRÉDITOS -->
+            <div class="about-subpane-view" id="tabCredits">
+              <div class="about-header-text">
+                <h2 class="about-title">Créditos & Equipo</h2>
+                <p class="about-description">Desarrollo institucional y soporte técnico.</p>
+              </div>
+              <div style="border:var(--stroke-w) solid var(--stroke-subtle);background:var(--bg-sub);border-radius:14px;padding:20px;">
+                <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+                  <div class="avatar-user" style="width:44px;height:44px;font-size:14px;">AD</div>
+                  <div>
+                    <strong style="font-size:15px;color:var(--text);display:block;">Alexis Datica</strong>
+                    <span style="font-size:12px;color:var(--text-muted);">Líder de Soporte TI e Infraestructura</span>
+                  </div>
+                </div>
+                <p style="font-size:12px;color:var(--text-muted);margin:0;line-height:1.5;">
+                  Plataforma desarrollada para centralizar la gestión de tecnologías de información, soporte técnico a usuarios finales, control exhaustivo de inventario y trazabilidad de operaciones.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ==============================================================
+     VISTA 1: INICIO DE SESIÓN FLOTANTE / CONDICIONAL
+     ============================================================== -->
+<div class="auth-view-container hidden" id="authViewContainer" aria-label="Pantalla de inicio de sesión">
+  <div class="auth-card" role="dialog" aria-labelledby="authTitle">
+    
+    <!-- BRAND LOGO -->
+    <div class="auth-brand-head">
+      <div class="logo-rhombus-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+      </div>
+      <span class="auth-brand-name">SGEN-Support</span>
+    </div>
+
+    <!-- BIENVENIDA -->
+    <div class="auth-greeting-block">
+      <h2 class="auth-title" id="authTitle">Bienvenido</h2>
+      <span class="auth-kicker-sub">INGRESA TUS CREDENCIALES</span>
+    </div>
+
+    <!-- FORMULARIO DE ACCESO -->
+    <form class="auth-form" id="authLoginForm">
+      <div class="auth-form-group">
+        <label class="auth-field-label" for="loginUserInput">USUARIO</label>
+        <div class="auth-input-wrapper">
+          <svg class="field-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <input type="text" class="auth-input" id="loginUserInput" value="usuario@sgen.com" placeholder="usuario@sgen.com" required autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="auth-form-group">
+        <label class="auth-field-label" for="loginPassInput">CONTRASEÑA</label>
+        <div class="auth-input-wrapper">
+          <svg class="field-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <input type="password" class="auth-input" id="loginPassInput" value="••••••••" placeholder="••••••••" required autocomplete="current-password" />
+          <button class="auth-btn-eye" id="btnToggleAuthPass" type="button" aria-label="Mostrar u ocultar contraseña">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-auth-enter" id="btnSubmitLogin" type="submit">
+        <span>Entrar</span>
+      </button>
+    </form>
+
+    <div class="auth-divider-line"></div>
+
+    <div class="auth-footer-tag">
+      SGEN-SUPPORT V1.0.28
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     VISTA 3: MODAL DE FINALIZAR SESIÓN (LOGOUT CONFIRMATION)
+     ============================================================== -->
+<div class="logout-modal-backdrop" id="logoutModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle">
+  <div class="logout-modal-box">
+    <button class="btn-close-modal-icon" id="btnCloseLogoutModal" type="button" aria-label="Cerrar ventana">×</button>
+
+    <!-- ICONO DE SALIDA CON BADGE DE ESCUDO VERIFICADO -->
+    <div class="logout-hero-bubble">
+      <svg class="main-exit-icon" viewBox="0 0 24 24">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+      <div class="shield-badge-dot" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </div>
+    </div>
+
+    <h2 class="logout-title" id="logoutModalTitle">¿Finalizar sesión?</h2>
+    <p class="logout-desc">
+      Tu sesión actual se cerrará de forma segura. Tendrás que ingresar tus credenciales para volver.
+    </p>
+
+    <div class="logout-actions-stack">
+      <button class="btn-confirm-logout-solid" id="btnConfirmLogoutAction" type="button">
+        <span>Cerrar Sesión</span>
+        <span>→</span>
+      </button>
+      <button class="btn-cancel-logout-outline" id="btnCancelLogoutAction" type="button">
+        <span>Cancelar y volver</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APARIENCIA RÁPIDA -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:var(--stroke-w) solid var(--stroke-subtle);padding-bottom:14px;margin-bottom:18px;">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle" style="margin:0;font-size:16px;">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn-auth-enter" id="doneAppearance" style="height:36px;padding:0 16px;width:auto;margin:0;" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>SGEN-Support</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFICADOR
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // NAVEGACIÓN ENTRE SUBPESTAÑAS DE ACERCA DEL SISTEMA
+  const tabTitles = {
+    tabOverview: 'Visión General',
+    tabModules: 'Módulos',
+    tabTechnical: 'Info. Técnica',
+    tabVersions: 'Versiones',
+    tabCredits: 'Créditos'
+  };
+
+  $$('.about-nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      $$('.about-nav-tab').forEach(t => t.classList.remove('active'));
+      $$('.about-subpane-view').forEach(p => p.classList.remove('active'));
+
+      tab.classList.add('active');
+      const targetId = tab.dataset.tab;
+      const targetPane = $(`#${targetId}`);
+      if (targetPane) targetPane.classList.add('active');
+
+      const name = tabTitles[targetId] || 'Sección';
+      showToast('Acerca de', `Mostrando: ${name}`);
+    });
+  });
+
+  // MODAL DE FINALIZAR SESIÓN (LOGOUT)
+  const logoutModal = $('#logoutModalBackdrop');
+  const authContainer = $('#authViewContainer');
+
+  const openLogoutModal = () => {
+    logoutModal.classList.add('show');
+  };
+
+  const closeLogoutModal = () => {
+    logoutModal.classList.remove('show');
+  };
+
+  $('#btnOpenLogoutDialog').addEventListener('click', openLogoutModal);
+  $('#btnCloseLogoutModal').addEventListener('click', closeLogoutModal);
+  $('#btnCancelLogoutAction').addEventListener('click', closeLogoutModal);
+
+  // ACCIÓN CONFIRMAR CERRAR SESIÓN -> LLEVA A PANTALLA DE LOGIN
+  $('#btnConfirmLogoutAction').addEventListener('click', () => {
+    closeLogoutModal();
+    authContainer.classList.remove('hidden');
+    showToast('Sesión Finalizada', 'Has cerrado tu sesión de forma segura.');
+  });
+
+  // FORMULARIO DE INICIO DE SESIÓN
+  const authForm = $('#authLoginForm');
+  const userInput = $('#loginUserInput');
+  const passInput = $('#loginPassInput');
+  const btnToggleEye = $('#btnToggleAuthPass');
+
+  btnToggleEye.addEventListener('click', () => {
+    const isPass = passInput.type === 'password';
+    passInput.type = isPass ? 'text' : 'password';
+    btnToggleEye.style.color = isPass ? 'var(--orange)' : 'var(--text-muted)';
+  });
+
+  authForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const userVal = userInput.value.trim();
+    if (!userVal) {
+      showToast('Credenciales requeridas', 'Por favor ingresa tu usuario.');
+      return;
+    }
+
+    // Efecto de autenticación exitosa
+    authContainer.classList.add('hidden');
+    showToast('¡Bienvenido de nuevo!', `Sesión iniciada con éxito para ${userVal}.`);
+  });
+
+  // ENLACE A LICENCIA MIT
+  $('#linkLicense').addEventListener('click', () => {
+    showToast('Licencia MIT', 'Software distribuido bajo términos de licencia de código abierto.');
+  });
+
+  // CONTROL DEL GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('sgen-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes del módulo fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // COLOR DE ACENTO GLOBAL
+  const accentInput = $('#accentColor');
+  const setAccent = (hex, notify = false) => {
+    document.documentElement.style.setProperty('--orange', hex);
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInput.value = hex;
+    localStorage.setItem('sgen-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInput.addEventListener('input', e => setAccent(e.target.value, false));
+  accentInput.addEventListener('change', e => setAccent(e.target.value, true));
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('sgen-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('sgen-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('sgen-border-width') || '2px';
+  const savedAccent = localStorage.getItem('sgen-accent-color') || '#2563eb';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+  setAccent(savedAccent, false);
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeLogoutModal();
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

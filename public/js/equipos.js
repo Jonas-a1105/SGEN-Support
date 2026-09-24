@@ -29,9 +29,16 @@
         let currentPage = 1;
         let filteredIndices = [];
 
+        // SAFE PARSE: Avoid NaN issues
+        const savedPerPage = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'perPage', 10) : 10;
+        itemsPerPage = parseInt(savedPerPage);
+        if (isNaN(itemsPerPage) || itemsPerPage === 0) {
+            itemsPerPage = 10;
+        }
+
         // Init selector
         const selector = document.getElementById('itemsPerPageSelector');
-        if (selector) selector.value = itemsPerPage;
+        if (selector) selector.value = itemsPerPage.toString();
 
         // Apply saved filter tab
         if (currentFilter !== 'todos') {
@@ -103,31 +110,47 @@
         }
 
         // Pagination Functions
-        window.changeClientItemsPerPage = function (val) {
-            itemsPerPage = parseInt(val);
-            if (window.PaginationPrefs) PaginationPrefs.set(itemsPerPage);
-            else {
-                const expires = new Date();
-                expires.setFullYear(expires.getFullYear() + 1);
-                document.cookie = 'sgen_pagination_per_page=' + itemsPerPage + ';expires=' + expires.toUTCString() + ';path=/';
-            }
-            currentPage = 1;
-            applyFilters();
-        };
+        const btnPrev = document.getElementById('btnPrevPage');
+        const btnNext = document.getElementById('btnNextPage');
+        const itemsPerPageSelector = document.getElementById('itemsPerPageSelector');
 
-        window.prevPage = function () {
-            if (currentPage > 1) {
-                currentPage--;
-                applyFilters();
-            }
-        };
-        window.nextPage = function () {
-            const totalPages = Math.ceil(filteredIndices.length / itemsPerPage);
-            if ((itemsPerPage === -1 && currentPage === 1) || (itemsPerPage !== -1 && currentPage < totalPages)) {
-                currentPage++;
-                applyFilters();
-            }
-        };
+        if (itemsPerPageSelector) {
+            itemsPerPageSelector.removeEventListener('change', window._equiposItemsPerPageHandler);
+            window._equiposItemsPerPageHandler = function () {
+                const val = parseInt(this.value);
+                if (!isNaN(val)) {
+                    itemsPerPage = val;
+                    if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'perPage', itemsPerPage);
+                    currentPage = 1;
+                    applyFilters();
+                }
+            };
+            itemsPerPageSelector.addEventListener('change', window._equiposItemsPerPageHandler);
+        }
+
+        if (btnPrev) {
+            btnPrev.removeEventListener('click', window._equiposPrevPageHandler);
+            window._equiposPrevPageHandler = function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    applyFilters();
+                }
+            };
+            btnPrev.addEventListener('click', window._equiposPrevPageHandler);
+        }
+
+        if (btnNext) {
+            btnNext.removeEventListener('click', window._equiposNextPageHandler);
+            window._equiposNextPageHandler = function () {
+                const totalFilteredCount = filteredIndices.length;
+                const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalFilteredCount / itemsPerPage) || 1;
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    applyFilters();
+                }
+            };
+            btnNext.addEventListener('click', window._equiposNextPageHandler);
+        }
 
         // Aplicar filtros y paginación
         function applyFilters() {
@@ -154,15 +177,15 @@
                 }
             });
 
-            const totalVisible = filteredIndices.length;
-            const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalVisible / itemsPerPage) || 1;
+            const totalFilteredCount = filteredIndices.length;
+            const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalFilteredCount / itemsPerPage) || 1;
 
             // Validar página actual
             if (currentPage > totalPages) currentPage = 1;
 
             // 2. Paginar
             const start = itemsPerPage === -1 ? 0 : (currentPage - 1) * itemsPerPage;
-            const end = itemsPerPage === -1 ? totalVisible : start + itemsPerPage;
+            const end = itemsPerPage === -1 ? totalFilteredCount : start + itemsPerPage;
             const visibleIndices = filteredIndices.slice(start, end);
 
             visibleIndices.forEach(idx => {
@@ -172,19 +195,16 @@
 
             // 3. Actualizar UI
             const visibleDisplay = document.getElementById('visibleCountDisplay');
-            if (visibleDisplay) visibleDisplay.textContent = totalVisible;
+            if (visibleDisplay) visibleDisplay.textContent = visibleIndices.length;
 
             const totalDisplay = document.getElementById('totalCountDisplay');
-            if (totalDisplay) totalDisplay.textContent = cards.length;
+            if (totalDisplay) totalDisplay.textContent = totalFilteredCount;
 
             const currentDisplay = document.getElementById('currentPageDisplay');
             if (currentDisplay) currentDisplay.textContent = currentPage;
 
             const pagesDisplay = document.getElementById('totalPagesDisplay');
             if (pagesDisplay) pagesDisplay.textContent = totalPages;
-
-            const btnPrev = document.getElementById('btnPrevPage');
-            const btnNext = document.getElementById('btnNextPage');
 
             if (btnPrev) {
                 btnPrev.disabled = currentPage === 1;
@@ -201,7 +221,7 @@
             // Mostrar/ocultar empty state
             const footer = document.getElementById('paginationFooter');
 
-            if (totalVisible === 0) {
+            if (totalFilteredCount === 0) {
                 if (emptyState) emptyState.style.display = 'block';
                 if (currentView === 'grid') gridView.style.display = 'none';
                 else if (listView) listView.style.display = 'none';
@@ -214,33 +234,38 @@
             }
         }
 
-        // Limpiar filtros
-        window.clearFilters = function () {
-            currentFilter = 'todos';
-            currentSearch = '';
-            if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', 'todos');
-            if (searchInput) searchInput.value = '';
-            filterTabs.forEach(t => t.classList.remove('active'));
-            if (filterTabs[0]) filterTabs[0].classList.add('active');
-            currentPage = 1;
-            applyFilters();
-        };
+        // Limpiar filtros (local to init)
+        const btnClear = document.querySelector('[onclick="clearFilters()"]');
+        if (btnClear) {
+            btnClear.removeAttribute('onclick');
+            btnClear.onclick = function () {
+                currentFilter = 'todos';
+                currentSearch = '';
+                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', 'todos');
+                if (searchInput) searchInput.value = '';
+                filterTabs.forEach(t => t.classList.remove('active'));
+                if (filterTabs[0]) filterTabs[0].classList.add('active');
+                currentPage = 1;
+                applyFilters();
+            };
+        }
 
         // Initial call
         applyFilters();
-
-        // Delete Logic - Handled by SimpleDeleteModal (inline)
-
     };
 
-    // Turbo Idempotency
-    // We are inside the IIFE, so 'init' is available here.
-    if (!window._equiposListenerAttached) {
-        document.addEventListener('turbo:load', init);
-        window._equiposListenerAttached = true;
+    // Clean initialization for Turbo compatibility
+    if (window._equiposInitHandler) {
+        document.removeEventListener('turbo:load', window._equiposInitHandler);
     }
 
-    // Also run immediately if needed (legacy behavior, or if script loads after turbo:load)
-    // init(); // Removed to avoid double run, relying on turbo:load
-})();
+    window._equiposInitHandler = init;
+    document.addEventListener('turbo:load', init);
 
+    // Also run immediately if on equipos page
+    if (document.readyState !== 'loading') {
+        if (document.getElementById('gridView')) {
+            init();
+        }
+    }
+})();

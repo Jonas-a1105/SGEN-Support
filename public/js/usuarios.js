@@ -183,8 +183,8 @@
             }
         };
         window.nextPage = function () {
-            const totalPages = Math.ceil(filteredIndices.length / itemsPerPage);
-            if ((itemsPerPage === -1 && currentPage === 1) || (itemsPerPage !== -1 && currentPage < totalPages)) {
+            const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(filteredIndices.length / itemsPerPage) || 1;
+            if (currentPage < totalPages) {
                 currentPage++;
                 applyFilters();
             }
@@ -208,10 +208,18 @@
         applyFilters();
     }
 
-    // STRICT Global Guard INSIDE the IIFE
-    if (!window._usuariosListenerAttached) {
-        document.addEventListener('turbo:load', initUsuariosView);
-        window._usuariosListenerAttached = true;
+    // Clean initialization for Turbo compatibility
+    if (window._usuariosInitHandler) {
+        document.removeEventListener('turbo:load', window._usuariosInitHandler);
     }
 
+    window._usuariosInitHandler = initUsuariosView;
+    document.addEventListener('turbo:load', initUsuariosView);
+
+    // Also run immediately if on usuarios page
+    if (document.readyState !== 'loading') {
+        if (document.getElementById('usuariosContainer')) {
+            initUsuariosView();
+        }
+    }
 })();

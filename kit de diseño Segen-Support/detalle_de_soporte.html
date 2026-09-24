@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Detalle de Soporte #96 — Control y Seguimiento</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #4f46e5; /* Color de acento primario (Índigo soporte) */
+    --orange-light: #818cf8;
+    --orange-rgb: 79, 70, 229;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica */
+    --green: #16a34a;
+    --blue: #2563eb;
+    --yellow: #d97706;
+    --red: #dc2626;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS EN 16PX - 18PX EN NEGRITA (700) */
+  .ticket-id-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .appearance-head h3 {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  /* LAYOUT PRINCIPAL Y CONTENEDOR CENTRADO */
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .back-btn {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .back-btn:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .detail-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* CARD PRINCIPAL SUPERIOR (HEADER DEL TICKET) */
+  .ticket-header-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ticket-header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .ticket-badge-box {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: var(--orange);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    font-weight: 700 !important;
+    flex-shrink: 0;
+  }
+
+  .ticket-meta-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .ticket-tags-subline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+
+  .subline-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .subline-item svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .ticket-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-badge {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700 !important;
+    border: var(--stroke-w) solid transparent;
+  }
+
+  .status-badge.resuelto {
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--green);
+    border-color: rgba(22, 163, 74, 0.35);
+  }
+
+  .status-badge.sla {
+    background: transparent;
+    color: var(--green);
+    border-color: rgba(22, 163, 74, 0.4);
+  }
+
+  .status-badge.sla svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .action-more-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .action-more-btn:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+  }
+
+  /* BARRA DE PESTAÑAS (TABS) DEL TICKET */
+  .ticket-tabs-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ticket-tabs-card::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ticket-tab {
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .ticket-tab:hover {
+    color: var(--text);
+    background: var(--stroke-subtle);
+  }
+
+  .ticket-tab.active {
+    background: var(--orange);
+    color: #ffffff;
+    border-color: var(--orange);
+  }
+
+  .ticket-tab svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* GRID PRINCIPAL DEL DETALLE (COLUMNA IZQUIERDA Y DERECHA) */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 0.85fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .detail-panel {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-header-row {
+    padding: 18px 22px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .panel-icon-pill {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: rgba(var(--orange-rgb), 0.12);
+    color: var(--orange);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .panel-icon-pill svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .panel-ext-link {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .panel-ext-link:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+  }
+
+  .panel-ext-link svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .panel-body-pad {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* CAMPOS Y FILAS DE DATOS */
+  .data-two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .data-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .data-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .data-kicker svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .data-val-big {
+    font-size: 15px;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .data-edit-inline {
+    background: transparent;
+    border: none;
+    color: var(--orange);
+    cursor: pointer;
+    padding: 2px;
+    display: inline-grid;
+    place-items: center;
+    transition: transform 0.16s ease;
+  }
+
+  .data-edit-inline:hover {
+    transform: scale(1.15);
+  }
+
+  .data-edit-inline svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* CAJAS DE USUARIO / TÉCNICO ASIGNADO */
+  .people-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .person-box {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-sub);
+    border-radius: var(--card-radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+  }
+
+  .person-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    font-weight: 700 !important;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+
+  .person-avatar.orange-badge {
+    background: #ea580c;
+  }
+
+  .person-avatar.blue-badge {
+    background: var(--orange);
+  }
+
+  .person-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .person-role-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+  }
+
+  .person-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .person-dept-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ENLACE ESTÁNDAR HTML CON BORDE INFERIOR */
+  .custom-link {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1.5px solid var(--stroke);
+    padding-bottom: 1px;
+    transition: color 0.2s ease, border-bottom-color 0.2s ease;
+    cursor: pointer;
+  }
+
+  .custom-link:hover {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+  }
+
+  .status-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+  }
+
+  /* CONTENEDOR DESCRIPCIÓN DEL PROBLEMA */
+  .desc-container {
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: var(--card-radius);
+    padding: 14px 18px;
+    background: var(--bg-sub);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* PANEL ACTIVO AFECTADO */
+  .asset-watermark-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .asset-watermark-bg {
+    position: absolute;
+    right: -10px;
+    top: 20px;
+    width: 140px;
+    height: 140px;
+    opacity: 0.04;
+    pointer-events: none;
+    color: currentColor;
+  }
+
+  .asset-serial-block {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .asset-serial-num {
+    font-size: 26px;
+    font-weight: 700 !important;
+    color: var(--text);
+    line-height: 1.1;
+  }
+
+  .asset-specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .asset-relation-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .asset-rel-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--stroke-subtle);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .asset-rel-icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* PANEL MATERIALES CON ESTADO VACÍO ELEGANTE */
+  .materials-empty-state {
+    padding: 34px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .materials-icon-circle {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--stroke-subtle);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    border: var(--stroke-w) solid var(--stroke);
+  }
+
+  .materials-icon-circle svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .btn-add-material {
+    height: 34px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 14px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-add-material:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(520px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--orange);
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn.primary {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #ffffff;
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .appearance-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .appearance-block {
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    padding: 14px;
+    background: transparent;
+  }
+
+  .appearance-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .color-editor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .color-editor input {
+    width: 44px;
+    height: 38px;
+    padding: 2px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .swatches {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: var(--stroke-w) solid var(--stroke);
+    cursor: pointer;
+    transition: transform 0.16s ease;
+  }
+
+  .swatch:hover {
+    transform: scale(1.15);
+  }
+
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--accent-soft);
+  }
+
+  /* TOAST NOTIFICACIÓN */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid var(--orange);
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 1080px) {
+    .main {
+      margin-left: 78px;
+    }
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar .profile-copy,
+    .sidebar .nav-label {
+      opacity: 1 !important;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    .ticket-header-card {
+      padding: 16px;
+    }
+
+    .people-grid,
+    .data-two-cols {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+    .ticket-header-right {
+      width: 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de operaciones">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item active" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Inventario</span>
+      </div>
+      <div class="nav-item" data-section="performance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M5 19V9m7 10V5m7 14v-8"></path></svg>
+        </div>
+        <span class="nav-label">Rendimiento</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+          <a href="javascript:void(0)" class="back-btn" id="btnBackToTickets" title="Volver al listado">
+            <span>←</span>
+            <span>Volver a Soportes</span>
+          </a>
+        </div>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#4f46e5" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content" id="detailView">
+      <div class="detail-wrapper">
+
+        <!-- HEADER DEL TICKET #96 -->
+        <section class="ticket-header-card">
+          <div class="ticket-header-left">
+            <div class="ticket-badge-box" id="ticketIdBox" title="Identificador de ticket">
+              #96
+            </div>
+            <div class="ticket-meta-title-group">
+              <h1 class="ticket-id-title" id="ticketMainTitle">SOPORTE EN SERVIDORES Y SISTEMAS PRODUMIL</h1>
+              <div class="ticket-tags-subline">
+                <span class="subline-item">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                  <span id="ticketDeptTag">Soporte Técnico</span>
+                </span>
+                <span>•</span>
+                <span class="subline-item">
+                  <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                  <span id="ticketPriorityTag">Prioridad Normal</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-header-right">
+            <div class="status-badge resuelto" id="badgeStatusHeader">
+              RESUELTO
+            </div>
+            <div class="status-badge sla" title="Cumplimiento del Acuerdo de Nivel de Servicio">
+              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>A TIEMPO (SLA)</span>
+            </div>
+            <button class="action-more-btn" id="btnTicketMenu" type="button" title="Más opciones de ticket">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- PESTAÑAS DEL TICKET -->
+        <nav class="ticket-tabs-card" aria-label="Secciones del ticket">
+          <button class="ticket-tab active" data-tab="general" type="button">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>Información General</span>
+          </button>
+          <button class="ticket-tab" data-tab="attachments" type="button">
+            <svg viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+            <span>Archivos Adjuntos</span>
+          </button>
+          <button class="ticket-tab" data-tab="comments" type="button">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>Comentarios</span>
+          </button>
+          <button class="ticket-tab" data-tab="log" type="button">
+            <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            <span>Bitácora Técnica</span>
+          </button>
+          <button class="ticket-tab" data-tab="rating" type="button">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>Calificación</span>
+          </button>
+        </nav>
+
+        <!-- CUADRÍCULA DE CONTENIDO: DETALLES + ACTIVO & MATERIALES -->
+        <div class="detail-grid" id="mainTabGeneral">
+          
+          <!-- COLUMNA IZQUIERDA: DETALLES DEL INCIDENTE -->
+          <section class="detail-panel">
+            <div class="panel-header-row">
+              <div class="panel-title-group">
+                <div class="panel-icon-pill" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                </div>
+                <h2 class="panel-title">DETALLES DEL INCIDENTE</h2>
+              </div>
+            </div>
+
+            <div class="panel-body-pad">
+              <div class="data-two-cols">
+                <div class="data-item">
+                  <span class="data-kicker">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    Fecha de reporte
+                  </span>
+                  <div class="data-val-big" id="valReportDate">19/12/2025 03:17 PM</div>
+                </div>
+
+                <div class="data-item">
+                  <span class="data-kicker">
+                    <svg viewBox="0 0 24 24"><path d="m4 6 7-1 7 7-6 6-7-7z"></path><circle cx="8.5" cy="8.5" r="1" fill="currentColor"></circle></svg>
+                    Categoría
+                  </span>
+                  <div class="data-val-big" id="valCategory">--</div>
+                </div>
+              </div>
+
+              <!-- CAJAS DE REPORTADO POR Y TÉCNICO ASIGNADO -->
+              <div class="people-grid">
+                <div class="person-box">
+                  <div class="person-avatar orange-badge">AD</div>
+                  <div class="person-meta">
+                    <span class="person-role-tag">Reportado por</span>
+                    <div class="person-name-row">
+                      <a href="javascript:void(0)" class="custom-link" id="linkRequester" title="Ver perfil del solicitante">admin</a>
+                    </div>
+                    <span class="person-dept-sub" id="requesterDept">Dpto. de Recursos Humanos</span>
+                  </div>
+                </div>
+
+                <div class="person-box">
+                  <div class="person-avatar blue-badge">AD</div>
+                  <div class="person-meta">
+                    <span class="person-role-tag">Técnico asignado</span>
+                    <div class="person-name-row">
+                      <a href="javascript:void(0)" class="custom-link" id="linkTech" title="Ver ficha del técnico">Alexis Datica</a>
+                      <button class="data-edit-inline" id="btnEditTech" type="button" title="Reasignar técnico">
+                        <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                      </button>
+                    </div>
+                    <span class="person-dept-sub">Soporte Técnico</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="data-two-cols">
+                <div class="data-item">
+                  <span class="data-kicker">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                    Estado actual
+                  </span>
+                  <div class="data-val-big" id="valStatusWrap">
+                    <span class="status-indicator-dot"></span>
+                    <span id="valStatusText">Resuelto</span>
+                  </div>
+                </div>
+
+                <div class="data-item">
+                  <span class="data-kicker">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    Fecha de cierre
+                  </span>
+                  <div class="data-val-big">
+                    <span id="valCloseDate">19/12/2025 03:17 PM</span>
+                    <button class="data-edit-inline" id="btnEditCloseDate" type="button" title="Modificar fecha de cierre">
+                      <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="data-item">
+                <span class="data-kicker">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 15 15"></polyline></svg>
+                  Tiempo de atención
+                </span>
+                <div class="data-val-big" id="valAttentionTime">--</div>
+              </div>
+
+              <div class="data-item">
+                <span class="data-kicker">
+                  <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  Descripción del problema
+                </span>
+                <div class="desc-container" id="ticketDescText">
+                  SOPORTE EN SERVIDORES Y SISTEMAS PRODUMIL
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- COLUMNA DERECHA: ACTIVO AFECTADO & MATERIALES -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            
+            <!-- PANEL: ACTIVO AFECTADO -->
+            <section class="detail-panel asset-watermark-card">
+              <svg class="asset-watermark-bg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+
+              <div class="panel-header-row">
+                <div class="panel-title-group">
+                  <div class="panel-icon-pill" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                  </div>
+                  <h2 class="panel-title">ACTIVO AFECTADO</h2>
+                </div>
+                <a href="javascript:void(0)" class="panel-ext-link" id="btnOpenAsset" title="Abrir ficha del activo en inventario">
+                  <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
+              </div>
+
+              <div class="panel-body-pad">
+                <div class="asset-serial-block">
+                  <span class="data-kicker">Serial</span>
+                  <div class="asset-serial-num" id="assetSerial">00151</div>
+                </div>
+
+                <div class="asset-specs-grid">
+                  <div class="data-item">
+                    <span class="data-kicker">Tipo</span>
+                    <div class="data-val-big" id="assetType">Computadora</div>
+                  </div>
+                  <div class="data-item">
+                    <span class="data-kicker">Modelo</span>
+                    <div class="data-val-big" id="assetModel">I5-3470</div>
+                  </div>
+                </div>
+
+                <div class="asset-relation-row">
+                  <div class="asset-rel-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="14" x2="20" y2="14"></line></svg>
+                  </div>
+                  <div class="data-item">
+                    <span class="data-kicker">Departamento</span>
+                    <div class="data-val-big" id="assetDept">Dpto. de Recursos Humanos</div>
+                  </div>
+                </div>
+
+                <div class="asset-relation-row">
+                  <div class="asset-rel-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </div>
+                  <div class="data-item">
+                    <span class="data-kicker">Asignado a</span>
+                    <div class="data-val-big">
+                      <a href="javascript:void(0)" class="custom-link" id="linkAssetAssigned" title="Ver historial de asignaciones">Herdil Nair Gutierrez</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- PANEL: MATERIALES CONSUMIDOS -->
+            <section class="detail-panel">
+              <div class="panel-header-row">
+                <div class="panel-title-group">
+                  <div class="panel-icon-pill" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
+                  </div>
+                  <h2 class="panel-title">MATERIALES</h2>
+                </div>
+              </div>
+
+              <div class="panel-body-pad">
+                <div class="materials-empty-state" id="materialsEmpty">
+                  <div class="materials-icon-circle" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
+                  </div>
+                  <span>No se han registrado consumos.</span>
+                  <button class="btn-add-material" id="btnAddMaterial" type="button">
+                    <span>+</span> Registrar material o repuesto
+                  </button>
+                </div>
+                <div id="materialsList" style="display:none;flex-direction:column;gap:8px;"></div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: REASIGNAR TÉCNICO O FECHA -->
+<div class="modal-backdrop" id="modalEditField">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalEditTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalEditTitle">Editar Información</h3>
+      <button class="icon-close" id="closeEditModal" type="button">×</button>
+    </div>
+    <form id="formEditField">
+      <div class="form-group" id="groupTechSelect">
+        <label class="form-label" for="selectNewTech">Seleccionar Nuevo Técnico Asignado</label>
+        <select class="form-select" id="selectNewTech">
+          <option value="Alexis Datica">Alexis Datica (Soporte TI)</option>
+          <option value="Marcos Rodriguez">Marcos Rodriguez (Redes & Servidores)</option>
+          <option value="Lucia Mendez">Lucia Mendez (Hardware & Sistemas)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="groupCloseDate" style="display:none;">
+        <label class="form-label" for="inputCloseDate">Fecha y Hora de Cierre</label>
+        <input type="text" class="form-input" id="inputCloseDate" value="19/12/2025 03:17 PM" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" type="button" id="cancelEditField">Cancelar</button>
+        <button class="btn primary" type="submit">Actualizar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: REGISTRAR MATERIAL -->
+<div class="modal-backdrop" id="modalMaterial">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalMatTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalMatTitle">Registrar Material / Repuesto</h3>
+      <button class="icon-close" id="closeMatModal" type="button">×</button>
+    </div>
+    <form id="formAddMaterial">
+      <div class="form-group">
+        <label class="form-label" for="matItemName">Artículo / Pieza de Recambio</label>
+        <input type="text" class="form-input" id="matItemName" placeholder="Ej: Cable Patch Cord Cat6 2m, Memoria RAM DDR3..." required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="matQuantity">Cantidad Utilizada</label>
+        <input type="number" class="form-input" id="matQuantity" value="1" min="1" required />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" type="button" id="cancelMaterial">Cancelar</button>
+        <button class="btn primary" type="submit">Agregar al Ticket</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: APARIENCIA Y ESTILO -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div class="appearance-grid" style="margin-top:14px;">
+      <div class="appearance-block">
+        <span class="appearance-label">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div class="appearance-block">
+        <span class="appearance-label">Color principal de acento</span>
+        <div class="color-editor">
+          <input id="accentColorPanel" type="color" value="#4f46e5" aria-label="Selector de color hex">
+          <div>
+            <span id="accentHex" style="font-size:13px;display:block">#4F46E5</span>
+            <span style="font-size:12px;color:var(--text-muted);">Sincroniza badges, pestañas y botones.</span>
+          </div>
+        </div>
+        <div class="swatches" id="accentSwatches"></div>
+      </div>
+      <div class="appearance-block">
+        <span class="appearance-label">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn primary" id="doneAppearance" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <b>Soporte TI</b>
+  <span id="toastText">Operación completada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFIER
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // CONTROL DEL GROSOR DE BORDES (2PX / 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('ticket-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes fijados a ${w}.`);
+  };
+
+  $('#borderToggle')?.addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // CONTROL DE COLOR DE ACENTO
+  const accentInputs = [$('#accentColor'), $('#accentColorPanel')].filter(Boolean);
+  const accentHexText = $('#accentHex');
+  const palettePresets = ['#4f46e5', '#e11d48', '#ff5a00', '#0070f3', '#10b981', '#7928ca', '#f5a623'];
+
+  const hexToRgb = hex => {
+    const clean = hex.replace('#', '');
+    return {
+      r: parseInt(clean.substring(0, 2), 16),
+      g: parseInt(clean.substring(2, 4), 16),
+      b: parseInt(clean.substring(4, 6), 16)
+    };
+  };
+
+  const applyAccent = (colorHex, notify = false) => {
+    const hex = colorHex.toLowerCase();
+    document.documentElement.style.setProperty('--orange', hex);
+    const { r, g, b } = hexToRgb(hex);
+    document.documentElement.style.setProperty('--orange-rgb', `${r}, ${g}, ${b}`);
+    accentInputs.forEach(input => { if (input) input.value = hex; });
+    if (accentHexText) accentHexText.textContent = hex.toUpperCase();
+    localStorage.setItem('ticket-accent-color', hex);
+    if (notify) showToast('Color de acento', `Color ${hex.toUpperCase()} aplicado.`);
+  };
+
+  accentInputs.forEach(input => {
+    input.addEventListener('input', e => applyAccent(e.target.value, false));
+    input.addEventListener('change', e => applyAccent(e.target.value, true));
+  });
+
+  const swatchesWrap = $('#accentSwatches');
+  if (swatchesWrap) {
+    palettePresets.forEach(color => {
+      const btn = document.createElement('button');
+      btn.className = 'swatch';
+      btn.style.backgroundColor = color;
+      btn.type = 'button';
+      btn.title = color;
+      btn.addEventListener('click', () => applyAccent(color, true));
+      swatchesWrap.appendChild(btn);
+    });
+  }
+
+  // TEMA CLARO BLANCO PURO (#FFFFFF) / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('ticket-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle')?.addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL DE APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  const openAppearance = () => {
+    appearanceBackdrop.classList.add('show');
+    appearanceBackdrop.setAttribute('aria-hidden', 'false');
+  };
+  const closeAppearance = () => {
+    appearanceBackdrop.classList.remove('show');
+    appearanceBackdrop.setAttribute('aria-hidden', 'true');
+  };
+
+  $('#settingsItem')?.addEventListener('click', openAppearance);
+  $('#closeAppearance')?.addEventListener('click', closeAppearance);
+  $('#doneAppearance')?.addEventListener('click', closeAppearance);
+  appearanceBackdrop?.addEventListener('click', e => {
+    if (e.target === appearanceBackdrop) closeAppearance();
+  });
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn')?.addEventListener('click', toggleSidebar);
+  backdrop?.addEventListener('click', closeSidebar);
+
+  $$('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (item.id === 'settingsItem') return;
+      $$('.nav-item').forEach(x => x.classList.remove('active'));
+      item.classList.add('active');
+      const label = item.querySelector('.nav-label')?.textContent || 'Módulo';
+      showToast(label, `Navegando a ${label.toLowerCase()}.`);
+      if (window.innerWidth <= 768) closeSidebar();
+    });
+  });
+
+  // PESTAÑAS DEL TICKET
+  $$('.ticket-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      $$('.ticket-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const tabName = tab.querySelector('span')?.textContent || 'Pestaña';
+      showToast('Pestaña activa', `Visualizando ${tabName.toLowerCase()}.`);
+    });
+  });
+
+  // ENLACES INTERACTIVOS
+  $('#linkRequester').addEventListener('click', () => {
+    showToast('Perfil Solicitante', 'Consultando historial de incidencias del admin (RRHH).');
+  });
+
+  $('#linkTech').addEventListener('click', () => {
+    showToast('Ficha Técnica', 'Alexis Datica • Especialidad: Servidores e Infraestructura TI.');
+  });
+
+  $('#linkAssetAssigned').addEventListener('click', () => {
+    showToast('Usuario del Activo', 'Herdil Nair Gutierrez • Dpto. de Recursos Humanos.');
+  });
+
+  $('#btnOpenAsset').addEventListener('click', () => {
+    showToast('Inventario TI', 'Abriendo ficha del equipo #00151 (Computadora I5-3470)...');
+  });
+
+  $('#btnBackToTickets').addEventListener('click', () => {
+    showToast('Navegación', 'Regresando a la lista de Gestión de Soportes.');
+  });
+
+  // MODAL DE EDICIÓN RÁPIDA (TÉCNICO / FECHA DE CIERRE)
+  const modalEdit = $('#modalEditField');
+  let currentEditMode = 'tech';
+
+  const openEditModal = mode => {
+    currentEditMode = mode;
+    if (mode === 'tech') {
+      $('#modalEditTitle').textContent = 'Reasignar Técnico';
+      $('#groupTechSelect').style.display = 'flex';
+      $('#groupCloseDate').style.display = 'none';
+    } else {
+      $('#modalEditTitle').textContent = 'Modificar Fecha de Cierre';
+      $('#groupTechSelect').style.display = 'none';
+      $('#groupCloseDate').style.display = 'flex';
+    }
+    modalEdit.classList.add('show');
+  };
+
+  const closeEditModal = () => modalEdit.classList.remove('show');
+
+  $('#btnEditTech').addEventListener('click', () => openEditModal('tech'));
+  $('#btnEditCloseDate').addEventListener('click', () => openEditModal('date'));
+  $('#closeEditModal').addEventListener('click', closeEditModal);
+  $('#cancelEditField').addEventListener('click', closeEditModal);
+
+  $('#formEditField').addEventListener('submit', e => {
+    e.preventDefault();
+    if (currentEditMode === 'tech') {
+      const newTech = $('#selectNewTech').value;
+      $('#linkTech').textContent = newTech;
+      showToast('Técnico Reasignado', `Ticket asignado a ${newTech}.`);
+    } else {
+      const newDate = $('#inputCloseDate').value.trim();
+      $('#valCloseDate').textContent = newDate;
+      showToast('Fecha Actualizada', `Nueva fecha de cierre: ${newDate}.`);
+    }
+    closeEditModal();
+  });
+
+  // MODAL MATERIALES / REPUESTOS
+  const modalMat = $('#modalMaterial');
+  const openMatModal = () => modalMat.classList.add('show');
+  const closeMatModal = () => modalMat.classList.remove('show');
+
+  $('#btnAddMaterial').addEventListener('click', openMatModal);
+  $('#closeMatModal').addEventListener('click', closeMatModal);
+  $('#cancelMaterial').addEventListener('click', closeMatModal);
+
+  const materialsList = $('#materialsList');
+  const materialsEmpty = $('#materialsEmpty');
+
+  $('#formAddMaterial').addEventListener('submit', e => {
+    e.preventDefault();
+    const item = $('#matItemName').value.trim();
+    const qty = $('#matQuantity').value;
+
+    materialsEmpty.style.display = 'none';
+    materialsList.style.display = 'flex';
+
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:10px 14px;border:var(--stroke-w) solid var(--stroke);border-radius:10px;background:var(--bg-sub);display:flex;justify-content:space-between;align-items:center;font-size:13px;';
+    div.innerHTML = `
+      <div>
+        <strong style="color:var(--text);display:block;">${item}</strong>
+        <span style="font-size:11px;color:var(--text-muted);">Cantidad: ${qty} unidad(es)</span>
+      </div>
+      <span style="font-size:11px;color:var(--green);font-weight:700;">REGISTRADO</span>
+    `;
+    materialsList.appendChild(div);
+
+    $('#formAddMaterial').reset();
+    closeMatModal();
+    showToast('Material Registrado', `${item} x${qty} vinculado al ticket #96.`);
+  });
+
+  $('#btnTicketMenu').addEventListener('click', () => {
+    showToast('Opciones de Ticket', 'Acciones: Exportar reporte PDF • Enviar correo a solicitante • Auditoría.');
+  });
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedAccent = localStorage.getItem('ticket-accent-color') || '#4f46e5';
+  const savedTheme = localStorage.getItem('ticket-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('ticket-border-width') || '2px';
+  applyAccent(savedAccent, false);
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeEditModal();
+      closeMatModal();
+      closeAppearance();
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>

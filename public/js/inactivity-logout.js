@@ -14,7 +14,18 @@
         timer: null,
         // Tiempo de inactividad: 30 minutos (1800000 ms) - Aumentado para comodidad
         limit: 1800000,
-        logoutUrl: window.APP_BASE_URL + 'auth/logout',
+        // Fix for "undefinedauth/logout" error: ensure BASE_URL is valid
+        logoutUrl: (function () {
+            let base = window.BASE_URL;
+            if (!base || base === 'undefined' || base === 'null') {
+                base = '/';
+            }
+            // Ensure trailing slash
+            if (!base.endsWith('/')) {
+                base += '/';
+            }
+            return base + 'auth/logout';
+        })(),
 
         init: function () {
             this.start();

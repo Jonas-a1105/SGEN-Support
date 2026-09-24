@@ -1,50 +1,109 @@
-# =============================================
-# SGEN-Support - Git Ignore File
-# =============================================
+# ==============================================================================
+# SGEN-Support - Enterprise Git Ignore
+# Covers: Root Repository, Desktop (Electron), Backend (Laravel 12 / Inertia / Vue 3)
+# ==============================================================================
 
-# Composer
-/vendor/
-
-# =============================================
-# SECURITY - NEVER COMMIT THESE
-# =============================================
-# Environment files (contain credentials)
+# ------------------------------------------------------------------------------
+# Security & Environment Credentials (CRITICAL - NEVER COMMIT)
+# ------------------------------------------------------------------------------
 .env
-.env.backup
-.env.local
-.env.production
-.env.*.local
-
-# Database dumps and backups
-*.sql
-!database/schema.sql
-/backups/
-/dumps/
-
-# Credential files
-*password*
-*secret*
-*credentials*
+.env.*
+!.env.example
 *.key
 *.pem
 *.p12
+*password*
+*secret*
+*credentials*
+auth.json
 
-# =============================================
-# IDEs & Editors
-# =============================================
-.idea/
-.vscode/
-*.swp
-*.swo
-*.sublime-workspace
-*.sublime-project
-.project
-.settings/
-nbproject/
+# ------------------------------------------------------------------------------
+# Dependencies & Package Managers
+# ------------------------------------------------------------------------------
+node_modules/
+/node_modules/
+/vendor/
+sgen-backend/node_modules/
+sgen-backend/vendor/
+desktop/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json.bak
 
-# =============================================
-# Operating System
-# =============================================
+# ------------------------------------------------------------------------------
+# Laravel & Backend Build / Cache / Storage Artifacts
+# ------------------------------------------------------------------------------
+sgen-backend/.env
+sgen-backend/.env.*
+!sgen-backend/.env.example
+sgen-backend/bootstrap/cache/*.php
+!sgen-backend/bootstrap/cache/.gitkeep
+sgen-backend/storage/framework/cache/*
+!sgen-backend/storage/framework/cache/.gitignore
+sgen-backend/storage/framework/sessions/*
+!sgen-backend/storage/framework/sessions/.gitignore
+sgen-backend/storage/framework/views/*
+!sgen-backend/storage/framework/views/.gitignore
+sgen-backend/storage/logs/*
+!sgen-backend/storage/logs/.gitignore
+sgen-backend/storage/*.key
+sgen-backend/storage/pail/
+sgen-backend/public/hot
+sgen-backend/public/storage
+sgen-backend/.phpunit.cache/
+sgen-backend/.phpunit.result.cache
+
+# ------------------------------------------------------------------------------
+# Desktop (Electron & Electron-Builder) Build & Runtime Artifacts
+# ------------------------------------------------------------------------------
+desktop/dist/
+desktop/bin/php/
+!desktop/bin/php/php.ini
+desktop/bin/mariadb/
+!desktop/bin/INSTRUCCIONES_BINARIOS.txt
+desktop/bin/php/*.log
+desktop/*.log
+*.blockmap
+latest.yml
+latest-mac.yml
+latest-linux.yml
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
+# ------------------------------------------------------------------------------
+# Logs, Debugging & Temporary Files
+# ------------------------------------------------------------------------------
+*.log
+/logs/
+debug.log
+debug_*.txt
+/tmp/
+/temp/
+*.tmp
+*.cache
+.php_cs.cache
+.phpunit.result.cache
+coverage/
+.nyc_output/
+
+# ------------------------------------------------------------------------------
+# Database Backups & Local Data (Preserve schema and base seeds)
+# ------------------------------------------------------------------------------
+*.sql
+!database/schema.sql
+!database/sgen_db.sql
+!database/sgen_db_fixed.sql
+/backups/
+/dumps/
+
+# ------------------------------------------------------------------------------
+# Operating System & IDE / Editor Caches
+# ------------------------------------------------------------------------------
 .DS_Store
 .DS_Store?
 ._*
@@ -54,52 +113,40 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# =============================================
-# Logs, Debug & Temp Files
-# =============================================
-*.log
-/logs/
-debug_*.txt
-/tmp/
-/temp/
-*.tmp
-*.cache
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+.project
+.settings/
+nbproject/
+.fleet/
+.nova/
+.zed/
 
-# =============================================
-# Uploads & User Generated Content
-# =============================================
-/public/uploads/*
-!/public/uploads/.gitkeep
-/storage/*
-!/storage/.gitkeep
-
-# =============================================
-# Build & Cache
-# =============================================
-/cache/
-*.cache
-.php_cs.cache
-.phpunit.result.cache
-
-# =============================================
-# Testing
-# =============================================
-/coverage/
-.phpunit.result.cache
-phpunit.xml
-
-# Desktop App
-desktop/dist/
-desktop/node_modules/
-desktop/bin/php/
-!desktop/bin/php/php.ini
-desktop/bin/mariadb/
-!desktop/bin/INSTRUCCIONES_BINARIOS.txt
-
-# =============================================
-# Miscellaneous
-# =============================================
+# ------------------------------------------------------------------------------
+# Miscellaneous & Temporary Development Scripts
+# ------------------------------------------------------------------------------
 *.bak
 *.orig
 *.old
 .htaccess.bak
+Homestead.json
+Homestead.yaml
+
+# Local Scratch & Diagnostic Scripts
+_ECC/
+check_*.php
+list_*.php
+count_*.php
+fix_*.php
+health_audit.php
+import_inventory.php
+lee.txt
+simulate_client.bat
+estructura_proyecto.txt
+public/debug_*.php
+REFACTOR_COMPARISON.md
+

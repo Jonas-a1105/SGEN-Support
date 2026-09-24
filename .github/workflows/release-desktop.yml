@@ -1,0 +1,77 @@
+name: Release Desktop App & Auto-Updater
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Version tag to release (e.g. v1.1.0)'
+        required: true
+        default: 'v1.1.0'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-publish:
+    name: Build Windows Desktop Installer & Publish Auto-Update
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code with Submodules
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: desktop/package.json
+
+      - name: Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_sqlite, sqlite3, curl, openssl
+          coverage: none
+
+      - name: Build Web Application Frontend (Inertia + Vue 3)
+        working-directory: sgen-backend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install Desktop Dependencies
+        working-directory: desktop
+        run: npm ci
+
+      - name: Build and Publish Electron Installer with Auto-Updater
+        working-directory: desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx electron-builder --win --publish always
+
+      - name: Generate Checksums
+        working-directory: desktop/dist
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter *.exe | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash
+            "$hash  $($_.Name)" | Out-File -FilePath checksums.txt -Append -Encoding ascii
+          }
+          Get-Content checksums.txt
+
+      - name: Upload Checksums to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            desktop/dist/checksums.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

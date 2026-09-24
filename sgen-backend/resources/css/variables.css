@@ -1,0 +1,101 @@
+:root {
+    /* Superficies y Fondos — Dark Glass Refined */
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+
+    /* Bordes neutros limpios y definidos */
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+
+    /* Tipografía y Textos */
+    --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+
+    /* Color de Acento Dinámico (Índigo de Mantenimientos #4f46e5) */
+    --orange: #4f46e5;
+    --orange-light: #6f67f5;
+    --orange-rgb: 79, 70, 229;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+
+    /* Color de Marca y Navegación */
+    --brand: #72b000;
+    --brand-hover: #649c00;
+    --brand-rgb: 114, 176, 0;
+
+    /* Colores Semánticos */
+    --blue: #2563eb;
+    --green: #16a34a;
+    --red: #dc2626;
+    --yellow: #d97706;
+    --purple: #8b5cf6;
+    --cyan: #0891b2;
+
+    /* Dimensiones de Navegación */
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-pill: 9999px;
+
+    /* Escala de Espaciado */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+
+    /* Transiciones */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+
+    /* Mapeo de compatibilidad con componentes previos */
+    --surface-bg: var(--bg);
+    --surface-card: var(--bg-card);
+    --surface-elevated: var(--bg-sub);
+    --surface-muted: var(--bg-sub);
+    --surface-hover: var(--stroke-subtle);
+    --border-subtle: var(--stroke-subtle);
+    --border-strong: var(--stroke);
+    --border-focus: var(--orange);
+    --text-main: var(--text);
+    --text-inverse: #ffffff;
+    --color-primary: var(--orange);
+    --color-primary-hover: var(--orange-light);
+    --color-primary-light: var(--accent-soft);
+    --color-primary-focus: rgba(var(--orange-rgb), 0.25);
+    --color-success: var(--green);
+    --color-warning: var(--yellow);
+    --color-danger: var(--red);
+    --color-info: var(--blue);
+}
+
+/* Modo Claro Blanco Puro #FFFFFF */
+[data-theme="light"],
+body.light,
+html.light,
+html[data-theme="light"] body {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+}

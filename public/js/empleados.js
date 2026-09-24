@@ -102,41 +102,61 @@
 
         // Variables de Paginación
         let itemsPerPage = 10;
-        const cookieMatch = document.cookie.match(/sgen_pagination_per_page=(\d+)/);
-        if (cookieMatch) itemsPerPage = parseInt(cookieMatch[1]);
+        const savedPerPage = window.UserPrefs ? UserPrefs.get(MODULE_NAME, 'perPage', 10) : 10;
+
+        // SAFE PARSE
+        itemsPerPage = parseInt(savedPerPage);
+        if (isNaN(itemsPerPage) || itemsPerPage === 0) {
+            itemsPerPage = 10;
+        }
 
         let currentPage = 1;
         let filteredIndices = [];
 
         // Init selector
         const selector = document.getElementById('itemsPerPageSelector');
-        if (selector) selector.value = itemsPerPage;
+        if (selector) selector.value = itemsPerPage.toString();
 
-        window.changeClientItemsPerPage = function (val) {
-            itemsPerPage = parseInt(val);
-            if (window.PaginationPrefs) PaginationPrefs.set(itemsPerPage);
-            else {
-                const expires = new Date();
-                expires.setFullYear(expires.getFullYear() + 1);
-                document.cookie = 'sgen_pagination_per_page=' + itemsPerPage + ';expires=' + expires.toUTCString() + ';path=/';
-            }
-            currentPage = 1;
-            applyFilters();
-        };
+        const btnPrev = document.getElementById('btnPrevPage');
+        const btnNext = document.getElementById('btnNextPage');
 
-        window.prevPage = function () {
-            if (currentPage > 1) {
-                currentPage--;
-                applyFilters();
-            }
-        };
-        window.nextPage = function () {
-            const totalPages = Math.ceil(filteredIndices.length / itemsPerPage);
-            if ((itemsPerPage === -1 && currentPage === 1) || (itemsPerPage !== -1 && currentPage < totalPages)) {
-                currentPage++;
-                applyFilters();
-            }
-        };
+        if (selector) {
+            selector.removeEventListener('change', window._empleadosItemsPerPageHandler);
+            window._empleadosItemsPerPageHandler = function () {
+                const val = parseInt(this.value);
+                if (!isNaN(val)) {
+                    itemsPerPage = val;
+                    if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'perPage', itemsPerPage);
+                    currentPage = 1;
+                    applyFilters();
+                }
+            };
+            selector.addEventListener('change', window._empleadosItemsPerPageHandler);
+        }
+
+        if (btnPrev) {
+            btnPrev.removeEventListener('click', window._empleadosPrevPageHandler);
+            window._empleadosPrevPageHandler = function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    applyFilters();
+                }
+            };
+            btnPrev.addEventListener('click', window._empleadosPrevPageHandler);
+        }
+
+        if (btnNext) {
+            btnNext.removeEventListener('click', window._empleadosNextPageHandler);
+            window._empleadosNextPageHandler = function () {
+                const totalVisible = filteredIndices.length;
+                const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalVisible / itemsPerPage) || 1;
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    applyFilters();
+                }
+            };
+            btnNext.addEventListener('click', window._empleadosNextPageHandler);
+        }
 
         // Aplicar filtros
         function applyFilters() {
@@ -150,7 +170,7 @@
             // 1. Filtrar (Identify matches)
             cards.forEach((card, index) => {
                 const dept = card.getAttribute('data-dept');
-                const searchText = card.getAttribute('data-search');
+                const searchText = card.getAttribute('data-search') ? card.getAttribute('data-search').toLowerCase() : '';
                 const matchesFilter = currentFilter === 'todos' || dept === currentFilter;
                 const matchesSearch = searchText.includes(currentSearch);
 
@@ -163,15 +183,15 @@
                 }
             });
 
-            const totalVisible = filteredIndices.length;
-            const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalVisible / itemsPerPage) || 1;
+            const totalFilteredCount = filteredIndices.length;
+            const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalFilteredCount / itemsPerPage) || 1;
 
             // Validar página actual
             if (currentPage > totalPages) currentPage = 1;
 
             // 2. Paginar (Show slice)
             const start = itemsPerPage === -1 ? 0 : (currentPage - 1) * itemsPerPage;
-            const end = itemsPerPage === -1 ? totalVisible : start + itemsPerPage;
+            const end = itemsPerPage === -1 ? totalFilteredCount : start + itemsPerPage;
             const visibleIndices = filteredIndices.slice(start, end);
 
             visibleIndices.forEach(idx => {
@@ -183,15 +203,12 @@
             const visibleCountDisplay = document.getElementById('visibleCountDisplay');
             const totalCountDisplay = document.getElementById('totalCountDisplay');
             if (visibleCountDisplay) visibleCountDisplay.textContent = visibleIndices.length;
-            if (totalCountDisplay) totalCountDisplay.textContent = cards.length;
+            if (totalCountDisplay) totalCountDisplay.textContent = totalFilteredCount;
 
             const currentPageDisplay = document.getElementById('currentPageDisplay');
             const totalPagesDisplay = document.getElementById('totalPagesDisplay');
             if (currentPageDisplay) currentPageDisplay.textContent = currentPage;
             if (totalPagesDisplay) totalPagesDisplay.textContent = totalPages;
-
-            const btnPrev = document.getElementById('btnPrevPage');
-            const btnNext = document.getElementById('btnNextPage');
 
             if (btnPrev) {
                 btnPrev.disabled = currentPage === 1;
@@ -210,36 +227,40 @@
             if (visibleIndices.length === 0) {
                 if (emptyState) emptyState.style.display = 'block';
                 if (currentView === 'grid') gridView.style.display = 'none';
-                else listView.style.display = 'none';
+                else if (listView) listView.style.display = 'none';
                 if (footer) footer.style.display = 'none';
             } else {
                 if (emptyState) emptyState.style.display = 'none';
                 if (currentView === 'grid') gridView.style.display = 'grid';
-                else listView.style.display = 'block';
+                else if (listView) listView.style.display = 'block';
                 if (footer) footer.style.display = 'flex';
             }
         }
 
-        // Limpiar filtros
-        window.clearFiltersEmp = function () {
-            currentFilter = 'todos';
-            currentSearch = '';
-            if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', 'todos');
-            if (searchInput) searchInput.value = '';
-            filterBtns.forEach(b => {
-                b.classList.remove('active');
-                if (b.getAttribute('data-dept') === 'todos') {
-                    b.classList.add('active');
-                }
-            });
-            currentPage = 1;
-            applyFilters();
-        };
+        // Limpiar filtros (local to init)
+        const btnClear = document.querySelector('[onclick="clearFiltersEmp()"]');
+        if (btnClear) {
+            btnClear.removeAttribute('onclick');
+            btnClear.onclick = function () {
+                currentFilter = 'todos';
+                currentSearch = '';
+                if (window.UserPrefs) UserPrefs.set(MODULE_NAME, 'filter', 'todos');
+                if (searchInput) searchInput.value = '';
+                filterBtns.forEach(b => {
+                    b.classList.remove('active');
+                    if (b.getAttribute('data-dept') === 'todos') {
+                        b.classList.add('active');
+                    }
+                });
+                currentPage = 1;
+                applyFilters();
+            };
+        }
 
         // Initial call
         applyFilters();
 
-        // Copiar email
+        // Copiar email (keep global if needed, or local)
         window.copyEmail = function (email, element) {
             if (!email) return;
 
@@ -257,10 +278,18 @@
         };
     };
 
-    // Turbo Idempotency
-    if (!window._empleadosListenerAttached) {
-        document.addEventListener('turbo:load', init);
-        window._empleadosListenerAttached = true;
+    // Clean initialization for Turbo compatibility
+    if (window._empleadosInitHandler) {
+        document.removeEventListener('turbo:load', window._empleadosInitHandler);
+    }
+
+    window._empleadosInitHandler = init;
+    document.addEventListener('turbo:load', init);
+
+    // Also run immediately if on empleados page
+    if (document.readyState !== 'loading') {
+        if (document.getElementById('gridViewEmp')) {
+            init();
+        }
     }
 })();
-

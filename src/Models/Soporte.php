@@ -201,11 +201,25 @@ class Soporte extends Model
             return false;
         }
 
-        $values[] = $id;
+        // Optimistic Locking: Increment version_id
+        $fields[] = "version_id = version_id + 1";
+
         $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = ?";
-        $stmt = $this->pdo->prepare($sql);
         
-        return $stmt->execute($values);
+        // If version_id is provided, use it in WHERE clause for optimistic locking
+        if (isset($data['current_version'])) {
+            $sql .= " AND version_id = ?";
+            $values[] = $id;
+            $values[] = $data['current_version'];
+        } else {
+            $values[] = $id;
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($values);
+        
+        // Return true if exactly 1 row was updated (if 0, version conflict occurred or ID not found)
+        return $stmt->rowCount() > 0;
     }
 
     public function assign(int $soporte_id, int $tecnico_id)

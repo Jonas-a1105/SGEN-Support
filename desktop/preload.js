@@ -5,9 +5,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onUpdateProgress: (callback) => ipcRenderer.on('update_progress', (event, progress) => callback(progress)),
     onUpdateDownloaded: (callback) => ipcRenderer.on('update_downloaded', (event, info) => callback(info)),
     onShowExitConfirm: (callback) => ipcRenderer.on('show-exit-confirm', callback),
+    onStartupError: (callback) => ipcRenderer.on('startup-error', (event, info) => callback(info)),
+    onShowSetupWizard: (callback) => ipcRenderer.on('show-setup-wizard', callback),
+    onUpdateStatus: (callback) => ipcRenderer.on('update-status', (event, text) => callback(text)),
 
     downloadUpdate: () => ipcRenderer.send('download-update'),
     installUpdate: () => ipcRenderer.send('install-update'),
     exitApp: () => ipcRenderer.send('exit-app'),
-    restartApp: () => ipcRenderer.send('restart_app') // Legacy/Dev
+    restartApp: () => ipcRenderer.send('restart_app'), // Legacy/Dev
+    checkConnectivity: () => ipcRenderer.invoke('check-connectivity'),
+    discovery: () => ipcRenderer.invoke('discovery:start'),
+    saveConfig: (config) => ipcRenderer.invoke('config:save', config)
 });

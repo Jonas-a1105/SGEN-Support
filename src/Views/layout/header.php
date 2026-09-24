@@ -9,7 +9,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="turbo-cache-control" content="no-cache">
-    <title><?= $titulo ?? 'SGEN-Support' ?></title>
+    <title><?= $titulo ?? 'Sgen-support' ?></title>
 
     <script>
         window.BASE_URL = '<?= BASE_URL ?>';
@@ -121,21 +121,21 @@
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js" defer></script>
     
     <!-- App Scripts -->
-    <script src="<?= BASE_URL ?>js/utils.js?v=<?= time() ?>" defer></script>
-    <script src="<?= BASE_URL ?>js/datatables-global.js?v=<?= time() ?>" defer></script>
-    <script src="<?= BASE_URL ?>js/inactivity-logout.js?v=<?= time() ?>" defer></script>
-    <script src="<?= BASE_URL ?>js/app.js?v=<?= time() ?>" defer></script>
-    <script src="<?= BASE_URL ?>js/toast.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/utils.js?v=2.6.0" defer></script>
+    <script src="<?= BASE_URL ?>js/datatables-global.js?v=2.6.0" defer></script>
+    <script src="<?= BASE_URL ?>js/inactivity-logout.js?v=2.6.0" defer></script>
+    <script src="<?= BASE_URL ?>js/app.js?v=2.6.0" defer></script>
+    <script src="<?= BASE_URL ?>js/toast.js?v=2.6.0" defer></script>
     
     <!-- Modal Logics -->
-    <script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>" defer></script>
-    <script src="<?= BASE_URL ?>js/modal-inventory.js?v=<?= time() ?>" defer></script>
-    <script src="<?= BASE_URL ?>js/modal-stock-adjust.js?v=<?= time() ?>" defer></script>
-    <script src="<?= BASE_URL ?>js/modal-assign-tech.js?v=<?= time() ?>" defer></script> 
+    <script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=2.6.0" defer></script>
+    <script src="<?= BASE_URL ?>js/modal-inventory.js?v=2.6.0" defer></script>
+    <script src="<?= BASE_URL ?>js/modal-stock-adjust.js?v=2.6.0" defer></script>
+    <script src="<?= BASE_URL ?>js/modal-assign-tech.js?v=2.6.0" defer></script> 
     
     <!-- Bulk Delete Global -->
     <link rel="stylesheet" href="<?= BASE_URL ?>css/bulk-delete.css?v=2.6.0">
-    <script src="<?= BASE_URL ?>js/bulk-delete.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/bulk-delete.js?v=2.6.0" defer></script>
 
     <link rel="stylesheet" href="<?= BASE_URL ?>css/departamentos-moderno.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/inventario-moderno.css?v=2.5.0">
@@ -154,10 +154,10 @@
     <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-assign-tech.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/modal-stock-adjust.css?v=2.5.0">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/logout-modal.css?v=2.5.0">
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/desktop-modal.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/desktop-modal.css?v=2.6.0">
 
     <!-- Desktop Integration (Electron) -->
-    <script src="<?= BASE_URL ?>js/desktop-integration.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/desktop-integration.js?v=2.6.0" defer></script>
 
     <style>
         /* Turbo Progress Bar Customization */
@@ -174,7 +174,7 @@
     <?php include __DIR__ . '/../components/logout-modal.php'; ?>
     
     <!-- React Replica Delete Modal (JS-Injected) -->
-    <script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/modal-simple-delete-modern.js?v=2.6.0" defer></script>
 
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top glass-opaque">
@@ -188,7 +188,7 @@
                             <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
                         </svg>
                     </div>
-                    SGEN-Support
+                    Sgen-support
                 </a>
                 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -218,7 +218,6 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto align-items-center">
                         
-                        <!-- Notificaciones HIDDEN - functionality not complete
                         <li class="nav-item dropdown me-3 notification-wrapper">
                             
                             <button class="notification-btn" id="notificationBtn" onclick="NotificationCenter.toggle()">
@@ -254,8 +253,7 @@
                             </div>
                         </li>
 
-                        <script src="<?= BASE_URL ?>js/notifications.js?v=<?= time() ?>"></script>
-                        -->
+                        <script src="<?= BASE_URL ?>js/notifications.js?v=2.6.0"></script>
 
                         <!-- Logout Icon (Replaced User Menu) -->
                         <li class="nav-item">
@@ -275,11 +273,11 @@
 
     
     <!-- User Preferences Module (must load before view-specific scripts) -->
-    <script src="<?= BASE_URL ?>js/user-preferences.js?v=<?= time() ?>"></script>
-    <script src="<?= BASE_URL ?>js/global-search.js?v=<?= time() ?>"></script>
+    <script src="<?= BASE_URL ?>js/user-preferences.js?v=2.6.0"></script>
+    <script src="<?= BASE_URL ?>js/global-search.js?v=2.6.0"></script>
     
     <!-- Class-based Bulk Delete (Required for Inventory) -->
-    <script src="<?= BASE_URL ?>js/bulk-delete-class.js?v=<?= time() ?>" defer></script>
+    <script src="<?= BASE_URL ?>js/bulk-delete-class.js?v=2.6.0" defer></script>
     
     <!-- Main Content Area -->
     <main class="content-wrapper">

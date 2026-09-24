@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>Gestión de Equipos Tecnológicos — Inventario de Activos</title>
+<style>
+  :root {
+    --bg: #111214;
+    --bg-card: #17181a;
+    --bg-sub: #1e2024;
+    --sidebar: #18191c;
+    /* Grosor dinámico de bordes: 2px o 1px */
+    --stroke-w: 2px;
+    --stroke: #31343a;
+    --stroke-subtle: #23252a;
+    --stroke-hover: #454952;
+    --text: #f4f4f6;
+    --text-muted: #8e9199;
+    --text-dim: #60636d;
+    --orange: #4f46e5; /* Color de acento primario: Índigo Tecnológico */
+    --orange-rgb: 79, 70, 229;
+    --accent-soft: rgba(var(--orange-rgb), 0.12);
+    /* Paleta semántica del módulo */
+    --blue: #2563eb;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --side-w: 56px;
+    --side-open: 216px;
+    --panel-radius: 18px;
+    --card-radius: 14px;
+  }
+
+  /* CERO SOMBRAS EN TODA LA INTERFAZ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: normal;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+
+  /* TÍTULOS COMPACTOS EN NEGRITA (700) */
+  .module-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .panel-title,
+  .modal-title,
+  .card-device-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .app {
+    height: 100%;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* PÍLDORA LATERAL FLOTANTE COMPACTA */
+  .sidebar {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--side-w);
+    height: auto;
+    max-height: calc(100vh - 40px);
+    background: var(--sidebar);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 30px;
+    transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease, left 0.28s ease, border-width 0.2s ease;
+    z-index: 60;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+  }
+
+  .sidebar:hover,
+  .sidebar.open {
+    width: var(--side-open);
+  }
+
+  .brand {
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamb {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hamb span, .hamb::before, .hamb::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  .sidebar:hover .hamb span,
+  .sidebar.open .hamb span {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .sidebar:hover .hamb::after,
+  .sidebar.open .hamb::after {
+    opacity: 0;
+  }
+  .sidebar:hover .hamb::before,
+  .sidebar.open .hamb::before {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .profile-wrap {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    gap: 12px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .avatar-user {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #202227;
+    border: var(--stroke-w) solid var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .profile-copy {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidebar:hover .profile-copy,
+  .sidebar.open .profile-copy {
+    opacity: 1;
+  }
+
+  .profile-copy b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .profile-copy span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 7px;
+  }
+
+  .nav-item {
+    height: 40px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--stroke-subtle);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: #ffffff;
+    background: var(--stroke);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-label {
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar.open .nav-label {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 6px 7px 4px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .main {
+    flex: 1;
+    height: 100vh;
+    margin-left: 88px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+  }
+
+  .topbar {
+    width: 100%;
+    height: 64px;
+    padding: 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke);
+    background: var(--bg);
+    z-index: 30;
+    flex-shrink: 0;
+    transition: border-bottom-width 0.2s ease;
+  }
+
+  .topbar-content {
+    max-width: 1220px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-control, .theme-toggle, .border-control {
+    height: 34px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, border-width 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .color-control:hover, .theme-toggle:hover, .border-control:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .color-control input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .tool-icon {
+    color: var(--orange);
+    font-size: 14px;
+  }
+
+  .content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px 36px 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-hover) transparent;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: var(--stroke-hover);
+    border-radius: 6px;
+  }
+
+  .module-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .module-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .module-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #4f46e5;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .module-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .title-accent {
+    color: #4f46e5;
+    font-weight: 700 !important;
+  }
+
+  .btn-new-equipment {
+    height: 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--green);
+    background: var(--green);
+    color: #ffffff;
+    padding: 0 18px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+  }
+
+  .btn-new-equipment:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  /* KPI GRID: 4 COLUMNAS EN DESKTOP, 2 EN MÓVIL */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .glass-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    position: relative;
+    overflow: hidden;
+    transition: border-width 0.2s ease, border-color 0.2s ease;
+  }
+
+  .kpi {
+    cursor: pointer;
+    min-height: 98px;
+  }
+
+  .kpi.total-activos      { border-left: 4px solid #4f46e5 !important; }
+  .kpi.operativos         { border-left: 4px solid var(--green) !important; }
+  .kpi.en-reparacion      { border-left: 4px solid var(--yellow) !important; }
+  .kpi.fuera-servicio     { border-left: 4px solid var(--red) !important; }
+
+  .kpi .card-pad {
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* TEXTO DE KPI EN MINÚSCULAS NORMALES (NO UPPERCASE) */
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 600 !important;
+    color: var(--text-muted);
+    text-transform: none !important;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700 !important;
+    line-height: 1.1;
+  }
+
+  .kpi.total-activos .kpi-value   { color: var(--text); }
+  .kpi.operativos .kpi-value      { color: var(--green); }
+  .kpi.en-reparacion .kpi-value   { color: var(--yellow); }
+  .kpi.fuera-servicio .kpi-value  { color: var(--red); }
+
+  .kpi-icon-bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .kpi.total-activos .kpi-icon-bubble   { background: rgba(79, 70, 229, 0.12); color: #4f46e5; border-radius: 12px; }
+  .kpi.operativos .kpi-icon-bubble      { background: rgba(16, 185, 129, 0.12); color: var(--green); border: var(--stroke-w) solid rgba(16, 185, 129, 0.35); }
+  .kpi.en-reparacion .kpi-icon-bubble   { background: rgba(245, 158, 11, 0.12); color: var(--yellow); }
+  .kpi.fuera-servicio .kpi-icon-bubble  { background: rgba(239, 68, 68, 0.12); color: var(--red); border: var(--stroke-w) solid rgba(239, 68, 68, 0.35); }
+
+  .kpi-icon-bubble svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .accent-bottom {
+    height: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .kpi.total-activos .accent-bottom   { background: #4f46e5; }
+  .kpi.operativos .accent-bottom      { background: var(--green); }
+  .kpi.en-reparacion .accent-bottom   { background: var(--yellow); }
+  .kpi.fuera-servicio .accent-bottom  { background: var(--red); }
+
+  .kpi:hover .accent-bottom {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* BARRA DE HERRAMIENTAS Y FILTROS */
+  .toolbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .switch-wrap {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .switch-input { display: none; }
+
+  .switch-rail {
+    width: 44px;
+    height: 24px;
+    background: var(--stroke);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 14px;
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .switch-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease;
+  }
+
+  .switch-input:checked + .switch-rail {
+    background: #4f46e5;
+    border-color: #4f46e5;
+  }
+
+  .switch-input:checked + .switch-rail .switch-dot {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 20px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .filter-pill:hover {
+    color: var(--text);
+    border-color: var(--stroke-hover);
+  }
+
+  .filter-pill.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+
+  body.light .filter-pill.active {
+    background: #191c21;
+    border-color: #191c21;
+    color: #ffffff;
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 280px;
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 17px;
+    height: 17px;
+    color: var(--text-muted);
+    pointer-events: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 14px 0 40px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: #4f46e5;
+  }
+
+  .view-mode-toggle-group {
+    display: inline-flex;
+    align-items: center;
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+
+  .view-mode-btn {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .view-mode-btn.active {
+    background: var(--stroke-subtle);
+    color: #4f46e5;
+  }
+
+  .view-mode-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* CUADRÍCULA DE TARJETAS DE EQUIPO (CARDS VIEW) */
+  .equipment-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+  }
+
+  .device-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    transition: border-color 0.2s ease;
+    position: relative;
+  }
+
+  .device-card:hover {
+    border-color: var(--stroke-hover);
+  }
+
+  .card-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .device-type-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--bg-sub);
+    border: var(--stroke-w) solid var(--stroke-subtle);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+  }
+
+  .device-type-icon-box svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+  }
+
+  .arrow-ext-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: #4f46e5;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform 0.18s ease;
+  }
+
+  .arrow-ext-btn:hover {
+    transform: translate(2px, -2px);
+  }
+
+  .arrow-ext-btn svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+  }
+
+  .card-info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .card-sku-id {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .card-meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+  }
+
+  .meta-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .meta-key-label {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .meta-val-text {
+    color: var(--text);
+    font-size: 12px;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 140px;
+  }
+
+  .card-bottom-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .status-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+
+  .status-pill.en-uso {
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--blue);
+  }
+
+  .status-pill.disponible {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--green);
+  }
+
+  .status-pill.reparacion {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--yellow);
+  }
+
+  .status-pill.baja {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--red);
+  }
+
+  .card-actions-mini-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .action-mini-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: var(--bg-sub);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.18s ease;
+  }
+
+  .action-mini-btn:hover {
+    color: var(--text);
+    background: var(--stroke);
+  }
+
+  .action-mini-btn.view:hover   { color: #4f46e5; }
+  .action-mini-btn.edit:hover   { color: var(--yellow); }
+  .action-mini-btn.delete:hover { color: var(--red); background: rgba(239, 68, 68, 0.12); }
+
+  .action-mini-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* VISTA EN TABLA DE EQUIPOS */
+  .equipment-table-card {
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: var(--panel-radius);
+    overflow: hidden;
+    display: none;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .custom-table th {
+    padding: 14px 18px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    background: var(--bg-card);
+  }
+
+  .custom-table td {
+    padding: 14px 18px;
+    font-size: 13px;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .custom-table tr:hover td {
+    background: var(--stroke-subtle);
+  }
+
+  .badge-code {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--stroke-subtle);
+    border: 1px solid var(--stroke);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .badge-model-outline {
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(79, 70, 229, 0.4);
+    color: #818cf8;
+    font-size: 11px;
+    display: inline-block;
+  }
+
+  .empty-state-box {
+    padding: 48px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+    border: var(--stroke-w) dashed var(--stroke);
+    border-radius: var(--card-radius);
+    background: var(--bg-card);
+  }
+
+  .empty-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--stroke-subtle);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+  }
+
+  .empty-icon-circle svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  /* MODALES Y CAPAS SUPERPUESTAS */
+  .modal-backdrop, .appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 16px;
+  }
+
+  .modal-backdrop.show, .appearance-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal, .appearance-panel {
+    width: min(520px, calc(100vw - 32px));
+    border: var(--stroke-w) solid var(--stroke);
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .icon-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input:focus, .form-select:focus {
+    border-color: #4f46e5;
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+  }
+
+  .btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn:hover {
+    border-color: var(--stroke-hover);
+    background: var(--stroke-subtle);
+  }
+
+  .btn.primary {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.08) !important;
+  }
+
+  .btn.danger {
+    background: var(--red);
+    border-color: var(--red);
+    color: #ffffff;
+  }
+
+  /* PANEL DE APARIENCIA */
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn, .border-btn {
+    height: 38px;
+    border: var(--stroke-w) solid var(--stroke);
+    background: transparent;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active, .border-btn.active {
+    border-color: #4f46e5;
+    color: #4f46e5;
+    background: var(--accent-soft);
+  }
+
+  /* TOAST NOTIFICACIÓN */
+  .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: var(--stroke-w) solid var(--stroke);
+    border-left: 4px solid #4f46e5;
+    background: var(--bg-card);
+    border-radius: 12px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* MODO CLARO BLANCO PURO #FFFFFF */
+  body.light {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-sub: #f8f9fa;
+    --sidebar: #ffffff;
+    --stroke: #d9dce1;
+    --stroke-subtle: #f0f2f5;
+    --stroke-hover: #b8bdc7;
+    --text: #191c21;
+    --text-muted: #6f727c;
+    --text-dim: #8b909a;
+  }
+
+  body.light .topbar,
+  body.light .modal,
+  body.light .appearance-panel,
+  body.light .toast {
+    background: #ffffff;
+  }
+
+  /* RESPONSIVIDAD Y DESBLOQUEO DE SCROLL EN MÓVIL */
+  @media (max-width: 1200px) {
+    .equipment-cards-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 960px) {
+    .equipment-cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .kpi-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      position: static !important;
+    }
+
+    .app {
+      min-height: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+    }
+
+    .topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 50 !important;
+      height: auto !important;
+      padding: 10px 16px !important;
+      background: var(--bg) !important;
+    }
+
+    .content {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      padding: 16px 14px 60px !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: block !important;
+    }
+
+    .sidebar {
+      left: -240px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 216px !important;
+      border-radius: 0 24px 24px 0;
+      transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .sidebar.open {
+      left: 0;
+      pointer-events: auto;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+
+    /* KPIS EN 2 COLUMNAS ESTRICTAS EN MÓVIL */
+    .kpi-row {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px;
+    }
+
+    .equipment-cards-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .form-row-2 {
+      grid-template-columns: 1fr !important;
+    }
+
+    .toolbar-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .toolbar-right {
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .search-box {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-tools span:not(.tool-icon) {
+      display: none;
+    }
+    .color-control, .theme-toggle, .border-control {
+      padding: 0 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TELÓN DE FONDO PARA EL SIDEBAR EN MÓVIL -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- MENÚ LATERAL PÍLDORA COMPACTO -->
+  <aside class="sidebar" id="sidebar" aria-label="Menú lateral de equipos">
+    <div class="brand" id="menuBtn" title="Alternar menú lateral">
+      <div class="hamb"><span></span></div>
+    </div>
+    <div class="profile-wrap">
+      <div class="avatar-user" aria-hidden="true">AD</div>
+      <div class="profile-copy">
+        <b>Alexis Datica</b>
+        <span>Soporte TI • Online</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-section="dashboard">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+        </div>
+        <span class="nav-label">Panel</span>
+      </div>
+      <div class="nav-item" data-section="tickets">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7v10M17 7v10M8 11h8"></path></svg>
+        </div>
+        <span class="nav-label">Soportes</span>
+      </div>
+      <div class="nav-item active" data-section="inventory">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M8 7V4h8v3M8 12h8M8 16h5"></path></svg>
+        </div>
+        <span class="nav-label">Equipos TI</span>
+      </div>
+      <div class="nav-item" data-section="performance">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M5 19V9m7 10V5m7 14v-8"></path></svg>
+        </div>
+        <span class="nav-label">Rendimiento</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="settingsItem" title="Personalización">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.25.9A7.1 7.1 0 0 0 14.4 5L14 2h-4l-.4 3a7.1 7.1 0 0 0-2.23 1.6l-2.25-.9-2 3.46 2 1.55A7 7 0 0 0 5 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.25-.9A7.1 7.1 0 0 0 9.6 19l.4 3h4l.4-3a7.1 7.1 0 0 0 2.23-1.6l2.25.9 2-3.46-2-1.55c.08-.42.12-.86.12-1.3z"></path></svg>
+        </div>
+        <span class="nav-label">Ajustes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-content">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="topbar-right">
+          <div class="header-tools">
+            <button class="border-control" id="borderToggle" type="button" title="Alternar grosor de bordes (2px o 1px)">
+              <span class="tool-icon">⬚</span>
+              <span id="borderLabel">Borde: 2px</span>
+            </button>
+            <label class="color-control" title="Color de acento">
+              <span class="tool-icon">●</span>
+              <span>Acento</span>
+              <input id="accentColor" type="color" value="#4f46e5" aria-label="Color de acento">
+            </label>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo de luz">
+              <span class="tool-icon" id="themeIcon">☼</span>
+              <span id="themeLabel">Claro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="module-wrapper">
+
+        <!-- CABECERA DEL MÓDULO: GESTIÓN DE EQUIPOS TECNOLÓGICOS -->
+        <section class="module-header">
+          <div class="module-title-wrap">
+            <div class="module-icon-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            </div>
+            <div>
+              <h1 class="module-title">Gestión de Equipos <span class="title-accent">Tecnológicos</span></h1>
+            </div>
+          </div>
+          <button class="btn-new-equipment" id="btnOpenNewEquipment" type="button">
+            <span>+</span>
+            <span>Nuevo Equipo</span>
+          </button>
+        </section>
+
+        <!-- FILA DE 4 KPIS OPERATIVAS CON BORDES DE COLOR Y SIN UPPERCASE -->
+        <section class="kpi-row">
+          <div class="glass-card kpi total-activos" data-filter="all" title="Ver todos los activos">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Total activos</div>
+                <div class="kpi-value" id="kpiTotalActivos">272</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi operativos" data-filter="Disponible" title="Filtrar equipos operativos">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Operativos</div>
+                <div class="kpi-value" id="kpiOperativos">272</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi en-reparacion" data-filter="Reparación" title="Filtrar equipos en reparación">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">En reparación</div>
+                <div class="kpi-value" id="kpiReparacion">0</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+
+          <div class="glass-card kpi fuera-servicio" data-filter="Baja" title="Filtrar fuera de servicio">
+            <div class="card-pad">
+              <div>
+                <div class="kpi-label">Fuera de servicio</div>
+                <div class="kpi-value" id="kpiFueraServicio">0</div>
+              </div>
+              <div class="kpi-icon-bubble">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </div>
+            </div>
+            <div class="accent-bottom"></div>
+          </div>
+        </section>
+
+        <!-- BARRA DE FILTROS, SWITCH Y VISTAS -->
+        <section class="toolbar-card">
+          <div class="toolbar-left">
+            <label class="switch-wrap" title="Alternar modo de visualización">
+              <input type="checkbox" id="denseSwitch" class="switch-input" />
+              <div class="switch-rail"><div class="switch-dot"></div></div>
+            </label>
+            <div class="filter-pills" id="filterPillsGroup">
+              <button class="filter-pill active" data-pill="all" type="button">Todos</button>
+              <button class="filter-pill" data-pill="Disponible" type="button">Disponible</button>
+              <button class="filter-pill" data-pill="En Uso" type="button">En Uso</button>
+              <button class="filter-pill" data-pill="Reparación" type="button">Reparación</button>
+              <button class="filter-pill" data-pill="Baja" type="button">Baja</button>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" class="search-input" id="equipmentSearchInput" placeholder="Buscar equipo..." autocomplete="off" />
+            </div>
+
+            <div class="view-mode-toggle-group">
+              <button class="view-mode-btn" id="btnToggleTableView" type="button" title="Vista en lista">
+                <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              </button>
+              <button class="view-mode-btn active" id="btnToggleGridView" type="button" title="Vista en tarjetas">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONTENEDOR EN TARJETAS (CARDS VIEW) -->
+        <section class="equipment-cards-grid" id="equipmentCardsContainer">
+          <!-- Tarjetas renderizadas dinámicamente -->
+        </section>
+
+        <!-- CONTENEDOR EN TABLA (TABLE VIEW) -->
+        <section class="equipment-table-card" id="equipmentTableContainer">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>EQUIPO</th>
+                  <th>TIPO</th>
+                  <th>UBICACIÓN</th>
+                  <th>ESTADO</th>
+                  <th>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyEquipment">
+                <!-- Filas renderizadas dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ESTADO VACÍO DE BÚSQUEDA -->
+        <div class="empty-state-box" id="emptyStateBox" style="display:none;">
+          <div class="empty-icon-circle">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <div>
+            <strong style="font-size:14px;color:var(--text);display:block;">No se encontraron equipos</strong>
+            <span style="font-size:12px;color:var(--text-muted);">Prueba con otros términos de búsqueda o cambia los filtros seleccionados.</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: REGISTRAR / EDITAR EQUIPO -->
+<div class="modal-backdrop" id="modalEquipment">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalEquipTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalEquipTitle">Registrar Nuevo Activo</h3>
+      <button class="icon-close" id="closeEquipModal" type="button">×</button>
+    </div>
+    <form id="formEquipment">
+      <input type="hidden" id="editEquipId" value="" />
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="inputEquipName">Nombre del Equipo</label>
+          <input type="text" class="form-input" id="inputEquipName" placeholder="Ej: INTEL N5095" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inputEquipId">Código ID</label>
+          <input type="text" class="form-input" id="inputEquipId" placeholder="Ej: 00273" required />
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="selectEquipType">Tipo de Activo</label>
+          <select class="form-select" id="selectEquipType">
+            <option value="Computadora" selected>Computadora</option>
+            <option value="Impresora">Impresora</option>
+            <option value="TELEFONO">TELEFONO</option>
+            <option value="CAMARA">CAMARA</option>
+            <option value="Servidor">Servidor</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="selectEquipStatus">Estado Inicial</label>
+          <select class="form-select" id="selectEquipStatus">
+            <option value="En Uso" selected>En Uso</option>
+            <option value="Disponible">Disponible</option>
+            <option value="Reparación">En Reparación</option>
+            <option value="Baja">Fuera de Servicio (Baja)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="inputEquipDept">Departamento Asignado</label>
+        <select class="form-select" id="inputEquipDept">
+          <option value="Dpto. de Recursos Humanos">Dpto. de Recursos Humanos</option>
+          <option value="Dpto. de Produccion">Dpto. de Produccion</option>
+          <option value="Dpto. de Contabilidad">Dpto. de Contabilidad</option>
+          <option value="DPTO. De Compras">DPTO. De Compras</option>
+          <option value="Dpto. de Logistica">Dpto. de Logistica</option>
+          <option value="Almacén Informática">Almacén Informática</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="cancelEquipModal" type="button">Cancelar</button>
+        <button class="btn primary" type="submit">Guardar Activo</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: DETALLES RÁPIDOS DEL EQUIPO -->
+<div class="modal-backdrop" id="modalQuickDetail">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="quickDetailTitle">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="badge-code" id="quickDetailCode">00272</span>
+        <h3 class="modal-title" id="quickDetailTitle">Ficha de Equipo</h3>
+      </div>
+      <button class="icon-close" id="closeQuickDetail" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <span class="form-label">Equipo</span>
+        <h3 style="margin:4px 0 0;font-size:16px;color:var(--text);" id="quickDetailName">EPSON L5590</h3>
+      </div>
+      <div class="form-row-2">
+        <div>
+          <span class="form-label">Tipo</span>
+          <div id="quickDetailType" style="color:var(--text);">Impresora</div>
+        </div>
+        <div>
+          <span class="form-label">Estado</span>
+          <div id="quickDetailStatus"></div>
+        </div>
+      </div>
+      <div>
+        <span class="form-label">Ubicación Física</span>
+        <div id="quickDetailDept" style="color:var(--text);">Dpto. de Recursos Humanos</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="btnDoneQuickDetail" type="button">Cerrar Ficha</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APARIENCIA Y ESTILO -->
+<div class="appearance-backdrop" id="appearanceBackdrop" aria-hidden="true">
+  <div class="appearance-panel" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+    <div class="appearance-head">
+      <div>
+        <div style="font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Personalización</div>
+        <h3 id="appearanceTitle">Grosor de Bordes y Color</h3>
+      </div>
+      <button class="icon-close" id="closeAppearance" type="button">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Grosor de bordes del sistema</span>
+        <div class="mode-buttons">
+          <button class="border-btn active" data-border="2px" type="button">2px (Estándar)</button>
+          <button class="border-btn" data-border="1px" type="button">1px (Fino)</button>
+        </div>
+      </div>
+      <div style="border:var(--stroke-w) solid var(--stroke);border-radius:14px;padding:14px;">
+        <span class="form-label" style="margin-bottom:10px;display:block;">Tema de interfaz</span>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-theme="dark" type="button">Oscuro</button>
+          <button class="mode-btn" data-theme="light" type="button">Claro</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:12px;border-top:var(--stroke-w) solid var(--stroke-subtle);font-size:12px;color:var(--text-muted);">
+      <span>Ajustes guardados localmente</span>
+      <button class="btn primary" id="doneAppearance" type="button">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div class="toast" id="toast">
+  <b>Equipos Tecnológicos</b>
+  <span id="toastText">Operación realizada con éxito.</span>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  // TOAST NOTIFIER
+  const toast = $('#toast');
+  let toastTimer;
+  const showToast = (title, text) => {
+    toast.querySelector('b').textContent = title;
+    $('#toastText').textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  // DATOS BASE DE EQUIPOS TECNOLÓGICOS (IDÉNTICOS AL SCREENSHOT)
+  let equipos = [
+    {
+      id: '00272',
+      name: 'EPSON L5590',
+      type: 'Impresora',
+      dept: 'Dpto. de Recursos Humanos',
+      deptShort: 'Dpto. de Recursos ...',
+      status: 'En Uso'
+    },
+    {
+      id: '00271',
+      name: 'INTEL N5095',
+      type: 'Computadora',
+      dept: 'Dpto. de Recursos Humanos',
+      deptShort: 'Dpto. de Recursos ...',
+      status: 'En Uso'
+    },
+    {
+      id: '00270',
+      name: 'INTEL N5095',
+      type: 'Computadora',
+      dept: 'Dpto. de Recursos Humanos',
+      deptShort: 'Dpto. de Recursos ...',
+      status: 'En Uso'
+    },
+    {
+      id: '00269',
+      name: 'INTEL N5095',
+      type: 'Computadora',
+      dept: 'Dpto. de Produccion',
+      deptShort: 'Dpto. de Produccion',
+      status: 'En Uso'
+    },
+    {
+      id: '00268',
+      name: 'INTEL N5095',
+      type: 'Computadora',
+      dept: 'Dpto. de Contabilidad',
+      deptShort: 'Dpto. de Contabili...',
+      status: 'En Uso'
+    },
+    {
+      id: '00267',
+      name: 'INTEL N5095',
+      type: 'Computadora',
+      dept: 'DPTO. De Compras',
+      deptShort: 'DPTO. De Compras',
+      status: 'Disponible'
+    },
+    {
+      id: '00266',
+      name: 'HP OJ-7740 FROM ANCHO',
+      type: 'Impresora',
+      dept: 'Dpto. de Recursos Humanos',
+      deptShort: 'Dpto. de Recursos ...',
+      status: 'En Uso'
+    },
+    {
+      id: '00265',
+      name: 'PANASONIC GENERICO',
+      type: 'TELEFONO',
+      dept: 'Dpto. de Logistica',
+      deptShort: 'Dpto. de Logistica ...',
+      status: 'En Uso'
+    }
+  ];
+
+  let currentPillFilter = 'all';
+  let searchQuery = '';
+  let activeViewMode = 'grid'; // 'grid' o 'table'
+
+  // ICONOS SEGÚN TIPO DE EQUIPO
+  const getDeviceTypeIcon = type => {
+    switch (type.toLowerCase()) {
+      case 'impresora':
+        return `<svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>`;
+      case 'computadora':
+        return `<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><circle cx="12" cy="16" r="1.5"></circle></svg>`;
+      case 'telefono':
+        return `<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>`;
+      case 'camara':
+        return `<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>`;
+      default:
+        return `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`;
+    }
+  };
+
+  // CLASE Y ETIQUETA DE ESTADO
+  const getStatusBadge = status => {
+    switch (status) {
+      case 'En Uso':
+        return `<span class="status-pill en-uso">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          En Uso
+        </span>`;
+      case 'Disponible':
+        return `<span class="status-pill disponible">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Disponible
+        </span>`;
+      case 'Reparación':
+        return `<span class="status-pill reparacion">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+          Reparación
+        </span>`;
+      default:
+        return `<span class="status-pill baja">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          Baja
+        </span>`;
+    }
+  };
+
+  // ACTUALIZACIÓN DE CONTADORES KPI
+  const updateKPIs = () => {
+    const total = 272; // Conteo institucional referencial
+    const enReparacion = equipos.filter(e => e.status === 'Reparación').length;
+    const fueraServicio = equipos.filter(e => e.status === 'Baja').length;
+    const operativos = total - enReparacion - fueraServicio;
+
+    $('#kpiTotalActivos').textContent = total;
+    $('#kpiOperativos').textContent = operativos;
+    $('#kpiReparacion').textContent = enReparacion;
+    $('#kpiFueraServicio').textContent = fueraServicio;
+  };
+
+  // RENDERIZADO PRINCIPAL
+  const renderEquipment = () => {
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = equipos.filter(item => {
+      // Filtro por píldoras
+      if (currentPillFilter !== 'all' && item.status !== currentPillFilter) return false;
+
+      // Filtro de búsqueda
+      if (q) {
+        const matchName = item.name.toLowerCase().includes(q);
+        const matchId = item.id.toLowerCase().includes(q);
+        const matchDept = item.dept.toLowerCase().includes(q);
+        const matchType = item.type.toLowerCase().includes(q);
+        return matchName || matchId || matchDept || matchType;
+      }
+      return true;
+    });
+
+    const cardsContainer = $('#equipmentCardsContainer');
+    const tableContainer = $('#equipmentTableContainer');
+    const emptyBox = $('#emptyStateBox');
+    const tbody = $('#tbodyEquipment');
+
+    if (filtered.length === 0) {
+      cardsContainer.style.display = 'none';
+      tableContainer.style.display = 'none';
+      emptyBox.style.display = 'flex';
+      return;
+    }
+
+    emptyBox.style.display = 'none';
+
+    if (activeViewMode === 'grid') {
+      cardsContainer.style.display = 'grid';
+      tableContainer.style.display = 'none';
+      cardsContainer.innerHTML = filtered.map(item => `
+        <article class="device-card" data-id="${item.id}">
+          <div>
+            <div class="card-top-row">
+              <div class="device-type-icon-box">
+                ${getDeviceTypeIcon(item.type)}
+              </div>
+              <button class="arrow-ext-btn btn-open-detail" data-id="${item.id}" title="Abrir ficha detallada" type="button">
+                <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              </button>
+            </div>
+
+            <div class="card-info-block" style="margin-top:12px;">
+              <h2 class="card-device-title">${item.name}</h2>
+              <span class="card-sku-id">ID: ${item.id}</span>
+            </div>
+
+            <div class="card-meta-list">
+              <div class="meta-item-row">
+                <span class="meta-key-label">Ubicación:</span>
+                <span class="meta-val-text" title="${item.dept}">${item.deptShort || item.dept}</span>
+              </div>
+              <div class="meta-item-row">
+                <span class="meta-key-label">Tipo:</span>
+                <span class="meta-val-text">${item.type}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-bottom-actions-row">
+            ${getStatusBadge(item.status)}
+            <div class="card-actions-mini-group">
+              <button class="action-mini-btn view" data-id="${item.id}" title="Vista rápida" type="button">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              <button class="action-mini-btn edit" data-id="${item.id}" title="Editar equipo" type="button">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button class="action-mini-btn delete" data-id="${item.id}" title="Eliminar equipo" type="button">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    } else {
+      cardsContainer.style.display = 'none';
+      tableContainer.style.display = 'block';
+      tbody.innerHTML = filtered.map(item => `
+        <tr>
+          <td><span class="badge-code">${item.id}</span></td>
+          <td><strong style="color:var(--text);">${item.name}</strong></td>
+          <td><span class="badge-model-outline">${item.type}</span></td>
+          <td style="color:var(--text-muted);">${item.dept}</td>
+          <td>${getStatusBadge(item.status)}</td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button class="action-mini-btn view" data-id="${item.id}" title="Vista rápida" type="button">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              <button class="action-mini-btn edit" data-id="${item.id}" title="Editar equipo" type="button">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button class="action-mini-btn delete" data-id="${item.id}" title="Eliminar equipo" type="button">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    attachCardEvents();
+  };
+
+  // EVENTOS DE BOTONES EN TARJETAS
+  const attachCardEvents = () => {
+    $$('.action-mini-btn.view, .btn-open-detail').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const item = equipos.find(x => x.id === id);
+        if (!item) return;
+        $('#quickDetailCode').textContent = item.id;
+        $('#quickDetailName').textContent = item.name;
+        $('#quickDetailType').textContent = item.type;
+        $('#quickDetailDept').textContent = item.dept;
+        $('#quickDetailStatus').innerHTML = getStatusBadge(item.status);
+        $('#modalQuickDetail').classList.add('show');
+      });
+    });
+
+    $$('.action-mini-btn.edit').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const item = equipos.find(x => x.id === id);
+        if (!item) return;
+        $('#modalEquipTitle').textContent = `Editar Equipo #${item.id}`;
+        $('#editEquipId').value = item.id;
+        $('#inputEquipName').value = item.name;
+        $('#inputEquipId').value = item.id;
+        $('#selectEquipType').value = item.type;
+        $('#selectEquipStatus').value = item.status;
+        $('#inputEquipDept').value = item.dept;
+        $('#modalEquipment').classList.add('show');
+      });
+    });
+
+    $$('.action-mini-btn.delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const item = equipos.find(x => x.id === id);
+        if (!item) return;
+        equipos = equipos.filter(x => x.id !== id);
+        updateKPIs();
+        renderEquipment();
+        showToast('Activo Retirado', `El equipo ${item.name} (${item.id}) fue eliminado.`);
+      });
+    });
+  };
+
+  // FILTRADO POR PÍLDORAS
+  $$('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      $$('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      currentPillFilter = pill.dataset.pill;
+      renderEquipment();
+      showToast('Filtro', `Mostrando equipos con estado: ${pill.textContent}.`);
+    });
+  });
+
+  // FILTRADO DESDE KPIS
+  $$('.kpi').forEach(kpi => {
+    kpi.addEventListener('click', () => {
+      const target = kpi.dataset.filter;
+      currentPillFilter = target;
+      $$('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.pill === target));
+      renderEquipment();
+      showToast('Métrica KPI', `Filtrando activos según estado seleccionado.`);
+    });
+  });
+
+  // BÚSQUEDA EN TIEMPO REAL
+  $('#equipmentSearchInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderEquipment();
+  });
+
+  // TOGGLE DE VISTA TARJETAS / TABLA
+  $('#btnToggleGridView').addEventListener('click', () => {
+    activeViewMode = 'grid';
+    $('#btnToggleGridView').classList.add('active');
+    $('#btnToggleTableView').classList.remove('active');
+    renderEquipment();
+    showToast('Vista', 'Cambiado a visualización en tarjetas.');
+  });
+
+  $('#btnToggleTableView').addEventListener('click', () => {
+    activeViewMode = 'table';
+    $('#btnToggleTableView').classList.add('active');
+    $('#btnToggleGridView').classList.remove('active');
+    renderEquipment();
+    showToast('Vista', 'Cambiado a visualización en tabla.');
+  });
+
+  // MODAL NUEVO EQUIPO
+  const modalEquipment = $('#modalEquipment');
+  $('#btnOpenNewEquipment').addEventListener('click', () => {
+    $('#formEquipment').reset();
+    $('#editEquipId').value = '';
+    $('#modalEquipTitle').textContent = 'Registrar Nuevo Activo';
+    $('#inputEquipId').value = `00${273 + equipos.length}`;
+    modalEquipment.classList.add('show');
+  });
+
+  const closeEquipModal = () => modalEquipment.classList.remove('show');
+  $('#closeEquipModal').addEventListener('click', closeEquipModal);
+  $('#cancelEquipModal').addEventListener('click', closeEquipModal);
+
+  $('#formEquipment').addEventListener('submit', e => {
+    e.preventDefault();
+    const editId = $('#editEquipId').value;
+    const name = $('#inputEquipName').value.trim();
+    const id = $('#inputEquipId').value.trim();
+    const type = $('#selectEquipType').value;
+    const status = $('#selectEquipStatus').value;
+    const dept = $('#inputEquipDept').value;
+    const deptShort = dept.length > 20 ? dept.substring(0, 18) + '...' : dept;
+
+    if (editId) {
+      const idx = equipos.findIndex(x => x.id === editId);
+      if (idx !== -1) {
+        equipos[idx] = { id, name, type, dept, deptShort, status };
+        showToast('Activo Actualizado', `Ficha del equipo ${id} modificada.`);
+      }
+    } else {
+      equipos.unshift({ id, name, type, dept, deptShort, status });
+      showToast('Nuevo Activo', `Equipo ${name} (#${id}) ingresado al inventario.`);
+    }
+
+    updateKPIs();
+    renderEquipment();
+    closeEquipModal();
+  });
+
+  // MODAL DETALLE RÁPIDO
+  $('#closeQuickDetail').addEventListener('click', () => $('#modalQuickDetail').classList.remove('show'));
+  $('#btnDoneQuickDetail').addEventListener('click', () => $('#modalQuickDetail').classList.remove('show'));
+
+  // CONTROL DEL GROSOR DE BORDES (2PX ↔ 1PX)
+  const setBorderWidth = (width, notify = false) => {
+    const w = width === '1px' ? '1px' : '2px';
+    document.documentElement.style.setProperty('--stroke-w', w);
+    const label = $('#borderLabel');
+    if (label) label.textContent = `Borde: ${w}`;
+    $$('.border-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.border === w));
+    localStorage.setItem('equip-border-width', w);
+    if (notify) showToast('Grosor de borde', `Bordes del módulo fijados a ${w}.`);
+  };
+
+  $('#borderToggle').addEventListener('click', () => {
+    const current = getComputedStyle(document.documentElement).getPropertyValue('--stroke-w').trim() || '2px';
+    const next = current === '2px' ? '1px' : '2px';
+    setBorderWidth(next, true);
+  });
+
+  $$('.border-btn').forEach(btn => {
+    btn.addEventListener('click', () => setBorderWidth(btn.dataset.border, true));
+  });
+
+  // TEMA CLARO BLANCO PURO / OSCURO
+  const setTheme = (theme, notify = false) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light', isLight);
+    $('#themeIcon').textContent = isLight ? '☾' : '☼';
+    $('#themeLabel').textContent = isLight ? 'Oscuro' : 'Claro';
+    $$('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+    localStorage.setItem('equip-theme-mode', theme);
+    if (notify) showToast('Tema', `Modo ${isLight ? 'claro' : 'oscuro'} activado.`);
+  };
+
+  $('#themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light', true);
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)));
+
+  // MODAL APARIENCIA
+  const appearanceBackdrop = $('#appearanceBackdrop');
+  $('#settingsItem').addEventListener('click', () => appearanceBackdrop.classList.add('show'));
+  $('#closeAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+  $('#doneAppearance').addEventListener('click', () => appearanceBackdrop.classList.remove('show'));
+
+  // SIDEBAR FLOTANTE
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebarBackdrop');
+
+  const toggleSidebar = () => {
+    const isOpen = sidebar.classList.toggle('open');
+    if (window.innerWidth <= 768) {
+      backdrop.classList.toggle('show', isOpen);
+    }
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  };
+
+  $('#menuBtn').addEventListener('click', toggleSidebar);
+  $('#mobileMenuBtn').addEventListener('click', toggleSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // RESTAURACIÓN DE PREFERENCIAS
+  const savedTheme = localStorage.getItem('equip-theme-mode') || 'dark';
+  const savedBorder = localStorage.getItem('equip-border-width') || '2px';
+  setTheme(savedTheme, false);
+  setBorderWidth(savedBorder, false);
+
+  // INICIALIZACIÓN
+  updateKPIs();
+  renderEquipment();
+
+  // ATAJOS DE TECLADO
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      modalEquipment.classList.remove('show');
+      $('#modalQuickDetail').classList.remove('show');
+      appearanceBackdrop.classList.remove('show');
+      closeSidebar();
+    }
+    if ((e.key === 'm' || e.key === 'M') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      toggleSidebar();
+    }
+  });
+})();
+</script>
+</body>
+</html>
