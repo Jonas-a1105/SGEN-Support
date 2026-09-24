@@ -85,13 +85,8 @@ defineProps<{
 
 @media (max-width: 980px) {
     .kpi-row-4cols {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .kpi-row-4cols {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
     }
 }
 </style>

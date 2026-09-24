@@ -92,6 +92,11 @@ const computedTrendClass = computed(() => {
     position: relative;
     overflow: hidden;
     box-shadow: none !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 84px;
+    width: 100%;
 }
 
 .kpi.is-clickable {
@@ -108,11 +113,20 @@ const computedTrendClass = computed(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .kpi-info {
+    flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
 }
 
 .kpi-label {
@@ -125,6 +139,8 @@ const computedTrendClass = computed(() => {
     text-transform: none !important;
     font-weight: 500;
     line-height: 1.2;
+    text-align: left;
+    width: 100%;
 }
 
 .kpi-value {
@@ -133,6 +149,11 @@ const computedTrendClass = computed(() => {
     line-height: 1.1;
     color: var(--text);
     letter-spacing: -0.02em;
+    text-align: left;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .kpi-change {
@@ -143,6 +164,7 @@ const computedTrendClass = computed(() => {
     gap: 4px;
     white-space: nowrap;
     color: var(--text-muted);
+    text-align: left;
 }
 
 .kpi-change.up {
@@ -207,23 +229,33 @@ const computedTrendClass = computed(() => {
 }
 
 @media (max-width: 768px) {
+    .kpi {
+        min-height: 72px;
+    }
+
     .kpi .card-pad {
         padding: 12px 14px;
+        gap: 8px;
+    }
+
+    .kpi-label {
+        font-size: 11px;
+        margin-bottom: 3px;
     }
 
     .kpi-value {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .kpi-icon {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
     }
 
     .kpi-icon :deep(svg),
     .kpi-icon svg {
-        width: 17px;
-        height: 17px;
+        width: 16px;
+        height: 16px;
     }
 }
 </style>

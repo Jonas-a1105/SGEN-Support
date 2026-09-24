@@ -96,10 +96,4 @@ const emit = defineEmits<{
         gap: 10px;
     }
 }
-
-@media (max-width: 480px) {
-    .kpi-grid {
-        grid-template-columns: 1fr !important;
-    }
-}
 </style>

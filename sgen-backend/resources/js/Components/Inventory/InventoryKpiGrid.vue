@@ -79,9 +79,14 @@ const lowStockCount = computed<number>(() => {
     margin-bottom: var(--space-4, 16px);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .kpi-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+
+    .kpi-row > :last-child:nth-child(odd) {
+        grid-column: span 2;
     }
 }
 </style>

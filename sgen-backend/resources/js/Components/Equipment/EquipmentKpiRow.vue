@@ -77,13 +77,8 @@ defineProps<{
 
 @media (max-width: 900px) {
     .kpi-row {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .kpi-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
     }
 }
 </style>

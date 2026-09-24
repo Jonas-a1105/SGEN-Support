@@ -157,8 +157,15 @@ const isEditModalOpen = ref(false);
 
 .maint-kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
+}
+
+@media (max-width: 1024px) {
+    .maint-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
 }
 
 .maint-content-grid {

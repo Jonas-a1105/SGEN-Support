@@ -58,8 +58,19 @@ defineProps<{
 <style scoped>
 .kpi-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
     margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+    .kpi-row {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+
+    .kpi-row > :last-child:nth-child(odd) {
+        grid-column: span 2;
+    }
 }
 </style>

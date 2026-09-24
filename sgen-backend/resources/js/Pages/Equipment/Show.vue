@@ -217,7 +217,8 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
 
 @media (max-width: 1024px) {
     .equip-kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
     }
 
     .equip-content-layout {
@@ -226,10 +227,6 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
 }
 
 @media (max-width: 640px) {
-    .equip-kpi-grid {
-        grid-template-columns: 1fr;
-    }
-
     .equip-show-container {
         gap: 16px;
     }

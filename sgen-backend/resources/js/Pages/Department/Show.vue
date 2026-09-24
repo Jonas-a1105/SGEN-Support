@@ -243,15 +243,12 @@ const handleConfirmUnlink = () => {
 
 @media (max-width: 1024px) {
     .dept-kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
     }
 }
 
 @media (max-width: 640px) {
-    .dept-kpi-grid {
-        grid-template-columns: 1fr;
-    }
-
     .dept-show-container {
         gap: 16px;
     }

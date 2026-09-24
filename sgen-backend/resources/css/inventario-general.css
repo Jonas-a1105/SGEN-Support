@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --bg: #111214;
     --bg-card: #17181a;
     --bg-sub: #1e2024;
@@ -550,8 +550,8 @@
   }
 
   .kpi {
-    cursor: pointer;
-    min-height: 98px;
+    cursor: default;
+    min-height: 84px;
   }
 
   .kpi .card-pad {
@@ -1430,9 +1430,6 @@
     .main {
       margin-left: 78px;
     }
-    .kpi-row {
-      grid-template-columns: repeat(3, 1fr);
-    }
     .detail-layout-grid,
     .form-grid-layout {
       grid-template-columns: 1fr;
@@ -1515,7 +1512,12 @@
     }
 
     .kpi-row {
-      grid-template-columns: 1fr !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px !important;
+    }
+
+    .kpi-row > :last-child:nth-child(odd) {
+      grid-column: span 2;
     }
 
     .form-row-2, .form-row-3, .spec-grid-cards {
@@ -1534,6 +1536,15 @@
   }
 
   @media (max-width: 480px) {
+    .kpi-row {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px !important;
+    }
+
+    .kpi-row > :last-child:nth-child(odd) {
+      grid-column: span 2;
+    }
+
     .header-tools span:not(.tool-icon) {
       display: none;
     }
