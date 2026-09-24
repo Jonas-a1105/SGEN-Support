@@ -18,4 +18,5 @@ return [
     \Modules\Settings\SettingsModuleServiceProvider::class,
     \Modules\About\AboutModuleServiceProvider::class,
     \App\Infrastructure\Maintenance\Providers\MaintenanceModuleServiceProvider::class,
+    \App\Infrastructure\Reports\Providers\ReportsModuleServiceProvider::class,
 ];
