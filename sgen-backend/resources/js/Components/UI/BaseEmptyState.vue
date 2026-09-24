@@ -18,13 +18,19 @@ withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
     (e: 'action'): void;
 }>();
+
+const isFontAwesome = (ic?: string): boolean => {
+    if (!ic) return false;
+    return ic.startsWith('fa-') || ic.includes('fa ') || ic.includes('fa-solid') || ic.includes('fa-regular') || ic.includes('fa-brands');
+};
 </script>
 
 <template>
     <div class="base-empty-state">
         <div class="empty-icon-box">
             <slot name="icon">
-                <svg v-if="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <i v-if="isFontAwesome(icon)" :class="icon" aria-hidden="true" />
+                <svg v-else-if="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path :d="icon" />
                 </svg>
                 <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -81,6 +87,11 @@ const emit = defineEmits<{
 .empty-icon-box svg {
     width: 22px;
     height: 22px;
+}
+
+.empty-icon-box i {
+    font-size: 20px;
+    color: var(--text-dim);
 }
 
 .empty-title {

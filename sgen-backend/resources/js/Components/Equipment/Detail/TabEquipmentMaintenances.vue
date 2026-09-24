@@ -6,7 +6,7 @@ import type { EquipmentMaintenance } from './types';
 
 const props = defineProps<{
     maintenances: EquipmentMaintenance[];
-    equipmentId: number;
+    equipmentId?: number;
 }>();
 </script>
 

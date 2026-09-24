@@ -1,22 +1,37 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { BaseKpiCard } from '@/Components/UI';
 
-defineProps<{
-    kpis: {
-        total_products: number;
-        total_stock: number;
-        low_stock_count: number;
-    };
+const props = defineProps<{
+    kpis?: Record<string, unknown>;
 }>();
 
 const emit = defineEmits<{ (e: 'filter-low-stock'): void }>();
+
+const totalItems = computed<number>(() => {
+    const k = props.kpis;
+    if (!k) return 0;
+    return Number(k.total_items ?? k.totalItems ?? k.total_products ?? 0);
+});
+
+const totalUnits = computed<number>(() => {
+    const k = props.kpis;
+    if (!k) return 0;
+    return Number(k.total_units ?? k.totalUnits ?? k.total_stock ?? 0);
+});
+
+const lowStockCount = computed<number>(() => {
+    const k = props.kpis;
+    if (!k) return 0;
+    return Number(k.low_stock_count ?? k.lowStockCount ?? 0);
+});
 </script>
 
 <template>
     <div class="kpi-row">
         <BaseKpiCard
             label="Total artículos"
-            :value="kpis.total_products"
+            :value="totalItems"
             color="blue"
         >
             <template #icon>
@@ -30,7 +45,7 @@ const emit = defineEmits<{ (e: 'filter-low-stock'): void }>();
 
         <BaseKpiCard
             label="Stock total"
-            :value="`${kpis.total_stock} unidades`"
+            :value="`${totalUnits} unidades`"
             color="green"
         >
             <template #icon>
@@ -44,7 +59,7 @@ const emit = defineEmits<{ (e: 'filter-low-stock'): void }>();
 
         <BaseKpiCard
             label="Stock bajo"
-            :value="`${kpis.low_stock_count} artículos`"
+            :value="`${lowStockCount} artículos`"
             color="yellow"
             :clickable="true"
             @click="emit('filter-low-stock')"

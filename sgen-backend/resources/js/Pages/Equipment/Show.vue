@@ -146,11 +146,13 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
                             <TabEquipmentTickets
                                 v-else-if="activeTab === 'support'"
                                 :tickets="equipment.tickets"
+                                :equipment-id="equipment.id"
                             />
 
                             <TabEquipmentMaintenances
                                 v-else-if="activeTab === 'maintenance'"
                                 :maintenances="equipment.maintenances"
+                                :equipment-id="equipment.id"
                             />
                         </div>
                     </div>

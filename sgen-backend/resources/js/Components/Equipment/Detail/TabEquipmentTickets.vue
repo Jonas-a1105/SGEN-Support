@@ -5,7 +5,7 @@ import type { EquipmentTicket } from './types';
 
 const props = defineProps<{
     tickets: EquipmentTicket[];
-    equipmentId: number;
+    equipmentId?: number;
 }>();
 
 const getTicketStatusVariant = (st: string): 'warning' | 'info' | 'neutral' | 'success' => {

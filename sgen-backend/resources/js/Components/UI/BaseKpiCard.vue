@@ -3,7 +3,7 @@ import { computed } from 'vue';
 
 interface Props {
     label: string;
-    value: string | number;
+    value?: string | number | null;
     subtext?: string;
     trend?: 'up' | 'down' | 'neutral' | '';
     icon?: string;
@@ -13,6 +13,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+    value: 0,
     subtext: '',
     trend: '',
     icon: '',
@@ -24,6 +25,11 @@ const props = withDefaults(defineProps<Props>(), {
 defineEmits<{
     (e: 'click', event: MouseEvent): void;
 }>();
+
+const isFontAwesome = (ic?: string): boolean => {
+    if (!ic) return false;
+    return ic.startsWith('fa-') || ic.includes('fa ') || ic.includes('fa-solid') || ic.includes('fa-regular') || ic.includes('fa-brands');
+};
 
 const computedTrendClass = computed(() => {
     if (props.trend) {
@@ -51,13 +57,14 @@ const computedTrendClass = computed(() => {
         <div class="card-pad">
             <div class="kpi-info">
                 <div class="kpi-label">{{ label }}</div>
-                <div class="kpi-value">{{ value }}</div>
+                <div class="kpi-value">{{ value ?? 0 }}</div>
                 <div v-if="subtext" :class="['kpi-change', computedTrendClass]">{{ subtext }}</div>
             </div>
 
             <div class="kpi-icon">
                 <slot name="icon">
-                    <svg v-if="icon" viewBox="0 0 24 24">
+                    <i v-if="isFontAwesome(icon)" :class="icon" aria-hidden="true" />
+                    <svg v-else-if="icon" viewBox="0 0 24 24">
                         <path :d="icon" />
                     </svg>
                 </slot>
@@ -169,6 +176,11 @@ const computedTrendClass = computed(() => {
     stroke: currentColor;
     fill: none;
     stroke-width: 1.8;
+}
+
+.kpi-icon i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 /* Colores de variantes */
