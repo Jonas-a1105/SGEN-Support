@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
+
 defineProps<{
     codigoInventario: string;
     numeroSerie: string;
@@ -16,6 +18,21 @@ const emit = defineEmits<{
     (e: 'update:marca', val: string): void;
     (e: 'update:modelo', val: string): void;
 }>();
+
+const typeOptions = [
+    { value: 'CAMARA', label: 'CAMARA' },
+    { value: 'Computadora', label: 'Computadora' },
+    { value: 'Impresora', label: 'Impresora' },
+    { value: 'Servidor', label: 'Servidor' },
+    { value: 'Otro', label: 'Otro' },
+];
+
+const statusOptions = [
+    { value: 'Disponible', label: 'Disponible' },
+    { value: 'En uso', label: 'En uso' },
+    { value: 'Reparación', label: 'Reparación' },
+    { value: 'Baja', label: 'Baja' },
+];
 </script>
 
 <template>
@@ -50,39 +67,22 @@ const emit = defineEmits<{
         </div>
 
         <div class="form-row-2">
-            <div class="form-group">
-                <label class="form-label" for="wizType">
-                    Tipo de Equipo <span class="required-asterisk">*</span>
-                </label>
-                <select
-                    :value="tipo"
-                    class="form-select"
-                    id="wizType"
-                    @change="emit('update:tipo', ($event.target as HTMLSelectElement).value)"
-                >
-                    <option value="CAMARA">CAMARA</option>
-                    <option value="Computadora">Computadora</option>
-                    <option value="Impresora">Impresora</option>
-                    <option value="Servidor">Servidor</option>
-                    <option value="Otro">Otro</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="wizStatus">
-                    Estado Inicial <span class="required-asterisk">*</span>
-                </label>
-                <select
-                    :value="estado"
-                    class="form-select"
-                    id="wizStatus"
-                    @change="emit('update:estado', ($event.target as HTMLSelectElement).value)"
-                >
-                    <option value="Disponible">Disponible</option>
-                    <option value="En uso">En uso</option>
-                    <option value="Reparación">Reparación</option>
-                    <option value="Baja">Baja</option>
-                </select>
-            </div>
+            <BaseCombobox
+                :model-value="tipo"
+                label="Tipo de Equipo *"
+                :options="typeOptions"
+                :searchable="false"
+                required
+                @update:model-value="(val) => emit('update:tipo', String(val ?? ''))"
+            />
+            <BaseCombobox
+                :model-value="estado"
+                label="Estado Inicial *"
+                :options="statusOptions"
+                :searchable="false"
+                required
+                @update:model-value="(val) => emit('update:estado', String(val ?? ''))"
+            />
         </div>
 
         <div class="form-row-2">
@@ -127,6 +127,7 @@ const emit = defineEmits<{
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-4);
+    align-items: flex-end;
 }
 
 .form-group {
@@ -147,8 +148,7 @@ const emit = defineEmits<{
     color: var(--red);
 }
 
-.form-input,
-.form-select {
+.form-input {
     width: 100%;
     padding: 10px 14px;
     border-radius: var(--radius-md);
@@ -161,8 +161,7 @@ const emit = defineEmits<{
     transition: border-color var(--transition-fast);
 }
 
-.form-input:focus,
-.form-select:focus {
+.form-input:focus {
     border-color: var(--orange);
 }
 

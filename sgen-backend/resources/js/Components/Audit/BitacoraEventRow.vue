@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import BaseBadge from '@/Components/UI/BaseBadge.vue';
+import type { BadgeVariant } from '@/Utils/badgeVariants';
 import type { BitacoraActionItem } from '@/Composables/useAuditFilters';
 
 const props = defineProps<{
@@ -52,6 +54,18 @@ const entityLabel = computed(() => {
         general: 'Sistema',
     };
     return map[entityType.value] || 'Sistema';
+});
+
+const entityBadgeVariant = computed<BadgeVariant>(() => {
+    switch (entityType.value) {
+        case 'ticket': return 'info';
+        case 'equipment': return 'warning';
+        case 'user': return 'primary';
+        case 'dept': return 'neutral';
+        case 'inventory': return 'success';
+        case 'security': return 'danger';
+        default: return 'neutral';
+    }
 });
 </script>
 
@@ -131,12 +145,12 @@ const entityLabel = computed(() => {
                     <span> {{ action.accion }}</span>
                 </p>
                 <div class="timeline-event-meta">
-                    <span class="meta-tag" :class="`tag-${entityType}`">
+                    <BaseBadge :variant="entityBadgeVariant" size="sm">
                         {{ entityLabel }}
-                    </span>
-                    <span v-if="action.enlace_id || action.entidad_id" class="meta-id">
+                    </BaseBadge>
+                    <BaseBadge v-if="action.enlace_id || action.entidad_id" variant="code" size="sm">
                         #{{ action.enlace_id || action.entidad_id }}
-                    </span>
+                    </BaseBadge>
                     <span class="dot-sep">•</span>
                     <span class="meta-ip">IP: {{ action.ip_address || '127.0.0.1' }}</span>
                 </div>
@@ -326,63 +340,6 @@ const entityLabel = computed(() => {
     font-size: 11px;
     color: var(--text-muted, #8e9199);
     flex-wrap: wrap;
-}
-
-.meta-tag {
-    padding: 2px 7px;
-    border-radius: 6px;
-    font-size: 10px;
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    border: 1px solid transparent;
-}
-
-.tag-user {
-    background: rgba(59, 130, 246, 0.12);
-    color: #3b82f6;
-    border-color: rgba(59, 130, 246, 0.3);
-}
-
-.tag-ticket {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border-color: rgba(16, 185, 129, 0.3);
-}
-
-.tag-equipment {
-    background: rgba(249, 115, 22, 0.12);
-    color: #f97316;
-    border-color: rgba(249, 115, 22, 0.3);
-}
-
-.tag-dept {
-    background: rgba(139, 92, 246, 0.12);
-    color: #8b5cf6;
-    border-color: rgba(139, 92, 246, 0.3);
-}
-
-.tag-inventory {
-    background: rgba(8, 145, 178, 0.12);
-    color: #0891b2;
-    border-color: rgba(8, 145, 178, 0.3);
-}
-
-.tag-security {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.tag-general {
-    background: var(--stroke-subtle, #23252a);
-    color: var(--text-muted, #8e9199);
-}
-
-.meta-id {
-    font-family: var(--font-mono, monospace);
-    font-size: 11px;
-    color: var(--text, #f4f4f6);
 }
 
 .dot-sep {

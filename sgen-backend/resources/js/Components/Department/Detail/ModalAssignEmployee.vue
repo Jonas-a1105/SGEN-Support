@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { BaseModal, BaseButton } from '@/Components/UI';
+import { BaseModal, BaseButton, BaseCombobox } from '@/Components/UI';
+import type { ComboboxOption } from '@/Components/UI';
 import type { DepartmentDetail } from './types';
 
 const props = defineProps<{
@@ -15,6 +16,14 @@ const emit = defineEmits<{
 
 const selectedEmployeeId = ref<number | ''>('');
 const isSubmitting = ref(false);
+
+const employeeOptions = computed<ComboboxOption[]>(() => {
+    return (props.department.candidatosEmpleados || []).map((cand) => ({
+        value: cand.id,
+        label: cand.nombre,
+        sublabel: cand.cargo,
+    }));
+});
 
 watch(
     () => props.isOpen,
@@ -54,27 +63,17 @@ const handleAssign = () => {
         @close="emit('close')"
     >
         <form @submit.prevent="handleAssign" class="modal-form-stack">
-            <div class="form-group">
-                <label class="form-label" for="select-assign-emp">Seleccionar Colaborador Disponible</label>
-                <select
-                    id="select-assign-emp"
-                    v-model="selectedEmployeeId"
-                    class="form-control-select"
-                    required
-                >
-                    <option value="" disabled>Seleccione un colaborador...</option>
-                    <option
-                        v-for="cand in department.candidatosEmpleados"
-                        :key="cand.id"
-                        :value="cand.id"
-                    >
-                        {{ cand.nombre }} ({{ cand.cargo }})
-                    </option>
-                </select>
-                <p class="form-help">
-                    El colaborador seleccionado pasará a pertenecer oficialmente al departamento {{ department.nombre }}.
-                </p>
-            </div>
+            <BaseCombobox
+                :model-value="selectedEmployeeId"
+                label="Seleccionar Colaborador Disponible"
+                placeholder="Seleccione un colaborador..."
+                search-placeholder="Buscar colaborador por nombre o cargo..."
+                :options="employeeOptions"
+                :searchable="true"
+                required
+                :help-text="`El colaborador seleccionado pasará a pertenecer oficialmente al departamento ${department.nombre}.`"
+                @update:model-value="(val) => { selectedEmployeeId = val ? Number(val) : ''; }"
+            />
 
             <div class="modal-actions-bar">
                 <BaseButton type="button" variant="subtle" size="md" @click="emit('close')">
@@ -93,41 +92,6 @@ const handleAssign = () => {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.form-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.form-control-select {
-    width: 100%;
-    height: 42px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--stroke);
-    background: var(--bg-sub);
-    color: var(--text);
-    font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
-}
-
-.form-control-select:focus {
-    border-color: var(--brand);
-}
-
-.form-help {
-    margin: 0;
-    font-size: 12px;
-    color: var(--text-dim);
 }
 
 .modal-actions-bar {

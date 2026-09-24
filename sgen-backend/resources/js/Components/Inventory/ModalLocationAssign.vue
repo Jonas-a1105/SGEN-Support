@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { watch, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import type { Equipment, Department, Employee } from '@/Types/inventory';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
+import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -16,18 +17,31 @@ const emit = defineEmits<{ (e: 'close'): void }>();
 
 const form = useForm({
     equipo_id: props.equipment?.id || 0,
-    departamento_id: props.equipment?.departamento_id || null,
-    empleado_id: props.equipment?.empleado_id || null,
+    departamento_id: (props.equipment?.departamento_id ? String(props.equipment.departamento_id) : '') as string | number,
+    empleado_id: (props.equipment?.empleado_id ? String(props.equipment.empleado_id) : '') as string | number,
     ubicacion_fisica: props.equipment?.ubicacion_fisica || '',
 });
+
+const deptOptions = computed<ComboboxOption[]>(() => [
+    { value: '', label: 'No Asignado (Almacén Informática)' },
+    ...props.departamentos.map((d) => ({ value: d.id, label: d.nombre })),
+]);
+
+const empOptions = computed<ComboboxOption[]>(() => [
+    { value: '', label: 'Sin asignar' },
+    ...props.empleados.map((emp) => ({
+        value: emp.id,
+        label: `${emp.nombre} ${emp.apellido || ''}`.trim(),
+    })),
+]);
 
 watch(
     () => props.equipment,
     (newEq) => {
         if (newEq) {
             form.equipo_id = newEq.id;
-            form.departamento_id = newEq.departamento_id || null;
-            form.empleado_id = newEq.empleado_id || null;
+            form.departamento_id = newEq.departamento_id ? String(newEq.departamento_id) : '';
+            form.empleado_id = newEq.empleado_id ? String(newEq.empleado_id) : '';
             form.ubicacion_fisica = newEq.ubicacion_fisica || '';
         }
     },
@@ -35,7 +49,11 @@ watch(
 );
 
 const submit = () => {
-    form.post('/equipos/reasignar', {
+    form.transform((data) => ({
+        ...data,
+        departamento_id: data.departamento_id ? Number(data.departamento_id) : null,
+        empleado_id: data.empleado_id ? Number(data.empleado_id) : null,
+    })).post('/equipos/reasignar', {
         preserveScroll: true,
         onSuccess: () => emit('close'),
     });
@@ -59,23 +77,25 @@ const submit = () => {
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Nuevo Departamento</label>
-                <select v-model="form.departamento_id" class="form-select" id="reassignDept">
-                    <option :value="null">No Asignado (Almacén Informática)</option>
-                    <option v-for="d in departamentos" :key="d.id" :value="d.id">{{ d.nombre }}</option>
-                </select>
-            </div>
+            <BaseCombobox
+                v-model="form.departamento_id"
+                label="Nuevo Departamento"
+                placeholder="Seleccione un departamento..."
+                search-placeholder="Buscar departamento..."
+                :options="deptOptions"
+                :searchable="true"
+                clearable
+            />
 
-            <div class="form-group">
-                <label class="form-label">Usuario Asignado</label>
-                <select v-model="form.empleado_id" class="form-select" id="reassignUser">
-                    <option :value="null">-- Sin asignar --</option>
-                    <option v-for="emp in empleados" :key="emp.id" :value="emp.id">
-                        {{ emp.nombre }} {{ emp.apellido || '' }}
-                    </option>
-                </select>
-            </div>
+            <BaseCombobox
+                v-model="form.empleado_id"
+                label="Usuario Asignado"
+                placeholder="Seleccione un custodio..."
+                search-placeholder="Buscar colaborador..."
+                :options="empOptions"
+                :searchable="true"
+                clearable
+            />
 
             <div class="modal-actions-row">
                 <BaseButton variant="secondary" id="cancelLocModal" type="button" @click="emit('close')">
@@ -113,37 +133,6 @@ const submit = () => {
     font-size: 11px;
     color: var(--text-dim);
     font-family: var(--font-mono);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-}
-
-.form-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-weight: 600;
-}
-
-.form-select {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: var(--radius-md);
-    border: var(--stroke-w) solid var(--stroke);
-    background: transparent;
-    color: var(--text);
-    font-size: 13px;
-    font-family: var(--font-sans);
-    outline: none;
-    transition: border-color var(--transition-fast);
-}
-
-.form-select:focus {
-    border-color: var(--orange);
 }
 
 .modal-actions-row {

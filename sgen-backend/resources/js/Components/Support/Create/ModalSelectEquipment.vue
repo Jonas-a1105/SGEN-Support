@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseModal from '@/Components/UI/BaseModal.vue';
 import type { FormEquipment } from './types';
 
 defineProps<{
@@ -13,79 +14,41 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div v-if="isOpen" class="tf-modal-backdrop" @click.self="emit('close')">
-        <div class="tf-modal-box">
-            <div class="tf-modal-head">
-                <h3 class="tf-modal-title">Seleccionar Equipo</h3>
-                <button type="button" class="tf-modal-close" @click="emit('close')">×</button>
-            </div>
-            <div class="tf-modal-body">
-                <p class="tf-modal-desc">Se encontraron varios equipos coincidentes. Selecciona el activo correspondiente:</p>
-                <div class="tf-modal-list">
-                    <div
-                        v-for="eq in equipments"
-                        :key="eq.id"
-                        class="tf-modal-item"
-                        @click="emit('select', eq)"
-                    >
-                        <div>
-                            <b class="tf-item-name">{{ eq.type }} - {{ eq.model }}</b>
-                            <span class="tf-item-meta">Serial: {{ eq.serial || eq.code }} • {{ eq.department }} • {{ eq.assigned_to }}</span>
-                        </div>
-                        <span class="tf-item-btn">Seleccionar</span>
+    <BaseModal
+        :show="isOpen"
+        title="Seleccionar Equipo"
+        max-width="md"
+        @close="emit('close')"
+    >
+        <div class="tf-modal-body">
+            <p class="tf-modal-desc">Se encontraron varios equipos coincidentes. Selecciona el activo correspondiente:</p>
+            <div class="tf-modal-list">
+                <div
+                    v-for="eq in equipments"
+                    :key="eq.id"
+                    class="tf-modal-item"
+                    @click="emit('select', eq)"
+                    role="button"
+                    tabindex="0"
+                >
+                    <div>
+                        <b class="tf-item-name">{{ eq.type }} - {{ eq.model }}</b>
+                        <span class="tf-item-meta">Serial: {{ eq.serial || eq.code }} • {{ eq.department }} • {{ eq.assigned_to }}</span>
                     </div>
+                    <span class="tf-item-btn">Seleccionar</span>
+                </div>
+                <div v-if="equipments.length === 0" class="empty-notice">
+                    No se encontraron equipos.
                 </div>
             </div>
         </div>
-    </div>
+    </BaseModal>
 </template>
 
 <style scoped>
-.tf-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    display: grid;
-    place-items: center;
-    z-index: 1000;
-    padding: 16px;
-}
-
-.tf-modal-box {
-    background: var(--bg-card, #17181a);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    border-radius: 16px;
-    max-width: 520px;
-    width: 100%;
-    overflow: hidden;
-    box-shadow: none !important;
-}
-
-.tf-modal-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
-}
-
-.tf-modal-title {
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    color: var(--text, #f4f4f6);
-    margin: 0;
-}
-
-.tf-modal-close {
-    background: transparent;
-    border: none;
-    color: var(--text-muted, #8e9199);
-    font-size: 20px;
-    cursor: pointer;
-}
-
 .tf-modal-body {
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .tf-modal-desc {
@@ -98,7 +61,7 @@ const emit = defineEmits<{
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 280px;
+    max-height: 320px;
     overflow-y: auto;
 }
 
@@ -133,10 +96,17 @@ const emit = defineEmits<{
 .tf-item-btn {
     font-size: 11px;
     font-weight: 600;
-    color: var(--orange, #2563eb);
+    color: var(--blue, #2563eb);
     padding: 4px 8px;
     background: rgba(37, 99, 235, 0.1);
     border-radius: 6px;
     white-space: nowrap;
+}
+
+.empty-notice {
+    text-align: center;
+    padding: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
 }
 </style>

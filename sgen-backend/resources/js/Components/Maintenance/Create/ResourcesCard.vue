@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
 import type { Technician } from './types';
 
-defineProps<{
+const props = defineProps<{
     tecnicoId: string;
     costo: string;
     technicians?: Technician[];
@@ -11,6 +13,14 @@ const emit = defineEmits<{
     (e: 'update:tecnicoId', val: string): void;
     (e: 'update:costo', val: string): void;
 }>();
+
+const technicianOptions = computed<ComboboxOption[]>(() => {
+    return (props.technicians || []).map((tech) => ({
+        value: tech.id,
+        label: tech.name,
+        sublabel: 'Soporte TI',
+    }));
+});
 </script>
 
 <template>
@@ -24,23 +34,16 @@ const emit = defineEmits<{
             <span>4. Recursos</span>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">Asignado a (Técnico)</label>
-            <select
-                :value="tecnicoId"
-                class="form-select"
-                @change="emit('update:tecnicoId', ($event.target as HTMLSelectElement).value)"
-            >
-                <option value="">Seleccionar técnico...</option>
-                <option
-                    v-for="tech in technicians"
-                    :key="tech.id"
-                    :value="tech.id"
-                >
-                    {{ tech.name }} (Soporte TI)
-                </option>
-            </select>
-        </div>
+        <BaseCombobox
+            :model-value="tecnicoId"
+            label="Asignado a (Técnico)"
+            placeholder="Seleccionar técnico..."
+            search-placeholder="Buscar técnico..."
+            :options="technicianOptions"
+            :searchable="true"
+            clearable
+            @update:model-value="(val) => emit('update:tecnicoId', String(val ?? ''))"
+        />
 
         <div class="form-group">
             <label class="form-label">Costo Estimado ($)</label>
@@ -50,6 +53,7 @@ const emit = defineEmits<{
                 class="form-input"
                 step="0.01"
                 min="0"
+                placeholder="0.00"
                 @input="emit('update:costo', ($event.target as HTMLInputElement).value)"
             />
         </div>
@@ -97,19 +101,19 @@ const emit = defineEmits<{
 }
 
 .form-label {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     color: var(--text-muted);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
-.form-input,
-.form-select {
+.form-input {
     width: 100%;
     padding: 10px 14px;
-    border-radius: 12px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-sub);
+    border-radius: var(--radius-sm, 6px);
+    border: 1px solid var(--stroke);
+    background: var(--bg-card);
     color: var(--text);
     font-size: 13px;
     outline: none;
@@ -117,8 +121,7 @@ const emit = defineEmits<{
     box-shadow: none !important;
 }
 
-.form-input:focus,
-.form-select:focus {
+.form-input:focus {
     border-color: var(--orange);
 }
 </style>

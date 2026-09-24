@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { BaseBadge, BaseButton, BaseAvatar } from '@/Components/UI';
 import type { TicketComment } from '@/types/support';
 
 interface Props {
@@ -52,7 +53,9 @@ const sendComment = () => {
                     </svg>
                 </div>
                 <h2 class="panel-title">HILO DE CONVERSACIÓN</h2>
-                <span class="count-badge">{{ comments.length }}</span>
+                <BaseBadge variant="neutral" size="sm">
+                    {{ comments.length }}
+                </BaseBadge>
             </div>
         </div>
 
@@ -62,13 +65,15 @@ const sendComment = () => {
                 <div v-for="c in comments" :key="c.id" class="chat-bubble-row">
                     <div class="chat-bubble">
                         <div class="chat-meta">
-                            <span v-if="c.is_internal" class="internal-tag">Interno</span>
+                            <BaseBadge v-if="c.is_internal" variant="danger" size="sm">
+                                Interno
+                            </BaseBadge>
                             <span>{{ c.time_ago }}</span>
                             <strong class="author-name">{{ c.author }}</strong>
                         </div>
                         <div class="chat-message-text">{{ c.comment }}</div>
                     </div>
-                    <div class="chat-user-avatar">{{ c.initial }}</div>
+                    <BaseAvatar :name="c.author" size="sm" />
                 </div>
             </div>
 
@@ -87,18 +92,18 @@ const sendComment = () => {
                         <span>{{ isInternal ? '🔒' : '👁' }}</span>
                         <span>{{ isInternal ? 'Solo técnicos (Interno)' : 'Visible para todos' }}</span>
                     </button>
-                    <button
-                        class="btn-send"
-                        type="button"
+                    <BaseButton
+                        variant="primary"
+                        size="sm"
                         :disabled="isSending || !newComment.trim()"
                         @click="sendComment"
                     >
                         <span>{{ isSending ? 'Enviando...' : 'Enviar' }}</span>
-                        <svg viewBox="0 0 24 24">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="send-svg">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                         </svg>
-                    </button>
+                    </BaseButton>
                 </div>
             </div>
         </div>
@@ -113,7 +118,9 @@ const sendComment = () => {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-shadow: none !important;
 }
+
 .panel-header-row {
     padding: 18px 22px;
     border-bottom: var(--stroke-w) solid var(--stroke-subtle);
@@ -121,11 +128,13 @@ const sendComment = () => {
     align-items: center;
     justify-content: space-between;
 }
+
 .panel-title-group {
     display: flex;
     align-items: center;
     gap: 10px;
 }
+
 .panel-title {
     margin: 0;
     font-size: 15px !important;
@@ -133,6 +142,7 @@ const sendComment = () => {
     color: var(--text);
     letter-spacing: -0.01em;
 }
+
 .panel-icon-pill {
     width: 32px;
     height: 32px;
@@ -143,6 +153,7 @@ const sendComment = () => {
     place-items: center;
     flex-shrink: 0;
 }
+
 .panel-icon-pill svg {
     width: 17px;
     height: 17px;
@@ -150,20 +161,14 @@ const sendComment = () => {
     fill: none;
     stroke-width: 2;
 }
-.count-badge {
-    background: rgba(79, 70, 229, 0.12);
-    color: var(--primary);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 700;
-}
+
 .panel-body-pad {
     padding: 22px;
     display: flex;
     flex-direction: column;
     gap: 18px;
 }
+
 .chat-thread-box {
     background: var(--bg-sub);
     border: var(--stroke-w) solid var(--stroke);
@@ -176,12 +181,14 @@ const sendComment = () => {
     overflow-y: auto;
     max-height: 440px;
 }
+
 .chat-bubble-row {
     display: flex;
     justify-content: flex-end;
     align-items: flex-start;
     gap: 10px;
 }
+
 .chat-bubble {
     background: var(--bg-card);
     border: var(--stroke-w) solid var(--stroke);
@@ -191,7 +198,9 @@ const sendComment = () => {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    box-shadow: none !important;
 }
+
 .chat-meta {
     display: flex;
     align-items: center;
@@ -200,36 +209,18 @@ const sendComment = () => {
     font-size: 11px;
     color: var(--text-muted);
 }
+
 .author-name {
     color: var(--text);
 }
-.internal-tag {
-    background: rgba(220, 38, 38, 0.15);
-    color: var(--color-red, #dc2626);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
+
 .chat-message-text {
     font-size: 14px;
     color: var(--text);
     line-height: 1.4;
     word-break: break-word;
 }
-.chat-user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--primary);
-    color: #ffffff;
-    display: grid;
-    place-items: center;
-    font-size: 11px;
-    font-weight: 700 !important;
-    flex-shrink: 0;
-}
+
 .composer-card {
     border: var(--stroke-w) solid var(--primary);
     border-radius: var(--card-radius);
@@ -240,7 +231,9 @@ const sendComment = () => {
     gap: 10px;
     position: relative;
     margin-top: 6px;
+    box-shadow: none !important;
 }
+
 .composer-legend {
     position: absolute;
     top: -10px;
@@ -251,6 +244,7 @@ const sendComment = () => {
     color: var(--primary);
     font-weight: 700 !important;
 }
+
 .composer-textarea {
     width: 100%;
     border: none;
@@ -262,6 +256,7 @@ const sendComment = () => {
     min-height: 52px;
     font-family: inherit;
 }
+
 .composer-footer {
     display: flex;
     align-items: center;
@@ -269,6 +264,7 @@ const sendComment = () => {
     gap: 12px;
     flex-wrap: wrap;
 }
+
 .visibility-toggle-btn {
     height: 30px;
     border-radius: 8px;
@@ -283,35 +279,16 @@ const sendComment = () => {
     gap: 6px;
     cursor: pointer;
     transition: all 0.18s ease;
+    box-shadow: none !important;
 }
+
 .visibility-toggle-btn:hover {
     color: var(--text);
     border-color: var(--stroke-hover);
 }
-.btn-send {
-    height: 34px;
-    padding: 0 16px;
-    background: var(--primary);
-    color: #ffffff;
-    border: none;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-}
-.btn-send:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-.btn-send svg {
+
+.send-svg {
     width: 14px;
     height: 14px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
 }
 </style>

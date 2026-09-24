@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
+import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
 import type { Equipment } from './types';
 
 const props = defineProps<{
@@ -11,19 +12,12 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
 }>();
 
-const assetSearchQuery = ref('');
-
-const filteredEquipments = computed(() => {
-    const list = props.equipments || [];
-    const q = assetSearchQuery.value.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(
-        (eq) =>
-            eq.code.toLowerCase().includes(q) ||
-            eq.model.toLowerCase().includes(q) ||
-            eq.type.toLowerCase().includes(q) ||
-            eq.department.toLowerCase().includes(q)
-    );
+const equipmentOptions = computed<ComboboxOption[]>(() => {
+    return (props.equipments || []).map((eq) => ({
+        value: eq.id,
+        label: `${eq.model} • ${eq.code}`,
+        sublabel: `${eq.type} - Depto: ${eq.department}`,
+    }));
 });
 </script>
 
@@ -38,40 +32,17 @@ const filteredEquipments = computed(() => {
             <span>1. Selección del Activo</span>
         </div>
 
-        <div class="form-group">
-            <div class="search-asset-wrap">
-                <svg viewBox="0 0 24 24" class="search-field-icon">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input
-                    v-model="assetSearchQuery"
-                    type="text"
-                    class="form-input search-input-padded"
-                    placeholder="Buscar por serial, nombre o código..."
-                    autocomplete="off"
-                />
-            </div>
-            <span class="helper-text">Ingrese el serial, código de activo o nombre para filtrar.</span>
-
-            <div class="asset-select-wrap">
-                <select
-                    :value="modelValue"
-                    class="form-select"
-                    required
-                    @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
-                >
-                    <option value="" disabled>-- Seleccione un equipo del inventario --</option>
-                    <option
-                        v-for="eq in filteredEquipments"
-                        :key="eq.id"
-                        :value="eq.id"
-                    >
-                        {{ eq.model }} • ID: {{ eq.code }} ({{ eq.department }})
-                    </option>
-                </select>
-            </div>
-        </div>
+        <BaseCombobox
+            :model-value="modelValue"
+            label="Equipo del Inventario"
+            placeholder="Seleccione un equipo del inventario..."
+            search-placeholder="Buscar por modelo, código, tipo o depto..."
+            :options="equipmentOptions"
+            :searchable="true"
+            required
+            help-text="Busque y seleccione el activo a registrar para servicio o mantenimiento."
+            @update:model-value="(val) => emit('update:modelValue', String(val ?? ''))"
+        />
     </div>
 </template>
 
@@ -107,62 +78,5 @@ const filteredEquipments = computed(() => {
     fill: none;
     stroke-width: 2;
     color: var(--orange);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.search-asset-wrap {
-    position: relative;
-}
-
-.search-field-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    stroke: var(--text-muted);
-    fill: none;
-    stroke-width: 2;
-    pointer-events: none;
-}
-
-.search-input-padded {
-    padding-left: 38px;
-}
-
-.asset-select-wrap {
-    margin-top: 6px;
-}
-
-.form-input,
-.form-select {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-sub);
-    color: var(--text);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s ease;
-    box-shadow: none !important;
-}
-
-.form-input:focus,
-.form-select:focus {
-    border-color: var(--orange);
-}
-
-.helper-text {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 4px;
-    line-height: 1.4;
 }
 </style>

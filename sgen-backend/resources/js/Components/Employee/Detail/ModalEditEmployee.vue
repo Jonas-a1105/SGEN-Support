@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { BaseModal, BaseButton, BaseInput } from '@/Components/UI';
+import { BaseModal, BaseButton, BaseInput, BaseCombobox } from '@/Components/UI';
+import type { ComboboxOption } from '@/Components/UI';
 import type { EmployeeDetail } from './types';
 
 const props = defineProps<{
@@ -13,6 +14,20 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
+const roleOptions: ComboboxOption[] = [
+    { value: 'tecnico', label: 'Técnico' },
+    { value: 'administrador', label: 'Administrador' },
+    { value: 'consultor', label: 'Consultor' },
+];
+
+const departmentOptions = computed<ComboboxOption[]>(() => [
+    { value: '', label: 'Sin departamento' },
+    ...(props.employee.departamentos || []).map((d) => ({
+        value: d.id,
+        label: d.nombre,
+    })),
+]);
+
 const editForm = ref({
     nombre: props.employee.nombre,
     apellido: props.employee.apellido,
@@ -20,7 +35,7 @@ const editForm = ref({
     cedula: props.employee.cedula ?? '',
     cargo: props.employee.cargo ?? '',
     telefono: props.employee.telefono ?? '',
-    departamento_id: props.employee.departamentoId ?? '',
+    departamento_id: props.employee.departamentoId ? String(props.employee.departamentoId) : '',
     rol: props.employee.rol,
 });
 
@@ -35,7 +50,7 @@ watch(
                 cedula: props.employee.cedula ?? '',
                 cargo: props.employee.cargo ?? '',
                 telefono: props.employee.telefono ?? '',
-                departamento_id: props.employee.departamentoId ?? '',
+                departamento_id: props.employee.departamentoId ? String(props.employee.departamentoId) : '',
                 rol: props.employee.rol,
             };
         }
@@ -55,7 +70,7 @@ const handleSave = () => {
             cedula: editForm.value.cedula || null,
             cargo: editForm.value.cargo || null,
             telefono: editForm.value.telefono || null,
-            departamento_id: editForm.value.departamento_id || null,
+            departamento_id: editForm.value.departamento_id ? Number(editForm.value.departamento_id) : null,
             rol: editForm.value.rol,
         },
         {
@@ -95,28 +110,21 @@ const handleSave = () => {
             </div>
 
             <div class="form-grid-2">
-                <div class="form-group">
-                    <label class="form-label">Departamento</label>
-                    <select v-model="editForm.departamento_id" class="form-control-select">
-                        <option value="">Sin departamento</option>
-                        <option
-                            v-for="d in employee.departamentos"
-                            :key="d.id"
-                            :value="d.id"
-                        >
-                            {{ d.nombre }}
-                        </option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Rol en Plataforma *</label>
-                    <select v-model="editForm.rol" class="form-control-select" required>
-                        <option value="tecnico">Técnico</option>
-                        <option value="administrador">Administrador</option>
-                        <option value="consultor">Consultor</option>
-                    </select>
-                </div>
+                <BaseCombobox
+                    v-model="editForm.departamento_id"
+                    label="Departamento"
+                    placeholder="Seleccione un departamento..."
+                    :options="departmentOptions"
+                    :searchable="true"
+                    clearable
+                />
+                <BaseCombobox
+                    v-model="editForm.rol"
+                    label="Rol en Plataforma *"
+                    :options="roleOptions"
+                    :searchable="false"
+                    required
+                />
             </div>
 
             <div class="modal-actions-bar">
@@ -148,34 +156,6 @@ const handleSave = () => {
     .form-grid-2 {
         grid-template-columns: 1fr 1fr;
     }
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.form-control-select {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-card);
-    color: var(--text);
-    font-size: 13px;
-    outline: none;
-    box-shadow: none !important;
-}
-
-.form-control-select:focus {
-    border-color: var(--blue, #3b82f6);
 }
 
 .modal-actions-bar {

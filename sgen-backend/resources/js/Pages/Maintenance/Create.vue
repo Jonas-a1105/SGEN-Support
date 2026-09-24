@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { BasePageHeader, BaseButton } from '@/Components/UI';
 import type { Equipment, Technician, FormOption, ChecklistTask } from '@/Components/Maintenance/Create/types';
 import AssetSelectionCard from '@/Components/Maintenance/Create/AssetSelectionCard.vue';
 import WorkDetailCard from '@/Components/Maintenance/Create/WorkDetailCard.vue';
@@ -96,45 +97,32 @@ const handleCancel = () => {
                 <span class="breadcrumb-current">Programar</span>
             </nav>
 
-            <!-- ENCABEZADO DEL FORMULARIO -->
-            <section class="module-header">
-                <div class="module-title-wrap">
-                    <div class="module-icon-box" aria-hidden="true">
-                        <svg viewBox="0 0 24 24">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                            <line x1="16" y1="2" x2="16" y2="6" />
-                            <line x1="8" y1="2" x2="8" y2="6" />
-                            <line x1="3" y1="10" x2="21" y2="10" />
-                            <line x1="12" y1="14" x2="12" y2="18" />
-                            <line x1="10" y1="16" x2="14" y2="16" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="module-title">Programar Mantenimiento</h1>
-                        <p class="module-subtitle">Complete los detalles técnicos y logísticos para la orden de trabajo.</p>
-                    </div>
-                </div>
-
-                <div class="header-action-group">
-                    <button class="btn-secondary-action" type="button" @click="handleCancel">
-                        <span>←</span>
-                        <span>Cancelar</span>
-                    </button>
-                    <button
-                        class="btn-primary-action"
+            <!-- ENCABEZADO DEL FORMULARIO CON BASEPAGEHEADER -->
+            <BasePageHeader
+                title="Programar Mantenimiento"
+                subtitle="Complete los detalles técnicos y logísticos para la orden de trabajo."
+            >
+                <template #actions>
+                    <BaseButton variant="subtle" size="md" type="button" @click="handleCancel">
+                        <span>← Cancelar</span>
+                    </BaseButton>
+                    <BaseButton
+                        variant="primary"
+                        size="md"
                         type="button"
                         :disabled="submitting"
+                        :loading="submitting"
                         @click="handleSubmit"
                     >
-                        <svg viewBox="0 0 24 24" class="save-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="save-icon">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                             <polyline points="7 10 12 15 17 10" />
                             <line x1="12" y1="15" x2="12" y2="3" />
                         </svg>
                         <span>{{ submitting ? 'Guardando...' : 'Guardar Orden' }}</span>
-                    </button>
-                </div>
-            </section>
+                    </BaseButton>
+                </template>
+            </BasePageHeader>
 
             <!-- CUADRÍCULA DEL FORMULARIO A 2 COLUMNAS -->
             <form class="schedule-grid-layout" @submit.prevent="handleSubmit">
@@ -212,114 +200,9 @@ const handleCancel = () => {
     font-weight: 600;
 }
 
-.module-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.module-title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.module-icon-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--blue, #2563eb);
-    color: #ffffff;
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    box-shadow: none !important;
-}
-
-.module-icon-box svg {
-    width: 22px;
-    height: 22px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-}
-
-.module-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text);
-    margin: 0;
-    line-height: 1.2;
-}
-
-.module-subtitle {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin: 3px 0 0;
-}
-
-.header-action-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.btn-secondary-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 16px;
-    border-radius: 12px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: transparent;
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: none !important;
-}
-
-.btn-secondary-action:hover {
-    background: var(--stroke-subtle);
-    border-color: var(--stroke-hover);
-}
-
-.btn-primary-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 18px;
-    border-radius: 12px;
-    border: var(--stroke-w) solid var(--blue, #2563eb);
-    background: var(--blue, #2563eb);
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: none !important;
-}
-
-.btn-primary-action:hover:not(:disabled) {
-    filter: brightness(1.08);
-}
-
-.btn-primary-action:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
 .save-icon {
     width: 16px;
     height: 16px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
 }
 
 .schedule-grid-layout {
@@ -338,16 +221,6 @@ const handleCancel = () => {
 @media (max-width: 980px) {
     .schedule-grid-layout {
         grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .module-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .header-action-group {
-        justify-content: space-between;
     }
 }
 </style>

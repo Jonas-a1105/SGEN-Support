@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
+
 defineProps<{
     name: string;
     category: string;
@@ -14,6 +16,20 @@ const emit = defineEmits<{
     (e: 'update:brand', val: string): void;
     (e: 'update:model', val: string): void;
 }>();
+
+const categoryOptions = [
+    { value: 'Consumibles', label: 'Consumibles' },
+    { value: 'Cables & Red', label: 'Cables & Red' },
+    { value: 'Hardware', label: 'Hardware' },
+    { value: 'Periféricos', label: 'Periféricos' },
+];
+
+const unitOptions = [
+    { value: 'Unidad', label: 'Unidad' },
+    { value: 'Metro', label: 'Metro' },
+    { value: 'Caja', label: 'Caja' },
+    { value: 'Pieza', label: 'Pieza' },
+];
 </script>
 
 <template>
@@ -36,33 +52,23 @@ const emit = defineEmits<{
         </div>
 
         <div class="form-row-2">
-            <div class="form-group">
-                <label class="form-label" for="selectItemCategory">Categoría</label>
-                <select
-                    :value="category"
-                    class="form-select"
-                    id="selectItemCategory"
-                    @change="emit('update:category', ($event.target as HTMLSelectElement).value)"
-                >
-                    <option value="Consumibles">Consumibles</option>
-                    <option value="Cables & Red">Cables & Red</option>
-                    <option value="Hardware">Hardware</option>
-                    <option value="Periféricos">Periféricos</option>
-                </select>
+            <div class="form-combobox-wrap">
+                <BaseCombobox
+                    :model-value="category"
+                    label="Categoría"
+                    :options="categoryOptions"
+                    :searchable="false"
+                    @update:model-value="(val) => emit('update:category', String(val ?? ''))"
+                />
             </div>
-            <div class="form-group">
-                <label class="form-label" for="selectItemUnit">Unidad de Medida</label>
-                <select
-                    :value="unitOfMeasure"
-                    class="form-select"
-                    id="selectItemUnit"
-                    @change="emit('update:unitOfMeasure', ($event.target as HTMLSelectElement).value)"
-                >
-                    <option value="Unidad">Unidad</option>
-                    <option value="Metro">Metro</option>
-                    <option value="Caja">Caja</option>
-                    <option value="Pieza">Pieza</option>
-                </select>
+            <div class="form-combobox-wrap">
+                <BaseCombobox
+                    :model-value="unitOfMeasure"
+                    label="Unidad de Medida"
+                    :options="unitOptions"
+                    :searchable="false"
+                    @update:model-value="(val) => emit('update:unitOfMeasure', String(val ?? ''))"
+                />
             </div>
         </div>
 
@@ -109,6 +115,10 @@ const emit = defineEmits<{
     margin-bottom: var(--space-3);
 }
 
+.form-combobox-wrap {
+    margin-bottom: var(--space-3);
+}
+
 .form-label {
     font-size: 11px;
     color: var(--text-muted);
@@ -127,8 +137,7 @@ const emit = defineEmits<{
     gap: var(--space-3);
 }
 
-.form-input,
-.form-select {
+.form-input {
     width: 100%;
     padding: 10px 14px;
     border-radius: var(--radius-md);
@@ -141,8 +150,7 @@ const emit = defineEmits<{
     transition: border-color var(--transition-fast);
 }
 
-.form-input:focus,
-.form-select:focus {
+.form-input:focus {
     border-color: var(--orange);
 }
 

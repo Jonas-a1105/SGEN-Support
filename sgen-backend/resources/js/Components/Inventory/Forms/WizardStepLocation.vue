@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { Department, Employee } from '@/Types/inventory';
+import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
 
-defineProps<{
+const props = defineProps<{
     departamentoId: number | null;
     empleadoId: number | null;
     departamentos: Department[];
@@ -12,39 +14,42 @@ const emit = defineEmits<{
     (e: 'update:departamentoId', val: number | null): void;
     (e: 'update:empleadoId', val: number | null): void;
 }>();
+
+const deptOptions = computed<ComboboxOption[]>(() => [
+    { value: '', label: 'No Asignado (Almacén Informática)' },
+    ...props.departamentos.map((d) => ({ value: d.id, label: d.nombre })),
+]);
+
+const empOptions = computed<ComboboxOption[]>(() => [
+    { value: '', label: 'Sin asignar' },
+    ...props.empleados.map((emp) => ({
+        value: emp.id,
+        label: `${emp.nombre} ${emp.apellido || ''}`.trim(),
+    })),
+]);
 </script>
 
 <template>
     <div id="wizardStep3" class="step-pane-body">
-        <div class="form-group">
-            <label class="form-label" for="wizDept">Departamento Asignado</label>
-            <select
-                :value="departamentoId"
-                class="form-select"
-                id="wizDept"
-                @change="emit('update:departamentoId', ($event.target as HTMLSelectElement).value ? Number(($event.target as HTMLSelectElement).value) : null)"
-            >
-                <option :value="null">No Asignado (Almacén Informática)</option>
-                <option v-for="d in departamentos" :key="d.id" :value="d.id">
-                    {{ d.nombre }}
-                </option>
-            </select>
-        </div>
+        <BaseCombobox
+            :model-value="departamentoId ?? ''"
+            label="Departamento Asignado"
+            placeholder="Seleccione departamento..."
+            search-placeholder="Buscar departamento..."
+            :options="deptOptions"
+            :searchable="true"
+            @update:model-value="(val) => emit('update:departamentoId', val ? Number(val) : null)"
+        />
 
-        <div class="form-group">
-            <label class="form-label" for="wizUser">Funcionario Responsable</label>
-            <select
-                :value="empleadoId"
-                class="form-select"
-                id="wizUser"
-                @change="emit('update:empleadoId', ($event.target as HTMLSelectElement).value ? Number(($event.target as HTMLSelectElement).value) : null)"
-            >
-                <option :value="null">-- Sin asignar --</option>
-                <option v-for="emp in empleados" :key="emp.id" :value="emp.id">
-                    {{ emp.nombre }} {{ emp.apellido || '' }}
-                </option>
-            </select>
-        </div>
+        <BaseCombobox
+            :model-value="empleadoId ?? ''"
+            label="Funcionario Responsable"
+            placeholder="Seleccione funcionario..."
+            search-placeholder="Buscar colaborador..."
+            :options="empOptions"
+            :searchable="true"
+            @update:model-value="(val) => emit('update:empleadoId', val ? Number(val) : null)"
+        />
     </div>
 </template>
 
@@ -53,36 +58,5 @@ const emit = defineEmits<{
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-}
-
-.form-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-weight: 600;
-}
-
-.form-select {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: var(--radius-md);
-    border: var(--stroke-w) solid var(--stroke);
-    background: transparent;
-    color: var(--text);
-    font-size: 13px;
-    font-family: var(--font-sans);
-    outline: none;
-    transition: border-color var(--transition-fast);
-}
-
-.form-select:focus {
-    border-color: var(--orange);
 }
 </style>

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import type { Product } from '@/Types/inventory';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import BaseBadge from '@/Components/UI/BaseBadge.vue';
+import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -22,6 +23,20 @@ const form = useForm({
     quantity: 1,
     reason: '',
 });
+
+const productOptions = computed<ComboboxOption[]>(() =>
+    props.products.map((p) => ({
+        value: p.id,
+        label: `${p.sku} - ${p.name}`,
+        sublabel: `Stock: ${p.current_stock}`,
+    }))
+);
+
+const movementTypeOptions: ComboboxOption[] = [
+    { value: 'ENTRADA', label: 'Entrada (+)', sublabel: 'Ingreso de mercadería' },
+    { value: 'SALIDA', label: 'Salida (-)', sublabel: 'Consumo o merma' },
+    { value: 'AJUSTE', label: 'Conteo de Auditoría', sublabel: 'Fijar exacto' },
+];
 
 watch(
     () => props.product,
@@ -71,23 +86,24 @@ const submit = () => {
                     </div>
                 </div>
                 <div v-else>
-                    <label class="form-label">Seleccionar Artículo</label>
-                    <select v-model="selectedItemId" class="form-select">
-                        <option v-for="p in products" :key="p.id" :value="p.id">
-                            {{ p.sku }} - {{ p.name }} (Stock: {{ p.current_stock }})
-                        </option>
-                    </select>
+                    <BaseCombobox
+                        :model-value="selectedItemId"
+                        label="Seleccionar Artículo"
+                        :options="productOptions"
+                        :searchable="true"
+                        placeholder="Buscar artículo..."
+                        @update:model-value="(val) => { selectedItemId = val ? Number(val) : null; }"
+                    />
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Tipo de Movimiento</label>
-                <select v-model="form.type" class="form-select" id="adjustMovementType">
-                    <option value="ENTRADA">Entrada (+) Ingreso de mercadería</option>
-                    <option value="SALIDA">Salida (-) Consumo o merma</option>
-                    <option value="AJUSTE">Conteo de Auditoría (Fijar exacto)</option>
-                </select>
-            </div>
+            <BaseCombobox
+                v-model="form.type"
+                label="Tipo de Movimiento"
+                :options="movementTypeOptions"
+                :searchable="false"
+                required
+            />
 
             <div class="form-group">
                 <label class="form-label">Cantidad</label>
@@ -162,8 +178,7 @@ const submit = () => {
     font-weight: 600;
 }
 
-.form-input,
-.form-select {
+.form-input {
     width: 100%;
     padding: 10px 14px;
     border-radius: var(--radius-md);
@@ -176,8 +191,7 @@ const submit = () => {
     transition: border-color var(--transition-fast);
 }
 
-.form-input:focus,
-.form-select:focus {
+.form-input:focus {
     border-color: var(--orange);
 }
 

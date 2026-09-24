@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { BaseBadge, BaseButton } from '@/Components/UI';
 
 const props = defineProps<{
     ticketId: number;
@@ -66,13 +67,9 @@ const submitLog = () => {
                 </div>
                 <h2 class="panel-title">NUEVA ENTRADA TÉCNICA</h2>
             </div>
-            <div class="private-badge-pill">
-                <svg viewBox="0 0 24 24">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <span>PRIVADO</span>
-            </div>
+            <BaseBadge variant="neutral" size="sm">
+                PRIVADO
+            </BaseBadge>
         </div>
 
         <div class="editor-toolbar">
@@ -119,17 +116,17 @@ const submitLog = () => {
         </div>
 
         <div class="editor-footer-row">
-            <button
-                class="btn-register-progress"
-                type="button"
+            <BaseButton
+                variant="primary"
+                size="md"
                 :disabled="isSubmitting || !editorText.trim()"
                 @click="submitLog"
             >
-                <svg viewBox="0 0 24 24">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-check-svg">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span>{{ isSubmitting ? 'Registrando...' : 'Registrar Avance' }}</span>
-            </button>
+            </BaseButton>
         </div>
     </div>
 </template>
@@ -144,6 +141,7 @@ const submitLog = () => {
     flex-direction: column;
     box-shadow: none !important;
 }
+
 .editor-header-row {
     padding: 16px 20px;
     border-bottom: var(--stroke-w) solid var(--stroke-subtle);
@@ -151,11 +149,13 @@ const submitLog = () => {
     align-items: center;
     justify-content: space-between;
 }
+
 .panel-title-group {
     display: flex;
     align-items: center;
     gap: 10px;
 }
+
 .panel-title {
     margin: 0;
     font-size: 14px !important;
@@ -163,6 +163,7 @@ const submitLog = () => {
     color: var(--text);
     letter-spacing: -0.01em;
 }
+
 .panel-icon-pill {
     width: 30px;
     height: 30px;
@@ -173,6 +174,7 @@ const submitLog = () => {
     place-items: center;
     flex-shrink: 0;
 }
+
 .panel-icon-pill svg {
     width: 16px;
     height: 16px;
@@ -180,25 +182,7 @@ const submitLog = () => {
     fill: none;
     stroke-width: 2;
 }
-.private-badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-dim);
-    background: var(--bg-sub);
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: var(--stroke-w) solid var(--stroke-subtle);
-}
-.private-badge-pill svg {
-    width: 12px;
-    height: 12px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-}
+
 .editor-toolbar {
     padding: 8px 16px;
     background: var(--bg-sub);
@@ -206,6 +190,7 @@ const submitLog = () => {
     display: flex;
     gap: 6px;
 }
+
 .tool-btn {
     width: 28px;
     height: 28px;
@@ -220,10 +205,12 @@ const submitLog = () => {
     transition: all 0.16s ease;
     box-shadow: none !important;
 }
+
 .tool-btn:hover {
     color: var(--text);
     border-color: var(--stroke-hover);
 }
+
 .tool-btn svg {
     width: 14px;
     height: 14px;
@@ -231,6 +218,7 @@ const submitLog = () => {
     fill: none;
     stroke-width: 2;
 }
+
 .editor-textarea {
     width: 100%;
     min-height: 120px;
@@ -245,6 +233,7 @@ const submitLog = () => {
     font-family: inherit;
     box-shadow: none !important;
 }
+
 .quick-tags-row {
     padding: 12px 16px;
     display: flex;
@@ -252,6 +241,7 @@ const submitLog = () => {
     flex-wrap: wrap;
     align-items: center;
 }
+
 .quick-tag-chip {
     padding: 4px 10px;
     border-radius: 8px;
@@ -263,25 +253,31 @@ const submitLog = () => {
     box-shadow: none !important;
     transition: all 0.16s ease;
 }
+
 .quick-tag-chip.diag {
     color: var(--color-blue, #2563eb);
     border-color: rgba(37, 99, 235, 0.4);
 }
+
 .quick-tag-chip.repar {
     color: var(--primary);
     border-color: rgba(79, 70, 229, 0.4);
 }
+
 .quick-tag-chip.piezas {
     color: var(--color-yellow, #d97706);
     border-color: rgba(217, 119, 6, 0.4);
 }
+
 .quick-tag-chip.pruebas {
     color: var(--color-red, #dc2626);
     border-color: rgba(220, 38, 38, 0.4);
 }
+
 .quick-tag-chip:hover {
     background: var(--stroke-subtle);
 }
+
 .editor-footer-row {
     padding: 12px 16px;
     display: flex;
@@ -289,34 +285,9 @@ const submitLog = () => {
     background: var(--bg-sub);
     border-top: var(--stroke-w) solid var(--stroke-subtle);
 }
-.btn-register-progress {
-    height: 38px;
-    border-radius: 10px;
-    background: var(--color-green, #16a34a);
-    border: var(--stroke-w) solid var(--color-green, #16a34a);
-    color: #ffffff;
-    padding: 0 16px;
-    font-size: 13px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: opacity 0.2s ease;
-}
-.btn-register-progress:hover {
-    opacity: 0.9;
-}
-.btn-register-progress:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-.btn-register-progress svg {
+
+.btn-check-svg {
     width: 16px;
     height: 16px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2.5;
 }
 </style>

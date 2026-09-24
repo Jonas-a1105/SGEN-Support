@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import BaseButton from '@/Components/UI/BaseButton.vue';
 
 const props = defineProps<{
     theme: string;
@@ -166,7 +167,7 @@ function save() {
             </div>
 
             <div class="form-actions">
-                <button class="btn-save" type="submit">Aplicar y Guardar</button>
+                <BaseButton variant="primary" type="submit">Aplicar y Guardar</BaseButton>
             </div>
         </form>
     </div>
@@ -302,16 +303,5 @@ function save() {
     font-size: 12px;
     color: var(--text-muted, #8e9199);
     line-height: 1.4;
-}
-.btn-save {
-    background: #4f46e5;
-    border: var(--stroke-w, 2px) solid #4f46e5;
-    color: #ffffff;
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 13px;
-    font-weight: 700 !important;
-    cursor: pointer;
-    box-shadow: none !important;
 }
 </style>

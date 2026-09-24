@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { BaseBadge, BaseButton } from '@/Components/UI';
 import { formatDate, formatDateTime } from '@/Utils/formatters';
+import { useMaintenanceTimer } from '@/Composables/useMaintenanceTimer';
 import type { MaintenanceDetail } from './types';
 
 const props = defineProps<{
@@ -16,73 +16,12 @@ const emit = defineEmits<{
     (e: 'edit'): void;
 }>();
 
-// Timer state
-const currentTime = ref(Date.now());
-let timerInterval: number | null = null;
+const { timerStatus } = useMaintenanceTimer(
+    () => props.maintenance.fecha,
+    () => props.maintenance.duracion,
+    () => props.maintenance.estado
+);
 
-onMounted(() => {
-    timerInterval = window.setInterval(() => {
-        currentTime.value = Date.now();
-    }, 1000);
-});
-
-onUnmounted(() => {
-    if (timerInterval !== null) {
-        clearInterval(timerInterval);
-    }
-});
-
-
-
-// Timer calculation
-const timerStatus = computed(() => {
-    if (!props.maintenance.fecha) return null;
-    const start = new Date(props.maintenance.fecha).getTime();
-    if (isNaN(start)) return null;
-
-    const durationMin = props.maintenance.duracion || 60;
-    const end = start + durationMin * 60 * 1000;
-    const now = currentTime.value;
-
-    if (props.maintenance.estado === 'completado') {
-        return { label: 'Completado', class: 'timer-completed', text: 'Servicio finalizado' };
-    }
-    if (props.maintenance.estado === 'cancelado') {
-        return { label: 'Cancelado', class: 'timer-cancelled', text: 'Cancelado' };
-    }
-
-    if (now < start) {
-        const diffSec = Math.floor((start - now) / 1000);
-        const hours = Math.floor(diffSec / 3600);
-        const minutes = Math.floor((diffSec % 3600) / 60);
-        const seconds = diffSec % 60;
-        return {
-            label: 'Programado',
-            class: 'timer-scheduled',
-            text: `Inicia en ${hours}h ${minutes}m ${seconds}s`,
-        };
-    }
-
-    if (now >= start && now <= end) {
-        const diffSec = Math.floor((end - now) / 1000);
-        const hours = Math.floor(diffSec / 3600);
-        const minutes = Math.floor((diffSec % 3600) / 60);
-        const seconds = diffSec % 60;
-        return {
-            label: 'En curso',
-            class: 'timer-running',
-            text: `Tiempo restante: ${hours}h ${minutes}m ${seconds}s`,
-        };
-    }
-
-    return {
-        label: 'Vencido',
-        class: 'timer-overdue',
-        text: 'Plazo expirado',
-    };
-});
-
-// Badges
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {
         case 'completado': return 'success';
@@ -175,40 +114,40 @@ const triggerPrint = () => {
 
             <div class="maint-header-actions">
                 <template v-if="maintenance.estado !== 'completado' && maintenance.estado !== 'cancelado'">
-                    <button
-                        type="button"
-                        class="btn-action-complete"
+                    <BaseButton
+                        variant="primary"
+                        size="md"
                         @click="emit('complete')"
                     >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                         <span>Marcar Realizado</span>
-                    </button>
+                    </BaseButton>
 
-                    <button
-                        type="button"
-                        class="btn-action-postpone"
+                    <BaseButton
+                        variant="warning"
+                        size="md"
                         @click="emit('postpone')"
                     >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 14 10"></polyline>
                         </svg>
                         <span>Posponer</span>
-                    </button>
+                    </BaseButton>
 
-                    <button
-                        type="button"
-                        class="btn-action-cancel-task"
+                    <BaseButton
+                        variant="danger"
+                        size="md"
                         @click="emit('cancel')"
                     >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                         <span>Cancelar</span>
-                    </button>
+                    </BaseButton>
 
                     <BaseButton variant="subtle" size="md" @click="emit('edit')">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
@@ -419,80 +358,5 @@ const triggerPrint = () => {
 .btn-icon {
     width: 15px;
     height: 15px;
-}
-
-.btn-action-complete {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #ffffff;
-    background: #059669;
-    border: none;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: background 0.2s ease;
-}
-
-.btn-action-complete svg {
-    width: 16px;
-    height: 16px;
-}
-
-.btn-action-complete:hover {
-    background: #047857;
-}
-
-.btn-action-postpone {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #b45309;
-    background: rgba(245, 158, 11, 0.12);
-    border: var(--stroke-w) solid rgba(245, 158, 11, 0.3);
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.btn-action-postpone svg {
-    width: 15px;
-    height: 15px;
-}
-
-.btn-action-postpone:hover {
-    background: rgba(245, 158, 11, 0.2);
-}
-
-.btn-action-cancel-task {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.08);
-    border: var(--stroke-w) solid rgba(239, 68, 68, 0.25);
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.btn-action-cancel-task svg {
-    width: 15px;
-    height: 15px;
-}
-
-.btn-action-cancel-task:hover {
-    background: rgba(239, 68, 68, 0.16);
 }
 </style>

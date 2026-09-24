@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { BaseButton, BaseCombobox } from '@/Components/UI';
+import type { ComboboxOption } from '@/Components/UI';
 
 const props = defineProps<{
     language: string;
@@ -14,6 +16,25 @@ const emit = defineEmits<{
 const lang = ref(props.language);
 const tz = ref(props.timezone);
 const df = ref(props.dateFormat);
+
+const languageOptions: ComboboxOption[] = [
+    { value: 'es', label: 'Español (Latinoamérica)' },
+    { value: 'en', label: 'English (United States)' },
+];
+
+const timezoneOptions: ComboboxOption[] = [
+    { value: 'America/Caracas', label: 'America/Caracas (UTC-4)' },
+    { value: 'America/Bogota', label: 'America/Bogota (UTC-5)' },
+    { value: 'America/Mexico_City', label: 'America/Mexico_City (UTC-6)' },
+    { value: 'America/Argentina/Buenos_Aires', label: 'America/Buenos_Aires (UTC-3)' },
+    { value: 'UTC', label: 'UTC (Universal Time)' },
+];
+
+const dateFormatOptions: ComboboxOption[] = [
+    { value: 'd/m/Y', label: 'DD/MM/AAAA (Ej: 23/09/2026)' },
+    { value: 'Y-m-d', label: 'AAAA-MM-DD (Ej: 2026-09-23)' },
+    { value: 'm/d/Y', label: 'MM/DD/AAAA (Ej: 09/23/2026)' },
+];
 
 function save() {
     emit('save', {
@@ -32,36 +53,33 @@ function save() {
         </div>
 
         <form class="settings-form" @submit.prevent="save">
-            <div class="form-group">
-                <label class="form-label" for="selectLanguage">Idioma de la interfaz</label>
-                <select id="selectLanguage" v-model="lang" class="form-select">
-                    <option value="es">Español (Latinoamérica)</option>
-                    <option value="en">English (United States)</option>
-                </select>
-            </div>
+            <div class="form-stack">
+                <BaseCombobox
+                    v-model="lang"
+                    label="Idioma de la interfaz"
+                    :options="languageOptions"
+                    :searchable="false"
+                />
 
-            <div class="form-group">
-                <label class="form-label" for="selectTimezone">Zona horaria</label>
-                <select id="selectTimezone" v-model="tz" class="form-select">
-                    <option value="America/Caracas">America/Caracas (UTC-4)</option>
-                    <option value="America/Bogota">America/Bogota (UTC-5)</option>
-                    <option value="America/Mexico_City">America/Mexico_City (UTC-6)</option>
-                    <option value="America/Argentina/Buenos_Aires">America/Buenos_Aires (UTC-3)</option>
-                    <option value="UTC">UTC (Universal Time)</option>
-                </select>
-            </div>
+                <BaseCombobox
+                    v-model="tz"
+                    label="Zona horaria"
+                    :options="timezoneOptions"
+                    :searchable="true"
+                />
 
-            <div class="form-group">
-                <label class="form-label" for="selectDateFormat">Formato de fecha</label>
-                <select id="selectDateFormat" v-model="df" class="form-select">
-                    <option value="d/m/Y">DD/MM/AAAA (Ej: 23/09/2026)</option>
-                    <option value="Y-m-d">AAAA-MM-DD (Ej: 2026-09-23)</option>
-                    <option value="m/d/Y">MM/DD/AAAA (Ej: 09/23/2026)</option>
-                </select>
+                <BaseCombobox
+                    v-model="df"
+                    label="Formato de fecha"
+                    :options="dateFormatOptions"
+                    :searchable="false"
+                />
             </div>
 
             <div class="form-actions">
-                <button class="btn-save" type="submit">Guardar Cambios</button>
+                <BaseButton variant="primary" size="md" type="submit">
+                    Guardar Cambios
+                </BaseButton>
             </div>
         </form>
     </div>
@@ -69,69 +87,40 @@ function save() {
 
 <style scoped>
 .settings-subpane {
-    background: var(--bg-card, #17181a);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    border-radius: var(--panel-radius, 18px);
+    background: var(--bg-card);
+    border: var(--stroke-w) solid var(--stroke);
+    border-radius: var(--panel-radius);
     padding: 24px;
     box-shadow: none !important;
 }
+
 .subpane-header {
     margin-bottom: 20px;
     padding-bottom: 14px;
-    border-bottom: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
+    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
 }
+
 .section-title {
     font-size: 16px !important;
     font-weight: 700 !important;
-    color: var(--text, #f4f4f6);
+    color: var(--text);
     margin: 0 0 4px 0;
 }
+
 .section-subtitle {
     font-size: 12px;
-    color: var(--text-muted, #8e9199);
+    color: var(--text-muted);
 }
-.form-group {
-    margin-bottom: 18px;
+
+.form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
 }
-.form-label {
-    display: block;
-    font-size: 12px;
-    color: var(--text-muted, #8e9199);
-    margin-bottom: 6px;
-}
-.form-select {
-    width: 100%;
-    background: var(--bg-sub, #1e2024);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: var(--text, #f4f4f6);
-    font-size: 13px;
-    outline: none;
-    box-shadow: none !important;
-}
-.form-select:focus {
-    border-color: #4f46e5;
-}
+
 .form-actions {
     margin-top: 24px;
     display: flex;
     justify-content: flex-end;
-}
-.btn-save {
-    background: #4f46e5;
-    border: var(--stroke-w, 2px) solid #4f46e5;
-    color: #ffffff;
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 13px;
-    font-weight: 700 !important;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.15s ease;
-}
-.btn-save:hover {
-    background: #4338ca;
-    border-color: #4338ca;
 }
 </style>

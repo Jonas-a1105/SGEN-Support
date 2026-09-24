@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { Product, Department, TransferStockPayload } from '@/Types/inventory';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
+import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
 
 const props = defineProps<{
     item: Product;
@@ -14,18 +15,27 @@ const emit = defineEmits<{
     (e: 'submit', payload: TransferStockPayload): void;
 }>();
 
-const originId = ref<number | null>(null);
-const destinationId = ref<number | null>(props.departments[0]?.id || null);
+const originId = ref<string | number>('');
+const destinationId = ref<string | number>(props.departments[0]?.id ? String(props.departments[0]?.id) : '');
 const quantity = ref(1);
 const reason = ref('');
+
+const originOptions = computed<ComboboxOption[]>(() => [
+    { value: '', label: '🏢 Almacén Central (Principal)' },
+    ...props.departments.map((d) => ({ value: d.id, label: d.nombre })),
+]);
+
+const destinationOptions = computed<ComboboxOption[]>(() =>
+    props.departments.map((d) => ({ value: d.id, label: d.nombre }))
+);
 
 const handleSubmit = () => {
     if (!destinationId.value) return;
 
     emit('submit', {
         item_id: props.item.id,
-        origen_id: originId.value,
-        destino_id: destinationId.value,
+        origen_id: originId.value ? Number(originId.value) : null,
+        destino_id: Number(destinationId.value),
         cantidad: quantity.value,
         motivo: reason.value,
     });
@@ -50,29 +60,26 @@ const handleSubmit = () => {
         </div>
 
         <form id="formTransferStock" class="transfer-form-stack" @submit.prevent="handleSubmit">
-            <div class="form-group">
-                <label class="form-label" for="transferOriginSelect">ORIGEN</label>
-                <select v-model="originId" class="form-select" id="transferOriginSelect">
-                    <option :value="null">🏢 Almacén Central (Principal)</option>
-                    <option v-for="d in departments" :key="d.id" :value="d.id">
-                        {{ d.nombre }}
-                    </option>
-                </select>
-            </div>
+            <BaseCombobox
+                v-model="originId"
+                label="ORIGEN"
+                placeholder="Seleccione origen..."
+                search-placeholder="Buscar departamento..."
+                :options="originOptions"
+                :searchable="true"
+            />
 
             <div class="arrow-down-divider">↓</div>
 
-            <div class="form-group">
-                <label class="form-label" for="transferDestSelect">
-                    DESTINO <span class="required-asterisk">*</span>
-                </label>
-                <select v-model="destinationId" class="form-select" id="transferDestSelect" required>
-                    <option :value="null" disabled>📍 Seleccione un destino...</option>
-                    <option v-for="d in departments" :key="d.id" :value="d.id">
-                        {{ d.nombre }}
-                    </option>
-                </select>
-            </div>
+            <BaseCombobox
+                v-model="destinationId"
+                label="DESTINO *"
+                placeholder="📍 Seleccione un destino..."
+                search-placeholder="Buscar destino..."
+                :options="destinationOptions"
+                :searchable="true"
+                required
+            />
 
             <div class="form-group">
                 <label class="form-label" for="transferQtyInput">CANTIDAD</label>
@@ -183,10 +190,6 @@ const handleSubmit = () => {
     font-weight: 600;
 }
 
-.required-asterisk {
-    color: var(--red);
-}
-
 .arrow-down-divider {
     width: 32px;
     height: 32px;
@@ -201,7 +204,6 @@ const handleSubmit = () => {
 }
 
 .form-input,
-.form-select,
 .form-textarea {
     width: 100%;
     padding: 10px 14px;
@@ -216,7 +218,6 @@ const handleSubmit = () => {
 }
 
 .form-input:focus,
-.form-select:focus,
 .form-textarea:focus {
     border-color: var(--orange);
 }

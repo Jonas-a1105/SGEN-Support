@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useAppNavigation } from '@/Composables/useAppNavigation';
 
 interface AuthUser {
     id: number;
@@ -18,89 +19,7 @@ interface PageProps {
 const page = usePage<PageProps>();
 const isDrawerOpen = ref(false);
 
-const primaryNav = computed(() => [
-    {
-        label: 'Panel',
-        href: '/dashboard',
-        icon: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
-        active: page.url.startsWith('/dashboard') || page.url === '/',
-    },
-    {
-        label: 'Inventario',
-        href: '/inventario',
-        icon: 'M4 7h16v13H4z M8 7V4h8v3 M8 12h8 M8 16h5',
-        active: page.url.startsWith('/inventario') && !page.url.includes('tab=equipos'),
-    },
-    {
-        label: 'Soportes',
-        href: '/soportes',
-        icon: 'M4 7h16v10H4z M7 7v10 M17 7v10 M8 11h8',
-        active: page.url.startsWith('/soportes'),
-    },
-    {
-        label: 'Equipos',
-        href: '/equipos',
-        icon: 'M2 3h20v14H2z M8 21h8 M12 17v4',
-        active: page.url.startsWith('/equipos'),
-    },
-]);
-
-const drawerNav = computed(() => [
-    {
-        label: 'Departamentos',
-        href: '/departamentos',
-        icon: 'M3 21h18 M9 8h1 M9 12h1 M9 16h1 M14 8h1 M14 12h1 M14 16h1 M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16',
-        active: page.url.startsWith('/departamentos'),
-    },
-    {
-        label: 'Personal',
-        href: '/personal',
-        icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-        active: page.url.startsWith('/personal'),
-    },
-    {
-        label: 'Categorías',
-        href: '/categorias',
-        icon: 'M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z M7 7h.01',
-        active: page.url.startsWith('/categorias'),
-    },
-    {
-        label: 'Usuarios',
-        href: '/usuarios',
-        icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',
-        active: page.url.startsWith('/usuarios'),
-    },
-    {
-        label: 'Auditoría',
-        href: '/auditoria',
-        icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4',
-        active: page.url.startsWith('/auditoria'),
-    },
-    {
-        label: 'Configuración',
-        href: '/configuracion',
-        icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z',
-        active: page.url.startsWith('/configuracion'),
-    },
-        {
-            label: 'Acerca',
-            href: '/acerca',
-            icon: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 16v-4 M12 8h.01',
-            active: page.url.startsWith('/acerca'),
-        },
-        {
-            label: 'Reportes',
-            href: '/reportes',
-            icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',
-            active: page.url.startsWith('/reportes'),
-        },
-        {
-            label: 'Mantenimientos',
-            href: '/mantenimientos',
-            icon: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z',
-            active: page.url.startsWith('/mantenimientos'),
-        },
-    ]);
+const { primaryMobileNav: primaryNav, drawerMobileNav: drawerNav } = useAppNavigation();
 
 const closeDrawer = () => {
     isDrawerOpen.value = false;

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseBadge from '@/Components/UI/BaseBadge.vue';
+import BaseDatePicker from '@/Components/UI/BaseDatePicker.vue';
 
 defineProps<{
     initialStock: number;
@@ -80,26 +81,20 @@ const emit = defineEmits<{
                     @input="emit('update:vendor', ($event.target as HTMLInputElement).value)"
                 />
             </div>
-            <div class="form-group">
-                <label class="form-label" for="inputItemPurchaseDate">Fecha de Compra</label>
-                <input
-                    :value="purchaseDate"
-                    type="date"
-                    class="form-input"
-                    id="inputItemPurchaseDate"
-                    @input="emit('update:purchaseDate', ($event.target as HTMLInputElement).value)"
+            <div class="form-group-custom">
+                <BaseDatePicker
+                    :model-value="purchaseDate"
+                    label="Fecha de Compra"
+                    @update:model-value="emit('update:purchaseDate', $event)"
                 />
             </div>
         </div>
 
-        <div class="form-group">
-            <label class="form-label" for="inputItemWarrantyExp">Vencimiento Garantía</label>
-            <input
-                :value="warrantyExpiration"
-                type="date"
-                class="form-input"
-                id="inputItemWarrantyExp"
-                @input="emit('update:warrantyExpiration', ($event.target as HTMLInputElement).value)"
+        <div class="form-group-custom">
+            <BaseDatePicker
+                :model-value="warrantyExpiration"
+                label="Vencimiento Garantía"
+                @update:model-value="emit('update:warrantyExpiration', $event)"
             />
         </div>
     </div>
@@ -142,6 +137,10 @@ const emit = defineEmits<{
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+    margin-bottom: var(--space-3);
+}
+
+.form-group-custom {
     margin-bottom: var(--space-3);
 }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { BaseButton } from '@/Components/UI';
 import type { TicketAttachment } from '@/types/support';
 
 interface Props {
@@ -18,7 +19,6 @@ const triggerFileInput = () => {
 const handleFiles = (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-    // In a real app we can upload via Inertia/axios. For now, add preview or notify
     const file = input.files[0];
     props.attachments.push({
         id: Date.now(),
@@ -57,9 +57,9 @@ const handleDrop = (e: DragEvent) => {
                 </div>
                 <h2 class="panel-title">EVIDENCIAS ADJUNTAS</h2>
             </div>
-            <button class="btn-upload" type="button" @click="triggerFileInput">
-                <span>+</span> Subir Archivo
-            </button>
+            <BaseButton variant="primary" size="sm" type="button" @click="triggerFileInput">
+                <span>+ Subir Archivo</span>
+            </BaseButton>
             <input
                 ref="fileInputRef"
                 type="file"
@@ -126,7 +126,9 @@ const handleDrop = (e: DragEvent) => {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-shadow: none !important;
 }
+
 .panel-header-row {
     padding: 18px 22px;
     border-bottom: var(--stroke-w) solid var(--stroke-subtle);
@@ -134,11 +136,13 @@ const handleDrop = (e: DragEvent) => {
     align-items: center;
     justify-content: space-between;
 }
+
 .panel-title-group {
     display: flex;
     align-items: center;
     gap: 10px;
 }
+
 .panel-title {
     margin: 0;
     font-size: 15px !important;
@@ -146,6 +150,7 @@ const handleDrop = (e: DragEvent) => {
     color: var(--text);
     letter-spacing: -0.01em;
 }
+
 .panel-icon-pill {
     width: 32px;
     height: 32px;
@@ -156,6 +161,7 @@ const handleDrop = (e: DragEvent) => {
     place-items: center;
     flex-shrink: 0;
 }
+
 .panel-icon-pill svg {
     width: 17px;
     height: 17px;
@@ -163,33 +169,18 @@ const handleDrop = (e: DragEvent) => {
     fill: none;
     stroke-width: 2;
 }
-.btn-upload {
-    height: 36px;
-    padding: 0 14px;
-    background: var(--primary);
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: opacity 0.2s ease;
-}
-.btn-upload:hover {
-    opacity: 0.9;
-}
+
 .hidden-file-input {
     display: none;
 }
+
 .panel-body-pad {
     padding: 22px;
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
+
 .dropzone-container {
     border: var(--stroke-w) dashed var(--stroke);
     border-radius: var(--panel-radius);
@@ -202,12 +193,15 @@ const handleDrop = (e: DragEvent) => {
     background: var(--bg-card);
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: none !important;
 }
+
 .dropzone-container:hover,
 .dropzone-container.dragover {
     border-color: var(--primary);
     background: var(--stroke-subtle);
 }
+
 .dropzone-icon-circle {
     width: 64px;
     height: 64px;
@@ -218,6 +212,7 @@ const handleDrop = (e: DragEvent) => {
     place-items: center;
     margin-bottom: 14px;
 }
+
 .dropzone-icon-circle svg {
     width: 30px;
     height: 30px;
@@ -225,17 +220,20 @@ const handleDrop = (e: DragEvent) => {
     fill: none;
     stroke-width: 1.8;
 }
+
 .dropzone-title {
     font-size: 15px;
     font-weight: 700 !important;
     color: var(--text);
     margin-bottom: 4px;
 }
+
 .dropzone-desc {
     font-size: 12px;
     color: var(--text-muted);
     margin-bottom: 12px;
 }
+
 .dropzone-link {
     color: var(--primary);
     font-size: 13px;
@@ -244,11 +242,13 @@ const handleDrop = (e: DragEvent) => {
     cursor: pointer;
     font-weight: 600;
 }
+
 .attachments-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 12px;
 }
+
 .attachment-item-card {
     border: var(--stroke-w) solid var(--stroke);
     background: var(--bg-sub);
@@ -258,17 +258,21 @@ const handleDrop = (e: DragEvent) => {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    box-shadow: none !important;
 }
+
 .att-file-info {
     display: flex;
     align-items: center;
     gap: 10px;
     min-width: 0;
 }
+
 .att-icon {
     color: var(--primary);
     flex-shrink: 0;
 }
+
 .file-svg {
     width: 20px;
     height: 20px;
@@ -276,11 +280,13 @@ const handleDrop = (e: DragEvent) => {
     fill: none;
     stroke-width: 2;
 }
+
 .att-meta {
     display: flex;
     flex-direction: column;
     min-width: 0;
 }
+
 .att-name {
     font-size: 13px;
     color: var(--text);
@@ -289,10 +295,12 @@ const handleDrop = (e: DragEvent) => {
     white-space: nowrap;
     font-weight: 600;
 }
+
 .att-size {
     font-size: 11px;
     color: var(--text-muted);
 }
+
 .att-download-btn {
     width: 30px;
     height: 30px;
@@ -306,12 +314,15 @@ const handleDrop = (e: DragEvent) => {
     text-decoration: none;
     transition: all 0.18s ease;
     flex-shrink: 0;
+    box-shadow: none !important;
 }
+
 .att-download-btn:hover {
     color: var(--text);
     border-color: var(--stroke-hover);
     background: var(--stroke-subtle);
 }
+
 .att-download-btn svg {
     width: 14px;
     height: 14px;

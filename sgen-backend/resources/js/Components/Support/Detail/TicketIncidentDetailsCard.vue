@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { BaseAvatar, BaseBadge } from '@/Components/UI';
+import type { BadgeVariant } from '@/Utils/badgeVariants';
 import type { TicketDetail } from '@/types/support';
 
-defineProps<{
+const props = defineProps<{
     ticket: TicketDetail;
 }>();
 
@@ -9,6 +12,15 @@ const emit = defineEmits<{
     (e: 'open-assign-tech'): void;
     (e: 'open-edit-date'): void;
 }>();
+
+const statusBadgeVariant = computed<BadgeVariant>(() => {
+    const raw = (props.ticket.status_variant || props.ticket.status || '').toLowerCase();
+    if (raw.includes('resolved') || raw.includes('resuelto')) return 'success';
+    if (raw.includes('progress') || raw.includes('proceso')) return 'info';
+    if (raw.includes('pending') || raw.includes('pendiente')) return 'warning';
+    if (raw.includes('critical') || raw.includes('critica')) return 'danger';
+    return 'neutral';
+});
 </script>
 
 <template>
@@ -57,9 +69,7 @@ const emit = defineEmits<{
             <!-- CAJAS DE REPORTADO POR Y TÉCNICO ASIGNADO -->
             <div class="people-grid">
                 <div class="person-box">
-                    <div class="person-avatar orange-badge">
-                        {{ ticket.requester.substring(0, 2).toUpperCase() }}
-                    </div>
+                    <BaseAvatar :name="ticket.requester" size="md" />
                     <div class="person-meta">
                         <span class="person-role-tag">Reportado por</span>
                         <div class="person-name-row">
@@ -70,9 +80,7 @@ const emit = defineEmits<{
                 </div>
 
                 <div class="person-box">
-                    <div class="person-avatar blue-badge">
-                        {{ ticket.tech_initial || 'T' }}
-                    </div>
+                    <BaseAvatar :name="ticket.tech_name || 'Técnico'" size="md" />
                     <div class="person-meta">
                         <span class="person-role-tag">Técnico asignado</span>
                         <div class="person-name-row">
@@ -103,8 +111,9 @@ const emit = defineEmits<{
                         Estado actual
                     </span>
                     <div class="data-val-big">
-                        <span :class="['status-indicator-dot', ticket.status_variant]"></span>
-                        <span>{{ ticket.status_label }}</span>
+                        <BaseBadge :variant="statusBadgeVariant" size="sm" dot>
+                            {{ ticket.status_label }}
+                        </BaseBadge>
                     </div>
                 </div>
 
@@ -168,7 +177,9 @@ const emit = defineEmits<{
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-shadow: none !important;
 }
+
 .panel-header-row {
     padding: 18px 22px;
     border-bottom: var(--stroke-w) solid var(--stroke-subtle);
@@ -176,11 +187,13 @@ const emit = defineEmits<{
     align-items: center;
     justify-content: space-between;
 }
+
 .panel-title-group {
     display: flex;
     align-items: center;
     gap: 10px;
 }
+
 .panel-title {
     margin: 0;
     font-size: 15px !important;
@@ -188,6 +201,7 @@ const emit = defineEmits<{
     color: var(--text);
     letter-spacing: -0.01em;
 }
+
 .panel-icon-pill {
     width: 32px;
     height: 32px;
@@ -198,6 +212,7 @@ const emit = defineEmits<{
     place-items: center;
     flex-shrink: 0;
 }
+
 .panel-icon-pill svg {
     width: 17px;
     height: 17px;
@@ -205,22 +220,26 @@ const emit = defineEmits<{
     fill: none;
     stroke-width: 2;
 }
+
 .panel-body-pad {
     padding: 22px;
     display: flex;
     flex-direction: column;
     gap: 18px;
 }
+
 .data-two-cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
 }
+
 .data-item {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
+
 .data-kicker {
     font-size: 11px;
     font-weight: 700;
@@ -230,6 +249,7 @@ const emit = defineEmits<{
     align-items: center;
     gap: 6px;
 }
+
 .data-kicker svg {
     width: 14px;
     height: 14px;
@@ -237,6 +257,7 @@ const emit = defineEmits<{
     fill: none;
     stroke-width: 2;
 }
+
 .data-val-big {
     font-size: 14px;
     font-weight: 600;
@@ -245,11 +266,13 @@ const emit = defineEmits<{
     align-items: center;
     gap: 8px;
 }
+
 .people-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
 }
+
 .person-box {
     background: var(--bg-sub);
     border: var(--stroke-w) solid var(--stroke);
@@ -258,44 +281,29 @@ const emit = defineEmits<{
     display: flex;
     align-items: center;
     gap: 12px;
+    box-shadow: none !important;
 }
-.person-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    font-size: 14px;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-.orange-badge {
-    background: rgba(249, 115, 22, 0.15);
-    color: var(--orange);
-    border: var(--stroke-w) solid rgba(249, 115, 22, 0.3);
-}
-.blue-badge {
-    background: rgba(59, 130, 246, 0.15);
-    color: var(--blue);
-    border: var(--stroke-w) solid rgba(59, 130, 246, 0.3);
-}
+
 .person-meta {
     display: flex;
     flex-direction: column;
     gap: 2px;
     overflow: hidden;
 }
+
 .person-role-tag {
     font-size: 10px;
     font-weight: 700;
     color: var(--text-dim);
     text-transform: uppercase;
 }
+
 .person-name-row {
     display: flex;
     align-items: center;
     gap: 6px;
 }
+
 .custom-link {
     color: var(--text);
     font-size: 13px;
@@ -304,6 +312,7 @@ const emit = defineEmits<{
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
 .person-dept-sub {
     font-size: 11px;
     color: var(--text-muted);
@@ -311,6 +320,7 @@ const emit = defineEmits<{
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
 .data-edit-inline {
     background: transparent;
     border: none;
@@ -320,9 +330,11 @@ const emit = defineEmits<{
     display: grid;
     place-items: center;
 }
+
 .data-edit-inline:hover {
     color: var(--primary);
 }
+
 .data-edit-inline svg {
     width: 13px;
     height: 13px;
@@ -330,24 +342,7 @@ const emit = defineEmits<{
     fill: none;
     stroke-width: 2;
 }
-.status-indicator-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #9ca3af;
-}
-.status-indicator-dot.in-progress {
-    background: #3b82f6;
-}
-.status-indicator-dot.resolved {
-    background: #10b981;
-}
-.status-indicator-dot.pending {
-    background: #f59e0b;
-}
-.status-indicator-dot.critical {
-    background: #ef4444;
-}
+
 .desc-container {
     padding: 12px 14px;
     background: var(--bg-sub);
@@ -357,5 +352,6 @@ const emit = defineEmits<{
     color: var(--text);
     line-height: 1.5;
     white-space: pre-wrap;
+    box-shadow: none !important;
 }
 </style>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { BaseModal, BaseButton, BaseInput, BaseTextarea } from '@/Components/UI';
+import { BaseModal, BaseButton, BaseInput, BaseTextarea, BaseCombobox } from '@/Components/UI';
+import type { ComboboxOption } from '@/Components/UI';
 import type { DepartmentDetail } from './types';
 
 const props = defineProps<{
@@ -17,10 +18,33 @@ const editForm = ref({
     nombre: props.department.nombre,
     ubicacion: props.department.ubicacion || '',
     descripcion: props.department.descripcion || '',
-    jefe_area_id: props.department.jefeAreaId || '',
+    jefe_area_id: (props.department.jefeAreaId ? String(props.department.jefeAreaId) : '') as string | number,
 });
 
 const isSubmitting = ref(false);
+
+const leaderOptions = computed<ComboboxOption[]>(() => {
+    const list: ComboboxOption[] = [
+        { value: '', label: 'Sin jefe asignado' },
+    ];
+    (props.department.empleados || []).forEach((emp) => {
+        list.push({
+            value: emp.id,
+            label: emp.fullName,
+            sublabel: emp.cargo,
+        });
+    });
+    (props.department.candidatosEmpleados || []).forEach((cand) => {
+        if (!list.some((item) => item.value === cand.id)) {
+            list.push({
+                value: cand.id,
+                label: cand.nombre,
+                sublabel: cand.cargo,
+            });
+        }
+    });
+    return list;
+});
 
 watch(
     () => props.isOpen,
@@ -30,7 +54,7 @@ watch(
                 nombre: props.department.nombre,
                 ubicacion: props.department.ubicacion || '',
                 descripcion: props.department.descripcion || '',
-                jefe_area_id: props.department.jefeAreaId || '',
+                jefe_area_id: props.department.jefeAreaId ? String(props.department.jefeAreaId) : '',
             };
         }
     }
@@ -44,7 +68,7 @@ const handleSaveDepartment = () => {
             nombre: editForm.value.nombre,
             ubicacion: editForm.value.ubicacion,
             descripcion: editForm.value.descripcion,
-            jefe_area_id: editForm.value.jefe_area_id || null,
+            jefe_area_id: editForm.value.jefe_area_id ? Number(editForm.value.jefe_area_id) : null,
         },
         {
             preserveScroll: true,
@@ -67,56 +91,35 @@ const handleSaveDepartment = () => {
         @close="emit('close')"
     >
         <form @submit.prevent="handleSaveDepartment" class="modal-form-stack">
-            <div class="form-group">
-                <BaseInput
-                    v-model="editForm.nombre"
-                    label="Nombre del Departamento *"
-                    placeholder="Ej. Tecnología y Sistemas"
-                    required
-                />
-            </div>
+            <BaseInput
+                v-model="editForm.nombre"
+                label="Nombre del Departamento *"
+                placeholder="Ej. Tecnología y Sistemas"
+                required
+            />
 
-            <div class="form-group">
-                <BaseInput
-                    v-model="editForm.ubicacion"
-                    label="Ubicación Física"
-                    placeholder="Ej. Torre Corporativa, Piso 4"
-                />
-            </div>
+            <BaseInput
+                v-model="editForm.ubicacion"
+                label="Ubicación Física"
+                placeholder="Ej. Torre Corporativa, Piso 4"
+            />
 
-            <div class="form-group">
-                <label class="form-label" for="select-edit-jefe">Jefe / Responsable del Área</label>
-                <select
-                    id="select-edit-jefe"
-                    v-model="editForm.jefe_area_id"
-                    class="form-control-select"
-                >
-                    <option value="">Sin jefe asignado</option>
-                    <option
-                        v-for="emp in department.empleados"
-                        :key="emp.id"
-                        :value="emp.id"
-                    >
-                        {{ emp.fullName }} ({{ emp.cargo }})
-                    </option>
-                    <option
-                        v-for="cand in department.candidatosEmpleados"
-                        :key="cand.id"
-                        :value="cand.id"
-                    >
-                        {{ cand.nombre }} ({{ cand.cargo }})
-                    </option>
-                </select>
-            </div>
+            <BaseCombobox
+                v-model="editForm.jefe_area_id"
+                label="Jefe / Responsable del Área"
+                placeholder="Seleccione un jefe de área..."
+                search-placeholder="Buscar colaborador..."
+                :options="leaderOptions"
+                :searchable="true"
+                clearable
+            />
 
-            <div class="form-group">
-                <BaseTextarea
-                    v-model="editForm.descripcion"
-                    label="Descripción / Alcance"
-                    placeholder="Describa las responsabilidades y funciones clave de esta área..."
-                    :rows="4"
-                />
-            </div>
+            <BaseTextarea
+                v-model="editForm.descripcion"
+                label="Descripción / Alcance"
+                placeholder="Describa las responsabilidades y funciones clave de esta área..."
+                :rows="4"
+            />
 
             <div class="modal-actions-bar">
                 <BaseButton type="button" variant="subtle" size="md" @click="emit('close')">
@@ -135,35 +138,6 @@ const handleSaveDepartment = () => {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.form-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.form-control-select {
-    width: 100%;
-    height: 42px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--stroke);
-    background: var(--bg-sub);
-    color: var(--text);
-    font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
-}
-
-.form-control-select:focus {
-    border-color: var(--brand);
 }
 
 .modal-actions-bar {

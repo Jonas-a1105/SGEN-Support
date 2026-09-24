@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { BaseModal, BaseButton, BaseInput, BaseTextarea } from '@/Components/UI';
+import { BaseModal, BaseButton, BaseInput, BaseTextarea, BaseCombobox, BaseDatePicker } from '@/Components/UI';
 import type { FormOptions, MaintenanceDetail } from './types';
 
 const props = defineProps<{
@@ -13,6 +13,33 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
+
+const maintenanceTypeOptions = [
+    { value: 'preventivo', label: 'Preventivo' },
+    { value: 'correctivo', label: 'Correctivo' },
+    { value: 'predictivo', label: 'Predictivo' },
+];
+
+const statusOptions = [
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'en_proceso', label: 'En Proceso' },
+    { value: 'pospuesto', label: 'Pospuesto' },
+    { value: 'completado', label: 'Completado' },
+    { value: 'cancelado', label: 'Cancelado' },
+];
+
+const frequencyOptions = [
+    { value: 'unica', label: 'Única vez' },
+    { value: 'mensual', label: 'Mensual' },
+    { value: 'trimestral', label: 'Trimestral' },
+    { value: 'semestral', label: 'Semestral' },
+    { value: 'anual', label: 'Anual' },
+];
+
+const technicianOptions = computed(() => [
+    { value: '', label: 'Sin asignar' },
+    ...(props.options?.technicians?.map((t) => ({ value: t.id, label: t.name })) || []),
+]);
 
 const editForm = ref({
     fecha: props.maintenance.fecha ? props.maintenance.fecha.substring(0, 16) : '',
@@ -85,61 +112,40 @@ const handleSaveEdit = () => {
     >
         <form @submit.prevent="handleSaveEdit" class="modal-form-stack">
             <div class="form-grid-2">
-                <div class="form-group">
-                    <label class="form-label">Fecha y Hora Programada *</label>
-                    <BaseInput
-                        v-model="editForm.fecha"
-                        type="datetime-local"
-                        required
-                    />
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Tipo de Mantenimiento *</label>
-                    <select v-model="editForm.tipo_mantenimiento" class="custom-select" required>
-                        <option value="preventivo">Preventivo</option>
-                        <option value="correctivo">Correctivo</option>
-                        <option value="predictivo">Predictivo</option>
-                    </select>
-                </div>
+                <BaseDatePicker
+                    v-model="editForm.fecha"
+                    type="datetime-local"
+                    label="Fecha y Hora Programada *"
+                    required
+                />
+                <BaseCombobox
+                    v-model="editForm.tipo_mantenimiento"
+                    label="Tipo de Mantenimiento *"
+                    :options="maintenanceTypeOptions"
+                    required
+                />
             </div>
 
             <div class="form-grid-2">
-                <div class="form-group">
-                    <label class="form-label">Estado de la Orden *</label>
-                    <select v-model="editForm.estado" class="custom-select" required>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="en_proceso">En Proceso</option>
-                        <option value="pospuesto">Pospuesto</option>
-                        <option value="completado">Completado</option>
-                        <option value="cancelado">Cancelado</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Frecuencia Planificada</label>
-                    <select v-model="editForm.frecuencia" class="custom-select">
-                        <option value="unica">Única vez</option>
-                        <option value="mensual">Mensual</option>
-                        <option value="trimestral">Trimestral</option>
-                        <option value="semestral">Semestral</option>
-                        <option value="anual">Anual</option>
-                    </select>
-                </div>
+                <BaseCombobox
+                    v-model="editForm.estado"
+                    label="Estado de la Orden *"
+                    :options="statusOptions"
+                    required
+                />
+                <BaseCombobox
+                    v-model="editForm.frecuencia"
+                    label="Frecuencia Planificada"
+                    :options="frequencyOptions"
+                />
             </div>
 
             <div class="form-grid-2">
-                <div class="form-group">
-                    <label class="form-label">Técnico Asignado</label>
-                    <select v-model="editForm.tecnico_id" class="custom-select">
-                        <option value="">Sin asignar</option>
-                        <option
-                            v-for="t in options?.technicians"
-                            :key="t.id"
-                            :value="t.id"
-                        >
-                            {{ t.name }}
-                        </option>
-                    </select>
-                </div>
+                <BaseCombobox
+                    v-model="editForm.tecnico_id"
+                    label="Técnico Asignado"
+                    :options="technicianOptions"
+                />
                 <div class="form-group">
                     <label class="form-label">Duración Estimada (min)</label>
                     <BaseInput
@@ -162,13 +168,10 @@ const handleSaveEdit = () => {
                         placeholder="0.00"
                     />
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Próxima Fecha de Recurrencia</label>
-                    <BaseInput
-                        v-model="editForm.proxima_fecha"
-                        type="date"
-                    />
-                </div>
+                <BaseDatePicker
+                    v-model="editForm.proxima_fecha"
+                    label="Próxima Fecha de Recurrencia"
+                />
             </div>
 
             <div class="form-group">
@@ -239,22 +242,6 @@ const handleSaveEdit = () => {
     .form-grid-2 {
         grid-template-columns: 1fr 1fr;
     }
-}
-
-.custom-select {
-    width: 100%;
-    padding: 9px 12px;
-    border-radius: 8px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-card);
-    color: var(--text);
-    font-size: 13px;
-    outline: none;
-    box-shadow: none !important;
-}
-
-.custom-select:focus {
-    border-color: var(--blue, #3b82f6);
 }
 
 .modal-actions-footer {

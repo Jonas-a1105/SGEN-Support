@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { BaseModal, BaseButton } from '@/Components/UI';
+import { BaseModal, BaseButton, BaseCombobox } from '@/Components/UI';
+import type { ComboboxOption } from '@/Components/UI';
 import type { DepartmentDetail } from './types';
 
 const props = defineProps<{
@@ -15,6 +16,14 @@ const emit = defineEmits<{
 
 const selectedEquipmentId = ref<number | ''>('');
 const isSubmitting = ref(false);
+
+const equipmentOptions = computed<ComboboxOption[]>(() => {
+    return (props.department.candidatosEquipos || []).map((cand) => ({
+        value: cand.id,
+        label: `[${cand.codigo}] ${cand.nombre}`,
+        sublabel: `Estado: ${cand.estado}`,
+    }));
+});
 
 watch(
     () => props.isOpen,
@@ -54,27 +63,17 @@ const handleAssign = () => {
         @close="emit('close')"
     >
         <form @submit.prevent="handleAssign" class="modal-form-stack">
-            <div class="form-group">
-                <label class="form-label" for="select-assign-eq">Seleccionar Equipo Disponible</label>
-                <select
-                    id="select-assign-eq"
-                    v-model="selectedEquipmentId"
-                    class="form-control-select"
-                    required
-                >
-                    <option value="" disabled>Seleccione un equipo...</option>
-                    <option
-                        v-for="cand in department.candidatosEquipos"
-                        :key="cand.id"
-                        :value="cand.id"
-                    >
-                        [{{ cand.codigo }}] {{ cand.nombre }} ({{ cand.estado }})
-                    </option>
-                </select>
-                <p class="form-help">
-                    El equipo quedará registrado bajo la custodia física del departamento {{ department.nombre }}.
-                </p>
-            </div>
+            <BaseCombobox
+                :model-value="selectedEquipmentId"
+                label="Seleccionar Equipo Disponible"
+                placeholder="Seleccione un equipo..."
+                search-placeholder="Buscar equipo por código o nombre..."
+                :options="equipmentOptions"
+                :searchable="true"
+                required
+                :help-text="`El equipo quedará registrado bajo la custodia física del departamento ${department.nombre}.`"
+                @update:model-value="(val) => { selectedEquipmentId = val ? Number(val) : ''; }"
+            />
 
             <div class="modal-actions-bar">
                 <BaseButton type="button" variant="subtle" size="md" @click="emit('close')">
@@ -93,41 +92,6 @@ const handleAssign = () => {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.form-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.form-control-select {
-    width: 100%;
-    height: 42px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--stroke);
-    background: var(--bg-sub);
-    color: var(--text);
-    font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
-}
-
-.form-control-select:focus {
-    border-color: var(--brand);
-}
-
-.form-help {
-    margin: 0;
-    font-size: 12px;
-    color: var(--text-dim);
 }
 
 .modal-actions-bar {

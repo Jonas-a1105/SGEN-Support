@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
+import { reactive, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
+import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
 import type { SupportFormOptions } from '@/types/support';
 
 interface Props {
@@ -24,6 +25,42 @@ const form = reactive({
     estado: 'pendiente',
     isSubmitting: false,
 });
+
+const categoryOptions = computed<ComboboxOption[]>(() =>
+    (props.options.categories || []).map((cat) => ({
+        value: cat.id,
+        label: cat.name,
+    }))
+);
+
+const priorityOptions: ComboboxOption[] = [
+    { value: 'baja', label: 'Baja' },
+    { value: 'media', label: 'Media' },
+    { value: 'alta', label: 'Alta' },
+    { value: 'critica', label: 'Crítica' },
+];
+
+const techOptions = computed<ComboboxOption[]>(() =>
+    (props.options.technicians || []).map((tech) => ({
+        value: tech.id,
+        label: tech.name,
+        sublabel: tech.specialty,
+    }))
+);
+
+const statusOptions: ComboboxOption[] = [
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'en_proceso', label: 'En Proceso' },
+    { value: 'resuelto', label: 'Resuelto / Entregado' },
+];
+
+const equipmentOptions = computed<ComboboxOption[]>(() =>
+    (props.options.equipments || []).map((eq) => ({
+        value: eq.id,
+        label: `${eq.type} - ${eq.code || eq.serial}`,
+        sublabel: `${eq.model} (${eq.department})`,
+    }))
+);
 
 watch(
     () => props.isOpen,
@@ -111,52 +148,46 @@ const handleSubmit = () => {
             </div>
 
             <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="ticketCategorySelect">Categoría</label>
-                    <select id="ticketCategorySelect" v-model="form.categoria_id" class="form-select">
-                        <option v-for="cat in options.categories" :key="cat.id" :value="cat.id">
-                            {{ cat.name }}
-                        </option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="ticketPrioritySelect">Prioridad</label>
-                    <select id="ticketPrioritySelect" v-model="form.prioridad" class="form-select">
-                        <option value="baja">Baja</option>
-                        <option value="media">Media</option>
-                        <option value="alta">Alta</option>
-                        <option value="critica">Crítica</option>
-                    </select>
-                </div>
+                <BaseCombobox
+                    :model-value="form.categoria_id"
+                    label="Categoría"
+                    :options="categoryOptions"
+                    :searchable="true"
+                    @update:model-value="(val) => { if (val != null) form.categoria_id = Number(val); }"
+                />
+                <BaseCombobox
+                    :model-value="form.prioridad"
+                    label="Prioridad"
+                    :options="priorityOptions"
+                    :searchable="false"
+                    @update:model-value="(val) => { if (val != null) form.prioridad = String(val); }"
+                />
             </div>
 
             <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="ticketTechSelect">Técnico Asignado</label>
-                    <select id="ticketTechSelect" v-model="form.empleado_id" class="form-select">
-                        <option v-for="tech in options.technicians" :key="tech.id" :value="tech.id">
-                            {{ tech.name }} ({{ tech.specialty }})
-                        </option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="ticketStatusSelect">Estado Inicial</label>
-                    <select id="ticketStatusSelect" v-model="form.estado" class="form-select">
-                        <option value="pendiente">Pendiente (Ámbar)</option>
-                        <option value="en_proceso">En Proceso (Azul)</option>
-                        <option value="resuelto">Resuelto / Entregado (Verde)</option>
-                    </select>
-                </div>
+                <BaseCombobox
+                    :model-value="form.empleado_id"
+                    label="Técnico Asignado"
+                    :options="techOptions"
+                    :searchable="true"
+                    @update:model-value="(val) => { if (val != null) form.empleado_id = Number(val); }"
+                />
+                <BaseCombobox
+                    :model-value="form.estado"
+                    label="Estado Inicial"
+                    :options="statusOptions"
+                    :searchable="false"
+                    @update:model-value="(val) => { if (val != null) form.estado = String(val); }"
+                />
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="ticketEquipSelect">Equipo / Activo Afectado</label>
-                <select id="ticketEquipSelect" v-model="form.equipo_id" class="form-select">
-                    <option v-for="eq in options.equipments" :key="eq.id" :value="eq.id">
-                        {{ eq.type }} - {{ eq.code || eq.serial }} ({{ eq.model }}) - {{ eq.department }}
-                    </option>
-                </select>
-            </div>
+            <BaseCombobox
+                :model-value="form.equipo_id"
+                label="Equipo / Activo Afectado"
+                :options="equipmentOptions"
+                :searchable="true"
+                @update:model-value="(val) => { if (val != null) form.equipo_id = Number(val); }"
+            />
 
             <div class="modal-actions-bar">
                 <BaseButton variant="secondary" type="button" @click="emit('close')">
@@ -187,27 +218,26 @@ const handleSubmit = () => {
     gap: 14px;
 }
 .form-label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
-.form-input,
-.form-select {
+.form-input {
     width: 100%;
     height: 40px;
     padding: 8px 12px;
-    background: var(--bg-sub);
-    border: var(--stroke-w) solid var(--stroke);
-    border-radius: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius-sm, 6px);
     color: var(--text);
     font-size: 13px;
     outline: none;
     transition: border-color 0.2s ease;
+    box-shadow: none !important;
 }
-.form-input:focus,
-.form-select:focus {
+.form-input:focus {
     border-color: var(--primary);
 }
 .modal-actions-bar {

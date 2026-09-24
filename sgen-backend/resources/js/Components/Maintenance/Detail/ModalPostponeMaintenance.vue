@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { BaseModal, BaseButton, BaseInput } from '@/Components/UI';
+import { BaseModal, BaseButton, BaseDatePicker } from '@/Components/UI';
 import type { MaintenanceDetail } from './types';
 
 const props = defineProps<{
@@ -60,14 +60,12 @@ const handlePostpone = () => {
                 Indica la nueva fecha y hora para la ejecución del servicio técnico sobre el equipo <strong>{{ maintenance.equipo?.codigo }}</strong>.
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Nueva Fecha y Hora Programada *</label>
-                <BaseInput
-                    v-model="postponeForm.nueva_fecha"
-                    type="datetime-local"
-                    required
-                />
-            </div>
+            <BaseDatePicker
+                v-model="postponeForm.nueva_fecha"
+                type="datetime-local"
+                label="Nueva Fecha y Hora Programada *"
+                required
+            />
 
             <div class="modal-actions-footer">
                 <BaseButton
@@ -106,18 +104,6 @@ const handlePostpone = () => {
     background: var(--stroke-subtle);
     border-radius: 8px;
     border: var(--stroke-w) solid var(--stroke);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
 }
 
 .modal-actions-footer {

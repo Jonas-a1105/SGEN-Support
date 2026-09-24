@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
+import MaintenanceChecklistEditor from './MaintenanceChecklistEditor.vue';
 import type { ChecklistTask } from './types';
 
-const props = defineProps<{
+defineProps<{
     tipoMantenimiento: string;
     estado: string;
     descripcion: string;
@@ -18,25 +19,11 @@ const emit = defineEmits<{
     (e: 'update:checklist', val: ChecklistTask[]): void;
 }>();
 
-const newTaskInput = ref('');
-let nextTaskId = 100;
-
-const addTask = () => {
-    const text = newTaskInput.value.trim();
-    if (!text) return;
-    const updated = [...props.checklist, { id: nextTaskId++, text, done: false }];
-    emit('update:checklist', updated);
-    newTaskInput.value = '';
-};
-
-const removeTask = (id: number) => {
-    emit('update:checklist', props.checklist.filter((t) => t.id !== id));
-};
-
-const toggleTask = (task: ChecklistTask) => {
-    const updated = props.checklist.map((t) => (t.id === task.id ? { ...t, done: !t.done } : t));
-    emit('update:checklist', updated);
-};
+const statusOptions = [
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'en_proceso', label: 'En Progreso' },
+    { value: 'programado', label: 'Programado' },
+];
 </script>
 
 <template>
@@ -74,18 +61,13 @@ const toggleTask = (task: ChecklistTask) => {
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Estado Inicial</label>
-                <select
-                    :value="estado"
-                    class="form-select"
-                    @change="emit('update:estado', ($event.target as HTMLSelectElement).value)"
-                >
-                    <option value="pendiente">Pendiente</option>
-                    <option value="en_proceso">En Progreso</option>
-                    <option value="programado">Programado</option>
-                </select>
-            </div>
+            <BaseCombobox
+                :model-value="estado"
+                label="Estado Inicial"
+                :options="statusOptions"
+                :searchable="false"
+                @update:model-value="(val) => emit('update:estado', String(val ?? ''))"
+            />
         </div>
 
         <div class="form-group">
@@ -100,59 +82,11 @@ const toggleTask = (task: ChecklistTask) => {
             ></textarea>
         </div>
 
-        <!-- CHECKLIST DE TAREAS -->
-        <div class="checklist-box">
-            <div class="checklist-header-row">
-                <span class="checklist-title">
-                    <svg viewBox="0 0 24 24" class="check-icon">
-                        <polyline points="9 11 12 14 22 4" />
-                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                    </svg>
-                    <span>Checklist de Tareas</span>
-                </span>
-                <span class="badge-code">{{ checklist.length }} tareas</span>
-            </div>
-
-            <div class="checklist-input-group">
-                <input
-                    v-model="newTaskInput"
-                    type="text"
-                    class="form-input"
-                    placeholder="+ Añadir nueva tarea y presionar Enter..."
-                    @keydown.enter.prevent="addTask"
-                />
-                <button class="btn-add-task" type="button" @click="addTask">
-                    Añadir
-                </button>
-            </div>
-
-            <div v-if="checklist.length > 0" class="checklist-items-list">
-                <div
-                    v-for="task in checklist"
-                    :key="task.id"
-                    class="checklist-item"
-                    :class="{ done: task.done }"
-                >
-                    <label class="checklist-item-left">
-                        <input
-                            type="checkbox"
-                            :checked="task.done"
-                            class="task-checkbox"
-                            @change="toggleTask(task)"
-                        />
-                        <span class="task-text">{{ task.text }}</span>
-                    </label>
-                    <button
-                        type="button"
-                        class="btn-remove-task"
-                        title="Eliminar tarea"
-                        @click="removeTask(task.id)"
-                    >
-                        ×
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- CHECKLIST DE TAREAS (SRP: componente dedicado) -->
+        <MaintenanceChecklistEditor
+            :checklist="checklist"
+            @update:checklist="(val) => emit('update:checklist', val)"
+        />
 
         <div class="form-group">
             <label class="form-label">Observaciones Adicionales</label>
@@ -208,34 +142,37 @@ const toggleTask = (task: ChecklistTask) => {
 }
 
 .form-label {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     color: var(--text-muted);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .form-row-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
+    align-items: flex-end;
 }
 
 .segmented-control {
     display: grid;
     grid-template-columns: 1fr 1fr;
     border: var(--stroke-w) solid var(--stroke);
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--bg-sub);
     overflow: hidden;
     padding: 2px;
     gap: 2px;
     box-shadow: none !important;
+    height: 40px;
 }
 
 .segment-btn {
-    height: 36px;
+    height: 100%;
     border: none;
-    border-radius: 10px;
+    border-radius: 6px;
     background: transparent;
     color: var(--text-muted);
     font-size: 13px;
@@ -251,14 +188,12 @@ const toggleTask = (task: ChecklistTask) => {
     border: 1px solid var(--stroke);
 }
 
-.form-input,
-.form-select,
 .form-textarea {
     width: 100%;
     padding: 10px 14px;
-    border-radius: 12px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-sub);
+    border-radius: var(--radius-sm, 6px);
+    border: 1px solid var(--stroke);
+    background: var(--bg-card);
     color: var(--text);
     font-size: 13px;
     outline: none;
@@ -266,130 +201,8 @@ const toggleTask = (task: ChecklistTask) => {
     box-shadow: none !important;
 }
 
-.form-input:focus,
-.form-select:focus,
 .form-textarea:focus {
     border-color: var(--orange);
-}
-
-.checklist-box {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 4px;
-}
-
-.checklist-header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.checklist-title {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-.check-icon {
-    width: 14px;
-    height: 14px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-}
-
-.badge-code {
-    padding: 4px 8px;
-    border-radius: 6px;
-    background: var(--stroke-subtle);
-    border: 1px solid var(--stroke);
-    font-size: 11px;
-    color: var(--text-muted);
-    box-shadow: none !important;
-}
-
-.checklist-input-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-add-task {
-    height: 38px;
-    padding: 0 16px;
-    border-radius: 12px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: transparent;
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    box-shadow: none !important;
-}
-
-.btn-add-task:hover {
-    background: var(--stroke-subtle);
-    border-color: var(--stroke-hover);
-}
-
-.checklist-items-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 4px;
-}
-
-.checklist-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-sub);
-    box-shadow: none !important;
-}
-
-.checklist-item-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-.task-checkbox {
-    cursor: pointer;
-}
-
-.task-text {
-    color: var(--text);
-}
-
-.checklist-item.done .task-text {
-    text-decoration: line-through;
-    color: var(--text-muted);
-}
-
-.btn-remove-task {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 0 4px;
-    font-size: 16px;
-    line-height: 1;
-}
-
-.btn-remove-task:hover {
-    color: var(--red, #ef4444);
 }
 
 @media (max-width: 768px) {

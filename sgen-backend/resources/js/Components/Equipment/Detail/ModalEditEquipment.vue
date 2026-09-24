@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { BaseModal, BaseButton, BaseInput } from '@/Components/UI';
+import { BaseModal, BaseButton, BaseInput, BaseCombobox, BaseDatePicker } from '@/Components/UI';
 import type { EquipmentDetail } from './types';
 
 const props = defineProps<{
@@ -12,6 +12,13 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
+
+const statusOptions = [
+    { value: 'disponible', label: 'Disponible' },
+    { value: 'en_uso', label: 'En Uso' },
+    { value: 'en_reparacion', label: 'En Reparación' },
+    { value: 'fuera_de_servicio', label: 'Fuera de Servicio' },
+];
 
 const editForm = ref({
     marca: props.equipment.brand ?? '',
@@ -93,15 +100,12 @@ const handleSaveEdit = () => {
             </div>
 
             <div class="form-grid-2">
-                <div class="form-group">
-                    <label class="form-label">Estado Operativo</label>
-                    <select v-model="editForm.estado" class="form-control-select">
-                        <option value="disponible">Disponible</option>
-                        <option value="en_uso">En Uso</option>
-                        <option value="en_reparacion">En Reparación</option>
-                        <option value="fuera_de_servicio">Fuera de Servicio</option>
-                    </select>
-                </div>
+                <BaseCombobox
+                    v-model="editForm.estado"
+                    label="Estado Operativo"
+                    :options="statusOptions"
+                    placeholder="Seleccionar estado..."
+                />
                 <BaseInput v-model="editForm.direccion_ip" label="Dirección IP" placeholder="192.168.1.X" />
             </div>
 
@@ -121,8 +125,8 @@ const handleSaveEdit = () => {
             </div>
 
             <div class="form-grid-2">
-                <BaseInput v-model="editForm.fecha_compra" type="date" label="Fecha de Compra" />
-                <BaseInput v-model="editForm.garantia" type="date" label="Vencimiento de Garantía" />
+                <BaseDatePicker v-model="editForm.fecha_compra" label="Fecha de Compra" />
+                <BaseDatePicker v-model="editForm.garantia" label="Vencimiento de Garantía" />
             </div>
 
             <div class="modal-actions-bar">
@@ -148,35 +152,6 @@ const handleSaveEdit = () => {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-4);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.form-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.form-control-select {
-    width: 100%;
-    height: 42px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--stroke);
-    background: var(--bg-sub);
-    color: var(--text);
-    font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
-}
-
-.form-control-select:focus {
-    border-color: var(--brand);
 }
 
 .modal-actions-bar {
