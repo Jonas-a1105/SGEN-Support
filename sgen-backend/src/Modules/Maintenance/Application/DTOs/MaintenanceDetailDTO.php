@@ -24,6 +24,8 @@ final readonly class MaintenanceDetailDTO
         public ?int $duracion = null,
         public ?string $createdAt = null,
         public ?string $updatedAt = null,
-        public ?array $equipo = null
+        public ?array $equipo = null,
+        public ?array $historialEquipo = null,
+        public bool $isOverdue = false
     ) {}
 }

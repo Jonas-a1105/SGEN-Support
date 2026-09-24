@@ -22,6 +22,8 @@ interface EmployeeRepositoryInterface
 
     public function findById(int $id): ?EmployeeDetailDTO;
 
+    public function getCompleteDetail(int $id): ?EmployeeDetailDTO;
+
     public function create(CreateEmployeeDTO $dto): int;
 
     public function update(int $id, UpdateEmployeeDTO $dto): void;

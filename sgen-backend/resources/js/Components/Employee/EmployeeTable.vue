@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import type { EmployeeItem } from '@/Composables/useEmployeeFilters';
 
 defineProps<{
@@ -34,7 +35,9 @@ const emit = defineEmits<{
                                     {{ emp.initials }}
                                 </div>
                                 <div class="emp-table-info">
-                                    <strong class="emp-table-name">{{ emp.fullName }}</strong>
+                                    <Link :href="`/personal/${emp.numericId}`" class="emp-table-link">
+                                        <strong class="emp-table-name">{{ emp.fullName }}</strong>
+                                    </Link>
                                     <span class="emp-table-id">{{ emp.id }}</span>
                                 </div>
                             </div>
@@ -52,6 +55,16 @@ const emit = defineEmits<{
                         </td>
                         <td>
                             <div class="table-actions-group">
+                                <Link
+                                    :href="`/personal/${emp.numericId}`"
+                                    class="btn-mini-action view"
+                                    title="Ver perfil del colaborador"
+                                >
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </Link>
                                 <button
                                     class="btn-mini-action edit"
                                     @click="emit('edit', emp)"
@@ -242,9 +255,24 @@ const emit = defineEmits<{
     stroke-width: 2;
 }
 
+.emp-table-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+}
+
+.emp-table-link:hover .emp-table-name {
+    color: #3b82f6;
+}
+
 .btn-mini-action:hover {
     color: var(--text);
     border-color: var(--stroke-hover);
+}
+
+.btn-mini-action.view:hover {
+    color: #3b82f6;
+    border-color: #3b82f6;
 }
 
 .btn-mini-action.delete:hover {

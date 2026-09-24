@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 interface MaintenanceKpis {
@@ -91,7 +91,12 @@ const completionRate = computed(() => {
                 <h2 class="section-title">Próximos Mantenimientos</h2>
                 
                 <div v-if="proximos.length > 0" class="upcoming-list">
-                    <div v-for="item in proximos" :key="item.id" class="upcoming-card">
+                    <Link
+                        v-for="item in proximos"
+                        :key="item.id"
+                        :href="`/mantenimientos/${item.id}`"
+                        class="upcoming-card"
+                    >
                         <div class="upcoming-date">
                             <span class="date-day">{{ formatDate(item.proximaFecha || item.fecha).split(' ')[0] }}</span>
                             <span class="date-month">{{ formatDate(item.proximaFecha || item.fecha).split(' ')[1] }}</span>
@@ -104,7 +109,7 @@ const completionRate = computed(() => {
                         <div class="upcoming-badge" :class="item.tipoMantenimiento">
                             {{ tipoLabels[item.tipoMantenimiento] }}
                         </div>
-                    </div>
+                    </Link>
                 </div>
 
                 <div v-else class="empty-upcoming">
@@ -245,6 +250,15 @@ const completionRate = computed(() => {
     background: var(--bg-elevated);
     border-radius: 8px;
     border: var(--stroke-w) solid var(--stroke);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    box-shadow: none !important;
+}
+
+.upcoming-card:hover {
+    border-color: var(--stroke-hover, var(--orange));
+    background: var(--stroke-subtle);
 }
 
 .upcoming-date {

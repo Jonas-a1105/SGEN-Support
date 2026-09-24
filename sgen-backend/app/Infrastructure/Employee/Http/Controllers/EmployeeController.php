@@ -29,12 +29,18 @@ final class EmployeeController extends Controller
         return Inertia::render('Employee/Index', $useCase->execute($filters));
     }
 
-    public function show(int $id, GetEmployeeDetailUseCase $useCase): JsonResponse
+    public function show(int $id, Request $request, GetEmployeeDetailUseCase $useCase): JsonResponse|Response
     {
         $employee = $useCase->execute($id);
         abort_if($employee === null, 404, 'Empleado no encontrado.');
 
-        return response()->json($employee->toArray());
+        if ($request->wantsJson()) {
+            return response()->json($employee->toArray());
+        }
+
+        return Inertia::render('Employee/Show', [
+            'employee' => $employee->toArray(),
+        ]);
     }
 
     public function store(StoreEmployeeRequest $request, CreateEmployeeUseCase $useCase): RedirectResponse

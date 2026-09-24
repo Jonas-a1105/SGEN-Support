@@ -55,6 +55,22 @@ final class EquipmentControllerTest extends TestCase
         );
     }
 
+    public function test_can_render_equipment_show_page_with_inertia(): void
+    {
+        $response = $this->get("/equipos/{$this->equipmentId}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn(Assert $page) => $page
+            ->component('Equipment/Show')
+            ->has('equipment')
+            ->where('equipment.id', $this->equipmentId)
+            ->has('equipment.tickets')
+            ->has('equipment.maintenances')
+            ->has('equipment.departamentos')
+            ->has('equipment.empleados')
+        );
+    }
+
     public function test_can_show_single_equipment_json(): void
     {
         $response = $this->getJson("/equipos/{$this->equipmentId}");

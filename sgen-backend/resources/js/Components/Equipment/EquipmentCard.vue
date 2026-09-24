@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import type { EquipmentItem } from '@/Composables/useEquipmentFilters';
 
 const props = defineProps<{
@@ -63,21 +64,22 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
                     </svg>
                 </div>
 
-                <button
+                <Link
+                    :href="`/equipos/${item.numericId}`"
                     class="arrow-ext-btn"
-                    @click="emit('view', item)"
-                    type="button"
-                    title="Abrir ficha detallada"
+                    title="Abrir ficha detallada del equipo"
                 >
                     <svg viewBox="0 0 24 24">
                         <line x1="7" y1="17" x2="17" y2="7"></line>
                         <polyline points="7 7 17 7 17 17"></polyline>
                     </svg>
-                </button>
+                </Link>
             </div>
 
             <div class="card-info-block">
-                <h2 class="card-device-title">{{ item.name }}</h2>
+                <Link :href="`/equipos/${item.numericId}`" class="card-device-title-link">
+                    <h2 class="card-device-title">{{ item.name }}</h2>
+                </Link>
                 <span class="card-sku-id">ID: {{ item.id }}</span>
             </div>
 
@@ -238,6 +240,17 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+.card-device-title-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    overflow: hidden;
+}
+
+.card-device-title-link:hover .card-device-title {
+    color: var(--brand);
 }
 
 .card-device-title {

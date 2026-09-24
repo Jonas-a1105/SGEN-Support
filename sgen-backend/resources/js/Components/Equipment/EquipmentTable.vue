@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import type { EquipmentItem } from '@/Composables/useEquipmentFilters';
 
 defineProps<{
@@ -46,7 +47,9 @@ const getStatusClass = (status: string) => {
                         </td>
                         <td>
                             <div class="item-name-cell">
-                                <strong class="item-name-text">{{ item.name }}</strong>
+                                <Link :href="`/equipos/${item.numericId}`" class="equip-link">
+                                    <strong class="item-name-text">{{ item.name }}</strong>
+                                </Link>
                                 <span v-if="item.assignedTo" class="item-assigned-text">{{ item.assignedTo }}</span>
                             </div>
                         </td>
@@ -61,17 +64,16 @@ const getStatusClass = (status: string) => {
                         </td>
                         <td>
                             <div class="table-actions-group">
-                                <button
+                                <Link
+                                    :href="`/equipos/${item.numericId}`"
                                     class="action-mini-btn view"
-                                    @click="emit('view', item)"
-                                    type="button"
-                                    title="Vista rápida"
+                                    title="Ver ficha completa del equipo"
                                 >
                                     <svg viewBox="0 0 24 24">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
-                                </button>
+                                </Link>
                                 <button
                                     class="action-mini-btn edit"
                                     @click="emit('edit', item)"
@@ -162,6 +164,16 @@ const getStatusClass = (status: string) => {
     gap: 2px;
 }
 
+.equip-link {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.15s ease;
+}
+
+.equip-link:hover .item-name-text {
+    color: var(--brand);
+}
+
 .item-name-text {
     color: var(--text);
     font-size: 13px;
@@ -249,6 +261,11 @@ const getStatusClass = (status: string) => {
 .action-mini-btn:hover {
     color: var(--text);
     border-color: var(--stroke-hover);
+}
+
+.action-mini-btn.view:hover {
+    color: var(--brand);
+    border-color: var(--brand);
 }
 
 .action-mini-btn.delete:hover {

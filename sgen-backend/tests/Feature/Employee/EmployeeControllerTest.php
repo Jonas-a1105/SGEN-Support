@@ -55,6 +55,21 @@ final class EmployeeControllerTest extends TestCase
         );
     }
 
+    public function test_can_render_employee_show_page_with_inertia(): void
+    {
+        $response = $this->get("/personal/{$this->employeeId}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn(Assert $page) => $page
+            ->component('Employee/Show')
+            ->has('employee')
+            ->where('employee.id', $this->employeeId)
+            ->has('employee.equipos')
+            ->has('employee.tickets')
+            ->has('employee.departamentos')
+        );
+    }
+
     public function test_can_show_single_employee_json(): void
     {
         $response = $this->getJson("/personal/{$this->employeeId}");

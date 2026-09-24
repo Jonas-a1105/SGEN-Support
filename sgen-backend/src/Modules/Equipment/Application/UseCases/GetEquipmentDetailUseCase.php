@@ -16,6 +16,6 @@ final class GetEquipmentDetailUseCase
 
     public function execute(int $id): ?EquipmentDetailDTO
     {
-        return $this->repository->findById($id);
+        return $this->repository->getCompleteDetail($id);
     }
 }

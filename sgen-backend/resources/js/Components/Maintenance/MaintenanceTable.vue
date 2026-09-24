@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import type { MaintenanceItem } from './types';
 
 defineProps<{
@@ -37,10 +38,14 @@ const formatDate = (dateStr?: string) => {
                 <tbody>
                     <tr v-for="item in items" :key="item.id">
                         <td>
-                            <span class="badge-code">{{ item.equipoCodigo || 'S/C' }}</span>
+                            <Link :href="`/mantenimientos/${item.id}`" class="maint-table-link">
+                                <span class="badge-code">{{ item.equipoCodigo || 'S/C' }}</span>
+                            </Link>
                         </td>
                         <td class="desc-cell">
-                            <span class="desc-text" :title="item.descripcion">{{ item.descripcion }}</span>
+                            <Link :href="`/mantenimientos/${item.id}`" class="maint-table-link">
+                                <span class="desc-text" :title="item.descripcion">{{ item.descripcion }}</span>
+                            </Link>
                         </td>
                         <td>
                             <span
@@ -63,6 +68,16 @@ const formatDate = (dateStr?: string) => {
                         </td>
                         <td class="text-right">
                             <div class="row-actions">
+                                <Link
+                                    :href="`/mantenimientos/${item.id}`"
+                                    class="btn-row-action view"
+                                    title="Ver detalle del mantenimiento"
+                                >
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </Link>
                                 <button
                                     v-if="item.estado !== 'completado'"
                                     class="btn-row-action complete"
@@ -237,6 +252,22 @@ const formatDate = (dateStr?: string) => {
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: none !important;
+}
+
+.maint-table-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+}
+
+.maint-table-link:hover .desc-text {
+    color: var(--blue, #3b82f6);
+}
+
+.btn-row-action.view:hover {
+    border-color: var(--blue, #3b82f6);
+    color: var(--blue, #3b82f6);
+    background: rgba(59, 130, 246, 0.1);
 }
 
 .btn-row-action.complete:hover {

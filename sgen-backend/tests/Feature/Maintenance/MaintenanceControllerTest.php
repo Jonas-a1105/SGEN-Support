@@ -150,4 +150,56 @@ final class MaintenanceControllerTest extends TestCase
             ->has('proximos')
         );
     }
+
+    public function test_can_render_maintenance_show_page_with_inertia(): void
+    {
+        $maintId = DB::table('mantenimientos')->insertGetId([
+            'equipo_id' => $this->equipmentId,
+            'fecha' => now()->addDays(1)->toDateTimeString(),
+            'tipo_mantenimiento' => 'preventivo',
+            'estado' => 'pendiente',
+            'descripcion' => 'Revisión y mantenimiento de componentes',
+            'frecuencia' => 'mensual',
+            'proxima_fecha' => now()->addMonth()->toDateString(),
+            'costo' => 50.00,
+            'tecnico_id' => $this->technicianId,
+            'observaciones' => 'Checklist preliminar aprobado',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->get("/mantenimientos/{$maintId}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Maintenance/Show')
+            ->has('maintenance')
+            ->where('maintenance.id', $maintId)
+            ->where('maintenance.tipoMantenimiento', 'preventivo')
+            ->has('options')
+        );
+    }
+
+    public function test_can_show_single_maintenance_json(): void
+    {
+        $maintId = DB::table('mantenimientos')->insertGetId([
+            'equipo_id' => $this->equipmentId,
+            'fecha' => now()->toDateString(),
+            'tipo_mantenimiento' => 'correctivo',
+            'estado' => 'en_proceso',
+            'descripcion' => 'Ajuste de hardware',
+            'frecuencia' => 'unica',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson("/mantenimientos/{$maintId}");
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'id' => $maintId,
+            'tipoMantenimiento' => 'correctivo',
+            'estado' => 'en_proceso',
+        ]);
+    }
 }

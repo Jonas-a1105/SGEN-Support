@@ -108,6 +108,107 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
         return EmployeeDetailMapper::fromRow($row);
     }
 
+    public function getCompleteDetail(int $id): ?EmployeeDetailDTO
+    {
+        $row = DB::table('empleados')
+            ->leftJoin('departamentos', 'empleados.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('usuarios', 'empleados.usuario_id', '=', 'usuarios.id')
+            ->select([
+                'empleados.*',
+                'departamentos.nombre as departamento_nombre',
+                'usuarios.username as username',
+            ])
+            ->where('empleados.id', $id)
+            ->whereNull('empleados.deleted_at')
+            ->first();
+
+        if ($row === null) {
+            return null;
+        }
+
+        // Equipment assigned to employee
+        $equipos = DB::table('equipos')
+            ->select(['id', 'codigo_inventario', 'numero_serie', 'tipo', 'marca', 'modelo', 'estado', 'ubicacion_fisica'])
+            ->where('empleado_id', $id)
+            ->orderBy('codigo_inventario')
+            ->get()
+            ->map(function ($eq) {
+                return [
+                    'id' => (int) $eq->id,
+                    'codigo' => (string) $eq->codigo_inventario,
+                    'numeroSerie' => (string) ($eq->numero_serie ?? ''),
+                    'nombre' => trim(($eq->tipo ?? 'Equipo') . ' ' . ($eq->marca ?? '') . ' ' . ($eq->modelo ?? '')),
+                    'tipo' => (string) ($eq->tipo ?? 'Equipo'),
+                    'marca' => (string) ($eq->marca ?? ''),
+                    'modelo' => (string) ($eq->modelo ?? ''),
+                    'estado' => (string) ($eq->estado ?? 'disponible'),
+                    'ubicacion' => (string) ($eq->ubicacion_fisica ?? 'Sin ubicación'),
+                ];
+            })
+            ->all();
+
+        // Support tickets created/linked to employee
+        $tickets = DB::table('soportes')
+            ->select(['id', 'titulo', 'descripcion', 'estado', 'prioridad', 'fecha'])
+            ->where('empleado_id', $id)
+            ->orderByDesc('fecha')
+            ->limit(20)
+            ->get()
+            ->map(function ($s) {
+                return [
+                    'id' => (int) $s->id,
+                    'titulo' => (string) ($s->titulo ?? 'Ticket #' . $s->id),
+                    'descripcion' => (string) ($s->descripcion ?? ''),
+                    'estado' => (string) ($s->estado ?? 'pendiente'),
+                    'prioridad' => (string) ($s->prioridad ?? 'media'),
+                    'fecha' => isset($s->fecha) ? Carbon::parse($s->fecha)->format('d/m/Y H:i') : null,
+                ];
+            })
+            ->all();
+
+        // Department list for reassignment
+        $departamentos = DB::table('departamentos')
+            ->select(['id', 'nombre'])
+            ->orderBy('nombre')
+            ->get()
+            ->map(fn($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
+            ->all();
+
+        $baseDto = EmployeeDetailMapper::fromRow($row);
+
+        $resolvedCount = 0;
+        foreach ($tickets as $t) {
+            if ($t['estado'] === 'resuelto') {
+                $resolvedCount++;
+            }
+        }
+
+        return new EmployeeDetailDTO(
+            id: $baseDto->id,
+            formattedId: $baseDto->formattedId,
+            nombre: $baseDto->nombre,
+            apellido: $baseDto->apellido,
+            fullName: $baseDto->fullName,
+            email: $baseDto->email,
+            cedula: $baseDto->cedula,
+            cargo: $baseDto->cargo,
+            departamentoId: $baseDto->departamentoId,
+            departamentoNombre: $baseDto->departamentoNombre,
+            rol: $baseDto->rol,
+            usuarioId: $baseDto->usuarioId,
+            username: $baseDto->username,
+            initials: $baseDto->initials,
+            tint: $baseDto->tint,
+            telefono: $row->telefono ?? null,
+            equipos: $equipos,
+            tickets: $tickets,
+            departamentos: $departamentos,
+            equiposCount: count($equipos),
+            ticketsCount: count($tickets),
+            resolvedTicketsCount: $resolvedCount,
+        );
+    }
+
     public function create(CreateEmployeeDTO $dto): int
     {
         $now = Carbon::now();

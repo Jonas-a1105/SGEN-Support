@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import type { EmployeeItem } from '@/Composables/useEmployeeFilters';
 
 defineProps<{
@@ -21,7 +22,9 @@ const emit = defineEmits<{
                         {{ employee.initials }}
                     </div>
                     <div class="emp-identity-info">
-                        <h3 class="emp-name-text">{{ employee.fullName }}</h3>
+                        <Link :href="`/personal/${employee.numericId}`" class="emp-name-link">
+                            <h3 class="emp-name-text">{{ employee.fullName }}</h3>
+                        </Link>
                         <span class="emp-position-sub">{{ employee.position }}</span>
                     </div>
                 </div>
@@ -79,6 +82,16 @@ const emit = defineEmits<{
             </div>
 
             <div class="card-action-btns">
+                <Link
+                    :href="`/personal/${employee.numericId}`"
+                    class="btn-mini-action view"
+                    title="Ver perfil completo"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </Link>
                 <button
                     class="btn-mini-action edit"
                     @click="emit('edit', employee)"
@@ -192,6 +205,17 @@ const emit = defineEmits<{
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+.emp-name-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    overflow: hidden;
+}
+
+.emp-name-link:hover .emp-name-text {
+    color: var(--brand);
 }
 
 .emp-name-text {
@@ -350,6 +374,11 @@ const emit = defineEmits<{
 .btn-mini-action:hover {
     color: var(--text);
     border-color: var(--stroke-hover);
+}
+
+.btn-mini-action.view:hover {
+    color: var(--brand);
+    border-color: var(--brand);
 }
 
 .btn-mini-action.delete:hover {

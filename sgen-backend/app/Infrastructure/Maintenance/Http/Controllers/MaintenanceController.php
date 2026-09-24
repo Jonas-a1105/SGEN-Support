@@ -38,12 +38,23 @@ final class MaintenanceController extends Controller
         ]);
     }
 
-    public function show(int $id, GetMaintenanceDetailUseCase $useCase): JsonResponse
-    {
+    public function show(
+        int $id,
+        Request $request,
+        GetMaintenanceDetailUseCase $useCase,
+        MaintenanceRepositoryInterface $repository
+    ): Response|JsonResponse {
         $maintenance = $useCase->execute($id);
         abort_if($maintenance === null, 404, 'Mantenimiento no encontrado.');
 
-        return response()->json($maintenance);
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json($maintenance);
+        }
+
+        return Inertia::render('Maintenance/Show', [
+            'maintenance' => (array) $maintenance,
+            'options' => $repository->getFormOptions(),
+        ]);
     }
 
     public function create(MaintenanceRepositoryInterface $repository): Response

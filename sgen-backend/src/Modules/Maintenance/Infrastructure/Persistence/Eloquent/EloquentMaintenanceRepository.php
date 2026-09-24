@@ -94,8 +94,11 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
     {
         $record = DB::table('mantenimientos')
             ->leftJoin('equipos', 'mantenimientos.equipo_id', '=', 'equipos.id')
+            ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('empleados as custodio', 'equipos.empleado_id', '=', 'custodio.id')
             ->leftJoin('usuarios', 'mantenimientos.tecnico_id', '=', 'usuarios.id')
-            ->leftJoin('empleados', 'usuarios.id', '=', 'empleados.usuario_id')
+            ->leftJoin('empleados as emp_user', 'usuarios.id', '=', 'emp_user.usuario_id')
+            ->leftJoin('empleados as emp_direct', 'mantenimientos.tecnico_id', '=', 'emp_direct.id')
             ->where('mantenimientos.id', $id)
             ->select([
                 'mantenimientos.*',
@@ -104,15 +107,67 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
                 'equipos.marca as equipo_marca',
                 'equipos.modelo as equipo_modelo',
                 'equipos.numero_serie as equipo_serial',
+                'equipos.estado as equipo_estado',
                 'equipos.id as equipo_id_real',
-                'usuarios.username as tecnico_nombre',
-                DB::raw("CONCAT(empleados.nombre, ' ', empleados.apellido) as tecnico_completo"),
+                'departamentos.nombre as equipo_departamento',
+                'departamentos.id as equipo_departamento_id',
+                DB::raw("TRIM(CONCAT(custodio.nombre, ' ', COALESCE(custodio.apellido, ''))) as equipo_custodio"),
+                'custodio.id as equipo_custodio_id',
+                'usuarios.username as tecnico_username',
+                DB::raw("COALESCE(
+                    NULLIF(TRIM(CONCAT(emp_direct.nombre, ' ', COALESCE(emp_direct.apellido, ''))), ''),
+                    NULLIF(TRIM(CONCAT(emp_user.nombre, ' ', COALESCE(emp_user.apellido, ''))), ''),
+                    usuarios.username
+                ) as tecnico_completo"),
             ])
             ->first();
 
         if (!$record) {
             return null;
         }
+
+        $duracion = null;
+        if (isset($record->duracion) && $record->duracion) {
+            $duracion = (int) $record->duracion;
+        } elseif ($record->observaciones && preg_match('/Duración estimada:\s*(\d+)\s*min/i', (string) $record->observaciones, $m)) {
+            $duracion = (int) $m[1];
+        }
+
+        $fecha = Carbon::parse($record->fecha);
+        $isOverdue = $fecha->isPast() && !in_array($record->estado, ['completado', 'cancelado'], true);
+
+        $historial = DB::table('mantenimientos')
+            ->leftJoin('usuarios', 'mantenimientos.tecnico_id', '=', 'usuarios.id')
+            ->leftJoin('empleados as emp_user', 'usuarios.id', '=', 'emp_user.usuario_id')
+            ->leftJoin('empleados as emp_direct', 'mantenimientos.tecnico_id', '=', 'emp_direct.id')
+            ->where('mantenimientos.equipo_id', $record->equipo_id)
+            ->where('mantenimientos.id', '!=', $id)
+            ->orderByDesc('mantenimientos.fecha')
+            ->limit(5)
+            ->select([
+                'mantenimientos.id',
+                'mantenimientos.fecha',
+                'mantenimientos.tipo_mantenimiento',
+                'mantenimientos.estado',
+                'mantenimientos.costo',
+                'mantenimientos.descripcion',
+                DB::raw("COALESCE(
+                    NULLIF(TRIM(CONCAT(emp_direct.nombre, ' ', COALESCE(emp_direct.apellido, ''))), ''),
+                    NULLIF(TRIM(CONCAT(emp_user.nombre, ' ', COALESCE(emp_user.apellido, ''))), ''),
+                    usuarios.username
+                ) as tecnico_nombre"),
+            ])
+            ->get()
+            ->map(fn ($h) => [
+                'id' => (int) $h->id,
+                'fecha' => (string) $h->fecha,
+                'tipoMantenimiento' => (string) $h->tipo_mantenimiento,
+                'estado' => (string) $h->estado,
+                'costo' => $h->costo !== null ? (float) $h->costo : null,
+                'descripcion' => (string) $h->descripcion,
+                'tecnicoNombre' => $h->tecnico_nombre ?? 'Sin asignar',
+            ])
+            ->all();
 
         return new MaintenanceDetailDTO(
             id: (int) $record->id,
@@ -124,22 +179,29 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
             frecuencia: (string) $record->frecuencia,
             proximaFecha: $record->proxima_fecha,
             costo: $record->costo !== null ? (float) $record->costo : null,
-            tecnicoId: $record->tecnico_id,
-            tecnicoNombre: $record->tecnico_completo ?? $record->tecnico_nombre,
+            tecnicoId: $record->tecnico_id ? (int) $record->tecnico_id : null,
+            tecnicoNombre: $record->tecnico_completo ?? $record->tecnico_username,
             realizadoPor: $record->realizado_por,
             observaciones: $record->observaciones,
-            checklist: $record->checklist ? json_decode($record->checklist, true) : null,
-            duracion: $record->duracion ? (int) $record->duracion : null,
+            checklist: $record->checklist ? (is_array($record->checklist) ? $record->checklist : json_decode($record->checklist, true)) : null,
+            duracion: $duracion,
             createdAt: $record->created_at,
             updatedAt: $record->updated_at,
             equipo: [
-                'id' => (int) $record->equipo_id_real,
-                'codigo' => $record->equipo_codigo,
-                'tipo' => $record->equipo_tipo,
-                'marca' => $record->equipo_marca,
-                'modelo' => $record->equipo_modelo,
-                'serial' => $record->equipo_serial,
-            ]
+                'id' => (int) ($record->equipo_id_real ?? $record->equipo_id),
+                'codigo' => $record->equipo_codigo ?? 'S/C',
+                'tipo' => $record->equipo_tipo ?? 'Equipo',
+                'marca' => $record->equipo_marca ?? 'N/A',
+                'modelo' => $record->equipo_modelo ?? 'N/A',
+                'serial' => $record->equipo_serial ?? 'N/A',
+                'estado' => $record->equipo_estado ?? 'disponible',
+                'departamento' => $record->equipo_departamento ?? 'Sin departamento',
+                'departamentoId' => $record->equipo_departamento_id ? (int) $record->equipo_departamento_id : null,
+                'custodio' => $record->equipo_custodio ?? 'Sin custodio',
+                'custodioId' => $record->equipo_custodio_id ? (int) $record->equipo_custodio_id : null,
+            ],
+            historialEquipo: $historial,
+            isOverdue: $isOverdue
         );
     }
 

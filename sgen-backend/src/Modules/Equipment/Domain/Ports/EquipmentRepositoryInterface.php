@@ -22,6 +22,8 @@ interface EquipmentRepositoryInterface
 
     public function findById(int $id): ?EquipmentDetailDTO;
 
+    public function getCompleteDetail(int $id): ?EquipmentDetailDTO;
+
     public function create(CreateEquipmentDTO $dto): int;
 
     public function update(int $id, UpdateEquipmentDTO $dto): void;

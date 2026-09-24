@@ -29,12 +29,18 @@ final class EquipmentController extends Controller
         return Inertia::render('Equipment/Index', $useCase->execute($filters));
     }
 
-    public function show(int $id, GetEquipmentDetailUseCase $useCase): JsonResponse
+    public function show(int $id, Request $request, GetEquipmentDetailUseCase $useCase): JsonResponse|Response
     {
         $equipment = $useCase->execute($id);
         abort_if($equipment === null, 404, 'Equipo no encontrado.');
 
-        return response()->json($equipment->toArray());
+        if ($request->wantsJson()) {
+            return response()->json($equipment->toArray());
+        }
+
+        return Inertia::render('Equipment/Show', [
+            'equipment' => $equipment->toArray(),
+        ]);
     }
 
     public function store(StoreEquipmentRequest $request, CreateEquipmentUseCase $useCase): RedirectResponse

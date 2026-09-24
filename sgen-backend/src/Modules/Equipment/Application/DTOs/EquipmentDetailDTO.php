@@ -32,6 +32,13 @@ final class EquipmentDetailDTO
         public readonly ?string $supplier,
         public readonly ?string $warranty,
         public readonly ?float $purchaseValue,
+        public readonly int $warrantyPercent = 0,
+        public readonly string $warrantyStatus = 'expired',
+        public readonly ?string $warrantyRemaining = null,
+        public readonly array $tickets = [],
+        public readonly array $maintenances = [],
+        public readonly array $departamentos = [],
+        public readonly array $empleados = [],
     ) {
     }
 
@@ -63,6 +70,13 @@ final class EquipmentDetailDTO
             'supplier' => $this->supplier,
             'warranty' => $this->warranty,
             'purchaseValue' => $this->purchaseValue,
+            'warrantyPercent' => $this->warrantyPercent,
+            'warrantyStatus' => $this->warrantyStatus,
+            'warrantyRemaining' => $this->warrantyRemaining,
+            'tickets' => $this->tickets,
+            'maintenances' => $this->maintenances,
+            'departamentos' => $this->departamentos,
+            'empleados' => $this->empleados,
         ];
     }
 }

@@ -22,6 +22,13 @@ final class EmployeeDetailDTO
         public readonly ?string $username,
         public readonly string $initials,
         public readonly string $tint,
+        public readonly ?string $telefono = null,
+        public readonly array $equipos = [],
+        public readonly array $tickets = [],
+        public readonly array $departamentos = [],
+        public readonly int $equiposCount = 0,
+        public readonly int $ticketsCount = 0,
+        public readonly int $resolvedTicketsCount = 0,
     ) {
     }
 
@@ -36,6 +43,7 @@ final class EmployeeDetailDTO
             'email' => $this->email,
             'cedula' => $this->cedula,
             'cargo' => $this->cargo,
+            'telefono' => $this->telefono,
             'departamentoId' => $this->departamentoId,
             'departamentoNombre' => $this->departamentoNombre,
             'rol' => $this->rol,
@@ -43,6 +51,12 @@ final class EmployeeDetailDTO
             'username' => $this->username,
             'initials' => $this->initials,
             'tint' => $this->tint,
+            'equipos' => $this->equipos,
+            'tickets' => $this->tickets,
+            'departamentos' => $this->departamentos,
+            'equiposCount' => $this->equiposCount,
+            'ticketsCount' => $this->ticketsCount,
+            'resolvedTicketsCount' => $this->resolvedTicketsCount,
         ];
     }
 }

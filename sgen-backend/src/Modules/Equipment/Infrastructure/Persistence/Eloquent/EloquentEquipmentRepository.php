@@ -109,6 +109,147 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         return EquipmentDetailMapper::fromRow($row);
     }
 
+    public function getCompleteDetail(int $id): ?EquipmentDetailDTO
+    {
+        $row = DB::table('equipos')
+            ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('empleados', 'equipos.empleado_id', '=', 'empleados.id')
+            ->select([
+                'equipos.*',
+                'departamentos.nombre as departamento_nombre',
+                'empleados.nombre as empleado_nombre',
+                'empleados.apellido as empleado_apellido',
+            ])
+            ->where('equipos.id', $id)
+            ->first();
+
+        if ($row === null) {
+            return null;
+        }
+
+        // Warranty calculation
+        $warrantyPercent = 0;
+        $warrantyStatus = 'expired';
+        $warrantyRemaining = null;
+
+        if (!empty($row->fecha_compra) && !empty($row->garantia)) {
+            $start = Carbon::parse($row->fecha_compra)->timestamp;
+            $end = Carbon::parse($row->garantia)->timestamp;
+            $now = Carbon::now()->timestamp;
+            $total = $end - $start;
+            $elapsed = $now - $start;
+
+            if ($total > 0) {
+                $warrantyPercent = (int) max(0, min(100, (($total - $elapsed) / $total) * 100));
+                if ($now < $end) {
+                    $warrantyStatus = $warrantyPercent > 33 ? 'active' : 'warning';
+                    $daysRemaining = (int) ceil(($end - $now) / 86400);
+                    $warrantyRemaining = $daysRemaining > 365
+                        ? round($daysRemaining / 365, 1) . ' años'
+                        : round($daysRemaining / 30) . ' meses';
+                }
+            }
+        }
+
+        // Associated support tickets
+        $tickets = DB::table('soportes')
+            ->select(['id', 'titulo', 'descripcion', 'estado', 'prioridad', 'fecha'])
+            ->where('equipo_id', $id)
+            ->orderByDesc('fecha')
+            ->limit(20)
+            ->get()
+            ->map(function ($s) {
+                return [
+                    'id' => (int) $s->id,
+                    'titulo' => (string) ($s->titulo ?? 'Ticket #' . $s->id),
+                    'descripcion' => (string) ($s->descripcion ?? ''),
+                    'estado' => (string) ($s->estado ?? 'pendiente'),
+                    'prioridad' => (string) ($s->prioridad ?? 'media'),
+                    'fecha' => isset($s->fecha) ? Carbon::parse($s->fecha)->format('d/m/Y H:i') : null,
+                ];
+            })
+            ->all();
+
+        // Associated maintenance orders
+        $maintenances = DB::table('mantenimientos')
+            ->select(['id', 'tipo_mantenimiento', 'estado', 'descripcion', 'costo', 'realizado_por', 'fecha', 'proxima_fecha'])
+            ->where('equipo_id', $id)
+            ->orderByDesc('fecha')
+            ->limit(20)
+            ->get()
+            ->map(function ($m) {
+                return [
+                    'id' => (int) $m->id,
+                    'tipo' => (string) ($m->tipo_mantenimiento ?? 'preventivo'),
+                    'estado' => (string) ($m->estado ?? 'completado'),
+                    'descripcion' => (string) ($m->descripcion ?? ''),
+                    'costo' => (float) ($m->costo ?? 0),
+                    'realizadoPor' => (string) ($m->realizado_por ?? 'Técnico de soporte'),
+                    'fecha' => isset($m->fecha) ? Carbon::parse($m->fecha)->format('d/m/Y') : null,
+                    'proximaFecha' => isset($m->proxima_fecha) ? Carbon::parse($m->proxima_fecha)->format('d/m/Y') : null,
+                ];
+            })
+            ->all();
+
+        // Department options
+        $departamentos = DB::table('departamentos')
+            ->select(['id', 'nombre'])
+            ->orderBy('nombre')
+            ->get()
+            ->map(fn($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
+            ->all();
+
+        // Employee options
+        $empleados = DB::table('empleados')
+            ->select(['id', 'nombre', 'apellido', 'cargo'])
+            ->whereNull('deleted_at')
+            ->orderBy('nombre')
+            ->get()
+            ->map(fn($e) => [
+                'id' => (int) $e->id,
+                'nombre' => trim($e->nombre . ' ' . ($e->apellido ?? '')),
+                'cargo' => (string) ($e->cargo ?? 'Personal'),
+            ])
+            ->all();
+
+        $baseDto = EquipmentDetailMapper::fromRow($row);
+
+        return new EquipmentDetailDTO(
+            id: $baseDto->id,
+            inventoryCode: $baseDto->inventoryCode,
+            serialNumber: $baseDto->serialNumber,
+            name: $baseDto->name,
+            type: $baseDto->type,
+            brand: $baseDto->brand,
+            model: $baseDto->model,
+            status: $baseDto->status,
+            rawStatus: $baseDto->rawStatus,
+            departmentId: $baseDto->departmentId,
+            departmentName: $baseDto->departmentName,
+            employeeId: $baseDto->employeeId,
+            employeeName: $baseDto->employeeName,
+            physicalLocation: $baseDto->physicalLocation,
+            processor: $baseDto->processor,
+            ram: $baseDto->ram,
+            storage: $baseDto->storage,
+            os: $baseDto->os,
+            ipAddress: $baseDto->ipAddress,
+            driver: $baseDto->driver,
+            toner: $baseDto->toner,
+            purchaseDate: $baseDto->purchaseDate,
+            supplier: $baseDto->supplier,
+            warranty: $baseDto->warranty,
+            purchaseValue: $baseDto->purchaseValue,
+            warrantyPercent: $warrantyPercent,
+            warrantyStatus: $warrantyStatus,
+            warrantyRemaining: $warrantyRemaining,
+            tickets: $tickets,
+            maintenances: $maintenances,
+            departamentos: $departamentos,
+            empleados: $empleados,
+        );
+    }
+
     public function create(CreateEquipmentDTO $dto): int
     {
         $statusEnum = EquipmentStatus::tryFrom($dto->status) ?? EquipmentStatus::fromLabel($dto->status);
