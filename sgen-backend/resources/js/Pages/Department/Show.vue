@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { BaseConfirmModal, BaseKpiCard } from '@/Components/UI';
+import { BaseConfirmModal, BaseKpiCard, BaseTabs, type TabItem } from '@/Components/UI';
 import DepartmentDetailHeader from '@/Components/Department/Detail/DepartmentDetailHeader.vue';
 import TabDepartmentOverview from '@/Components/Department/Detail/TabDepartmentOverview.vue';
 import TabDepartmentEmployees from '@/Components/Department/Detail/TabDepartmentEmployees.vue';
@@ -31,7 +31,14 @@ const props = defineProps<{
     department: DepartmentDetail;
 }>();
 
-const activeTab = ref<DepartmentTabKey>('overview');
+const activeTab = ref<string>('overview');
+
+const tabs = computed<TabItem[]>(() => [
+    { key: 'overview', label: 'Visión General' },
+    { key: 'employees', label: 'Colaboradores', count: props.department.empleados?.length },
+    { key: 'assets', label: 'Equipos & Activos', count: props.department.equipos?.length },
+    { key: 'inventory', label: 'Artículos Inventario', count: props.department.consumables?.length },
+]);
 
 // Modals
 const isAssignEmployeeOpen = ref(false);
@@ -128,75 +135,10 @@ const handleConfirmUnlink = () => {
             <!-- Main Panel with Tabs -->
             <main class="dept-main-panel">
                 <div class="dept-panel-wrapper">
-                    <!-- Navigation Tabs Bar -->
-                    <nav class="dept-tabs-nav" aria-label="Pestañas de departamento">
-                        <button
-                            type="button"
-                            class="dept-tab-button"
-                            :class="{ 'is-active': activeTab === 'overview' }"
-                            @click="activeTab = 'overview'"
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="7" height="7"></rect>
-                                <rect x="14" y="3" width="7" height="7"></rect>
-                                <rect x="14" y="14" width="7" height="7"></rect>
-                                <rect x="3" y="14" width="7" height="7"></rect>
-                            </svg>
-                            <span>Visión General</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="dept-tab-button"
-                            :class="{ 'is-active': activeTab === 'employees' }"
-                            @click="activeTab = 'employees'"
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            <span>Colaboradores</span>
-                            <span v-if="department.empleados.length > 0" class="dept-tab-counter">
-                                {{ department.empleados.length }}
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="dept-tab-button"
-                            :class="{ 'is-active': activeTab === 'assets' }"
-                            @click="activeTab = 'assets'"
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                <line x1="8" y1="21" x2="16" y2="21"></line>
-                                <line x1="12" y1="17" x2="12" y2="21"></line>
-                            </svg>
-                            <span>Equipos &amp; Activos</span>
-                            <span v-if="department.equipos.length > 0" class="dept-tab-counter">
-                                {{ department.equipos.length }}
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="dept-tab-button"
-                            :class="{ 'is-active': activeTab === 'inventory' }"
-                            @click="activeTab = 'inventory'"
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                            </svg>
-                            <span>Inventario &amp; Consumibles</span>
-                            <span v-if="department.consumibles.length > 0" class="dept-tab-counter">
-                                {{ department.consumibles.length }}
-                            </span>
-                        </button>
-                    </nav>
+                    <!-- Navigation Tabs Bar using BaseTabs -->
+                    <div class="dept-tabs-bar">
+                        <BaseTabs v-model="activeTab" :tabs="tabs" />
+                    </div>
 
                     <!-- Tab Panels Body -->
                     <div class="dept-tab-body">
@@ -222,7 +164,7 @@ const handleConfirmUnlink = () => {
 
                         <TabDepartmentInventory
                             v-else-if="activeTab === 'inventory'"
-                            :consumibles="department.consumibles"
+                            :consumibles="department.consumables"
                         />
                     </div>
                 </div>
@@ -291,63 +233,10 @@ const handleConfirmUnlink = () => {
     overflow: hidden;
 }
 
-.dept-tabs-nav {
-    display: flex;
-    gap: var(--space-2);
+.dept-tabs-bar {
     padding: var(--space-3) var(--space-4);
     background: var(--bg-sub);
     border-bottom: 1px solid var(--stroke);
-    overflow-x: auto;
-}
-
-.dept-tab-button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: 8px 16px;
-    border-radius: var(--radius-md);
-    border: none;
-    background: transparent;
-    color: var(--text-dim);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    white-space: nowrap;
-}
-
-.dept-tab-button svg {
-    width: 16px;
-    height: 16px;
-}
-
-.dept-tab-button:hover {
-    color: var(--text);
-    background: var(--stroke-subtle);
-}
-
-.dept-tab-button.is-active {
-    background: var(--bg-card);
-    color: var(--brand);
-}
-
-.dept-tab-counter {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    border-radius: var(--radius-pill);
-    font-size: 11px;
-    font-weight: 700;
-    background: var(--stroke);
-    color: var(--text);
-}
-
-.dept-tab-button.is-active .dept-tab-counter {
-    background: var(--brand-glow);
-    color: var(--brand);
 }
 
 .dept-tab-body {

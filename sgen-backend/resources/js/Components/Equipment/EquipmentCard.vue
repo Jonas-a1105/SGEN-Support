@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import { BaseBadge } from '@/Components/UI';
+import type { BadgeVariant } from '@/Utils/badgeVariants';
 import type { EquipmentItem } from '@/Composables/useEquipmentFilters';
 
 const props = defineProps<{
@@ -14,16 +16,16 @@ const emit = defineEmits<{
     (e: 'delete', item: EquipmentItem): void;
 }>();
 
-const statusClass = computed(() => {
+const badgeVariant = computed<BadgeVariant>(() => {
     switch (props.item.status) {
         case 'En Uso':
-            return 'en-uso';
+            return 'info';
         case 'Disponible':
-            return 'disponible';
+            return 'success';
         case 'Reparación':
-            return 'reparacion';
+            return 'warning';
         default:
-            return 'baja';
+            return 'danger';
     }
 });
 
@@ -96,23 +98,9 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
         </div>
 
         <div class="card-bottom-actions-row">
-            <span class="status-pill" :class="statusClass">
-                <svg v-if="statusClass === 'en-uso'" viewBox="0 0 24 24">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <svg v-else-if="statusClass === 'disponible'" viewBox="0 0 24 24">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                <svg v-else-if="statusClass === 'reparacion'" viewBox="0 0 24 24">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                </svg>
-                <svg v-else viewBox="0 0 24 24">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-                <span>{{ item.status }}</span>
-            </span>
+            <BaseBadge :variant="badgeVariant" size="sm">
+                {{ item.status }}
+            </BaseBadge>
 
             <div class="card-actions-mini-group">
                 <button
@@ -191,11 +179,11 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: var(--stroke-subtle);
+    background: var(--bg-sub);
     border: var(--stroke-w) solid var(--stroke);
     display: grid;
     place-items: center;
-    color: var(--orange);
+    color: var(--text-muted);
 }
 
 .device-type-icon-box svg {
@@ -305,49 +293,6 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    border: var(--stroke-w) solid transparent;
-}
-
-.status-pill svg {
-    width: 12px;
-    height: 12px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2.2;
-}
-
-.status-pill.en-uso {
-    background: rgba(37, 99, 235, 0.12);
-    color: #3b82f6;
-    border-color: rgba(37, 99, 235, 0.25);
-}
-
-.status-pill.disponible {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border-color: rgba(16, 185, 129, 0.25);
-}
-
-.status-pill.reparacion {
-    background: rgba(245, 158, 11, 0.12);
-    color: #f59e0b;
-    border-color: rgba(245, 158, 11, 0.25);
-}
-
-.status-pill.baja {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.25);
 }
 
 .card-actions-mini-group {
