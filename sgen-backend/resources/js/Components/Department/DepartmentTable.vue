@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import type { DepartmentItem } from '@/Composables/useDepartmentFilters';
 
 defineProps<{
@@ -58,7 +59,9 @@ const getProgressWidthClass = (percent: number) => {
                                         <line x1="15" y1="22" x2="15" y2="2"></line>
                                     </svg>
                                 </div>
-                                <strong class="dept-name-text">{{ dept.name }}</strong>
+                                <Link :href="`/departamentos/${dept.numericId}`" class="dept-link">
+                                    <strong class="dept-name-text">{{ dept.name }}</strong>
+                                </Link>
                             </div>
                         </td>
                         <td class="text-muted-cell">{{ dept.location }}</td>
@@ -82,6 +85,16 @@ const getProgressWidthClass = (percent: number) => {
                         </td>
                         <td class="text-right">
                             <div class="table-actions-group">
+                                <Link
+                                    :href="`/departamentos/${dept.numericId}`"
+                                    class="action-mini-btn view"
+                                    title="Ver detalle del departamento"
+                                >
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </Link>
                                 <button
                                     class="action-mini-btn edit"
                                     @click="emit('edit', dept)"
@@ -192,6 +205,16 @@ const getProgressWidthClass = (percent: number) => {
     stroke-width: 2;
 }
 
+.dept-link {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.15s ease;
+}
+
+.dept-link:hover .dept-name-text {
+    color: var(--brand);
+}
+
 .dept-name-text {
     color: var(--text);
     font-size: 13px;
@@ -266,6 +289,11 @@ const getProgressWidthClass = (percent: number) => {
 .action-mini-btn:hover {
     color: var(--text);
     border-color: var(--stroke-hover);
+}
+
+.action-mini-btn.view:hover {
+    color: var(--brand);
+    border-color: var(--brand);
 }
 
 .action-mini-btn.delete:hover {

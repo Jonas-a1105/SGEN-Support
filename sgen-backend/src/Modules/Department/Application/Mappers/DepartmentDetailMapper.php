@@ -12,6 +12,11 @@ final class DepartmentDetailMapper
         '#4f46e5', '#f97316', '#ec4899', '#10b981', '#06b6d4', '#8b5cf6', '#f59e0b', '#f43f5e'
     ];
 
+    public static function getColorForId(int $id): string
+    {
+        return self::COLORS[$id % count(self::COLORS)];
+    }
+
     /**
      * @param object|array<string, mixed> $row
      */
@@ -24,7 +29,7 @@ final class DepartmentDetailMapper
         $equipos = (int) ($data['equipos_count'] ?? 0);
         $empleados = (int) ($data['empleados_count'] ?? 0);
         $inventoryPercent = (int) ($data['inventory_percent'] ?? min(100, max(25, $equipos * 3 + 20)));
-        $color = self::COLORS[$id % count(self::COLORS)];
+        $color = self::getColorForId($id);
 
         return new DepartmentDetailDTO(
             id: $id,

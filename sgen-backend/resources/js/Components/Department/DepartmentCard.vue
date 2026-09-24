@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import type { DepartmentItem } from '@/Composables/useDepartmentFilters';
 
 const props = defineProps<{
@@ -76,6 +77,13 @@ const progressWidthClass = computed(() => {
                         ···
                     </button>
                     <div v-if="isMenuOpen" class="card-dropdown-menu">
+                        <Link :href="`/departamentos/${department.numericId}`" class="card-menu-item">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <span>Ver Detalle</span>
+                        </Link>
                         <button class="card-menu-item" @click="handleEdit" type="button">
                             <svg viewBox="0 0 24 24">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -95,7 +103,9 @@ const progressWidthClass = computed(() => {
             </div>
 
             <div class="card-title-group">
-                <h2 class="dept-card-title">{{ department.name }}</h2>
+                <Link :href="`/departamentos/${department.numericId}`" class="dept-card-title-link">
+                    <h2 class="dept-card-title">{{ department.name }}</h2>
+                </Link>
                 <span class="dept-card-code">{{ department.code }}</span>
             </div>
 
@@ -281,6 +291,17 @@ const progressWidthClass = computed(() => {
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+.dept-card-title-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    overflow: hidden;
+}
+
+.dept-card-title-link:hover .dept-card-title {
+    color: var(--brand);
 }
 
 .dept-card-title {

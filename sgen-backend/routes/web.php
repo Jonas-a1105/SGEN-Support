@@ -58,6 +58,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}', [\App\Infrastructure\Department\Http\Controllers\DepartmentController::class, 'show'])->name('show');
         Route::match(['put', 'patch', 'post'], '/{id}', [\App\Infrastructure\Department\Http\Controllers\DepartmentController::class, 'update'])->name('update');
         Route::delete('/{id}', [\App\Infrastructure\Department\Http\Controllers\DepartmentController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/empleados', [\App\Infrastructure\Department\Http\Controllers\DepartmentController::class, 'assignEmployee'])->name('assign-employee');
+        Route::delete('/{id}/empleados/{employeeId}', [\App\Infrastructure\Department\Http\Controllers\DepartmentController::class, 'removeEmployee'])->name('remove-employee');
+        Route::post('/{id}/equipos', [\App\Infrastructure\Department\Http\Controllers\DepartmentController::class, 'assignEquipment'])->name('assign-equipment');
+        Route::delete('/{id}/equipos/{equipmentId}', [\App\Infrastructure\Department\Http\Controllers\DepartmentController::class, 'removeEquipment'])->name('remove-equipment');
     });
 
     Route::prefix('soportes')->name('soportes.')->group(function () {
