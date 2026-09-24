@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import BasePagination from '@/Components/UI/BasePagination.vue';
 import BaseEmptyState from '@/Components/UI/BaseEmptyState.vue';
 
@@ -19,14 +19,22 @@ export interface DataTablePagination {
     total?: number;
     from?: number;
     to?: number;
+    perPage?: number;
 }
 
 interface Props {
     columns: DataTableColumn[];
-    items: T[];
+    items?: T[];
+    data?: T[];
     pagination?: DataTablePagination | null;
+    paginate?: boolean;
+    perPage?: number;
+    perPageOptions?: number[];
+    itemLabel?: string;
+    dense?: boolean;
     rowKey?: string | ((item: T, index: number) => string | number);
     emptyTitle?: string;
+    emptySubtitle?: string;
     emptyDescription?: string;
     emptyIcon?: string;
     hoverable?: boolean;
@@ -35,10 +43,18 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+    items: () => [],
+    data: () => [],
     pagination: null,
+    paginate: true,
+    perPage: 10,
+    perPageOptions: () => [10, 25, 50],
+    itemLabel: 'registros',
+    dense: false,
     rowKey: 'id',
     emptyTitle: 'No se encontraron registros',
-    emptyDescription: 'No hay datos disponibles para mostrar en este momento.',
+    emptySubtitle: '',
+    emptyDescription: '',
     emptyIcon: 'fa-solid fa-inbox',
     hoverable: true,
     striped: false,
@@ -47,8 +63,35 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
     (e: 'sort', payload: { key: string; direction: 'asc' | 'desc' }): void;
     (e: 'page-change', page: number): void;
+    (e: 'per-page-change', perPage: number): void;
     (e: 'row-click', item: T, index: number): void;
 }>();
+
+const rawItems = computed<T[]>(() => {
+    if (props.items && props.items.length > 0) return props.items;
+    if (props.data && props.data.length > 0) return props.data;
+    return props.items || props.data || [];
+});
+
+const isServerPagination = computed(() => !!props.pagination);
+const isClientPaginationActive = computed(() => {
+    if (isServerPagination.value) return false;
+    return props.paginate !== false;
+});
+
+const clientCurrentPage = ref(1);
+const currentPerPage = ref(props.perPage || 10);
+
+watch(() => props.perPage, (val) => {
+    if (val) currentPerPage.value = val;
+});
+
+watch([() => rawItems.value.length, currentPerPage], () => {
+    const maxPage = Math.max(1, Math.ceil(rawItems.value.length / currentPerPage.value));
+    if (clientCurrentPage.value > maxPage) {
+        clientCurrentPage.value = 1;
+    }
+});
 
 const sortKey = ref<string>('');
 const sortDirection = ref<'asc' | 'desc'>('asc');
@@ -64,6 +107,86 @@ const handleSort = (column: DataTableColumn) => {
     }
 
     emit('sort', { key: sortKey.value, direction: sortDirection.value });
+};
+
+const sortedItems = computed<T[]>(() => {
+    const list = [...rawItems.value];
+    if (!sortKey.value) return list;
+
+    return list.sort((a, b) => {
+        const valA = (a as Record<string, any>)[sortKey.value];
+        const valB = (b as Record<string, any>)[sortKey.value];
+
+        if (valA === valB) return 0;
+        if (valA == null) return 1;
+        if (valB == null) return -1;
+
+        let comp = 0;
+        if (typeof valA === 'number' && typeof valB === 'number') {
+            comp = valA - valB;
+        } else {
+            comp = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' });
+        }
+
+        return sortDirection.value === 'asc' ? comp : -comp;
+    });
+});
+
+const displayedItems = computed<T[]>(() => {
+    if (isServerPagination.value || !isClientPaginationActive.value) {
+        return sortedItems.value;
+    }
+
+    const start = (clientCurrentPage.value - 1) * currentPerPage.value;
+    return sortedItems.value.slice(start, start + currentPerPage.value);
+});
+
+const effectivePagination = computed(() => {
+    if (isServerPagination.value && props.pagination) {
+        const p = props.pagination;
+        const perP = p.perPage || currentPerPage.value;
+        return {
+            currentPage: p.currentPage || 1,
+            lastPage: p.lastPage || 1,
+            total: p.total ?? rawItems.value.length,
+            from: p.from ?? ((p.currentPage - 1) * perP + 1),
+            to: p.to ?? Math.min(p.currentPage * perP, p.total ?? rawItems.value.length),
+            perPage: perP,
+        };
+    }
+
+    if (isClientPaginationActive.value && rawItems.value.length > 0) {
+        const total = rawItems.value.length;
+        const lastPage = Math.max(1, Math.ceil(total / currentPerPage.value));
+        const from = total === 0 ? 0 : (clientCurrentPage.value - 1) * currentPerPage.value + 1;
+        const to = Math.min(clientCurrentPage.value * currentPerPage.value, total);
+
+        return {
+            currentPage: clientCurrentPage.value,
+            lastPage,
+            total,
+            from,
+            to,
+            perPage: currentPerPage.value,
+        };
+    }
+
+    return null;
+});
+
+const handlePageChange = (page: number) => {
+    if (isServerPagination.value) {
+        emit('page-change', page);
+    } else {
+        clientCurrentPage.value = page;
+        emit('page-change', page);
+    }
+};
+
+const handlePerPageChange = (pp: number) => {
+    currentPerPage.value = pp;
+    clientCurrentPage.value = 1;
+    emit('per-page-change', pp);
 };
 
 const getItemKey = (item: T, index: number): string | number => {
@@ -82,12 +205,23 @@ const getAlignmentClass = (align?: 'left' | 'center' | 'right'): string => {
             return 'text-left';
     }
 };
+
+const effectiveDescription = computed(() => {
+    return props.emptySubtitle || props.emptyDescription || 'No hay datos disponibles para mostrar en este momento.';
+});
 </script>
 
 <template>
     <div class="base-data-table-wrapper">
         <div class="table-container">
-            <table class="data-table" :class="{ 'is-hoverable': hoverable, 'is-striped': striped }">
+            <table
+                class="data-table"
+                :class="{
+                    'is-hoverable': hoverable,
+                    'is-striped': striped,
+                    'is-dense': dense
+                }"
+            >
                 <thead>
                     <tr>
                         <th
@@ -154,9 +288,9 @@ const getAlignmentClass = (align?: 'left' | 'center' | 'right'): string => {
                     </tr>
                 </thead>
 
-                <tbody v-if="items.length > 0">
+                <tbody v-if="displayedItems.length > 0">
                     <tr
-                        v-for="(item, index) in items"
+                        v-for="(item, index) in displayedItems"
                         :key="getItemKey(item, index)"
                         class="data-table-row"
                         :class="typeof rowClass === 'function' ? rowClass(item, index) : rowClass"
@@ -170,6 +304,7 @@ const getAlignmentClass = (align?: 'left' | 'center' | 'right'): string => {
                             <slot
                                 :name="`cell-${col.key}`"
                                 :item="item"
+                                :row="item"
                                 :value="(item as Record<string, any>)[col.key]"
                                 :index="index"
                             >
@@ -179,18 +314,18 @@ const getAlignmentClass = (align?: 'left' | 'center' | 'right'): string => {
 
                         <!-- Optional Actions Cell -->
                         <td v-if="$slots.actions" class="text-right actions-column-cell" @click.stop>
-                            <slot name="actions" :item="item" :index="index" />
+                            <slot name="actions" :item="item" :row="item" :index="index" />
                         </td>
                     </tr>
                 </tbody>
             </table>
 
             <!-- Empty State inside table container -->
-            <div v-if="items.length === 0" class="table-empty-box">
+            <div v-if="rawItems.length === 0" class="table-empty-box">
                 <slot name="empty">
                     <BaseEmptyState
                         :title="emptyTitle"
-                        :description="emptyDescription"
+                        :description="effectiveDescription"
                         :icon="emptyIcon"
                     />
                 </slot>
@@ -198,14 +333,18 @@ const getAlignmentClass = (align?: 'left' | 'center' | 'right'): string => {
         </div>
 
         <!-- Integrated BasePagination -->
-        <div v-if="pagination" class="table-pagination-footer">
+        <div v-if="effectivePagination" class="table-pagination-footer">
             <BasePagination
-                :current-page="pagination.currentPage"
-                :last-page="pagination.lastPage"
-                :total="pagination.total"
-                :from="pagination.from"
-                :to="pagination.to"
-                @page-change="emit('page-change', $event)"
+                :current-page="effectivePagination.currentPage"
+                :last-page="effectivePagination.lastPage"
+                :total="effectivePagination.total"
+                :from="effectivePagination.from"
+                :to="effectivePagination.to"
+                :per-page="effectivePagination.perPage"
+                :per-page-options="perPageOptions"
+                :item-label="itemLabel"
+                @page-change="handlePageChange"
+                @per-page-change="handlePerPageChange"
             />
         </div>
     </div>
@@ -246,6 +385,12 @@ const getAlignmentClass = (align?: 'left' | 'center' | 'right'): string => {
     border-bottom: 1px solid var(--stroke);
     user-select: none;
     white-space: nowrap;
+}
+
+.data-table.is-dense th,
+.data-table.is-dense td {
+    padding: 6px 12px;
+    font-size: 12px;
 }
 
 .data-table th.is-sortable {
@@ -326,8 +471,8 @@ const getAlignmentClass = (align?: 'left' | 'center' | 'right'): string => {
 }
 
 .table-pagination-footer {
-    padding: var(--space-3, 12px) var(--space-4, 16px);
+    padding: 0;
     border-top: 1px solid var(--stroke-subtle);
-    background: var(--bg-sub);
+    background: var(--bg-card);
 }
 </style>
