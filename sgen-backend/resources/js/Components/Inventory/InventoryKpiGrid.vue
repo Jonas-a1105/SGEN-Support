@@ -6,8 +6,6 @@ const props = defineProps<{
     kpis?: Record<string, unknown>;
 }>();
 
-const emit = defineEmits<{ (e: 'filter-low-stock'): void }>();
-
 const totalItems = computed<number>(() => {
     const k = props.kpis;
     if (!k) return 0;
@@ -61,8 +59,6 @@ const lowStockCount = computed<number>(() => {
             label="Stock bajo"
             :value="`${lowStockCount} artículos`"
             color="yellow"
-            :clickable="true"
-            @click="emit('filter-low-stock')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

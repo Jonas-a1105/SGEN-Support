@@ -225,8 +225,6 @@ const downloadPreset = (preset: 'inventory' | 'maintenance' | 'performance') => 
                     :pdf-count="3"
                     :excel-count="1"
                     :today-count="2"
-                    :active-filter="historyFilterFormat"
-                    @update:active-filter="historyFilterFormat = $event"
                 />
 
                 <ReportHistoryTable

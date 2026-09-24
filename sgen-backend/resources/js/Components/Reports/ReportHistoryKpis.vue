@@ -1,17 +1,11 @@
 <script setup lang="ts">
 import { BaseKpiCard } from '@/Components/UI';
-import type { HistoryFilterFormat } from './types';
 
 defineProps<{
     totalCount: number;
     pdfCount: number;
     excelCount: number;
     todayCount: number;
-    activeFilter: HistoryFilterFormat;
-}>();
-
-const emit = defineEmits<{
-    (e: 'update:activeFilter', filter: HistoryFilterFormat): void;
 }>();
 </script>
 
@@ -22,9 +16,6 @@ const emit = defineEmits<{
             label="Total reportes"
             :value="totalCount"
             color="blue"
-            :clickable="true"
-            :active="activeFilter === 'all'"
-            @click="emit('update:activeFilter', 'all')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -39,9 +30,6 @@ const emit = defineEmits<{
             label="PDFs"
             :value="pdfCount"
             color="red"
-            :clickable="true"
-            :active="activeFilter === 'pdf'"
-            @click="emit('update:activeFilter', 'pdf')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -58,9 +46,6 @@ const emit = defineEmits<{
             label="Excel/CSV"
             :value="excelCount"
             color="green"
-            :clickable="true"
-            :active="activeFilter === 'excel'"
-            @click="emit('update:activeFilter', 'excel')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -78,9 +63,6 @@ const emit = defineEmits<{
             label="Hoy"
             :value="todayCount"
             color="yellow"
-            :clickable="true"
-            :active="activeFilter === 'today'"
-            @click="emit('update:activeFilter', 'today')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

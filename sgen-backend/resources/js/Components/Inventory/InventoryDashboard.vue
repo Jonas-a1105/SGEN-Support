@@ -80,7 +80,7 @@ const openReassign = (eq: Equipment) => {
                 @open-create-equipment="openCreateEquipment"
                 @open-adjust="openAdjust()"
             />
-            <InventoryKpiGrid :kpis="kpis" @filter-low-stock="toggleLowStock" />
+            <InventoryKpiGrid :kpis="kpis" />
             <div class="section-nav-strip">
                 <button
                     class="section-tab-btn"

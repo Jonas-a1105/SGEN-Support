@@ -9,11 +9,6 @@ export interface EmployeeKpis {
 
 defineProps<{
     kpis: EmployeeKpis;
-    activeKpi?: string;
-}>();
-
-const emit = defineEmits<{
-    (e: 'select-kpi', kpi: string): void;
 }>();
 </script>
 
@@ -23,9 +18,6 @@ const emit = defineEmits<{
             label="Total empleados"
             :value="kpis.totalEmp"
             color="blue"
-            :clickable="true"
-            :active="activeKpi === 'all'"
-            @click="emit('select-kpi', 'all')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -41,9 +33,6 @@ const emit = defineEmits<{
             label="Usuarios activos"
             :value="kpis.activeUsers"
             color="green"
-            :clickable="true"
-            :active="activeKpi === 'active'"
-            @click="emit('select-kpi', 'active')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -57,9 +46,6 @@ const emit = defineEmits<{
             label="Sin usuario"
             :value="kpis.noUsers"
             color="yellow"
-            :clickable="true"
-            :active="activeKpi === 'inactive'"
-            @click="emit('select-kpi', 'inactive')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -119,11 +119,7 @@ const handleConfirmDelete = () => {
                 </BasePageHeader>
 
                 <!-- KPIS ROW -->
-                <EmployeeKpiRow
-                    :kpis="kpis"
-                    :active-kpi="currentKpiFilter"
-                    @select-kpi="setKpiFilter"
-                />
+                <EmployeeKpiRow :kpis="kpis" />
 
                 <!-- TOOLBAR -->
                 <EmployeeToolbar

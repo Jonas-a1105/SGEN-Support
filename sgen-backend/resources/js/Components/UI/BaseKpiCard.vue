@@ -48,7 +48,7 @@ const computedTrendClass = computed(() => {
             'glass-card kpi',
             color,
             `kpi-${color}`,
-            { 'is-active': active, 'is-clickable': clickable }
+            { 'is-clickable': clickable }
         ]"
         role="region"
         :aria-label="label"
@@ -101,11 +101,6 @@ const computedTrendClass = computed(() => {
 .kpi:hover {
     transform: translateY(-2px);
     border-color: var(--stroke-hover);
-}
-
-.kpi.is-active {
-    border-color: var(--kpi-accent, var(--orange));
-    background: var(--bg-sub);
 }
 
 .kpi .card-pad {
@@ -206,8 +201,7 @@ const computedTrendClass = computed(() => {
     transition: opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.kpi:hover .accent-bottom,
-.kpi.is-active .accent-bottom {
+.kpi:hover .accent-bottom {
     opacity: 1;
     transform: translateY(0);
 }

@@ -86,9 +86,6 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
                     subtext="Historial de servicios"
                     icon="fa-solid fa-wrench"
                     color="yellow"
-                    :active="activeTab === 'maintenance'"
-                    clickable
-                    @click="setActiveTab('maintenance')"
                 />
                 <BaseKpiCard
                     label="TICKETS DE SOPORTE"
@@ -96,9 +93,6 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
                     subtext="Reportes de incidencia"
                     icon="fa-solid fa-ticket"
                     color="blue"
-                    :active="activeTab === 'support'"
-                    clickable
-                    @click="setActiveTab('support')"
                 />
                 <BaseKpiCard
                     label="ESTADO DE GARANTÍA"
@@ -106,9 +100,6 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
                     :subtext="equipment.purchaseValue ? formatCurrency(equipment.purchaseValue) : 'Sin costo reg.'"
                     icon="fa-solid fa-shield-halved"
                     color="purple"
-                    :active="activeTab === 'purchase'"
-                    clickable
-                    @click="setActiveTab('purchase')"
                 />
             </section>
 

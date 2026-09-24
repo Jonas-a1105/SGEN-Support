@@ -10,11 +10,6 @@ export interface EquipmentKpis {
 
 defineProps<{
     kpis: EquipmentKpis;
-    activeFilter?: string;
-}>();
-
-const emit = defineEmits<{
-    (e: 'select-filter', filter: string): void;
 }>();
 </script>
 
@@ -24,9 +19,6 @@ const emit = defineEmits<{
             label="Total activos"
             :value="kpis.totalActivos"
             color="blue"
-            :clickable="true"
-            :active="activeFilter === 'all'"
-            @click="emit('select-filter', 'all')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -41,9 +33,6 @@ const emit = defineEmits<{
             label="Operativos"
             :value="kpis.operativos"
             color="green"
-            :clickable="true"
-            :active="activeFilter === 'Disponible'"
-            @click="emit('select-filter', 'Disponible')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -56,9 +45,6 @@ const emit = defineEmits<{
             label="En reparación"
             :value="kpis.enReparacion"
             color="yellow"
-            :clickable="true"
-            :active="activeFilter === 'Reparación'"
-            @click="emit('select-filter', 'Reparación')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -71,9 +57,6 @@ const emit = defineEmits<{
             label="Fuera de servicio"
             :value="kpis.fueraServicio"
             color="red"
-            :clickable="true"
-            :active="activeFilter === 'Baja'"
-            @click="emit('select-filter', 'Baja')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

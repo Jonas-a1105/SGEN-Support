@@ -119,11 +119,7 @@ const handleConfirmDelete = () => {
             </BasePageHeader>
 
             <!-- KPIS ROW -->
-            <EquipmentKpiRow
-                :kpis="kpis"
-                :active-filter="currentPillFilter"
-                @select-filter="setPillFilter"
-            />
+            <EquipmentKpiRow :kpis="kpis" />
 
             <!-- TOOLBAR -->
             <EquipmentToolbar

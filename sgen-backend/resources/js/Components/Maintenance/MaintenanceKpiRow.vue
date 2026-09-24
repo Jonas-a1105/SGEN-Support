@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { BaseKpiCard } from '@/Components/UI';
-import type { MaintenanceKpis, MaintenanceFilterPill } from './types';
+import type { MaintenanceKpis } from './types';
 
 const props = defineProps<{
     kpis: MaintenanceKpis;
-}>();
-
-const emit = defineEmits<{
-    (e: 'selectFilter', filter: MaintenanceFilterPill): void;
 }>();
 
 const healthPercent = computed(() => {
@@ -26,8 +22,6 @@ const healthPercent = computed(() => {
             :value="healthPercent"
             subtext="Operativa"
             color="green"
-            :clickable="true"
-            @click="emit('selectFilter', 'todos')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -43,8 +37,6 @@ const healthPercent = computed(() => {
             :value="kpis.completed"
             :subtext="`${kpis.pending} pendientes`"
             color="green"
-            :clickable="true"
-            @click="emit('selectFilter', 'completado')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -62,8 +54,6 @@ const healthPercent = computed(() => {
             :value="kpis.upcoming"
             subtext="Agendados"
             color="blue"
-            :clickable="true"
-            @click="emit('selectFilter', 'pendiente')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

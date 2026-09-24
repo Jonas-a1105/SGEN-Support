@@ -9,11 +9,6 @@ export interface AuditKpis {
 
 defineProps<{
     kpis: AuditKpis;
-    statusFilter: string;
-}>();
-
-const emit = defineEmits<{
-    (e: 'filter-status', status: 'all' | 'active' | 'ended'): void;
 }>();
 </script>
 
@@ -23,9 +18,6 @@ const emit = defineEmits<{
             label="Sesiones activas"
             :value="`${kpis.active_sessions} Usuario${kpis.active_sessions === 1 ? '' : 's'}`"
             color="green"
-            :clickable="true"
-            :active="statusFilter === 'active'"
-            @click="emit('filter-status', statusFilter === 'active' ? 'all' : 'active')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,9 +44,6 @@ const emit = defineEmits<{
             label="Total registros"
             :value="`${kpis.total_logs} Sesiones`"
             color="purple"
-            :clickable="true"
-            :active="statusFilter === 'all'"
-            @click="emit('filter-status', 'all')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

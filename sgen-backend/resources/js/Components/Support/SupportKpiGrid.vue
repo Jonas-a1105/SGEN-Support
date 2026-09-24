@@ -4,11 +4,6 @@ import type { SupportKpis } from '@/types/support';
 
 defineProps<{
     kpis: SupportKpis;
-    activeFilter?: string;
-}>();
-
-const emit = defineEmits<{
-    (e: 'filter', filterName: string): void;
 }>();
 </script>
 
@@ -18,9 +13,6 @@ const emit = defineEmits<{
             label="Críticos pendientes"
             :value="kpis.critical_pending"
             color="red"
-            :clickable="true"
-            :active="activeFilter === 'critica'"
-            @click="emit('filter', 'critica')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -35,9 +27,6 @@ const emit = defineEmits<{
             label="Cola general"
             :value="kpis.general_queue"
             color="yellow"
-            :clickable="true"
-            :active="activeFilter === 'pendiente'"
-            @click="emit('filter', 'pendiente')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -55,9 +44,6 @@ const emit = defineEmits<{
             label="En proceso"
             :value="kpis.in_process"
             color="blue"
-            :clickable="true"
-            :active="activeFilter === 'proceso'"
-            @click="emit('filter', 'proceso')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -71,9 +57,6 @@ const emit = defineEmits<{
             label="Mis asignaciones"
             :value="kpis.my_assignments"
             color="green"
-            :clickable="true"
-            :active="activeFilter === 'mis-tickets'"
-            @click="emit('filter', 'mis-tickets')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

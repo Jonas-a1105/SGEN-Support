@@ -119,11 +119,7 @@ function handleConfirmDelete(id: number) {
                 </BasePageHeader>
 
                 <!-- KPIs -->
-                <UserKpiRow
-                    :kpis="kpis"
-                    :active-role="selectedRole"
-                    @select-role="selectedRole = $event"
-                />
+                <UserKpiRow :kpis="kpis" />
 
                 <!-- Toolbar -->
                 <UserToolbar

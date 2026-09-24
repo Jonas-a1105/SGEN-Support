@@ -9,11 +9,6 @@ export interface UserKpis {
 
 defineProps<{
     kpis: UserKpis;
-    activeRole: string;
-}>();
-
-const emit = defineEmits<{
-    (e: 'select-role', role: string): void;
 }>();
 </script>
 
@@ -23,9 +18,6 @@ const emit = defineEmits<{
             label="Total usuarios"
             :value="kpis.total_users"
             color="brand"
-            :clickable="true"
-            :active="activeRole === 'all'"
-            @click="emit('select-role', 'all')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -41,9 +33,6 @@ const emit = defineEmits<{
             label="Administradores"
             :value="kpis.admins_count"
             color="green"
-            :clickable="true"
-            :active="activeRole === 'admin'"
-            @click="emit('select-role', 'admin')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -56,9 +45,6 @@ const emit = defineEmits<{
             label="Técnicos"
             :value="kpis.techs_count"
             color="orange"
-            :clickable="true"
-            :active="activeRole === 'tecnico'"
-            @click="emit('select-role', 'tecnico')"
         >
             <template #icon>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -86,7 +86,7 @@ const handleDelete = (id: number) => {
             </BasePageHeader>
 
             <!-- 3 TARJETAS KPIS -->
-            <MaintenanceKpiRow :kpis="kpis" @select-filter="activeFilter = $event" />
+            <MaintenanceKpiRow :kpis="kpis" />
 
             <!-- BARRA DE HERRAMIENTAS Y FILTROS -->
             <MaintenanceToolbar

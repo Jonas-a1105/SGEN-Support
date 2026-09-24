@@ -109,11 +109,7 @@ function handleExportBitacora() {
             <!-- VISTA 1: SESIONES DE ACCESO (auditoria.html) -->
             <div v-if="activeTab === 'sesiones'" class="tab-pane">
                 <!-- KPIs -->
-                <AuditKpiRow
-                    :kpis="kpis"
-                    :status-filter="statusFilter"
-                    @filter-status="statusFilter = $event"
-                />
+                <AuditKpiRow :kpis="kpis" />
 
                 <!-- Toolbar -->
                 <AuditToolbar
