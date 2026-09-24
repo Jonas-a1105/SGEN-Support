@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { BaseAvatar } from '@/Components/UI';
+
 defineProps<{
     managerName: string;
-    managerInitials: string;
+    managerInitials?: string;
 }>();
 
 const emit = defineEmits<{
@@ -13,9 +15,7 @@ const emit = defineEmits<{
 <template>
     <div class="manager-widget-box">
         <div class="manager-info-left">
-            <div class="manager-avatar-circle">
-                {{ managerInitials }}
-            </div>
+            <BaseAvatar :name="managerName || 'Líder'" :initials="managerInitials" size="md" />
             <div class="manager-details">
                 <strong class="manager-name-text">
                     {{ managerName || 'Sin responsable asignado' }}
@@ -73,19 +73,7 @@ const emit = defineEmits<{
     gap: 14px;
 }
 
-.manager-avatar-circle {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(37, 99, 235, 0.15);
-    border: var(--stroke-w) solid var(--blue);
-    display: grid;
-    place-items: center;
-    font-size: 14px;
-    font-weight: 700;
-    color: #3b82f6;
-    flex-shrink: 0;
-}
+
 
 .manager-details {
     display: flex;

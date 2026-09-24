@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import type { ReportScope, TicketsFilters, Category, SelectOption } from './types';
+import { computed } from 'vue';
+import { BaseDateRangePicker, BaseCombobox, type ComboboxOption } from '@/Components/UI';
+import type { ReportScope, TicketsFilters, Category } from './types';
 
 const props = defineProps<{
     scope: ReportScope;
@@ -11,19 +13,24 @@ const emit = defineEmits<{
     (e: 'update:filters', filters: TicketsFilters): void;
 }>();
 
-const estadoOptions: SelectOption[] = [
+const categoryOptions = computed<ComboboxOption[]>(() => [
+    { value: '', label: 'Todas las categorías' },
+    ...props.categories.map((cat) => ({ value: String(cat.id), label: cat.name })),
+]);
+
+const estadoOptions: ComboboxOption[] = [
     { value: '', label: 'Cualquier estado' },
-    { value: 'pendiente', label: 'Pendiente' },
-    { value: 'en_proceso', label: 'En Proceso' },
-    { value: 'resuelto', label: 'Resuelto / Entregado' },
+    { value: 'pendiente', label: 'Pendiente', badge: 'Pendiente', badgeVariant: 'warning' },
+    { value: 'en_proceso', label: 'En Proceso', badge: 'En Proceso', badgeVariant: 'info' },
+    { value: 'resuelto', label: 'Resuelto / Entregado', badge: 'Resuelto', badgeVariant: 'success' },
 ];
 
-const prioridadOptions: SelectOption[] = [
+const prioridadOptions: ComboboxOption[] = [
     { value: '', label: 'Todas las prioridades' },
-    { value: 'critica', label: 'Crítica' },
-    { value: 'alta', label: 'Alta' },
-    { value: 'media', label: 'Media' },
-    { value: 'baja', label: 'Baja' },
+    { value: 'critica', label: 'Crítica', badge: 'Crítica', badgeVariant: 'danger' },
+    { value: 'alta', label: 'Alta', badge: 'Alta', badgeVariant: 'warning' },
+    { value: 'media', label: 'Media', badge: 'Media', badgeVariant: 'info' },
+    { value: 'baja', label: 'Baja', badge: 'Baja', badgeVariant: 'neutral' },
 ];
 
 const updateFilter = <K extends keyof TicketsFilters>(key: K, val: TicketsFilters[K]) => {
@@ -41,63 +48,50 @@ const updateFilter = <K extends keyof TicketsFilters>(key: K, val: TicketsFilter
             <div class="form-row-2cols">
                 <div class="form-group-block">
                     <span class="form-field-kicker">RANGO DE FECHAS</span>
-                    <div class="date-range-inputs-pair">
-                        <input
-                            :value="filters.fecha_inicio"
-                            type="date"
-                            class="custom-field-input"
-                            @input="updateFilter('fecha_inicio', ($event.target as HTMLInputElement).value)"
-                        />
-                        <span class="date-range-separator">-</span>
-                        <input
-                            :value="filters.fecha_fin"
-                            type="date"
-                            class="custom-field-input"
-                            @input="updateFilter('fecha_fin', ($event.target as HTMLInputElement).value)"
-                        />
-                    </div>
+                    <BaseDateRangePicker
+                        :start-date="filters.fecha_inicio"
+                        :end-date="filters.fecha_fin"
+                        :show-presets="false"
+                        @update:start-date="updateFilter('fecha_inicio', $event)"
+                        @update:end-date="updateFilter('fecha_fin', $event)"
+                    />
                 </div>
 
                 <div class="form-group-block">
                     <span class="form-field-kicker">CATEGORÍA</span>
-                    <select
-                        :value="filters.categoria_id"
-                        class="custom-field-select"
-                        @change="updateFilter('categoria_id', ($event.target as HTMLSelectElement).value)"
-                    >
-                        <option value="">Todas las categorías</option>
-                        <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                            {{ cat.name }}
-                        </option>
-                    </select>
+                    <BaseCombobox
+                        :model-value="filters.categoria_id"
+                        :options="categoryOptions"
+                        placeholder="Todas las categorías"
+                        :clearable="false"
+                        @update:model-value="updateFilter('categoria_id', String($event || ''))"
+                    />
                 </div>
             </div>
 
             <div class="form-row-2cols">
                 <div class="form-group-block">
                     <span class="form-field-kicker">ESTADO</span>
-                    <select
-                        :value="filters.estado"
-                        class="custom-field-select"
-                        @change="updateFilter('estado', ($event.target as HTMLSelectElement).value)"
-                    >
-                        <option v-for="opt in estadoOptions" :key="opt.value" :value="opt.value">
-                            {{ opt.label }}
-                        </option>
-                    </select>
+                    <BaseCombobox
+                        :model-value="filters.estado"
+                        :options="estadoOptions"
+                        placeholder="Cualquier estado"
+                        :searchable="false"
+                        :clearable="false"
+                        @update:model-value="updateFilter('estado', String($event || ''))"
+                    />
                 </div>
 
                 <div class="form-group-block">
                     <span class="form-field-kicker">PRIORIDAD</span>
-                    <select
-                        :value="filters.prioridad"
-                        class="custom-field-select"
-                        @change="updateFilter('prioridad', ($event.target as HTMLSelectElement).value)"
-                    >
-                        <option v-for="opt in prioridadOptions" :key="opt.value" :value="opt.value">
-                            {{ opt.label }}
-                        </option>
-                    </select>
+                    <BaseCombobox
+                        :model-value="filters.prioridad"
+                        :options="prioridadOptions"
+                        placeholder="Todas las prioridades"
+                        :searchable="false"
+                        :clearable="false"
+                        @update:model-value="updateFilter('prioridad', String($event || ''))"
+                    />
                 </div>
             </div>
         </template>
@@ -180,36 +174,7 @@ const updateFilter = <K extends keyof TicketsFilters>(key: K, val: TicketsFilter
     color: var(--text-muted);
 }
 
-.date-range-inputs-pair {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
 
-.date-range-separator {
-    color: var(--text-dim);
-    font-size: 13px;
-}
-
-.custom-field-input,
-.custom-field-select {
-    width: 100%;
-    height: 40px;
-    padding: 0 12px;
-    border-radius: 12px;
-    border: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-sub);
-    color: var(--text);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s ease;
-    box-shadow: none !important;
-}
-
-.custom-field-input:focus,
-.custom-field-select:focus {
-    border-color: var(--orange);
-}
 
 .scope-info-box {
     display: flex;

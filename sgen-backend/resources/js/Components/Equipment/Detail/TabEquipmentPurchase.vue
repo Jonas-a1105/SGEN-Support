@@ -1,15 +1,11 @@
 <script setup lang="ts">
 import { BaseBadge } from '@/Components/UI';
+import { formatCurrency } from '@/Utils/formatters';
 import type { EquipmentDetail } from './types';
 
 const props = defineProps<{
     equipment: EquipmentDetail;
 }>();
-
-const formatCurrency = (val: number | null): string => {
-    if (val === null || val === undefined) return 'N/A';
-    return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
 
 const getWarrantyProgressClass = (pct: number): string => {
     const rounded = Math.round(Math.min(100, Math.max(0, pct)) / 5) * 5;

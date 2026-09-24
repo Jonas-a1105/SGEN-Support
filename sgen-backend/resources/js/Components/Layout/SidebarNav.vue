@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { BaseAvatar } from '@/Components/UI';
 
 interface AuthUser {
     id: number;
@@ -22,10 +23,6 @@ const sidebarMode = ref<'hover' | 'manual'>('hover');
 
 const userName = computed(() => page.props.auth?.user?.username || 'admin');
 const userRole = computed(() => page.props.auth?.user?.rol || 'Administrador');
-const userInitials = computed(() => {
-    const name = userName.value;
-    return name ? name.substring(0, 2).toUpperCase() : 'AD';
-});
 
 // Sincronización con la preferencia configurada en Configuración > Apariencia
 const handleModeChange = (e: Event) => {
@@ -204,9 +201,7 @@ const navItems = computed(() => [
 
         <!-- SECCIÓN PERFIL / USUARIO -->
         <div class="profile-section">
-            <div class="profile-avatar">
-                {{ userInitials }}
-            </div>
+            <BaseAvatar :name="userName" size="md" />
 
             <div class="profile-info">
                 <p class="profile-name">{{ userName }}</p>

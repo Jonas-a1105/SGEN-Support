@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BaseAvatar } from '@/Components/UI';
 import type { UserItem } from '@/Composables/useUserFilters';
 
 defineProps<{
@@ -27,9 +28,7 @@ function getRoleToneClass(rol: string): string {
 
         <div class="card-inner-pad">
             <div class="card-header-row">
-                <div class="avatar-circle" :class="getRoleToneClass(user.rol)">
-                    {{ user.avatar_initials }}
-                </div>
+                <BaseAvatar :name="user.username" :initials="user.avatar_initials" size="md" />
                 <div class="header-copy">
                     <h3 class="user-title">{{ user.username }}</h3>
                     <span v-if="user.empleado_nombre" class="employee-name">
@@ -92,18 +91,7 @@ function getRoleToneClass(rol: string): string {
     align-items: center;
     gap: 12px;
 }
-.avatar-circle {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    font-weight: 700 !important;
-    font-size: 14px;
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    flex-shrink: 0;
-    box-shadow: none !important;
-}
+
 .header-copy {
     overflow: hidden;
 }

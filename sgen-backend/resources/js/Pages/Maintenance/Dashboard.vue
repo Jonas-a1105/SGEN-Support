@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { formatDate as formatDateUtil } from '@/Utils/formatters';
 
 interface MaintenanceKpis {
     pending: number;
@@ -30,9 +31,8 @@ const props = defineProps<{
 }>();
 
 const formatDate = (dateStr: string) => {
-    if (!dateStr) return '-';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+    if (!dateStr) return '- -';
+    return formatDateUtil(dateStr, 'es-ES', { day: '2-digit', month: 'short' });
 };
 
 const tipoLabels: Record<string, string> = {

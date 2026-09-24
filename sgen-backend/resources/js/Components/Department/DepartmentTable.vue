@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { BaseDataTable, type DataTableColumn } from '@/Components/UI';
 import type { DepartmentItem } from '@/Composables/useDepartmentFilters';
 
 defineProps<{
@@ -10,6 +11,17 @@ const emit = defineEmits<{
     (e: 'edit', department: DepartmentItem): void;
     (e: 'delete', department: DepartmentItem): void;
 }>();
+
+const columns: DataTableColumn[] = [
+    { key: 'code', label: 'CÓDIGO', width: '90px' },
+    { key: 'name', label: 'DEPARTAMENTO', sortable: true },
+    { key: 'location', label: 'UBICACIÓN FÍSICA' },
+    { key: 'manager', label: 'RESPONSABLE / JEFE' },
+    { key: 'equipos', label: 'EQUIPOS', width: '90px', align: 'center', sortable: true },
+    { key: 'empleados', label: 'EMPLEADOS', width: '95px', align: 'center', sortable: true },
+    { key: 'inventoryPercent', label: 'INVENTARIO ASIGNADO', width: '170px' },
+    { key: 'actions', label: 'ACCIONES', width: '120px', align: 'right' },
+];
 
 const getColorClass = (color: string) => {
     if (color === '#f97316') return 'accent-orange';
@@ -30,148 +42,101 @@ const getProgressWidthClass = (percent: number) => {
 </script>
 
 <template>
-    <section class="departments-table-card" aria-label="Tabla de departamentos">
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>CÓDIGO</th>
-                        <th>DEPARTAMENTO</th>
-                        <th>UBICACIÓN FÍSICA</th>
-                        <th>RESPONSABLE / JEFE</th>
-                        <th>EQUIPOS</th>
-                        <th>EMPLEADOS</th>
-                        <th>INVENTARIO ASIGNADO</th>
-                        <th class="text-right">ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="dept in departments" :key="dept.numericId" :class="getColorClass(dept.color)">
-                        <td>
-                            <span class="badge-code">{{ dept.code }}</span>
-                        </td>
-                        <td>
-                            <div class="dept-title-cell">
-                                <div class="dept-icon-mini">
-                                    <svg viewBox="0 0 24 24">
-                                        <rect x="4" y="2" width="16" height="20" rx="2"></rect>
-                                        <line x1="9" y1="22" x2="9" y2="2"></line>
-                                        <line x1="15" y1="22" x2="15" y2="2"></line>
-                                    </svg>
-                                </div>
-                                <Link :href="`/departamentos/${dept.numericId}`" class="dept-link">
-                                    <strong class="dept-name-text">{{ dept.name }}</strong>
-                                </Link>
-                            </div>
-                        </td>
-                        <td class="text-muted-cell">{{ dept.location }}</td>
-                        <td>
-                            <strong v-if="dept.manager" class="manager-text">{{ dept.manager }}</strong>
-                            <span v-else class="unassigned-text">No asignado</span>
-                        </td>
-                        <td>
-                            <span class="badge-code">{{ dept.equipos }}</span>
-                        </td>
-                        <td>
-                            <span class="badge-code">{{ dept.empleados }}</span>
-                        </td>
-                        <td>
-                            <div class="progress-cell">
-                                <div class="progress-track">
-                                    <div class="progress-fill" :class="getProgressWidthClass(dept.inventoryPercent)"></div>
-                                </div>
-                                <span class="progress-num">{{ dept.inventoryPercent }}%</span>
-                            </div>
-                        </td>
-                        <td class="text-right">
-                            <div class="table-actions-group">
-                                <Link
-                                    :href="`/departamentos/${dept.numericId}`"
-                                    class="action-mini-btn view"
-                                    title="Ver detalle del departamento"
-                                >
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                </Link>
-                                <button
-                                    class="action-mini-btn edit"
-                                    @click="emit('edit', dept)"
-                                    type="button"
-                                    title="Editar departamento"
-                                >
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                    </svg>
-                                </button>
-                                <button
-                                    class="action-mini-btn delete"
-                                    @click="emit('delete', dept)"
-                                    type="button"
-                                    title="Eliminar departamento"
-                                >
-                                    <svg viewBox="0 0 24 24">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <section class="departments-table-wrap" aria-label="Tabla de departamentos">
+        <BaseDataTable
+            :columns="columns"
+            :items="departments"
+            :row-key="(dept) => dept.numericId"
+            :row-class="(dept) => getColorClass(dept.color)"
+            empty-title="No se encontraron departamentos"
+            empty-subtitle="Prueba con otros términos de búsqueda."
+        >
+            <template #cell-code="{ item }">
+                <span class="badge-code">{{ item.code }}</span>
+            </template>
+
+            <template #cell-name="{ item }">
+                <div class="dept-title-cell">
+                    <div class="dept-icon-mini">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                            <line x1="9" y1="22" x2="9" y2="2"></line>
+                            <line x1="15" y1="22" x2="15" y2="2"></line>
+                        </svg>
+                    </div>
+                    <Link :href="`/departamentos/${item.numericId}`" class="dept-link">
+                        <strong class="dept-name-text">{{ item.name }}</strong>
+                    </Link>
+                </div>
+            </template>
+
+            <template #cell-location="{ item }">
+                <span class="text-muted-cell">{{ item.location }}</span>
+            </template>
+
+            <template #cell-manager="{ item }">
+                <strong v-if="item.manager" class="manager-text">{{ item.manager }}</strong>
+                <span v-else class="unassigned-text">No asignado</span>
+            </template>
+
+            <template #cell-equipos="{ item }">
+                <span class="badge-code">{{ item.equipos }}</span>
+            </template>
+
+            <template #cell-empleados="{ item }">
+                <span class="badge-code">{{ item.empleados }}</span>
+            </template>
+
+            <template #cell-inventoryPercent="{ item }">
+                <div class="progress-cell">
+                    <div class="progress-track">
+                        <div class="progress-fill" :class="getProgressWidthClass(item.inventoryPercent)"></div>
+                    </div>
+                    <span class="progress-num">{{ item.inventoryPercent }}%</span>
+                </div>
+            </template>
+
+            <template #cell-actions="{ item }">
+                <div class="table-actions-group">
+                    <Link
+                        :href="`/departamentos/${item.numericId}`"
+                        class="action-mini-btn view"
+                        title="Ver detalle del departamento"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </Link>
+                    <button
+                        class="action-mini-btn edit"
+                        @click="emit('edit', item)"
+                        type="button"
+                        title="Editar departamento"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button
+                        class="action-mini-btn delete"
+                        @click="emit('delete', item)"
+                        type="button"
+                        title="Eliminar departamento"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </template>
+        </BaseDataTable>
     </section>
 </template>
 
 <style scoped>
-.departments-table-card {
-    background: var(--bg-card);
-    border: var(--stroke-w) solid var(--stroke);
-    border-radius: var(--panel-radius);
-    overflow: hidden;
-    box-shadow: none !important;
-}
-
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    text-align: left;
-}
-
-.custom-table th {
-    padding: 12px 16px;
-    color: var(--text-dim);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    border-bottom: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-sub);
-}
-
-.custom-table td {
-    padding: 12px 16px;
-    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
-    color: var(--text);
-    vertical-align: middle;
-}
-
-.custom-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.text-right {
-    text-align: right;
-}
-
 .badge-code {
     display: inline-block;
     padding: 2px 7px;

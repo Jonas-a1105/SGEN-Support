@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { BaseBadge, BaseButton } from '@/Components/UI';
+import { formatDate, formatDateTime } from '@/Utils/formatters';
 import type { MaintenanceDetail } from './types';
 
 const props = defineProps<{
@@ -31,30 +32,7 @@ onUnmounted(() => {
     }
 });
 
-// Format dates
-const formatDate = (dateStr?: string | null): string => {
-    if (!dateStr) return 'No especificada';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
-};
 
-const formatDateTime = (dateStr?: string | null): string => {
-    if (!dateStr) return 'No especificada';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-};
 
 // Timer calculation
 const timerStatus = computed(() => {

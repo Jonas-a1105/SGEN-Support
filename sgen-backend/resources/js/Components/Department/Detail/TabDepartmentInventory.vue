@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { BaseBadge, BaseEmptyState, BaseSearchToolbar } from '@/Components/UI';
+import { formatCurrency } from '@/Utils/formatters';
 import type { DepartmentConsumable } from './types';
 
 const props = defineProps<{
@@ -28,9 +29,6 @@ const filteredConsumables = computed(() => {
     });
 });
 
-const formatCurrency = (val: number): string => {
-    return `$${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
 </script>
 
 <template>

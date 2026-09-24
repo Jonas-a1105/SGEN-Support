@@ -31,6 +31,7 @@ interface Props {
     emptyIcon?: string;
     hoverable?: boolean;
     striped?: boolean;
+    rowClass?: string | ((item: T, index: number) => string);
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -158,6 +159,7 @@ const getAlignmentClass = (align?: 'left' | 'center' | 'right'): string => {
                         v-for="(item, index) in items"
                         :key="getItemKey(item, index)"
                         class="data-table-row"
+                        :class="typeof rowClass === 'function' ? rowClass(item, index) : rowClass"
                         @click="emit('row-click', item, index)"
                     >
                         <td

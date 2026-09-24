@@ -1,38 +1,13 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { BaseBadge, BaseCard, BaseEmptyState } from '@/Components/UI';
+import { formatCurrency, formatDate } from '@/Utils/formatters';
+import { getStatusBadgeVariant } from '@/Utils/badgeVariants';
 import type { RelatedMaintenance } from './types';
 
 defineProps<{
     historial: RelatedMaintenance[] | null;
 }>();
-
-const formatDate = (dateStr?: string | null): string => {
-    if (!dateStr) return 'No especificada';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
-};
-
-const formatCurrency = (val?: number | null): string => {
-    const num = Number(val ?? 0);
-    return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
-
-const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-        case 'completado': return 'success';
-        case 'en_proceso': return 'info';
-        case 'pendiente': return 'warning';
-        case 'pospuesto': return 'neutral';
-        case 'cancelado': return 'danger';
-        default: return 'neutral';
-    }
-};
 </script>
 
 <template>

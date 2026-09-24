@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { BaseDataTable, type DataTableColumn } from '@/Components/UI';
 import type { EquipmentItem } from '@/Composables/useEquipmentFilters';
 
 defineProps<{
@@ -11,6 +12,15 @@ const emit = defineEmits<{
     (e: 'edit', item: EquipmentItem): void;
     (e: 'delete', item: EquipmentItem): void;
 }>();
+
+const columns: DataTableColumn[] = [
+    { key: 'id', label: 'ID', width: '90px' },
+    { key: 'name', label: 'EQUIPO', sortable: true },
+    { key: 'type', label: 'TIPO', width: '130px' },
+    { key: 'dept', label: 'UBICACIÓN' },
+    { key: 'status', label: 'ESTADO', width: '130px' },
+    { key: 'actions', label: 'ACCIONES', width: '120px', align: 'right' },
+];
 
 const getStatusClass = (status: string) => {
     switch (status) {
@@ -27,126 +37,82 @@ const getStatusClass = (status: string) => {
 </script>
 
 <template>
-    <section class="equipment-table-card" aria-label="Tabla de equipos">
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>EQUIPO</th>
-                        <th>TIPO</th>
-                        <th>UBICACIÓN</th>
-                        <th>ESTADO</th>
-                        <th>ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="item in equipos" :key="item.numericId">
-                        <td>
-                            <span class="badge-code">{{ item.id }}</span>
-                        </td>
-                        <td>
-                            <div class="item-name-cell">
-                                <Link :href="`/equipos/${item.numericId}`" class="equip-link">
-                                    <strong class="item-name-text">{{ item.name }}</strong>
-                                </Link>
-                                <span v-if="item.assignedTo" class="item-assigned-text">{{ item.assignedTo }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge-model-outline">{{ item.type }}</span>
-                        </td>
-                        <td class="text-muted-cell">{{ item.dept }}</td>
-                        <td>
-                            <span class="status-pill" :class="getStatusClass(item.status)">
-                                {{ item.status }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="table-actions-group">
-                                <Link
-                                    :href="`/equipos/${item.numericId}`"
-                                    class="action-mini-btn view"
-                                    title="Ver ficha completa del equipo"
-                                >
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                </Link>
-                                <button
-                                    class="action-mini-btn edit"
-                                    @click="emit('edit', item)"
-                                    type="button"
-                                    title="Editar equipo"
-                                >
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                    </svg>
-                                </button>
-                                <button
-                                    class="action-mini-btn delete"
-                                    @click="emit('delete', item)"
-                                    type="button"
-                                    title="Eliminar equipo"
-                                >
-                                    <svg viewBox="0 0 24 24">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <section class="equipment-table-wrap" aria-label="Tabla de equipos">
+        <BaseDataTable
+            :columns="columns"
+            :items="equipos"
+            :row-key="(item) => item.numericId"
+            empty-title="No se encontraron equipos"
+            empty-subtitle="Prueba con otros términos de búsqueda."
+        >
+            <template #cell-id="{ item }">
+                <span class="badge-code">{{ item.id }}</span>
+            </template>
+
+            <template #cell-name="{ item }">
+                <div class="item-name-cell">
+                    <Link :href="`/equipos/${item.numericId}`" class="equip-link">
+                        <strong class="item-name-text">{{ item.name }}</strong>
+                    </Link>
+                    <span v-if="item.assignedTo" class="item-assigned-text">{{ item.assignedTo }}</span>
+                </div>
+            </template>
+
+            <template #cell-type="{ item }">
+                <span class="badge-model-outline">{{ item.type }}</span>
+            </template>
+
+            <template #cell-dept="{ item }">
+                <span class="text-muted-cell">{{ item.dept }}</span>
+            </template>
+
+            <template #cell-status="{ item }">
+                <span class="status-pill" :class="getStatusClass(item.status)">
+                    {{ item.status }}
+                </span>
+            </template>
+
+            <template #cell-actions="{ item }">
+                <div class="table-actions-group">
+                    <Link
+                        :href="`/equipos/${item.numericId}`"
+                        class="action-mini-btn view"
+                        title="Ver ficha completa del equipo"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </Link>
+                    <button
+                        class="action-mini-btn edit"
+                        @click="emit('edit', item)"
+                        type="button"
+                        title="Editar equipo"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button
+                        class="action-mini-btn delete"
+                        @click="emit('delete', item)"
+                        type="button"
+                        title="Eliminar equipo"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </template>
+        </BaseDataTable>
     </section>
 </template>
 
 <style scoped>
-.equipment-table-card {
-    background: var(--bg-card);
-    border: var(--stroke-w) solid var(--stroke);
-    border-radius: var(--panel-radius);
-    overflow: hidden;
-    box-shadow: none !important;
-}
-
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    text-align: left;
-}
-
-.custom-table th {
-    padding: 12px 16px;
-    color: var(--text-dim);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    border-bottom: var(--stroke-w) solid var(--stroke);
-    background: var(--bg-sub);
-}
-
-.custom-table td {
-    padding: 12px 16px;
-    border-bottom: var(--stroke-w) solid var(--stroke-subtle);
-    color: var(--text);
-    vertical-align: middle;
-}
-
-.custom-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
-}
-
 .badge-code {
     display: inline-block;
     padding: 2px 7px;

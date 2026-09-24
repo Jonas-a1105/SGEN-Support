@@ -1,20 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { BaseCard } from '@/Components/UI';
+import { BaseAvatar, BaseCard } from '@/Components/UI';
 
-const props = defineProps<{
+defineProps<{
     tecnicoNombre: string | null;
     realizadoPor: string | null;
 }>();
-
-const technicianInitials = computed(() => {
-    const name = props.tecnicoNombre || 'Tecnico';
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-        return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-});
 </script>
 
 <template>
@@ -28,9 +18,7 @@ const technicianInitials = computed(() => {
         </h3>
 
         <div class="maint-tech-profile">
-            <div class="tech-avatar-circle">
-                {{ technicianInitials }}
-            </div>
+            <BaseAvatar :name="tecnicoNombre || 'Técnico'" size="lg" />
             <div class="tech-info-block">
                 <strong class="tech-name">{{ tecnicoNombre || 'Sin asignar' }}</strong>
                 <span class="tech-role-desc">Técnico de Soporte Asignado</span>
@@ -77,18 +65,7 @@ const technicianInitials = computed(() => {
     gap: 14px;
 }
 
-.tech-avatar-circle {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--blue, #3b82f6);
-    color: #ffffff;
-    font-weight: 800;
-    font-size: 15px;
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-}
+
 
 .tech-info-block {
     display: flex;

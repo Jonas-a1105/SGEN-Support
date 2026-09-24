@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { formatDate } from '@/Utils/formatters';
 import type { MaintenanceItem } from './types';
 
 defineProps<{
@@ -10,13 +11,6 @@ const emit = defineEmits<{
     (e: 'complete', id: number): void;
     (e: 'delete', id: number): void;
 }>();
-
-const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '-';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return dateStr;
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-};
 </script>
 
 <template>

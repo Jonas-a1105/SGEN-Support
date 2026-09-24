@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { BaseKpiCard } from '@/Components/UI';
+import { formatCurrency, formatDate } from '@/Utils/formatters';
 import MaintenanceDetailHeader from '@/Components/Maintenance/Detail/MaintenanceDetailHeader.vue';
 import CardMaintenanceAsset from '@/Components/Maintenance/Detail/CardMaintenanceAsset.vue';
 import CardWorkDetail from '@/Components/Maintenance/Detail/CardWorkDetail.vue';
@@ -37,21 +38,7 @@ const isPostponeModalOpen = ref(false);
 const isCancelModalOpen = ref(false);
 const isEditModalOpen = ref(false);
 
-const formatDate = (dateStr?: string | null): string => {
-    if (!dateStr) return 'No especificada';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
-};
 
-const formatCurrency = (val?: number | null): string => {
-    const num = Number(val ?? 0);
-    return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
 </script>
 
 <template>

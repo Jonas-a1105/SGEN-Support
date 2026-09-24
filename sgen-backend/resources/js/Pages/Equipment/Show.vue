@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { BaseKpiCard } from '@/Components/UI';
+import { formatCurrency } from '@/Utils/formatters';
 import EquipmentDetailHeader from '@/Components/Equipment/Detail/EquipmentDetailHeader.vue';
 import SidebarCustodyLocation from '@/Components/Equipment/Detail/SidebarCustodyLocation.vue';
 import SidebarHardwareIdentity from '@/Components/Equipment/Detail/SidebarHardwareIdentity.vue';
@@ -38,10 +39,6 @@ const setActiveTab = (tab: EquipmentTabKey) => {
     activeTab.value = tab;
 };
 
-const formatCurrency = (val: number | null): string => {
-    if (val === null || val === undefined) return 'N/A';
-    return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
 
 const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
     switch (props.equipment.rawStatus.toLowerCase()) {

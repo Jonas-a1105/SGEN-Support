@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { BaseBadge, BaseButton, BaseEmptyState } from '@/Components/UI';
+import { formatCurrency } from '@/Utils/formatters';
 import type { EquipmentMaintenance } from './types';
 
 const props = defineProps<{
     maintenances: EquipmentMaintenance[];
     equipmentId: number;
 }>();
-
-const formatCurrency = (val: number | null): string => {
-    if (val === null || val === undefined) return 'N/A';
-    return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
 </script>
 
 <template>

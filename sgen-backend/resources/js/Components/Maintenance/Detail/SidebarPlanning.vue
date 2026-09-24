@@ -1,34 +1,11 @@
 <script setup lang="ts">
 import { BaseCard } from '@/Components/UI';
+import { formatDate, formatDateTime } from '@/Utils/formatters';
 import type { MaintenanceDetail } from './types';
 
 defineProps<{
     maintenance: MaintenanceDetail;
 }>();
-
-const formatDate = (dateStr?: string | null): string => {
-    if (!dateStr) return 'No especificada';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
-};
-
-const formatDateTime = (dateStr?: string | null): string => {
-    if (!dateStr) return 'No especificada';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-};
 </script>
 
 <template>
