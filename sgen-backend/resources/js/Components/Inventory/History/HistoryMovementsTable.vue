@@ -3,9 +3,17 @@ import { BaseBadge, BaseDataTable, type DataTableColumn } from '@/Components/UI'
 import { formatDateTime } from '@/Utils/formatters';
 import type { InventoryMovement } from '@/Types/inventory';
 
-defineProps<{
-    movements: InventoryMovement[];
-}>();
+withDefaults(
+    defineProps<{
+        movements: InventoryMovement[];
+        paginate?: boolean;
+        perPage?: number;
+    }>(),
+    {
+        paginate: false,
+        perPage: 10,
+    }
+);
 
 const columns: DataTableColumn[] = [
     { key: 'fecha', label: 'FECHA', sortable: true },
@@ -38,6 +46,9 @@ const getQtyClass = (type: string) => {
         <BaseDataTable
             :columns="columns"
             :items="movements"
+            :paginate="paginate"
+            :per-page="perPage"
+            item-label="movimientos"
             empty-title="No hay movimientos registrados"
             empty-subtitle="No se encontraron registros de entradas o salidas para este artículo."
         >

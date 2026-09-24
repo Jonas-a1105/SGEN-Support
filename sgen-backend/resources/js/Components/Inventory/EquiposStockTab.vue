@@ -2,11 +2,8 @@
 import { ref, computed } from 'vue';
 import type { Equipment } from '@/Types/inventory';
 import { useClientPagination } from '@/Composables/useClientPagination';
-import TablePaginationFooter from './Common/TablePaginationFooter.vue';
 import InventoryControlsBar from './Common/InventoryControlsBar.vue';
-import BaseCard from '@/Components/UI/BaseCard.vue';
-import BaseBadge from '@/Components/UI/BaseBadge.vue';
-import BaseButton from '@/Components/UI/BaseButton.vue';
+import { BaseBadge, BaseButton, BaseCard, BaseDataTable, BasePagination, type DataTableColumn } from '@/Components/UI';
 
 const props = withDefaults(
     defineProps<{
@@ -38,6 +35,15 @@ const filteredEquipos = computed(() => {
         (eq.departamento_nombre || '').toLowerCase().includes(term)
     );
 });
+
+const columns: DataTableColumn[] = [
+    { key: 'codigo_inventario', label: 'CÓDIGO', width: '130px', sortable: true },
+    { key: 'tipo_equipo', label: 'TIPO', width: '120px', sortable: true },
+    { key: 'modelo', label: 'EQUIPO / MODELO', sortable: true },
+    { key: 'numero_serie', label: 'SERIAL', width: '150px' },
+    { key: 'estado', label: 'ESTADO', width: '130px', sortable: true },
+    { key: 'acciones', label: 'ACCIONES', width: '90px', align: 'center' },
+];
 
 const {
     perPage,
@@ -73,81 +79,83 @@ const {
             total-label="Total Equipos"
         />
 
-        <!-- TABLA DE EQUIPOS EN STOCK -->
-        <div v-if="viewMode === 'table'" class="data-container-card" id="tableWrapEquipos">
-            <div class="table-responsive">
-                <table class="custom-table" :class="{ dense: isDense }">
-                    <thead>
-                        <tr>
-                            <th>CÓDIGO</th>
-                            <th>TIPO</th>
-                            <th>EQUIPO / MODELO</th>
-                            <th>SERIAL</th>
-                            <th>ESTADO</th>
-                            <th>ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyEquipos">
-                        <tr v-for="eq in paginatedEquipos" :key="eq.id">
-                            <td><BaseBadge variant="code">{{ eq.codigo_inventario || 'N/A' }}</BaseBadge></td>
-                            <td><BaseBadge variant="info">{{ eq.tipo_equipo || eq.tipo || 'Equipo' }}</BaseBadge></td>
-                            <td><strong class="table-item-title">{{ eq.marca }} {{ eq.modelo }}</strong></td>
-                            <td><span class="table-serial-code">{{ eq.numero_serie || '--' }}</span></td>
-                            <td>
-                                <BaseBadge variant="success">
-                                    ● {{ eq.estado || 'Disponible' }}
-                                </BaseBadge>
-                            </td>
-                            <td>
-                                <button class="tbl-btn" type="button" title="Ver ficha del equipo" @click="emit('view-equipment', eq)">
-                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3"></circle></svg>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr v-if="paginatedEquipos.length === 0">
-                            <td colspan="6" class="table-empty-cell">
-                                No se encontraron equipos en stock.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <TablePaginationFooter
-                :showing-count="paginatedEquipos.length"
-                :total-count="filteredEquipos.length"
+        <!-- TABLA DE EQUIPOS EN STOCK (BaseDataTable) -->
+        <div v-if="viewMode === 'table'" class="data-container-card">
+            <BaseDataTable
+                :columns="columns"
+                :items="filteredEquipos"
+                :dense="isDense"
+                paginate
+                :per-page="10"
                 item-label="equipos"
-                :current-page="currentPage"
-                :total-pages="totalPages"
-                :per-page="perPage"
-                @change-page="setPage"
-                @change-per-page="setPerPage"
-            />
+                empty-title="No se encontraron equipos"
+                empty-subtitle="No hay equipos registrados que coincidan con la búsqueda."
+            >
+                <template #cell-codigo_inventario="{ item }">
+                    <BaseBadge variant="code">{{ item.codigo_inventario || 'N/A' }}</BaseBadge>
+                </template>
+
+                <template #cell-tipo_equipo="{ item }">
+                    <BaseBadge variant="info">{{ item.tipo_equipo || item.tipo || 'Equipo' }}</BaseBadge>
+                </template>
+
+                <template #cell-modelo="{ item }">
+                    <strong class="table-item-title">{{ item.marca }} {{ item.modelo }}</strong>
+                </template>
+
+                <template #cell-numero_serie="{ item }">
+                    <span class="table-serial-code">{{ item.numero_serie || '--' }}</span>
+                </template>
+
+                <template #cell-estado="{ item }">
+                    <BaseBadge variant="success">● {{ item.estado || 'Disponible' }}</BaseBadge>
+                </template>
+
+                <template #cell-acciones="{ item }">
+                    <button class="tbl-btn" type="button" title="Ver ficha del equipo" @click="emit('view-equipment', item)">
+                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </template>
+            </BaseDataTable>
         </div>
 
         <!-- CARDS VIEW DE EQUIPOS -->
-        <div v-else class="cards-grid">
-            <BaseCard
-                v-for="eq in paginatedEquipos"
-                :key="eq.id"
-                padding="md"
-                class="card-item-box"
-            >
-                <div class="card-item-header">
-                    <BaseBadge variant="code">{{ eq.codigo_inventario || 'N/A' }}</BaseBadge>
-                    <BaseBadge variant="success">● {{ eq.estado || 'Disponible' }}</BaseBadge>
-                </div>
-                <h4 class="card-item-title">{{ eq.marca }} {{ eq.modelo }}</h4>
-                <div class="card-item-meta">
-                    <BaseBadge variant="info">{{ eq.tipo_equipo || eq.tipo || 'Hardware' }}</BaseBadge>
-                    <span class="table-serial-code">S/N: {{ eq.numero_serie || '--' }}</span>
-                </div>
-                <div class="card-item-footer">
-                    <BaseButton variant="primary" size="sm" class="w-full" @click="emit('view-equipment', eq)">
-                        Ver Ficha Equipo
-                    </BaseButton>
-                </div>
-            </BaseCard>
+        <div v-else class="cards-view-wrapper">
+            <div class="cards-grid">
+                <BaseCard
+                    v-for="eq in paginatedEquipos"
+                    :key="eq.id"
+                    padding="md"
+                    class="card-item-box"
+                >
+                    <div class="card-item-header">
+                        <BaseBadge variant="code">{{ eq.codigo_inventario || 'N/A' }}</BaseBadge>
+                        <BaseBadge variant="success">● {{ eq.estado || 'Disponible' }}</BaseBadge>
+                    </div>
+                    <h4 class="card-item-title">{{ eq.marca }} {{ eq.modelo }}</h4>
+                    <div class="card-item-meta">
+                        <BaseBadge variant="info">{{ eq.tipo_equipo || eq.tipo || 'Hardware' }}</BaseBadge>
+                        <span class="table-serial-code">S/N: {{ eq.numero_serie || '--' }}</span>
+                    </div>
+                    <div class="card-item-footer">
+                        <BaseButton variant="primary" size="sm" class="w-full" @click="emit('view-equipment', eq)">
+                            Ver Ficha Equipo
+                        </BaseButton>
+                    </div>
+                </BaseCard>
+            </div>
+
+            <div v-if="filteredEquipos.length > perPage" class="cards-pagination-wrap">
+                <BasePagination
+                    :current-page="currentPage"
+                    :total-pages="totalPages"
+                    :total-items="filteredEquipos.length"
+                    :per-page="perPage"
+                    item-label="equipos"
+                    @page-change="setPage"
+                    @per-page-change="setPerPage"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -164,15 +172,43 @@ const {
 }
 
 .table-serial-code {
-    font-family: var(--font-mono);
+    font-family: var(--font-mono, monospace);
     font-size: 12px;
-    color: var(--text-dim);
+    color: var(--text-muted);
 }
 
-.table-empty-cell {
-    text-align: center;
+.tbl-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: transparent;
+    border: var(--stroke-w) solid var(--stroke);
     color: var(--text-muted);
-    padding: var(--space-6);
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+}
+
+.tbl-btn:hover {
+    color: var(--brand);
+    border-color: var(--brand);
+    background: var(--stroke-subtle);
+}
+
+.tbl-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.cards-view-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
 }
 
 .cards-grid {
@@ -185,6 +221,12 @@ const {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.card-item-box:hover {
+    transform: translateY(-2px);
+    border-color: var(--stroke-hover);
 }
 
 .card-item-header {
@@ -194,10 +236,10 @@ const {
 }
 
 .card-item-title {
-    margin: 0;
     font-size: 15px;
     font-weight: 700;
     color: var(--text);
+    margin: 0;
 }
 
 .card-item-meta {
@@ -205,12 +247,15 @@ const {
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    color: var(--text-muted);
 }
 
 .card-item-footer {
     margin-top: auto;
     padding-top: var(--space-2);
+}
+
+.cards-pagination-wrap {
+    padding-top: var(--space-3);
     border-top: var(--stroke-w) solid var(--stroke-subtle);
 }
 

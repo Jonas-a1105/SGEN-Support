@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import BaseModal from '@/Components/UI/BaseModal.vue';
 import type { BitacoraActionItem } from '@/Composables/useAuditFilters';
 
 const props = defineProps<{
@@ -52,78 +53,57 @@ function formatJson(val: Record<string, unknown> | null): string {
 </script>
 
 <template>
-    <div v-if="show && action" class="modal-backdrop" @click="emit('close')">
-        <div class="modal-dialog" @click.stop>
-            <!-- CABECERA MODAL -->
-            <header class="modal-header">
-                <div class="modal-title-group">
-                    <div class="modal-icon-badge">
-                        <svg viewBox="0 0 24 24">
-                            <polyline points="12 8 12 12 14 14" />
-                            <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="modal-title">Detalle de Operación</h2>
-                        <span class="modal-subtitle">Registro #{{ action.id }} en Bitácora</span>
-                    </div>
+    <BaseModal
+        :is-open="show && !!action"
+        :title="action ? `Detalle de Operación #${action.id}` : 'Detalle de Operación'"
+        max-width="lg"
+        @close="emit('close')"
+    >
+        <div v-if="action" class="bitacora-detail-content">
+            <!-- GRID DE METADATOS CLAVE -->
+            <div class="meta-grid">
+                <div class="meta-card">
+                    <span class="meta-label">Usuario</span>
+                    <b class="meta-val user-accent">@{{ action.username }}</b>
                 </div>
-                <button
-                    type="button"
-                    class="btn-close"
-                    title="Cerrar modal"
-                    @click="emit('close')"
-                >
-                    ✕
-                </button>
-            </header>
-
-            <!-- CUERPO MODAL -->
-            <div class="modal-body">
-                <!-- GRID DE METADATOS CLAVE -->
-                <div class="meta-grid">
-                    <div class="meta-card">
-                        <span class="meta-label">Usuario</span>
-                        <b class="meta-val user-accent">@{{ action.username }}</b>
-                    </div>
-                    <div class="meta-card">
-                        <span class="meta-label">Módulo</span>
-                        <b class="meta-val">{{ action.entidad || action.enlace_tipo || 'General' }}</b>
-                    </div>
-                    <div class="meta-card">
-                        <span class="meta-label">Dirección IP</span>
-                        <b class="meta-val mono">{{ action.ip_address || '127.0.0.1' }}</b>
-                    </div>
-                    <div class="meta-card">
-                        <span class="meta-label">Fecha y Hora</span>
-                        <b class="meta-val">{{ action.created_at }}</b>
-                    </div>
+                <div class="meta-card">
+                    <span class="meta-label">Módulo</span>
+                    <b class="meta-val">{{ action.entidad || action.enlace_tipo || 'General' }}</b>
                 </div>
-
-                <!-- ACCIÓN REALIZADA -->
-                <div class="action-banner">
-                    <span class="meta-label">Descripción de la Operación</span>
-                    <p class="action-text">{{ action.accion }}</p>
+                <div class="meta-card">
+                    <span class="meta-label">Dirección IP</span>
+                    <b class="meta-val mono">{{ action.ip_address || '127.0.0.1' }}</b>
                 </div>
-
-                <!-- INSPECTOR DE CAMBIOS (DIFF) -->
-                <div v-if="action.datos_anteriores || action.datos_nuevos" class="diff-section">
-                    <span class="meta-label">Trazabilidad de Cambios</span>
-                    <div class="diff-columns">
-                        <div class="diff-box">
-                            <div class="diff-header old">Estado Anterior</div>
-                            <pre class="json-content">{{ formatJson(action.datos_anteriores) }}</pre>
-                        </div>
-                        <div class="diff-box">
-                            <div class="diff-header new">Estado Nuevo</div>
-                            <pre class="json-content">{{ formatJson(action.datos_nuevos) }}</pre>
-                        </div>
-                    </div>
+                <div class="meta-card">
+                    <span class="meta-label">Fecha y Hora</span>
+                    <b class="meta-val">{{ action.created_at }}</b>
                 </div>
             </div>
 
-            <!-- PIE MODAL -->
-            <footer class="modal-footer">
+            <!-- ACCIÓN REALIZADA -->
+            <div class="action-banner">
+                <span class="meta-label">Descripción de la Operación</span>
+                <p class="action-text">{{ action.accion }}</p>
+            </div>
+
+            <!-- INSPECTOR DE CAMBIOS (DIFF) -->
+            <div v-if="action.datos_anteriores || action.datos_nuevos" class="diff-section">
+                <span class="meta-label">Trazabilidad de Cambios</span>
+                <div class="diff-columns">
+                    <div class="diff-box">
+                        <div class="diff-header old">Estado Anterior</div>
+                        <pre class="json-content">{{ formatJson(action.datos_anteriores) }}</pre>
+                    </div>
+                    <div class="diff-box">
+                        <div class="diff-header new">Estado Nuevo</div>
+                        <pre class="json-content">{{ formatJson(action.datos_nuevos) }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template #footer>
+            <div class="modal-footer-inner">
                 <button
                     v-if="entityLink"
                     type="button"
@@ -141,112 +121,21 @@ function formatJson(val: Record<string, unknown> | null): string {
 
                 <button
                     type="button"
-                    class="btn-close-action"
+                    class="btn-cancel"
                     @click="emit('close')"
                 >
                     Cerrar
                 </button>
-            </footer>
-        </div>
-    </div>
+            </div>
+        </template>
+    </BaseModal>
 </template>
 
 <style scoped>
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: blur(4px);
-    z-index: 100;
-    display: grid;
-    place-items: center;
-    padding: 16px;
-    box-shadow: none !important;
-}
-
-.modal-dialog {
-    width: 100%;
-    max-width: 640px;
-    background: var(--bg-card, #17181a);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    border-radius: var(--panel-radius, 18px);
-    overflow: hidden;
+.bitacora-detail-content {
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
-    box-shadow: none !important;
-}
-
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 24px;
-    border-bottom: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
-}
-
-.modal-title-group {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.modal-icon-badge {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: var(--accent-soft, rgba(79, 70, 229, 0.12));
-    border: var(--stroke-w, 2px) solid var(--orange, #4f46e5);
-    color: var(--orange, #4f46e5);
-    display: grid;
-    place-items: center;
-}
-
-.modal-icon-badge svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-}
-
-.modal-title {
-    font-size: 16px;
-    font-weight: 700 !important;
-    color: var(--text, #f4f4f6);
-    margin: 0;
-}
-
-.modal-subtitle {
-    font-size: 12px;
-    color: var(--text-muted, #8e9199);
-}
-
-.btn-close {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
-    background: var(--bg-sub, #1e2024);
-    color: var(--text-muted, #8e9199);
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    transition: all 0.2s ease;
-    box-shadow: none !important;
-}
-
-.btn-close:hover {
-    color: var(--text, #f4f4f6);
-    border-color: var(--stroke-hover, #454952);
-}
-
-.modal-body {
-    padding: 24px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 }
 
 .meta-grid {
@@ -255,9 +144,15 @@ function formatJson(val: Record<string, unknown> | null): string {
     gap: 12px;
 }
 
+@media (max-width: 580px) {
+    .meta-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .meta-card {
-    background: var(--bg-sub, #1e2024);
-    border: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
+    background: var(--bg-sub);
+    border: var(--stroke-w, 2px) solid var(--stroke-subtle);
     border-radius: 12px;
     padding: 12px 14px;
     display: flex;
@@ -269,113 +164,120 @@ function formatJson(val: Record<string, unknown> | null): string {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--text-muted, #8e9199);
-    font-weight: 700 !important;
+    color: var(--text-dim);
+    font-weight: 700;
 }
 
 .meta-val {
     font-size: 13px;
-    color: var(--text, #f4f4f6);
+    color: var(--text);
 }
 
-.user-accent {
+.meta-val.user-accent {
     color: var(--orange, #4f46e5);
 }
 
-.mono {
+.meta-val.mono {
     font-family: var(--font-mono, monospace);
+    font-size: 12px;
 }
 
 .action-banner {
-    background: var(--bg-sub, #1e2024);
-    border: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
+    background: var(--bg-sub);
+    border: var(--stroke-w, 2px) solid var(--stroke-subtle);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
 .action-text {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text, #f4f4f6);
+    font-size: 13px;
+    color: var(--text);
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .diff-section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .diff-columns {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
+@media (max-width: 580px) {
+    .diff-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
 .diff-box {
-    border: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
-    border-radius: 10px;
-    background: var(--bg, #111214);
+    background: var(--bg-sub);
+    border: var(--stroke-w, 2px) solid var(--stroke-subtle);
+    border-radius: 12px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .diff-header {
+    padding: 8px 12px;
     font-size: 11px;
-    font-weight: 700 !important;
+    font-weight: 700;
     text-transform: uppercase;
-    padding: 6px 10px;
     letter-spacing: 0.05em;
+    border-bottom: var(--stroke-w, 2px) solid var(--stroke-subtle);
 }
 
 .diff-header.old {
-    background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
 }
 
 .diff-header.new {
-    background: rgba(16, 185, 129, 0.15);
     color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
 }
 
 .json-content {
+    padding: 12px;
     margin: 0;
-    padding: 10px;
     font-family: var(--font-mono, monospace);
     font-size: 11px;
-    color: var(--text-muted, #8e9199);
-    max-height: 160px;
-    overflow-y: auto;
+    color: var(--text);
+    overflow-x: auto;
+    max-height: 180px;
     white-space: pre-wrap;
     word-break: break-all;
 }
 
-.modal-footer {
+.modal-footer-inner {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
-    border-top: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
-    background: var(--bg-card, #17181a);
+    align-items: center;
+    width: 100%;
 }
 
 .btn-entity-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: var(--stroke-w, 2px) solid var(--orange, #4f46e5);
     background: var(--accent-soft, rgba(79, 70, 229, 0.12));
+    border: var(--stroke-w, 2px) solid var(--orange, #4f46e5);
     color: var(--orange, #4f46e5);
     font-size: 12px;
-    font-weight: 700 !important;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
     box-shadow: none !important;
+    transition: all 0.15s ease;
 }
 
 .btn-entity-link:hover {
@@ -388,31 +290,6 @@ function formatJson(val: Record<string, unknown> | null): string {
     height: 14px;
     stroke: currentColor;
     fill: none;
-    stroke-width: 2;
-}
-
-.btn-close-action {
-    padding: 8px 18px;
-    border-radius: 10px;
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    background: var(--bg-sub, #1e2024);
-    color: var(--text, #f4f4f6);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: none !important;
-}
-
-.btn-close-action:hover {
-    background: var(--stroke-subtle, #23252a);
-    border-color: var(--stroke-hover, #454952);
-}
-
-@media (max-width: 640px) {
-    .meta-grid,
-    .diff-columns {
-        grid-template-columns: 1fr;
-    }
+    stroke-width: 2.2;
 }
 </style>

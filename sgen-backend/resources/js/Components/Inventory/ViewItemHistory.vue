@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Product, InventoryMovement } from '@/Types/inventory';
-import { useClientPagination } from '@/Composables/useClientPagination';
 import HistoryMovementsTable from './History/HistoryMovementsTable.vue';
-import TablePaginationFooter from './Common/TablePaginationFooter.vue';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseBadge from '@/Components/UI/BaseBadge.vue';
 
@@ -17,15 +15,6 @@ const emit = defineEmits<{ (e: 'back'): void }>();
 const itemMovements = computed(() => {
     return props.movimientos.filter((m) => m.producto_id === props.item.id || !m.producto_id);
 });
-
-const {
-    perPage,
-    currentPage,
-    totalPages,
-    paginatedItems: paginatedMovements,
-    setPage,
-    setPerPage,
-} = useClientPagination(itemMovements, 5);
 </script>
 
 <template>
@@ -62,17 +51,10 @@ const {
                 </div>
             </div>
 
-            <HistoryMovementsTable :movements="paginatedMovements" />
-
-            <TablePaginationFooter
-                :showing-count="paginatedMovements.length"
-                :total-count="itemMovements.length"
-                item-label="movimientos"
-                :current-page="currentPage"
-                :total-pages="totalPages"
-                :per-page="perPage"
-                @change-page="setPage"
-                @change-per-page="setPerPage"
+            <HistoryMovementsTable
+                :movements="itemMovements"
+                paginate
+                :per-page="5"
             />
         </BaseCard>
     </section>
@@ -98,33 +80,27 @@ const {
     color: var(--blue);
     display: grid;
     place-items: center;
-}
-
-.svg-icon-standard {
-    width: 18px;
-    height: 18px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
+    font-size: 16px;
 }
 
 .item-hero-title {
-    font-size: 18px !important;
-    font-weight: 700 !important;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
     margin: 0;
 }
 
 .history-panel-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
     border-bottom: var(--stroke-w) solid var(--stroke-subtle);
     padding-bottom: var(--space-3);
-    margin-bottom: var(--space-4);
 }
 
 .panel-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--text);
     margin: 0;
@@ -132,6 +108,6 @@ const {
 
 .history-header-sub {
     font-size: 12px;
-    color: var(--text-muted);
+    color: var(--text-dim);
 }
 </style>

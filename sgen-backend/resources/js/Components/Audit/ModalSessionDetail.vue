@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BaseModal from '@/Components/UI/BaseModal.vue';
+import { BaseAvatar, BaseBadge } from '@/Components/UI';
 import type { AuditSessionItem } from '@/Composables/useAuditFilters';
 
 defineProps<{
@@ -12,18 +14,15 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div v-if="show && session" class="modal-backdrop" @click.self="emit('close')">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalSessionTitle">
-            <div class="modal-head">
-                <div class="modal-head-title">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-                    <h3 id="modalSessionTitle" class="modal-title">Detalle de Sesión</h3>
-                </div>
-                <button class="icon-close" type="button" @click="emit('close')">×</button>
-            </div>
-
+    <BaseModal
+        :is-open="show && !!session"
+        title="Detalle de Sesión"
+        max-width="md"
+        @close="emit('close')"
+    >
+        <div v-if="session" class="session-modal-content">
             <div class="user-header-block">
-                <div class="avatar-large">{{ session.avatar_initials }}</div>
+                <BaseAvatar :name="session.username" :initials="session.avatar_initials" size="lg" />
                 <div>
                     <h4 class="username-title">{{ session.username }}</h4>
                     <span class="userid-text">ID de Usuario: <strong>{{ session.user_id }}</strong></span>
@@ -62,111 +61,53 @@ const emit = defineEmits<{
                         Estado
                     </span>
                     <span class="detail-val">
-                        <span class="status-badge" :class="session.is_active ? 'badge-active' : 'badge-ended'">
+                        <BaseBadge :variant="session.is_active ? 'success' : 'neutral'" size="sm">
                             {{ session.status }}
-                        </span>
+                        </BaseBadge>
                     </span>
                 </div>
             </div>
 
-            <div class="modal-actions">
-                <button class="btn-close-modal" type="button" @click="emit('close')">Cerrar</button>
+            <div class="form-actions-row">
+                <button class="btn-cancel" type="button" @click="emit('close')">Cerrar</button>
             </div>
         </div>
-    </div>
+    </BaseModal>
 </template>
 
 <style scoped>
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    display: grid;
-    place-items: center;
-    z-index: 100;
-    padding: 16px;
-    box-shadow: none !important;
-}
-.modal {
-    background: var(--bg-card, #17181a);
-    border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
-    border-radius: var(--panel-radius, 18px);
-    width: 100%;
-    max-width: 460px;
-    padding: 24px;
-    box-shadow: none !important;
-}
-.modal-head {
+.session-modal-content {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
+    flex-direction: column;
+    gap: 16px;
 }
-.modal-head-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.modal-head-title svg {
-    width: 18px;
-    height: 18px;
-    stroke: #3b82f6;
-    fill: none;
-    stroke-width: 2;
-}
-.modal-title {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    color: var(--text, #f4f4f6);
-    margin: 0;
-}
-.icon-close {
-    background: transparent;
-    border: none;
-    color: var(--text-muted, #8e9199);
-    font-size: 20px;
-    cursor: pointer;
-}
+
 .user-header-block {
     display: flex;
     align-items: center;
     gap: 14px;
     padding-bottom: 16px;
     border-bottom: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
-    margin-bottom: 16px;
 }
-.avatar-large {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: #3b82f6;
-    color: #ffffff;
-    display: grid;
-    place-items: center;
-    font-size: 14px;
-    font-weight: 700 !important;
-    border: var(--stroke-w, 2px) solid #3b82f6;
-    box-shadow: none !important;
-}
+
 .username-title {
     font-size: 16px !important;
     font-weight: 700 !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 2px 0;
 }
+
 .userid-text {
     font-size: 12px;
     color: var(--text-muted, #8e9199);
-}
-.userid-text strong {
-    color: var(--text, #f4f4f6);
 }
 
 .session-detail-rows {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
 }
+
 .detail-row {
     display: flex;
     justify-content: space-between;
@@ -175,8 +116,8 @@ const emit = defineEmits<{
     background: var(--bg-sub, #1e2024);
     border: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
     border-radius: 10px;
-    box-shadow: none !important;
 }
+
 .detail-label {
     display: flex;
     align-items: center;
@@ -184,6 +125,7 @@ const emit = defineEmits<{
     font-size: 12px;
     color: var(--text-muted, #8e9199);
 }
+
 .detail-label svg {
     width: 14px;
     height: 14px;
@@ -191,48 +133,14 @@ const emit = defineEmits<{
     fill: none;
     stroke-width: 2;
 }
+
 .detail-val {
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600 !important;
     color: var(--text, #f4f4f6);
 }
+
 .active-text {
     color: #10b981;
-    font-weight: 600 !important;
-}
-.status-badge {
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-size: 11px;
-}
-.badge-active {
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-    border: var(--stroke-w, 2px) solid rgba(16, 185, 129, 0.3);
-}
-.badge-ended {
-    background: var(--bg-card, #17181a);
-    color: var(--text-muted, #8e9199);
-    border: var(--stroke-w, 2px) solid var(--stroke-subtle, #23252a);
-}
-
-.modal-actions {
-    margin-top: 20px;
-}
-.btn-close-modal {
-    width: 100%;
-    background: #3b82f6;
-    border: var(--stroke-w, 2px) solid #3b82f6;
-    color: #ffffff;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 13px;
-    font-weight: 700 !important;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.15s ease;
-}
-.btn-close-modal:hover {
-    background: #2563eb;
-    border-color: #2563eb;
 }
 </style>
