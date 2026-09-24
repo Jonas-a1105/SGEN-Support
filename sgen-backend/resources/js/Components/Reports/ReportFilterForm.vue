@@ -49,8 +49,8 @@ const updateFilter = <K extends keyof TicketsFilters>(key: K, val: TicketsFilter
                 <div class="form-group-block">
                     <span class="form-field-kicker">RANGO DE FECHAS</span>
                     <BaseDateRangePicker
-                        :start-date="filters.fecha_inicio"
-                        :end-date="filters.fecha_fin"
+                        :start-date="filters.fecha_inicio || ''"
+                        :end-date="filters.fecha_fin || ''"
                         :show-presets="false"
                         @update:start-date="updateFilter('fecha_inicio', $event)"
                         @update:end-date="updateFilter('fecha_fin', $event)"

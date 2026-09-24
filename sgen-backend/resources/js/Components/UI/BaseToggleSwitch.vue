@@ -1,11 +1,12 @@
 <script setup lang="ts">
 interface Props {
-    modelValue: boolean;
+    modelValue?: boolean;
     title?: string;
     label?: string;
 }
 
 withDefaults(defineProps<Props>(), {
+    modelValue: false,
     title: 'Alternar',
     label: '',
 });

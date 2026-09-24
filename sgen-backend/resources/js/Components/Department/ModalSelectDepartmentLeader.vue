@@ -22,7 +22,7 @@ const emit = defineEmits<{
 
 <template>
     <BaseModal
-        :show="isOpen"
+        :is-open="isOpen"
         title="Designar Jefe de Departamento"
         max-width="md"
         @close="emit('close')"

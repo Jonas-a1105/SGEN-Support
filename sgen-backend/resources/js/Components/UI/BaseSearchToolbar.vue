@@ -1,12 +1,13 @@
 <script setup lang="ts">
 interface Props {
-    modelValue: string;
+    modelValue?: string;
     placeholder?: string;
     showClear?: boolean;
     searchPosition?: 'left' | 'right';
 }
 
 withDefaults(defineProps<Props>(), {
+    modelValue: '',
     placeholder: 'Buscar...',
     showClear: true,
     searchPosition: 'left',

@@ -1,11 +1,15 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 export interface DateRange {
     start: string;
     end: string;
 }
 
 interface Props {
-    modelValue: DateRange;
+    modelValue?: DateRange;
+    startDate?: string;
+    endDate?: string;
     label?: string;
     showPresets?: boolean;
     error?: string;
@@ -13,6 +17,9 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+    modelValue: undefined,
+    startDate: '',
+    endDate: '',
     label: '',
     showPresets: true,
     error: '',
@@ -21,24 +28,45 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: DateRange): void;
+    (e: 'update:startDate', val: string): void;
+    (e: 'update:endDate', val: string): void;
     (e: 'change', value: DateRange): void;
 }>();
 
+const currentRange = computed<DateRange>(() => {
+    if (props.modelValue) {
+        return {
+            start: props.modelValue.start || '',
+            end: props.modelValue.end || '',
+        };
+    }
+    return {
+        start: props.startDate || '',
+        end: props.endDate || '',
+    };
+});
+
 const updateStart = (val: string) => {
+    const currentEnd = currentRange.value.end;
     const newRange: DateRange = {
         start: val,
-        end: props.modelValue.end && props.modelValue.end < val ? val : props.modelValue.end,
+        end: currentEnd && currentEnd < val ? val : currentEnd,
     };
     emit('update:modelValue', newRange);
+    emit('update:startDate', val);
+    emit('update:endDate', newRange.end);
     emit('change', newRange);
 };
 
 const updateEnd = (val: string) => {
+    const currentStart = currentRange.value.start;
     const newRange: DateRange = {
-        start: props.modelValue.start && props.modelValue.start > val ? val : props.modelValue.start,
+        start: currentStart && currentStart > val ? val : currentStart,
         end: val,
     };
     emit('update:modelValue', newRange);
+    emit('update:startDate', newRange.start);
+    emit('update:endDate', val);
     emit('change', newRange);
 };
 
@@ -82,12 +110,16 @@ const applyPreset = (preset: 'today' | '7days' | 'thisMonth' | 'lastMonth' | 'th
         end: formatIsoDate(end),
     };
     emit('update:modelValue', range);
+    emit('update:startDate', range.start);
+    emit('update:endDate', range.end);
     emit('change', range);
 };
 
 const clearRange = () => {
     const range: DateRange = { start: '', end: '' };
     emit('update:modelValue', range);
+    emit('update:startDate', '');
+    emit('update:endDate', '');
     emit('change', range);
 };
 </script>
@@ -97,7 +129,7 @@ const clearRange = () => {
         <div v-if="label" class="range-header-row">
             <label class="field-label">{{ label }}</label>
             <button
-                v-if="modelValue.start || modelValue.end"
+                v-if="currentRange.start || currentRange.end"
                 type="button"
                 class="range-clear-link"
                 @click="clearRange"
@@ -127,7 +159,7 @@ const clearRange = () => {
                     </svg>
                 </span>
                 <input
-                    :value="modelValue.start"
+                    :value="currentRange.start"
                     type="date"
                     :disabled="disabled"
                     placeholder="Desde"
@@ -149,9 +181,9 @@ const clearRange = () => {
                     </svg>
                 </span>
                 <input
-                    :value="modelValue.end"
+                    :value="currentRange.end"
                     type="date"
-                    :min="modelValue.start || undefined"
+                    :min="currentRange.start || undefined"
                     :disabled="disabled"
                     placeholder="Hasta"
                     class="range-input-control"

@@ -162,7 +162,7 @@ const handleViewLogs = () => {
 
         <!-- Modal Genérico de Operaciones -->
         <BaseModal
-            :show="isDetailModalOpen"
+            :is-open="isDetailModalOpen"
             :title="modalTitle"
             confirm-text="Entendido"
             cancel-text="Cerrar"

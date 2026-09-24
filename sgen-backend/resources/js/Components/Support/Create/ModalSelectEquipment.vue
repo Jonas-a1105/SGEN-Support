@@ -15,7 +15,7 @@ const emit = defineEmits<{
 
 <template>
     <BaseModal
-        :show="isOpen"
+        :is-open="isOpen"
         title="Seleccionar Equipo"
         max-width="md"
         @close="emit('close')"

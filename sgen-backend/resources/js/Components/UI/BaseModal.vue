@@ -1,22 +1,41 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 
 interface Props {
-    isOpen: boolean;
+    isOpen?: boolean;
+    show?: boolean;
+    modelValue?: boolean;
     title?: string;
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    isOpen: false,
+    isOpen: undefined,
+    show: undefined,
+    modelValue: undefined,
     title: '',
     maxWidth: 'md',
 });
 
-const emit = defineEmits<{ (e: 'close'): void }>();
+const isVisible = computed(() => {
+    if (props.isOpen !== undefined) return props.isOpen;
+    if (props.show !== undefined) return props.show;
+    if (props.modelValue !== undefined) return props.modelValue;
+    return false;
+});
+
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'update:modelValue', value: boolean): void;
+}>();
+
+const handleClose = () => {
+    emit('close');
+    emit('update:modelValue', false);
+};
 
 const handleKeydown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && props.isOpen) emit('close');
+    if (e.key === 'Escape' && isVisible.value) handleClose();
 };
 
 onMounted(() => window.addEventListener('keydown', handleKeydown));
@@ -26,11 +45,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 <template>
     <Teleport to="body">
         <Transition name="fade">
-            <div v-if="isOpen" class="modal-backdrop" @click.self="emit('close')">
+            <div v-if="isVisible" class="modal-backdrop" @click.self="handleClose">
                 <div :class="['modal-container', `max-w-${maxWidth}`]">
                     <header class="modal-header">
                         <h3 class="modal-title">{{ title }}</h3>
-                        <button type="button" class="modal-close-btn" @click="emit('close')">✕</button>
+                        <button type="button" class="modal-close-btn" @click="handleClose">✕</button>
                     </header>
                     <div class="modal-body">
                         <slot />
