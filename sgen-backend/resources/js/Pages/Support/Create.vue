@@ -24,7 +24,7 @@ interface Props {
 const props = defineProps<Props>();
 
 // Form state
-const selectedCategoryId = ref<number>(props.options.categories?.[0]?.id ?? 1);
+const selectedCategoryId = ref<number | null>(props.options.categories?.[0]?.id ?? null);
 const selectedPriority = ref<TicketPriority>('media');
 const titulo = ref('');
 const descripcion = ref('');

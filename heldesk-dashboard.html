@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HelpDesk Dashboard Pro</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{--bg:#f8fafc;--card:#ffffff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--primary:rgb(116,179,0);--primary-600:rgb(92,143,0);--primary-100:rgb(230,245,220)}
 :root[data-theme="blue"]{--primary:rgb(116,179,255);--primary-600:rgb(92,148,220);--primary-100:rgb(225,238,255)}
@@ -17,12 +17,12 @@ header h1{margin:0;font-size:20px;font-weight:600;display:flex;align-items:cente
 header p{margin:4px 0 0;color:var(--muted);font-weight:500;font-size:13px}
 main{padding:24px 32px 24px 100px;max-width:1500px;margin:0 auto;min-height:0}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px;grid-auto-rows:minmax(0,auto)}
-.grid > *{min-height:0;scroll-margin-top:90px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,0.03);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;overflow:hidden}
+.grid > *{min-height:0;scroll-margin-top:110px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,0.03);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;overflow:hidden;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.06);border-color:var(--primary-600)}
 .card h3{margin:0 0 12px;font-size:14px;color:var(--muted);font-weight:600}
-.kpis{grid-column:span 12;display:grid;grid-template-columns:repeat(6,1fr);gap:20px;scroll-margin-top:90px}
-.kpi{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:16px;transition:transform .18s ease, box-shadow .18s ease}
+.kpis{grid-column:span 12;display:grid;grid-template-columns:repeat(6,1fr);gap:20px;scroll-margin-top:110px}
+.kpi{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:16px;transition:transform .18s ease, box-shadow .18s ease;scroll-margin-top:110px}
 .kpi:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.06)}
 .kpi .label{font-size:12px;color:var(--muted);font-weight:600}
 .kpi .value{font-size:28px;margin-top:6px}
@@ -32,6 +32,8 @@ main{padding:24px 32px 24px 100px;max-width:1500px;margin:0 auto;min-height:0}
 .chart.wide{grid-column:span 8;height:360px}
 .side{grid-column:span 4;height:360px;overflow:auto}
 canvas{width:100%!important;height:100%!important;display:block}
+.chart-box{flex:1 1 auto;min-height:0;position:relative}
+.radar-box{width:100%;max-width:560px;align-self:center}
 .btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 14px;border-radius:10px;font-weight:600;font-family:"Segoe UI";cursor:pointer;transition:all .15s ease}
 .btn:hover{border-color:var(--primary-600);transform:translateY(-1px)}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--primary-100);color:var(--primary-600);font-size:11px;font-weight:600;margin-left:8px}
@@ -105,18 +107,18 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;font-wei
     <div class="kpi card"><div class="label">tickets críticos</div><div class="value" style="color:var(--primary)">48</div><div class="sub">12 vencidos</div></div>
     <div id="kpi-activos" class="kpi card"><div class="label">activos asignados</div><div class="value" style="color:var(--primary)">1,104</div><div class="sub">82% en uso</div></div>
   </section>
-  <section id="graficas" class="card chart"><h3>tickets por estado</h3><canvas id="statusBar"></canvas></section>
-  <section id="chart-prioridad" class="card chart"><h3>distribución por prioridad</h3><canvas id="priorityDoughnut"></canvas></section>
-  <section id="chart-evolucion" class="card chart full"><h3>evolución de tickets últimos 12 meses</h3><canvas id="trendLine"></canvas></section>
-  <section id="chart-tecnicos" class="card chart"><h3>carga por técnico</h3><canvas id="techBar"></canvas></section>
-  <section id="chart-sla" class="card chart"><h3>cumplimiento sla por prioridad</h3><canvas id="slaBar"></canvas></section>
-  <section id="chart-equipos" class="card chart"><h3>estado de equipos</h3><canvas id="equipPie"></canvas></section>
-  <section id="chart-radar" class="card wide"><h3>radar de métricas sla</h3><canvas id="slaRadar"></canvas></section>
+  <section id="graficas" class="card chart"><h3>tickets por estado</h3><div class="chart-box"><canvas id="statusBar"></canvas></div></section>
+  <section id="chart-prioridad" class="card chart"><h3>distribución por prioridad</h3><div class="chart-box"><canvas id="priorityDoughnut"></canvas></div></section>
+  <section id="chart-evolucion" class="card chart full"><h3>evolución de tickets últimos 12 meses</h3><div class="chart-box"><canvas id="trendLine"></canvas></div></section>
+  <section id="chart-tecnicos" class="card chart"><h3>carga por técnico</h3><div class="chart-box"><canvas id="techBar"></canvas></div></section>
+  <section id="chart-sla" class="card chart"><h3>cumplimiento sla por prioridad</h3><div class="chart-box"><canvas id="slaBar"></canvas></div></section>
+  <section id="chart-equipos" class="card chart"><h3>estado de equipos</h3><div class="chart-box"><canvas id="equipPie"></canvas></div></section>
+  <section id="chart-radar" class="card chart wide"><h3>radar de métricas sla</h3><div class="chart-box radar-box"><canvas id="slaRadar"></canvas></div></section>
   <section id="timeline" class="card side"><h3>timeline de ticket #T-2841</h3><div class="timeline" id="timelineList"></div></section>
   <section id="divisas" class="card side"><h3>tasa dólar ↔ Bs</h3>
     <div class="converter">
-      <div>Dólares USD</div><input id="usd" type="number" value="100" min="0" step="0.01">
-      <div>Bolívares Bs</div><input id="bs" type="number" value="3650" min="0" step="0.01">
+      <div>Dólares USD</div><input id="usd" type="number" value="100" min="0" step="0.01" aria-label="Dólares USD">
+      <div>Bolívares Bs</div><input id="bs" type="number" value="3650" min="0" step="0.01" aria-label="Bolívares Bs">
       <div class="row"><button class="btn" id="toBs">USD → Bs</button><button class="btn" id="toUsd">Bs → USD</button></div>
       <div style="font-size:12px;color:var(--muted)">Tasa: <b id="rate">36.50</b> Bs/USD</div>
     </div>
@@ -128,8 +130,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;font-wei
 document.addEventListener('DOMContentLoaded', () => {
 const root=document.documentElement;
 const toggleBtn=document.getElementById('themeToggle');
-function setTheme(t){root.dataset.theme=t;localStorage.setItem('theme',t);toggleBtn.textContent='Acento: '+(t==='blue'?'azul':'verde')}
-setTheme(localStorage.getItem('theme')||'');
+const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+function setTheme(t){root.dataset.theme=t;store.set('theme',t);toggleBtn.textContent='Acento: '+(t==='blue'?'azul':'verde')}
+setTheme(store.get('theme')||'');
 toggleBtn.onclick=()=>setTheme(root.dataset.theme==='blue'?'':'blue');
 
 function getP(){return getComputedStyle(root).getPropertyValue('--primary').trim()}
@@ -139,35 +142,50 @@ function rgbaFromRgb(rgb,a){
  return m&&m.length>=3?`rgba(${m[0]},${m[1]},${m[2]},${a})`:`rgba(116,179,0,${a})`;
 }
 
-const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Segoe UI',weight:600}}},tooltip:{backgroundColor:'#111827',titleColor:'#fff',bodyColor:'#fff'}},animation:{duration:800,easing:'easeOutQuart'},scales:{x:{ticks:{font:{family:'Segoe UI',weight:600}}},y:{ticks:{font:{family:'Segoe UI',weight:600}}}}};
+function mergeOpts(){const o={};for(const s of arguments){if(!s)continue;for(const k in s){const v=s[k];o[k]=v&&typeof v==='object'&&!Array.isArray(v)?mergeOpts(o[k],v):v}}return o}
+const tickFont={family:'Segoe UI',weight:600};
+const tooltipCfg={backgroundColor:'#111827',titleColor:'#fff',bodyColor:'#fff',titleFont:{family:'Segoe UI',weight:600},bodyFont:{family:'Segoe UI'}};
+const animCfg={duration:800,easing:'easeOutQuart'};
+const opts={responsive:true,maintainAspectRatio:false,animation:animCfg,plugins:{legend:{labels:{font:tickFont}},tooltip:tooltipCfg},scales:{x:{ticks:{font:tickFont}},y:{beginAtZero:true,ticks:{font:tickFont}}}};
+const optsPie={responsive:true,maintainAspectRatio:false,animation:animCfg,plugins:{legend:{position:'bottom',labels:{font:tickFont}},tooltip:tooltipCfg}};
+const optsNoLegend={plugins:{legend:{display:false}}};
 
 function renderAll(){
+ if(!window.Chart){
+  document.querySelectorAll('.chart-box').forEach(b=>{if(!b.dataset.err){b.dataset.err='1';const m=document.createElement('p');m.style.cssText='color:var(--muted);font-size:12px;font-weight:600;margin:8px 0 0';m.textContent='No se pudo cargar la librería de gráficas (CDN).';b.appendChild(m)}});
+  console.error('Chart.js no cargó; se omiten las gráficas.');
+  return;
+ }
  const p=getP(),p600=getP600();
  const isBlue=root.dataset.theme==='blue';
  const priorityPalette=isBlue?['rgb(116,179,255)','rgb(92,148,220)','rgb(59,130,246)','rgb(29,78,216)']:['rgb(180,210,120)','rgb(140,190,60)','rgb(116,179,0)','rgb(70,130,20)'];
  const equipPalette=isBlue?['rgb(116,179,255)','rgb(147,197,253)','rgb(59,130,246)','rgb(30,64,175)']:['rgb(116,179,0)','rgb(180,210,120)','rgb(140,190,60)','rgb(70,130,20)'];
 
  ['statusBar','priorityDoughnut','trendLine','techBar','slaBar','equipPie','slaRadar'].forEach(id=>{const c=Chart.getChart(id);c&&c.destroy()});
- new Chart(document.getElementById('statusBar'),{type:'bar',data:{labels:['pendiente','en proceso','en espera','resuelto','cerrado'],datasets:[{data:[342,418,156,289,43],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:{...opts,plugins:{legend:{display:false}}}});
- new Chart(document.getElementById('priorityDoughnut'),{type:'doughnut',data:{labels:['baja','media','alta','crítica'],datasets:[{data:[420,512,268,48],backgroundColor:priorityPalette,borderWidth:1,borderColor:'#fff',hoverOffset:10}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Segoe UI',weight:600}}}}}});
- new Chart(document.getElementById('trendLine'),{type:'line',data:{labels:['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'],datasets:[{label:'creados',data:[210,235,260,245,280,310,295,330,365,340,310,285],borderColor:p,backgroundColor:rgbaFromRgb(p,0.12),fill:true,tension:0.35,borderWidth:2,pointRadius:0},{label:'resueltos',data:[195,220,240,230,265,295,280,315,340,320,295,270],borderColor:p600,backgroundColor:rgbaFromRgb(p600,0.12),fill:true,tension:0.35,borderWidth:2,pointRadius:0}]},options:{...opts,plugins:{legend:{labels:{font:{family:'Segoe UI',weight:600}}}}}});
- new Chart(document.getElementById('techBar'),{type:'bar',data:{labels:['Ana','Carlos','María','Luis','Sofía','Jorge','Patricia'],datasets:[{data:[38,52,44,61,47,33,29],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:{...opts,plugins:{legend:{display:false}}}});
- new Chart(document.getElementById('slaBar'),{type:'bar',data:{labels:['baja','media','alta','crítica'],datasets:[{data:[96,89,82,71],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:{...opts,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100}}}});
- new Chart(document.getElementById('equipPie'),{type:'pie',data:{labels:['en uso','en resguardo','en reparación','disponible'],datasets:[{data:[726,184,98,96],backgroundColor:equipPalette,borderWidth:1,borderColor:'#fff',hoverOffset:10}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Segoe UI',weight:600}}}}}});
- new Chart(document.getElementById('slaRadar'),{type:'radar',data:{labels:['tiempo','calidad','cumplimiento','satisfacción','proactividad'],datasets:[{label:'actual',data:[78,85,87,92,74],borderColor:p,backgroundColor:rgbaFromRgb(p,0.18),pointBackgroundColor:p},{label:'objetivo',data:[80,80,85,85,80],borderColor:p600,backgroundColor:rgbaFromRgb(p600,0.08),pointBackgroundColor:p600}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{angleLines:{color:'#e5e7eb'},grid:{color:'#e5e7eb'},pointLabels:{font:{family:'Segoe UI',weight:600}},suggestedMin:0,suggestedMax:100,ticks:{stepSize:20}}}}});
+ new Chart(document.getElementById('statusBar'),{type:'bar',data:{labels:['pendiente','en proceso','en espera','resuelto','cerrado'],datasets:[{data:[342,418,156,289,43],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:mergeOpts(opts,optsNoLegend)});
+ new Chart(document.getElementById('priorityDoughnut'),{type:'doughnut',data:{labels:['baja','media','alta','crítica'],datasets:[{data:[420,512,268,48],backgroundColor:priorityPalette,borderWidth:1,borderColor:'#fff',hoverOffset:10}]},options:optsPie});
+ new Chart(document.getElementById('trendLine'),{type:'line',data:{labels:['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'],datasets:[{label:'creados',data:[210,235,260,245,280,310,295,330,365,340,310,285],borderColor:p,backgroundColor:rgbaFromRgb(p,0.12),fill:true,tension:0.35,borderWidth:2,pointRadius:0},{label:'resueltos',data:[195,220,240,230,265,295,280,315,340,320,295,270],borderColor:p600,backgroundColor:rgbaFromRgb(p600,0.12),fill:true,tension:0.35,borderWidth:2,pointRadius:0}]},options:opts});
+ new Chart(document.getElementById('techBar'),{type:'bar',data:{labels:['Ana','Carlos','María','Luis','Sofía','Jorge','Patricia'],datasets:[{data:[38,52,44,61,47,33,29],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:mergeOpts(opts,optsNoLegend)});
+ new Chart(document.getElementById('slaBar'),{type:'bar',data:{labels:['baja','media','alta','crítica'],datasets:[{data:[96,89,82,71],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:mergeOpts(opts,optsNoLegend,{scales:{y:{beginAtZero:true,max:100}}})});
+ new Chart(document.getElementById('equipPie'),{type:'pie',data:{labels:['en uso','en resguardo','en reparación','disponible'],datasets:[{data:[726,184,98,96],backgroundColor:equipPalette,borderWidth:1,borderColor:'#fff',hoverOffset:10}]},options:optsPie});
+ new Chart(document.getElementById('slaRadar'),{type:'radar',data:{labels:['tiempo','calidad','cumplimiento','satisfacción','proactividad'],datasets:[{label:'actual',data:[78,85,87,92,74],borderColor:p,backgroundColor:rgbaFromRgb(p,0.18),pointBackgroundColor:p,borderWidth:2,pointRadius:3},{label:'objetivo',data:[80,80,85,85,80],borderColor:p600,backgroundColor:rgbaFromRgb(p600,0.08),pointBackgroundColor:p600,borderWidth:2,pointRadius:3,borderDash:[6,4]}]},options:mergeOpts(optsPie,{layout:{padding:10},plugins:{legend:{position:'top'}},scales:{r:{angleLines:{color:'#e5e7eb'},grid:{color:'#e5e7eb'},pointLabels:{font:tickFont,color:'#6b7280'},suggestedMin:0,suggestedMax:100,ticks:{stepSize:20,backdropColor:'transparent',color:'#9ca3af',font:{family:'Segoe UI',size:10,weight:600}}}}})});
 }
-renderAll();
-new MutationObserver(renderAll).observe(root,{attributes:true,attributeFilter:['data-theme']});
+try{renderAll()}catch(err){console.error('Error al renderizar las gráficas:',err)}
+if(window.Chart)new MutationObserver(()=>{try{renderAll()}catch(err){console.error(err)}}).observe(root,{attributes:true,attributeFilter:['data-theme']});
 
 const tl=[{t:'08:12',m:'Ticket creado por solicitante'},{t:'09:04',m:'Asignado a Carlos'},{t:'10:21',m:'Comentario interno: falta repuesto'},{t:'13:45',m:'Estado → en espera'},{t:'16:10',m:'Repuesto recibido'},{t:'16:42',m:'Estado → en proceso'},{t:'18:05',m:'Ticket resuelto y firmado'}];
 document.getElementById('timelineList').innerHTML=tl.map(i=>`<div class="timeline-item"><div class="time">${i.t}</div><div class="msg">${i.m}</div></div>`).join('');
 
 let rate=36.50;
 const usdEl=document.getElementById('usd'), bsEl=document.getElementById('bs');
-document.getElementById('toBs').onclick=()=>{const v=parseFloat(usdEl.value);bsEl.value=isNaN(v)?'':(v*rate).toFixed(2)};
-document.getElementById('toUsd').onclick=()=>{const v=parseFloat(bsEl.value);usdEl.value=isNaN(v)?'':(v/rate).toFixed(2)};
-usdEl.oninput=e=>{const v=parseFloat(e.target.value);bsEl.value=isNaN(v)?'':(v*rate).toFixed(2)};
-bsEl.oninput=e=>{const v=parseFloat(e.target.value);usdEl.value=isNaN(v)?'':(v/rate).toFixed(2)};
+document.getElementById('rate').textContent=rate.toFixed(2);
+const num=v=>{const n=parseFloat(v);return isNaN(n)?null:Math.max(0,n)};
+const toBs=()=>{const v=num(usdEl.value);bsEl.value=v===null?'':(v*rate).toFixed(2)};
+const toUsd=()=>{const v=num(bsEl.value);usdEl.value=v===null?'':(v/rate).toFixed(2)};
+document.getElementById('toBs').onclick=toBs;
+document.getElementById('toUsd').onclick=toUsd;
+usdEl.oninput=toBs;
+bsEl.oninput=toUsd;
 });
 </script>
 </body>

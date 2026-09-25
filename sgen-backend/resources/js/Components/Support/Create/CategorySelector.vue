@@ -2,7 +2,7 @@
 import type { FormCategory } from './types';
 
 defineProps<{
-    modelValue: number;
+    modelValue: number | null;
     categories?: FormCategory[];
 }>();
 

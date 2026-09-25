@@ -97,6 +97,9 @@ jobs:
       - name: Typecheck estricto (vue-tsc)
         run: npm run typecheck
 
+      - name: Auditoría de interactividad (botones muertos, enlaces rotos)
+        run: npm run audit:ui
+
       - name: Build de producción
         run: npm run build
 

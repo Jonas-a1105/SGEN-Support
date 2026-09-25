@@ -9,6 +9,7 @@
         "build": "vite build",
         "dev": "vite",
         "typecheck": "vue-tsc --noEmit",
+        "audit:ui": "node scripts/audit-interactive-frontend.mjs",
         "test:e2e": "playwright test",
         "test:e2e:install": "playwright install chromium"
     },
