@@ -97,4 +97,41 @@ test.describe('Funcional — interacciones reales', () => {
         // useInventoryFilters debouncea 300ms y navega con ?search=
         await expect(page).toHaveURL(/search=SN-E2E-001/, { timeout: 5000 });
     });
+
+    test('ciclo de vida por UI: el ticket creado puede pausarse y reanudarse desde su detalle', async ({ page }) => {
+        await login(page, 'e2e_admin', 'E2e.Pass-2026*');
+        await page.goto('/soportes/crear');
+        await expect(page.locator('h1.module-title')).toContainText('Nuevo Ticket');
+
+        await page.locator('#busqueda_equipo').fill('SN-E2E-001');
+        const resultado = page.locator('.tf-search-result-item', { hasText: 'Latitude E2E' }).first();
+        if (await resultado.isVisible({ timeout: 4000 }).catch(() => false)) {
+            await resultado.click();
+        }
+
+        const ticketTitle = `Ticket ciclo E2E ${Date.now()}`;
+        await page.locator('#tituloInput').fill(ticketTitle);
+        await page.locator('#descripcionInput').fill('Ticket de ciclo de vida: pausa y reanudación por interfaz.');
+        await page.getByRole('button', { name: 'Guardar Ticket' }).click();
+
+        await expect.poll(() => {
+            try {
+                return new URL(page.url()).pathname;
+            } catch {
+                return page.url();
+            }
+        }, { timeout: 15000 }).toMatch(/\/soportes\/\d+/);
+
+        // Pausar: abre modal real (regresión: modales invisibles por colisión CSS legacy)
+        await page.getByRole('button', { name: /Iniciar Atención/i }).click();
+        await expect(page.locator('body')).toContainText('En proceso', { timeout: 10000 });
+
+        await page.getByRole('button', { name: 'Pausar', exact: true }).click();
+        await expect(page.locator('#pauseReasonSelect')).toBeVisible({ timeout: 6000 });
+        await page.getByRole('button', { name: 'Pausar Ticket' }).click();
+        await expect(page.locator('body')).toContainText('En espera', { timeout: 12000 });
+
+        await page.getByRole('button', { name: /Reanudar/i }).click();
+        await expect(page.locator('body')).toContainText('En proceso', { timeout: 10000 });
+    });
 });
