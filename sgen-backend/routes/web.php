@@ -1,21 +1,21 @@
 <?php
 
-use App\Infrastructure\About\Http\Controllers\AboutController;
-use App\Infrastructure\Audit\Http\Controllers\AuditController;
-use App\Infrastructure\Auth\Http\Controllers\AuthController;
-use App\Infrastructure\Category\Http\Controllers\CategoryController;
-use App\Infrastructure\Dashboard\Http\Controllers\DashboardController;
-use App\Infrastructure\Department\Http\Controllers\DepartmentController;
-use App\Infrastructure\Employee\Http\Controllers\EmployeeController;
-use App\Infrastructure\Equipment\Http\Controllers\EquipmentController;
-use App\Infrastructure\Inventory\Http\Controllers\InventoryController;
-use App\Infrastructure\Maintenance\Http\Controllers\MaintenanceController;
-use App\Infrastructure\Notification\Http\Controllers\NotificationController;
-use App\Infrastructure\Reports\Http\Controllers\ReportsController;
-use App\Infrastructure\Settings\Http\Controllers\SettingsController;
-use App\Infrastructure\Support\Http\Controllers\SupportController;
-use App\Infrastructure\User\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Modules\About\Infrastructure\Http\Controllers\AboutController;
+use Modules\Audit\Infrastructure\Http\Controllers\AuditController;
+use Modules\Auth\Infrastructure\Http\Controllers\AuthController;
+use Modules\Category\Infrastructure\Http\Controllers\CategoryController;
+use Modules\Dashboard\Infrastructure\Http\Controllers\DashboardController;
+use Modules\Department\Infrastructure\Http\Controllers\DepartmentController;
+use Modules\Employee\Infrastructure\Http\Controllers\EmployeeController;
+use Modules\Equipment\Infrastructure\Http\Controllers\EquipmentController;
+use Modules\Inventory\Infrastructure\Http\Controllers\InventoryController;
+use Modules\Maintenance\Infrastructure\Http\Controllers\MaintenanceController;
+use Modules\Notification\Infrastructure\Http\Controllers\NotificationController;
+use Modules\Reports\Infrastructure\Http\Controllers\ReportsController;
+use Modules\Settings\Infrastructure\Http\Controllers\SettingsController;
+use Modules\Support\Infrastructure\Http\Controllers\SupportController;
+use Modules\User\Infrastructure\Http\Controllers\UserController;
 
 // Rutas Públicas (Invitados)
 Route::middleware('guest')->group(function () {

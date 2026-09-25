@@ -1,20 +1,20 @@
 <?php
 
-use App\Infrastructure\Dashboard\Providers\DashboardModuleServiceProvider;
-use App\Infrastructure\Department\Providers\DepartmentModuleServiceProvider;
-use App\Infrastructure\Employee\Providers\EmployeeModuleServiceProvider;
-use App\Infrastructure\Equipment\Providers\EquipmentModuleServiceProvider;
-use App\Infrastructure\Inventory\Providers\InventoryModuleServiceProvider;
-use App\Infrastructure\Maintenance\Providers\MaintenanceModuleServiceProvider;
-use App\Infrastructure\Notification\Providers\NotificationModuleServiceProvider;
-use App\Infrastructure\Reports\Providers\ReportsModuleServiceProvider;
-use App\Infrastructure\Support\Providers\SupportModuleServiceProvider;
 use App\Providers\AppServiceProvider;
-use Modules\About\AboutModuleServiceProvider;
-use Modules\Audit\AuditModuleServiceProvider;
-use Modules\Category\CategoryModuleServiceProvider;
-use Modules\Settings\SettingsModuleServiceProvider;
-use Modules\User\UserModuleServiceProvider;
+use Modules\About\Infrastructure\Providers\AboutModuleServiceProvider;
+use Modules\Audit\Infrastructure\Providers\AuditModuleServiceProvider;
+use Modules\Category\Infrastructure\Providers\CategoryModuleServiceProvider;
+use Modules\Dashboard\Infrastructure\Providers\DashboardModuleServiceProvider;
+use Modules\Department\Infrastructure\Providers\DepartmentModuleServiceProvider;
+use Modules\Employee\Infrastructure\Providers\EmployeeModuleServiceProvider;
+use Modules\Equipment\Infrastructure\Providers\EquipmentModuleServiceProvider;
+use Modules\Inventory\Infrastructure\Providers\InventoryModuleServiceProvider;
+use Modules\Maintenance\Infrastructure\Providers\MaintenanceModuleServiceProvider;
+use Modules\Notification\Infrastructure\Providers\NotificationModuleServiceProvider;
+use Modules\Reports\Infrastructure\Providers\ReportsModuleServiceProvider;
+use Modules\Settings\Infrastructure\Providers\SettingsModuleServiceProvider;
+use Modules\Support\Infrastructure\Providers\SupportModuleServiceProvider;
+use Modules\User\Infrastructure\Providers\UserModuleServiceProvider;
 
 return [
     AppServiceProvider::class,

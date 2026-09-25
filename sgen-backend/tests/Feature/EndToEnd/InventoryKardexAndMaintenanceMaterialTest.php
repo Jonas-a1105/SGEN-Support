@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\EndToEnd;
 
-use App\Infrastructure\Inventory\Persistence\Eloquent\Models\EloquentProductModel;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
+use Modules\Inventory\Infrastructure\Persistence\Eloquent\Models\EloquentProductModel;
 use Tests\TestCase;
 
 final class InventoryKardexAndMaintenanceMaterialTest extends TestCase
