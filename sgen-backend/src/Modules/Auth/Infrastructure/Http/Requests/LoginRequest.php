@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Infrastructure\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -34,10 +36,17 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $credentials = $this->only('username', 'password');
+        // Username: insensible a mayúsculas y espacios sobrantes (MySQL collation
+        // legacy lo toleraba; PostgreSQL es estricto y bloqueaba usuarios válidos).
+        $username = trim((string) $this->input('username'));
+        $password = (string) $this->input('password');
         $remember = (bool) $this->boolean('remember');
 
-        if (! Auth::attempt($credentials, $remember)) {
+        $user = User::query()
+            ->whereRaw('LOWER(username) = ?', [Str::lower($username)])
+            ->first();
+
+        if ($user === null || ! Hash::check($password, (string) $user->password)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -45,6 +54,7 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        Auth::login($user, $remember);
         RateLimiter::clear($this->throttleKey());
     }
 
