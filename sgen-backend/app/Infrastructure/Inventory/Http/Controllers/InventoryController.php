@@ -6,8 +6,6 @@ namespace App\Infrastructure\Inventory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Inventory\Http\Requests\AdjustStockRequest;
-use App\Infrastructure\Inventory\Http\Requests\ReassignEquipmentRequest;
-use App\Infrastructure\Inventory\Http\Requests\StoreEquipmentRequest;
 use App\Infrastructure\Inventory\Http\Requests\StoreProductRequest;
 use App\Infrastructure\Inventory\Http\Requests\TransferStockRequest;
 use Illuminate\Http\RedirectResponse;
@@ -20,8 +18,7 @@ use Modules\Inventory\Application\Mappers\ProductDetailMapper;
 use Modules\Inventory\Application\UseCases\AdjustStockUseCase;
 use Modules\Inventory\Application\UseCases\CreateProductUseCase;
 use Modules\Inventory\Application\UseCases\GetInventoryDashboardUseCase;
-use Modules\Inventory\Application\UseCases\ReassignEquipmentUseCase;
-use Modules\Inventory\Application\UseCases\RegisterEquipmentUseCase;
+use Modules\Inventory\Application\UseCases\GetProductDetailUseCase;
 use Modules\Inventory\Application\UseCases\TransferStockUseCase;
 use Modules\Inventory\Domain\Ports\ProductRepositoryInterface;
 
@@ -44,37 +41,61 @@ class InventoryController extends Controller
 
     public function adjustStock(AdjustStockRequest $request, AdjustStockUseCase $useCase): RedirectResponse
     {
-        $useCase->execute(StockAdjustmentDTO::fromArray($request->validated()));
+        $data = $request->validated();
+        $data['user_id'] = $request->user()?->id;
+        $useCase->execute(StockAdjustmentDTO::fromArray($data));
 
         return back()->with('success', 'Ajuste de existencias procesado con éxito.');
     }
 
-    public function storeEquipment(StoreEquipmentRequest $request, RegisterEquipmentUseCase $useCase): RedirectResponse
-    {
-        $useCase->execute($request->toDTO());
-
-        return back()->with('success', 'Equipo registrado exitosamente en el inventario.');
-    }
-
     public function transferStock(TransferStockRequest $request, TransferStockUseCase $useCase): RedirectResponse
     {
-        $useCase->execute($request->toDTO(), (int) ($request->user()?->id ?? 1));
+        $userId = (int) ($request->user()?->id ?? \Illuminate\Support\Facades\DB::table('usuarios')->orderBy('id')->value('id') ?? 1);
+        $useCase->execute($request->toDTO(), $userId);
 
         return back()->with('success', 'Transferencia de stock procesada con éxito.');
     }
 
-    public function reassignEquipment(ReassignEquipmentRequest $request, ReassignEquipmentUseCase $useCase): RedirectResponse
+    public function show(int|string $id, GetProductDetailUseCase $useCase): Response
     {
-        $useCase->execute($request->toDTO());
+        $data = $useCase->execute((int) $id);
+        abort_if($data === null, 404, 'Producto no encontrado');
 
-        return back()->with('success', 'Ubicación y asignación del equipo actualizadas con éxito.');
+        return Inertia::render('Inventory/Show', $data);
     }
 
-    public function show(int|string $id, ProductRepositoryInterface $repository): Response
+    public function update(int|string $id, Request $request, ProductRepositoryInterface $repository): RedirectResponse
     {
         $product = $repository->findById((int) $id);
         abort_if($product === null, 404, 'Producto no encontrado');
 
-        return Inertia::render('Inventory/Show', ['product' => ProductDetailMapper::toArray($product)]);
+        $validated = $request->validate([
+            'sku' => ['nullable', 'string', 'max:50'],
+            'name' => ['required', 'string', 'max:150'],
+            'category' => ['required', 'string', 'max:100'],
+            'unit_of_measure' => ['nullable', 'string', 'max:50'],
+            'brand' => ['nullable', 'string', 'max:100'],
+            'model' => ['nullable', 'string', 'max:100'],
+            'minimum_stock' => ['nullable', 'integer', 'min:0'],
+            'purchase_price' => ['nullable', 'numeric', 'min:0'],
+            'location' => ['nullable', 'string', 'max:150'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('inventario_items')->where('id', (int) $id)->update([
+            'codigo' => $validated['sku'] ?? $product->sku()->value(),
+            'nombre' => $validated['name'],
+            'categoria' => $validated['category'],
+            'unidad_medida' => $validated['unit_of_measure'] ?? $product->unitOfMeasure(),
+            'marca' => $validated['brand'] ?? $product->brand(),
+            'modelo' => $validated['model'] ?? $product->model(),
+            'stock_minimo' => isset($validated['minimum_stock']) ? (int) $validated['minimum_stock'] : $product->minimumStock()->value(),
+            'valor_compra' => isset($validated['purchase_price']) ? (float) $validated['purchase_price'] : $product->purchasePrice()->amount(),
+            'ubicacion' => $validated['location'] ?? $product->location(),
+            'descripcion' => $validated['description'] ?? $product->description(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('inventario.index')->with('success', 'Producto actualizado exitosamente.');
     }
 }

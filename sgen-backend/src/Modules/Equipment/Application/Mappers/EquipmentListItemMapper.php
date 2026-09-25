@@ -53,6 +53,7 @@ final class EquipmentListItemMapper
             assignedTo: $assignedTo,
             location: $data['ubicacion_fisica'] ?? null,
             ipAddress: $data['direccion_ip'] ?? null,
+            departmentId: isset($data['departamento_id']) && $data['departamento_id'] !== null ? (int) $data['departamento_id'] : null,
         );
     }
 }

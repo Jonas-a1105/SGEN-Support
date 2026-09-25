@@ -19,4 +19,5 @@ return [
     \Modules\About\AboutModuleServiceProvider::class,
     \App\Infrastructure\Maintenance\Providers\MaintenanceModuleServiceProvider::class,
     \App\Infrastructure\Reports\Providers\ReportsModuleServiceProvider::class,
+    \App\Infrastructure\Notification\Providers\NotificationModuleServiceProvider::class,
 ];

@@ -31,8 +31,9 @@ interface SupportRepositoryInterface
 
     /**
      * Crea un nuevo ticket y devuelve su ID.
+     * Recibe la fecha de vencimiento SLA calculada por el dominio.
      */
-    public function createTicket(CreateTicketDTO $dto, ?int $userId = null): int;
+    public function createTicket(CreateTicketDTO $dto, ?int $userId = null, ?string $fechaVencimiento = null): int;
 
     /**
      * Actualiza la información de un ticket existente.
@@ -65,31 +66,34 @@ interface SupportRepositoryInterface
     public function rateTicket(int $ticketId, string $rating, ?string $comment = null): bool;
 
     /**
-     * Obtiene catálogos de opciones para selectores (técnicos, equipos, categorías, departamentos).
-     *
-     * @return array{
-     *     technicians: array<int, array{id: int, name: string, email: string, initial: string, specialty: string, active_tickets: int}>,
-     *     equipments: array<int, array{id: int, code: string, serial: string, type: string, model: string, department: string, assigned_to: string}>,
-     *     categories: array<int, array{id: int, name: string}>,
-     *     departments: array<int, array{id: int, name: string}>,
-     *     inventory_items: array<int, array{id: int, code: string, name: string, stock: number}>
-     * }
+     * Guarda la firma digital (base64) del solicitante sobre el ticket resuelto.
      */
-    public function generateTicketPdf(int $ticketId): string;
-
     public function saveSignature(int $ticketId, string $signatureData): bool;
 
-    public function uploadAttachment(int $ticketId, string $filePath, string $originalName, string $mimeType, int $size, int $userId): int;
+    public function uploadAttachment(int $ticketId, string $filePath, string $originalName, string $mimeType, int $size, int $userId, ?string $checksumSha256 = null): int;
+
+    public function getAttachmentById(int $attachmentId): ?object;
 
     public function deleteAttachment(int $attachmentId): bool;
 
-    public function pauseTicket(int $ticketId): bool;
+    /**
+     * Pausa un ticket dejando el motivo obligatorio registrado.
+     */
+    public function pauseTicket(int $ticketId, string $motivo, \Carbon\Carbon $pausedAt): bool;
 
-    public function resumeTicket(int $ticketId): bool;
+    /**
+     * Reanuda un ticket, acumulando los minutos de pausa y extendiendo el SLA.
+     */
+    public function resumeTicket(int $ticketId, ?\Carbon\Carbon $resumedAt = null): bool;
 
     public function updateCloseDate(int $ticketId, string $newDate): bool;
 
     public function bulkDeleteTickets(array $ticketIds): int;
+
+    /**
+     * Reabre un ticket registrando el motivo obligatorio en la bitácora y comentarios.
+     */
+    public function reopenTicket(int $ticketId, string $motivo, ?int $userId = null): bool;
 
     public function getFormOptions(): array;
 }

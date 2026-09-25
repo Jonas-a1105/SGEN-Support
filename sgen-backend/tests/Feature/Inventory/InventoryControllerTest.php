@@ -119,6 +119,77 @@ final class InventoryControllerTest extends TestCase
             ->has('product')
             ->where('product.id', $product->id)
             ->where('product.name', 'Router Cisco')
+            ->has('movements')
         );
+    }
+
+    public function test_low_stock_adjustment_triggers_in_app_notification(): void
+    {
+        $product = EloquentProductModel::create([
+            'codigo' => 'CRIT-SKU-'.strtoupper(uniqid()),
+            'nombre' => 'Cable HDMI 2.1',
+            'categoria' => 'Cables',
+            'stock_actual' => 5,
+            'stock_minimo' => 4,
+            'valor_compra' => 8.5,
+        ]);
+
+        // Ajustar salida de 3 unidades para dejarlo en 2 (menor al mínimo 4)
+        $response = $this->post('/inventario/ajustar', [
+            'product_id' => $product->id,
+            'type' => 'SALIDA',
+            'quantity' => 3,
+            'reason' => 'Consumo de cables en sala de conferencias',
+        ]);
+
+        $response->assertStatus(302);
+
+        $this->assertDatabaseHas('notificaciones', [
+            'tipo' => 'inventario_bajo_stock',
+            'titulo' => 'Alerta de Stock Crítico',
+        ]);
+    }
+
+    public function test_can_transfer_stock_between_departments(): void
+    {
+        $product = EloquentProductModel::create([
+            'codigo' => 'TRF-SKU-'.strtoupper(uniqid()),
+            'nombre' => 'Teclado Mecánico',
+            'categoria' => 'Periféricos',
+            'stock_actual' => 20,
+            'stock_minimo' => 2,
+            'valor_compra' => 45.0,
+        ]);
+
+        $dept1 = (int) \Illuminate\Support\Facades\DB::table('departamentos')->insertGetId([
+            'nombre' => 'Almacén Central ' . uniqid(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $dept2 = (int) \Illuminate\Support\Facades\DB::table('departamentos')->insertGetId([
+            'nombre' => 'Taller TI ' . uniqid(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->post('/inventario/transferir', [
+            'item_id' => $product->id,
+            'origen_id' => $dept1,
+            'destino_id' => $dept2,
+            'cantidad' => 5,
+            'motivo' => 'Envío de stock a taller técnico',
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('inventario_movimientos', [
+            'item_id' => $product->id,
+            'origen_departamento_id' => $dept1,
+            'destino_departamento_id' => $dept2,
+            'tipo_movimiento' => 'TRANSFERENCIA',
+            'cantidad' => 5,
+        ]);
     }
 }

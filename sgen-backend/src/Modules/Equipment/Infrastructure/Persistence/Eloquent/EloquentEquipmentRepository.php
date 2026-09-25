@@ -10,6 +10,8 @@ use Modules\Equipment\Application\DTOs\CreateEquipmentDTO;
 use Modules\Equipment\Application\DTOs\EquipmentDetailDTO;
 use Modules\Equipment\Application\DTOs\EquipmentKpisDTO;
 use Modules\Equipment\Application\DTOs\EquipmentListItemDTO;
+use Modules\Equipment\Application\DTOs\RegisterEquipmentDTO;
+use Modules\Equipment\Application\DTOs\TransferEquipmentDTO;
 use Modules\Equipment\Application\DTOs\UpdateEquipmentDTO;
 use Modules\Equipment\Application\Mappers\EquipmentDetailMapper;
 use Modules\Equipment\Application\Mappers\EquipmentListItemMapper;
@@ -22,15 +24,19 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
     public function getKpis(): EquipmentKpisDTO
     {
         $totalActivos = (int) DB::table('equipos')->count();
+        $enUso = (int) DB::table('equipos')->where('estado', 'en_uso')->count();
+        $disponibles = (int) DB::table('equipos')->whereIn('estado', ['disponible', 'nuevo', 'en_reserva'])->count();
         $enReparacion = (int) DB::table('equipos')->where('estado', 'en_reparacion')->count();
-        $fueraServicio = (int) DB::table('equipos')->where('estado', 'fuera_de_servicio')->count();
+        $fueraServicio = (int) DB::table('equipos')->whereIn('estado', ['fuera_de_servicio', 'baja'])->count();
         $operativos = max(0, $totalActivos - $enReparacion - $fueraServicio);
 
         return new EquipmentKpisDTO(
             totalActivos: $totalActivos,
             operativos: $operativos,
             enReparacion: $enReparacion,
-            fueraServicio: $fueraServicio
+            fueraServicio: $fueraServicio,
+            enUso: $enUso,
+            disponibles: $disponibles,
         );
     }
 
@@ -263,6 +269,23 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             $code = sprintf('%05d', $maxId + 1);
         }
 
+        // Domain-level duplicate check for inventory code and serial number
+        $duplicate = DB::table('equipos')
+            ->where(function ($q) use ($code, $dto) {
+                $q->where('codigo_inventario', $code);
+                if (!empty($dto->serialNumber)) {
+                    $q->orWhere('numero_serie', $dto->serialNumber);
+                }
+            })
+            ->exists();
+
+        if ($duplicate) {
+            throw new \RuntimeException(
+                "Ya existe un equipo con el código '{$code}'"
+                . (!empty($dto->serialNumber) ? " o el serial '{$dto->serialNumber}'" : '') . '.'
+            );
+        }
+
         $id = (int) DB::table('equipos')->insertGetId([
             'codigo_inventario' => $code,
             'numero_serie' => $dto->serialNumber,
@@ -289,6 +312,51 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         ]);
 
         return $id;
+    }
+
+    public function register(RegisterEquipmentDTO $dto): int
+    {
+        return $this->create(CreateEquipmentDTO::fromArray([
+            'codigo_inventario' => $dto->codigoInventario,
+            'tipo' => $dto->tipo,
+            'marca' => $dto->marca,
+            'modelo' => $dto->modelo,
+            'estado' => $dto->estado,
+            'numero_serie' => $dto->numeroSerie,
+            'procesador' => $dto->procesador,
+            'memoria_ram' => $dto->memoriaRam,
+            'almacenamiento' => $dto->almacenamiento,
+            'sistema_operativo' => $dto->sistemaOperativo,
+            'direccion_ip' => $dto->direccionIp,
+            'departamento_id' => $dto->departamentoId,
+            'empleado_id' => $dto->empleadoId,
+            'ubicacion_fisica' => $dto->ubicacionFisica,
+            'valor_compra' => $dto->valorCompra,
+            'proveedor' => $dto->proveedor,
+        ]));
+    }
+
+    public function transfer(TransferEquipmentDTO $dto): void
+    {
+        $updated = DB::table('equipos')
+            ->where('id', $dto->equipoId)
+            ->where('departamento_id', $dto->departamentoOrigenId)
+            ->update([
+                'departamento_id' => $dto->departamentoDestinoId,
+                'updated_at' => Carbon::now(),
+            ]);
+
+        if ($updated === 0) {
+            $equipo = DB::table('equipos')->where('id', $dto->equipoId)->first();
+
+            if ($equipo === null) {
+                throw EquipmentNotFoundException::withId($dto->equipoId);
+            }
+
+            throw new \RuntimeException(
+                "El equipo #{$dto->equipoId} no pertenece al departamento de origen #{$dto->departamentoOrigenId}."
+            );
+        }
     }
 
     public function update(int $id, UpdateEquipmentDTO $dto): void
@@ -319,10 +387,14 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             $statusEnum = EquipmentStatus::tryFrom($dto->status) ?? EquipmentStatus::fromLabel($dto->status);
             $payload['estado'] = $statusEnum->value;
         }
-        if ($dto->departmentId !== null) {
+        if ($dto->hasDepartmentId) {
+            $payload['departamento_id'] = $dto->departmentId;
+        } elseif ($dto->departmentId !== null) {
             $payload['departamento_id'] = $dto->departmentId;
         }
-        if ($dto->employeeId !== null) {
+        if ($dto->hasEmployeeId) {
+            $payload['empleado_id'] = $dto->employeeId;
+        } elseif ($dto->employeeId !== null) {
             $payload['empleado_id'] = $dto->employeeId;
         }
         if ($dto->physicalLocation !== null) {

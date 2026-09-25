@@ -115,12 +115,10 @@ final class SupportControllerTest extends TestCase
     {
         $response = $this->post('/soportes', [
             'titulo' => 'Soporte creado en test',
-            'solicitante' => 'Usuario Test',
-            'departamento' => 'Dpto. de Sistemas',
+            'descripcion' => 'Descripción del ticket de prueba',
             'prioridad' => 'alta',
             'empleado_id' => $this->employeeId,
             'equipo_id' => $this->equipmentId,
-            'estado' => 'pendiente',
         ]);
 
         $response->assertRedirect();
@@ -224,5 +222,146 @@ final class SupportControllerTest extends TestCase
             ->component('Support/Index')
             ->has('tickets')
         );
+    }
+
+    public function test_can_pause_and_resume_ticket(): void
+    {
+        $ticketId = (int) DB::table('soportes')->insertGetId([
+            'titulo' => 'Ticket para prueba de pausa y reanudación',
+            'descripcion' => 'Prueba de ciclo de vida',
+            'equipo_id' => $this->equipmentId,
+            'empleado_id' => $this->employeeId,
+            'estado' => 'en_proceso',
+            'prioridad' => 'media',
+            'fecha' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pauseResponse = $this->post("/soportes/{$ticketId}/pausar", [
+            'motivo' => 'En espera de repuestos del almacén',
+        ]);
+        $pauseResponse->assertRedirect();
+
+        $this->assertDatabaseHas('soportes', [
+            'id' => $ticketId,
+            'estado' => 'en_espera',
+            'motivo_pausa' => 'En espera de repuestos del almacén',
+        ]);
+
+        $resumeResponse = $this->post("/soportes/{$ticketId}/reanudar");
+        $resumeResponse->assertRedirect();
+
+        $this->assertDatabaseHas('soportes', [
+            'id' => $ticketId,
+            'estado' => 'en_proceso',
+            'motivo_pausa' => null,
+        ]);
+    }
+
+    public function test_can_resolve_and_reopen_ticket(): void
+    {
+        $ticketId = (int) DB::table('soportes')->insertGetId([
+            'titulo' => 'Ticket para resolver',
+            'descripcion' => 'Prueba de resolución y reapertura',
+            'equipo_id' => $this->equipmentId,
+            'empleado_id' => $this->employeeId,
+            'estado' => 'en_proceso',
+            'prioridad' => 'alta',
+            'fecha' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $resolveResponse = $this->put("/soportes/{$ticketId}", [
+            'estado' => 'resuelto',
+            'solucion' => 'Se reemplazó la memoria RAM defectuosa exitosamente.',
+        ]);
+        $resolveResponse->assertRedirect();
+
+        $this->assertDatabaseHas('soportes', [
+            'id' => $ticketId,
+            'estado' => 'resuelto',
+            'solucion' => 'Se reemplazó la memoria RAM defectuosa exitosamente.',
+        ]);
+
+        $reopenResponse = $this->put("/soportes/{$ticketId}", [
+            'estado' => 'en_proceso',
+        ]);
+        $reopenResponse->assertRedirect();
+
+        $this->assertDatabaseHas('soportes', [
+            'id' => $ticketId,
+            'estado' => 'en_proceso',
+        ]);
+    }
+
+    public function test_can_add_material_and_deduct_stock(): void
+    {
+        $itemId = (int) DB::table('inventario_items')->insertGetId([
+            'codigo' => 'MAT-TEST-' . uniqid(),
+            'nombre' => 'Cable HDMI 2.0',
+            'categoria' => 'Cables',
+            'stock_actual' => 15,
+            'stock_minimo' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $ticketId = (int) DB::table('soportes')->insertGetId([
+            'titulo' => 'Ticket para consumo de material',
+            'descripcion' => 'Prueba de consumo de stock',
+            'equipo_id' => $this->equipmentId,
+            'empleado_id' => $this->employeeId,
+            'estado' => 'en_proceso',
+            'prioridad' => 'media',
+            'fecha' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->post("/soportes/{$ticketId}/materiales", [
+            'item_id' => $itemId,
+            'cantidad' => 3,
+        ]);
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('inventario_items', [
+            'id' => $itemId,
+            'stock_actual' => 12,
+        ]);
+
+        $this->assertDatabaseHas('inventario_consumos', [
+            'soporte_id' => $ticketId,
+            'item_id' => $itemId,
+            'cantidad' => 3,
+        ]);
+
+        $this->assertDatabaseHas('inventario_movimientos', [
+            'item_id' => $itemId,
+            'tipo_movimiento' => 'CONSUMO',
+            'cantidad' => 3,
+        ]);
+    }
+
+    public function test_can_generate_ticket_pdf(): void
+    {
+        $ticketId = (int) DB::table('soportes')->insertGetId([
+            'titulo' => 'Ticket para generar PDF',
+            'descripcion' => 'Prueba de generación de documento de acta de soporte',
+            'equipo_id' => $this->equipmentId,
+            'empleado_id' => $this->employeeId,
+            'estado' => 'resuelto',
+            'prioridad' => 'alta',
+            'solucion' => 'Limpieza completa y cambio de pasta térmica',
+            'fecha' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->get("/soportes/{$ticketId}/pdf");
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('application/pdf', (string) $response->headers->get('Content-Type'));
     }
 }

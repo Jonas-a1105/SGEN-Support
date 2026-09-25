@@ -1,11 +1,29 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { BaseCard } from '@/Components/UI';
 import { formatCurrency, formatDateTime } from '@/Utils/formatters';
-import type { MaintenanceDetail } from './types';
+import type { MaintenanceDetail, MaintenanceMaterialItem } from './types';
 
-defineProps<{
-    maintenance: MaintenanceDetail;
-}>();
+const props = withDefaults(
+    defineProps<{
+        maintenance: MaintenanceDetail;
+        materiales?: MaintenanceMaterialItem[];
+    }>(),
+    {
+        materiales: () => [],
+    }
+);
+
+const laborCost = computed(() => Number(props.maintenance.costo || 0));
+
+const materialsCost = computed(() => {
+    return (props.materiales || []).reduce((acc, m) => {
+        const subtotal = m.costo_total ?? (Number(m.cantidad || 0) * Number(m.costo_unitario || 0));
+        return acc + subtotal;
+    }, 0);
+});
+
+const totalConsolidatedCost = computed(() => laborCost.value + materialsCost.value);
 </script>
 
 <template>
@@ -16,12 +34,26 @@ defineProps<{
                 <line x1="12" y1="8" x2="12" y2="16"></line>
                 <line x1="8" y1="12" x2="16" y2="12"></line>
             </svg>
-            Resumen Financiero &amp; Auditoría
+            Balance de Costos &amp; Liquidación
         </h3>
 
+        <!-- Total Consolidado -->
         <div class="maint-cost-highlight">
-            <span class="cost-title">Costo Liquidado del Servicio</span>
-            <span class="cost-amount">{{ formatCurrency(maintenance.costo) }}</span>
+            <span class="cost-title">Costo Total Consolidado</span>
+            <span class="cost-amount">{{ formatCurrency(totalConsolidatedCost) }}</span>
+            <span class="cost-note">Servicio técnico + repuestos consumidos</span>
+        </div>
+
+        <!-- Desglose de Costos -->
+        <div class="cost-breakdown-box">
+            <div class="cost-row">
+                <span class="cost-row-label">Mano de Obra / Honorarios:</span>
+                <strong class="cost-row-value">{{ formatCurrency(laborCost) }}</strong>
+            </div>
+            <div class="cost-row">
+                <span class="cost-row-label">Materiales / Repuestos ({{ materiales.length }}):</span>
+                <strong class="cost-row-value">{{ formatCurrency(materialsCost) }}</strong>
+            </div>
         </div>
 
         <div class="audit-list">
@@ -88,6 +120,37 @@ defineProps<{
 .cost-amount {
     font-size: 22px;
     font-weight: 800;
+    color: var(--text);
+    font-family: monospace;
+}
+
+.cost-note {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.cost-breakdown-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-sub);
+    border-radius: 8px;
+    border: var(--stroke-w) solid var(--stroke-subtle);
+}
+
+.cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.cost-row-label {
+    color: var(--text-muted);
+}
+
+.cost-row-value {
     color: var(--text);
     font-family: monospace;
 }

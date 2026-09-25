@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Maintenance\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Maintenance\Http\Requests\AddMaintenanceMaterialRequest;
 use App\Infrastructure\Maintenance\Http\Requests\CancelMaintenanceRequest;
 use App\Infrastructure\Maintenance\Http\Requests\CompleteMaintenanceRequest;
 use App\Infrastructure\Maintenance\Http\Requests\PostponeMaintenanceRequest;
@@ -15,9 +16,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Maintenance\Application\UseCases\AddMaintenanceMaterialUseCase;
 use Modules\Maintenance\Application\UseCases\CompleteMaintenanceUseCase;
 use Modules\Maintenance\Application\UseCases\CreateMaintenanceUseCase;
 use Modules\Maintenance\Application\UseCases\DeleteMaintenanceUseCase;
+use Modules\Maintenance\Application\UseCases\GenerateMaintenanceWorkOrderPdfUseCase;
 use Modules\Maintenance\Application\UseCases\GetMaintenanceDetailUseCase;
 use Modules\Maintenance\Application\UseCases\GetMaintenanceKpisUseCase;
 use Modules\Maintenance\Application\UseCases\GetUpcomingMaintenanceUseCase;
@@ -57,6 +60,7 @@ final class MaintenanceController extends Controller
         return Inertia::render('Maintenance/Show', [
             'maintenance' => (array) $maintenance,
             'options' => $repository->getFormOptions(),
+            'materiales' => $repository->getMateriales($id),
         ]);
     }
 
@@ -88,13 +92,44 @@ final class MaintenanceController extends Controller
 
     public function complete(int $id, CompleteMaintenanceRequest $request, CompleteMaintenanceUseCase $useCase): RedirectResponse
     {
-        $useCase->execute(
-            $id,
-            $request->input('observaciones'),
-            $request->filled('costo') ? (float) $request->input('costo') : null
-        );
+        try {
+            $checklist = $request->checklistArray();
 
-        return back()->with('success', 'Mantenimiento marcado como completado.');
+            $useCase->execute(
+                $id,
+                $request->input('observaciones'),
+                $request->filled('costo') ? (float) $request->input('costo') : null,
+                $checklist !== null ? json_encode($checklist) : null,
+                (bool) $request->boolean('omitir_pendientes'),
+                $request->input('justificacion_omision')
+            );
+
+            return back()->with('success', 'Mantenimiento marcado como completado.');
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function addMaterial(int $id, AddMaintenanceMaterialRequest $request, AddMaintenanceMaterialUseCase $useCase): RedirectResponse
+    {
+        try {
+            $userId = (int) ($request->user()?->id ?? \Illuminate\Support\Facades\DB::table('usuarios')->orderBy('id')->value('id') ?? 1);
+            $useCase->execute(
+                $id,
+                $request->itemId(),
+                $request->cantidad(),
+                $userId
+            );
+
+            return back()->with('success', 'Material agregado a la orden y descontado del inventario.');
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function materiales(int $id, MaintenanceRepositoryInterface $repository): JsonResponse
+    {
+        return response()->json($repository->getMateriales($id));
     }
 
     public function postpone(int $id, PostponeMaintenanceRequest $request, MaintenanceRepositoryInterface $repository): RedirectResponse
@@ -140,5 +175,10 @@ final class MaintenanceController extends Controller
             'kpis' => (array) $kpisUseCase->execute(),
             'proximos' => $upcomingUseCase->execute(30),
         ]);
+    }
+
+    public function generateWorkOrderPdf(int $id, GenerateMaintenanceWorkOrderPdfUseCase $useCase): \Illuminate\Http\Response
+    {
+        return $useCase->execute($id);
     }
 }

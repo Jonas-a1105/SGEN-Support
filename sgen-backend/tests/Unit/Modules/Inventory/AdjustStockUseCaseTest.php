@@ -65,6 +65,30 @@ final class AdjustStockUseCaseTest extends TestCase
             {
                 return [];
             }
+
+            public function getRecentMovements(int $limit = 50): array
+            {
+                return [];
+            }
+
+            public function getMovementsByProductId(int $productId, int $limit = 100): array
+            {
+                return [];
+            }
+
+            public function getLocations(): array
+            {
+                return [];
+            }
+
+            public function getInventoryDashboardLookups(): array
+            {
+                return ['equipos' => [], 'departamentos' => [], 'empleados' => []];
+            }
+
+            public function transferStock(\Modules\Inventory\Application\DTOs\TransferStockDTO $dto, int $userId): void
+            {
+            }
         };
 
         $notified = false;

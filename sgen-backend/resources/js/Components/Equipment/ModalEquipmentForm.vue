@@ -2,17 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
-
-export interface DepartmentOption {
-    id: number;
-    nombre: string;
-}
-
-export interface EmployeeOption {
-    id: number;
-    nombre_completo: string;
-    cargo?: string | null;
-}
+import type { DepartmentOption, EmployeeOption } from '@/types';
 
 const props = defineProps<{
     show: boolean;
@@ -46,14 +36,14 @@ const typeOptions = [
 ];
 
 const statusOptions = [
-    { value: 'En Uso', label: 'En Uso' },
-    { value: 'Disponible', label: 'Disponible' },
-    { value: 'Reparación', label: 'En Reparación' },
-    { value: 'Baja', label: 'Fuera de Servicio (Baja)' },
+    { value: 'Disponible', label: 'Disponible (En Almacén TI / Reserva)' },
+    { value: 'En Uso', label: 'En Uso (Asignado a Empleado / Dpto)' },
+    { value: 'Reparación', label: 'En Reparación / Taller' },
+    { value: 'Baja', label: 'Fuera de Servicio (Baja Definitiva)' },
 ];
 
 const departmentOptions = computed(() => [
-    { value: '', label: '-- Sin Departamento --' },
+    { value: '', label: '-- Sin Departamento (Almacén Central) --' },
     ...props.departments.map((d) => ({
         value: d.id,
         label: d.nombre,
@@ -61,7 +51,7 @@ const departmentOptions = computed(() => [
 ]);
 
 const employeeOptions = computed(() => [
-    { value: '', label: '-- Sin Usuario Asignado --' },
+    { value: '', label: '-- Sin Usuario Asignado (En Almacén) --' },
     ...props.employees.map((e) => ({
         value: e.id,
         label: e.nombre_completo,
@@ -86,7 +76,7 @@ watch(
             formName.value = '';
             formId.value = '';
             formType.value = 'Computadora';
-            formStatus.value = 'En Uso';
+            formStatus.value = 'Disponible';
             formDeptId.value = '';
             formEmpId.value = '';
             formSerial.value = '';
@@ -96,6 +86,16 @@ watch(
     },
     { immediate: true }
 );
+
+watch(formEmpId, (newEmpId) => {
+    if (!props.editEquipment) {
+        if (newEmpId && newEmpId !== '') {
+            formStatus.value = 'En Uso';
+        } else {
+            formStatus.value = 'Disponible';
+        }
+    }
+});
 
 const handleSubmit = () => {
     emit('save', {

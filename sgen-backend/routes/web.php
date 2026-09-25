@@ -33,13 +33,19 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [InventoryController::class, 'store'])->name('store');
         Route::post('/ajustar', [InventoryController::class, 'adjustStock'])->name('adjust');
         Route::post('/transferir', [InventoryController::class, 'transferStock'])->name('transfer');
+        Route::match(['put', 'patch', 'post'], '/{id}', [InventoryController::class, 'update'])->name('update');
         Route::get('/{id}', [InventoryController::class, 'show'])->name('show');
     });
 
     Route::prefix('equipos')->name('equipos.')->group(function () {
         Route::get('/', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'index'])->name('index');
+        Route::get('/export/excel', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'exportExcel'])->name('export.excel');
         Route::post('/', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'store'])->name('store');
+        Route::post('/trasladar', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'transfer'])->name('transfer');
+        Route::post('/reasignar', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'reassign'])->name('reassign');
+        Route::post('/registrar', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'register'])->name('register');
         Route::get('/{id}', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'show'])->name('show');
+        Route::get('/{id}/acta-pdf', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'generateCustodyPdf'])->name('acta.pdf');
         Route::match(['put', 'patch', 'post'], '/{id}', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'update'])->name('update');
         Route::delete('/{id}', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'destroy'])->name('destroy');
     });
@@ -80,9 +86,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/firma', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'saveSignature'])->name('signature');
         Route::post('/{id}/pausar', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'pause'])->name('pause');
         Route::post('/{id}/reanudar', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'resume'])->name('resume');
+        Route::post('/{id}/reabrir', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'reopen'])->name('reopen');
         Route::post('/{id}/actualizar-fecha-cierre', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'updateCloseDate'])->name('update-close-date');
         Route::post('/eliminar-masivos', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'bulkDelete'])->name('bulk-delete');
         Route::post('/{id}/archivos', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'uploadAttachment'])->name('upload-attachment');
+        Route::get('/archivos/{attachmentId}/descargar', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'downloadAttachment'])->name('download-attachment');
         Route::delete('/archivos/{attachmentId}', [\App\Infrastructure\Support\Http\Controllers\SupportController::class, 'deleteAttachment'])->name('delete-attachment');
     });
 
@@ -120,7 +128,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/tickets/pdf', [ReportsController::class, 'ticketsPdf'])->name('tickets.pdf');
         Route::get('/tickets/excel', [ReportsController::class, 'ticketsExcel'])->name('tickets.excel');
         Route::get('/inventario/pdf', [ReportsController::class, 'inventoryPdf'])->name('inventory.pdf');
+        Route::get('/inventario/excel', [ReportsController::class, 'inventoryExcel'])->name('inventory.excel');
+        Route::get('/equipos/excel', [\App\Infrastructure\Equipment\Http\Controllers\EquipmentController::class, 'exportExcel'])->name('equipos.excel');
         Route::get('/mantenimientos/pdf', [ReportsController::class, 'maintenancePdf'])->name('maintenance.pdf');
+        Route::get('/mantenimientos/excel', [ReportsController::class, 'maintenanceExcel'])->name('maintenance.excel');
         Route::get('/rendimiento/pdf', [ReportsController::class, 'performancePdf'])->name('performance.pdf');
     });
 
@@ -131,11 +142,23 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [MaintenanceController::class, 'store'])->name('store');
         Route::get('/proximos', [MaintenanceController::class, 'upcoming'])->name('upcoming');
         Route::get('/{id}', [MaintenanceController::class, 'show'])->name('show');
+        Route::get('/{id}/pdf', [MaintenanceController::class, 'generateWorkOrderPdf'])->name('pdf');
         Route::match(['put', 'patch', 'post'], '/{id}', [MaintenanceController::class, 'update'])->name('update');
+        Route::post('/{id}/materiales', [MaintenanceController::class, 'addMaterial'])->name('add-material');
+        Route::get('/{id}/materiales', [MaintenanceController::class, 'materiales'])->name('materiales');
         Route::delete('/{id}', [MaintenanceController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/completar', [MaintenanceController::class, 'complete'])->name('complete');
         Route::post('/{id}/posponer', [MaintenanceController::class, 'postpone'])->name('postpone');
         Route::post('/{id}/cancelar', [MaintenanceController::class, 'cancel'])->name('cancel');
         Route::post('/eliminar-masivo', [MaintenanceController::class, 'bulkDelete'])->name('bulk-delete');
+    });
+
+    Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
+        Route::get('/', [\App\Infrastructure\Notification\Http\Controllers\NotificationController::class, 'index'])->name('index');
+        Route::get('/unread', [\App\Infrastructure\Notification\Http\Controllers\NotificationController::class, 'unread'])->name('unread');
+        Route::get('/count', [\App\Infrastructure\Notification\Http\Controllers\NotificationController::class, 'countUnread'])->name('count');
+        Route::patch('/{id}/read', [\App\Infrastructure\Notification\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [\App\Infrastructure\Notification\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::delete('/{id}', [\App\Infrastructure\Notification\Http\Controllers\NotificationController::class, 'delete'])->name('destroy');
     });
 });

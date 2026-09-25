@@ -63,11 +63,14 @@
     --transition-normal: 0.25s ease;
 
     /* Mapeo de compatibilidad con componentes previos */
+    --surface: var(--bg-card);
     --surface-bg: var(--bg);
     --surface-card: var(--bg-card);
     --surface-elevated: var(--bg-sub);
     --surface-muted: var(--bg-sub);
-    --surface-hover: var(--stroke-subtle);
+    --surface-hover: var(--bg-sub);
+    --bg-hover: var(--bg-sub);
+    --text-subtle: var(--text-dim);
     --border-subtle: var(--stroke-subtle);
     --border-strong: var(--stroke);
     --border-focus: var(--orange);

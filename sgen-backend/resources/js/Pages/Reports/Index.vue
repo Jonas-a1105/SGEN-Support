@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { BasePageHeader, BaseButton } from '@/Components/UI';
 import type {
@@ -33,51 +33,70 @@ const ticketsFilters = ref<TicketsFilters>({
     prioridad: '',
 });
 
-const reportHistory = ref<ReportHistoryItem[]>([
-    {
-        id: 1,
-        title: 'Reporte General de Tickets',
-        scope: 'soportes',
-        date: 'Hoy, 09:30 AM',
-        format: 'pdf',
-        user: 'admin',
-        filters: 'Todos los estados',
-        url: '/reportes/tickets/pdf',
-    },
-    {
-        id: 2,
-        title: 'Valoración de Inventario',
-        scope: 'inventario',
-        date: 'Ayer, 04:15 PM',
-        format: 'pdf',
-        user: 'admin',
-        filters: 'Almacén Central',
-        url: '/reportes/inventario/pdf',
-    },
-    {
-        id: 3,
-        title: 'Mantenimientos del Mes',
-        scope: 'mantenimiento',
-        date: '20 Sep 2026',
-        format: 'pdf',
-        user: 'admin',
-        filters: 'Preventivos y correctivos',
-        url: '/reportes/mantenimientos/pdf',
-    },
-    {
-        id: 4,
-        title: 'Exportación Tickets Excel',
-        scope: 'soportes',
-        date: '18 Sep 2026',
-        format: 'excel',
-        user: 'admin',
-        filters: 'Resueltos',
-        url: '/reportes/tickets/excel',
-    },
-]);
+const page = usePage<{ auth?: { user?: { username: string } } }>();
+const STORAGE_KEY = 'sgen_reports_download_history';
+
+const loadHistoryFromStorage = (): ReportHistoryItem[] => {
+    if (typeof window === 'undefined') return [];
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch {
+        // Fallback silently if storage read fails
+    }
+    return [];
+};
+
+const reportHistory = ref<ReportHistoryItem[]>(loadHistoryFromStorage());
+
+const recordReportDownload = (item: {
+    title: string;
+    scope: ReportScope;
+    format: 'pdf' | 'excel' | 'csv';
+    filters: string;
+    url: string;
+}) => {
+    const now = new Date();
+    const dateFormatted = now.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+
+    const newItem: ReportHistoryItem = {
+        id: Date.now(),
+        title: item.title,
+        scope: item.scope,
+        date: dateFormatted,
+        format: item.format,
+        user: page.props.auth?.user?.username || 'admin',
+        filters: item.filters,
+        url: item.url,
+    };
+
+    reportHistory.value = [newItem, ...reportHistory.value.slice(0, 49)];
+    if (typeof window !== 'undefined') {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(reportHistory.value));
+        } catch {
+            // Ignore storage write issues
+        }
+    }
+};
 
 const searchHistory = ref('');
 const historyFilterFormat = ref<HistoryFilterFormat>('all');
+
+const historyPdfCount = computed(() => reportHistory.value.filter((i) => i.format === 'pdf').length);
+const historyExcelCount = computed(() => reportHistory.value.filter((i) => i.format === 'excel' || (i.format as string) === 'csv').length);
+const historyTodayCount = computed(() => {
+    const nowStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toLowerCase();
+    return reportHistory.value.filter((i) => i.date.toLowerCase().includes(nowStr) || i.date.toLowerCase().includes('hoy')).length;
+});
 
 const filteredHistory = computed(() => {
     let list = reportHistory.value;
@@ -86,9 +105,10 @@ const filteredHistory = computed(() => {
     if (historyFilterFormat.value === 'pdf') {
         list = list.filter((i) => i.format === 'pdf');
     } else if (historyFilterFormat.value === 'excel') {
-        list = list.filter((i) => i.format === 'excel');
+        list = list.filter((i) => i.format === 'excel' || (i.format as string) === 'csv');
     } else if (historyFilterFormat.value === 'today') {
-        list = list.filter((i) => i.date.toLowerCase().includes('hoy'));
+        const nowStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toLowerCase();
+        list = list.filter((i) => i.date.toLowerCase().includes(nowStr) || i.date.toLowerCase().includes('hoy'));
     }
 
     if (!q) return list;
@@ -123,6 +143,10 @@ const previewSummaryText = computed(() => {
 });
 
 const handleDownloadPdf = () => {
+    let url = '';
+    let title = '';
+    let filters = 'General';
+
     if (activeScope.value === 'soportes') {
         const params = new URLSearchParams();
         if (ticketsFilters.value.fecha_inicio) params.append('fecha_inicio', ticketsFilters.value.fecha_inicio);
@@ -130,17 +154,40 @@ const handleDownloadPdf = () => {
         if (ticketsFilters.value.estado) params.append('estado', ticketsFilters.value.estado);
         if (ticketsFilters.value.categoria_id) params.append('categoria_id', ticketsFilters.value.categoria_id);
         if (ticketsFilters.value.prioridad) params.append('prioridad', ticketsFilters.value.prioridad);
-        window.open(`/reportes/tickets/pdf?${params.toString()}`, '_blank');
+        url = `/reportes/tickets/pdf?${params.toString()}`;
+        title = 'Reporte de Tickets';
+        filters = ticketsFilters.value.estado ? `Estado: ${ticketsFilters.value.estado}` : 'Todos los tickets';
     } else if (activeScope.value === 'inventario') {
-        window.open('/reportes/inventario/pdf', '_blank');
+        url = '/reportes/inventario/pdf';
+        title = 'Valoración de Inventario';
+        filters = 'Catálogo completo';
     } else if (activeScope.value === 'mantenimiento') {
-        window.open('/reportes/mantenimientos/pdf', '_blank');
+        url = '/reportes/mantenimientos/pdf';
+        title = 'Reporte de Mantenimientos';
+        filters = 'Cronograma preventivo y correctivo';
     } else if (activeScope.value === 'rendimiento') {
-        window.open('/reportes/rendimiento/pdf', '_blank');
+        url = '/reportes/rendimiento/pdf';
+        title = 'Rendimiento Técnico';
+        filters = 'Métricas y SLA global';
+    }
+
+    if (url) {
+        window.open(url, '_blank');
+        recordReportDownload({
+            title,
+            scope: activeScope.value,
+            format: 'pdf',
+            filters,
+            url,
+        });
     }
 };
 
 const handleExportCsv = () => {
+    let url = '';
+    let title = '';
+    let filters = 'General';
+
     if (activeScope.value === 'soportes') {
         const params = new URLSearchParams();
         if (ticketsFilters.value.fecha_inicio) params.append('fecha_inicio', ticketsFilters.value.fecha_inicio);
@@ -148,16 +195,75 @@ const handleExportCsv = () => {
         if (ticketsFilters.value.estado) params.append('estado', ticketsFilters.value.estado);
         if (ticketsFilters.value.categoria_id) params.append('categoria_id', ticketsFilters.value.categoria_id);
         if (ticketsFilters.value.prioridad) params.append('prioridad', ticketsFilters.value.prioridad);
-        window.open(`/reportes/tickets/excel?${params.toString()}`, '_blank');
+        url = `/reportes/tickets/excel?${params.toString()}`;
+        title = 'Exportación Tickets Excel';
+        filters = ticketsFilters.value.estado ? `Estado: ${ticketsFilters.value.estado}` : 'Todos';
+    } else if (activeScope.value === 'inventario') {
+        url = '/reportes/inventario/excel';
+        title = 'Exportación Inventario Excel';
+        filters = 'Stock consolidado';
+    } else if (activeScope.value === 'mantenimiento') {
+        url = '/reportes/mantenimientos/excel';
+        title = 'Exportación Mantenimientos Excel';
+        filters = 'Órdenes de servicio';
     } else {
         handleDownloadPdf();
+        return;
+    }
+
+    if (url) {
+        window.open(url, '_blank');
+        recordReportDownload({
+            title,
+            scope: activeScope.value,
+            format: 'excel',
+            filters,
+            url,
+        });
     }
 };
 
-const downloadPreset = (preset: 'inventory' | 'maintenance' | 'performance') => {
-    if (preset === 'inventory') window.open('/reportes/inventario/pdf', '_blank');
-    if (preset === 'maintenance') window.open('/reportes/mantenimientos/pdf', '_blank');
-    if (preset === 'performance') window.open('/reportes/rendimiento/pdf', '_blank');
+const downloadPreset = (preset: 'inventory' | 'maintenance' | 'performance' | 'equipment') => {
+    if (preset === 'inventory') {
+        window.open('/reportes/inventario/pdf', '_blank');
+        recordReportDownload({
+            title: 'Inventario General',
+            scope: 'inventario',
+            format: 'pdf',
+            filters: 'Plantilla predeterminada',
+            url: '/reportes/inventario/pdf',
+        });
+    }
+    if (preset === 'maintenance') {
+        window.open('/reportes/mantenimientos/pdf', '_blank');
+        recordReportDownload({
+            title: 'Plan de Mantenimiento',
+            scope: 'mantenimiento',
+            format: 'pdf',
+            filters: 'Plantilla predeterminada',
+            url: '/reportes/mantenimientos/pdf',
+        });
+    }
+    if (preset === 'performance') {
+        window.open('/reportes/rendimiento/pdf', '_blank');
+        recordReportDownload({
+            title: 'Rendimiento y SLA',
+            scope: 'rendimiento',
+            format: 'pdf',
+            filters: 'Plantilla predeterminada',
+            url: '/reportes/rendimiento/pdf',
+        });
+    }
+    if (preset === 'equipment') {
+        window.open('/reportes/equipos/excel', '_blank');
+        recordReportDownload({
+            title: 'Equipos TI Excel',
+            scope: 'inventario',
+            format: 'excel',
+            filters: 'Plantilla predeterminada',
+            url: '/reportes/equipos/excel',
+        });
+    }
 };
 </script>
 
@@ -222,9 +328,9 @@ const downloadPreset = (preset: 'inventory' | 'maintenance' | 'performance') => 
 
                 <ReportHistoryKpis
                     :total-count="reportHistory.length"
-                    :pdf-count="3"
-                    :excel-count="1"
-                    :today-count="2"
+                    :pdf-count="historyPdfCount"
+                    :excel-count="historyExcelCount"
+                    :today-count="historyTodayCount"
                 />
 
                 <ReportHistoryTable

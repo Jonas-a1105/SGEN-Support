@@ -5,7 +5,15 @@ export function useSupportFilters(tickets: Ref<TicketListItem[]> | { value: Tick
     const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const queryEstado = urlParams?.get('estado');
     const initialFilter = queryEstado
-        ? (queryEstado === 'proceso' ? 'process' : queryEstado === 'pendiente' ? 'pending' : queryEstado === 'resuelto' ? 'resolved' : queryEstado)
+        ? (queryEstado === 'proceso' || queryEstado === 'en_proceso' || queryEstado === 'process'
+            ? 'process'
+            : queryEstado === 'pendiente' || queryEstado === 'pending'
+            ? 'pending'
+            : queryEstado === 'resuelto' || queryEstado === 'resolved'
+            ? 'resolved'
+            : queryEstado === 'en_espera' || queryEstado === 'waiting'
+            ? 'waiting'
+            : queryEstado)
         : defaultFilter;
 
     const searchQuery = ref(urlParams?.get('search') || '');

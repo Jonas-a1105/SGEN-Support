@@ -120,6 +120,116 @@ final class PostgresProductRepository implements ProductRepositoryInterface
         ];
     }
 
+    public function getRecentMovements(int $limit = 50): array
+    {
+        return DB::table('inventario_movimientos')
+            ->leftJoin('usuarios', 'inventario_movimientos.usuario_id', '=', 'usuarios.id')
+            ->select('inventario_movimientos.*', 'usuarios.username as usuario_nombre')
+            ->orderByDesc('inventario_movimientos.id')
+            ->limit($limit)
+            ->get()
+            ->all();
+    }
+
+    public function getMovementsByProductId(int $productId, int $limit = 100): array
+    {
+        return DB::table('inventario_movimientos')
+            ->leftJoin('usuarios', 'inventario_movimientos.usuario_id', '=', 'usuarios.id')
+            ->leftJoin('departamentos as orig_dept', 'inventario_movimientos.origen_departamento_id', '=', 'orig_dept.id')
+            ->leftJoin('departamentos as dest_dept', 'inventario_movimientos.destino_departamento_id', '=', 'dest_dept.id')
+            ->where('inventario_movimientos.item_id', $productId)
+            ->select(
+                'inventario_movimientos.*',
+                'usuarios.username as usuario_nombre',
+                'orig_dept.nombre as origen_departamento_nombre',
+                'dest_dept.nombre as destino_departamento_nombre'
+            )
+            ->orderByDesc('inventario_movimientos.id')
+            ->limit($limit)
+            ->get()
+            ->all();
+    }
+
+    public function getLocations(): array
+    {
+        return DB::table('inventario_ubicaciones')
+            ->leftJoin('departamentos', 'inventario_ubicaciones.departamento_id', '=', 'departamentos.id')
+            ->select('inventario_ubicaciones.*', 'departamentos.nombre as departamento_nombre')
+            ->get()
+            ->all();
+    }
+
+    public function getInventoryDashboardLookups(): array
+    {
+        $equipos = DB::table('equipos')
+            ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('empleados', 'equipos.empleado_id', '=', 'empleados.id')
+            ->whereIn('equipos.estado', ['disponible', 'nuevo', 'en_reserva'])
+            ->select('equipos.*', 'departamentos.nombre as departamento_nombre', 'empleados.nombre as empleado_nombre', 'empleados.apellido as empleado_apellido')
+            ->orderBy('equipos.codigo_inventario')
+            ->get()
+            ->all();
+
+        $departamentos = DB::table('departamentos')
+            ->select('id', 'nombre')
+            ->orderBy('nombre')
+            ->get()
+            ->all();
+
+        $empleados = DB::table('empleados')
+            ->select('id', 'nombre', 'apellido', 'departamento_id')
+            ->orderBy('nombre')
+            ->get()
+            ->all();
+
+        return [
+            'equipos' => $equipos,
+            'departamentos' => $departamentos,
+            'empleados' => $empleados,
+        ];
+    }
+
+    public function transferStock(\Modules\Inventory\Application\DTOs\TransferStockDTO $dto, int $userId): void
+    {
+        DB::transaction(function () use ($dto, $userId): void {
+            if ($dto->origenId !== null) {
+                DB::table('inventario_ubicaciones')
+                    ->where('item_id', $dto->itemId)
+                    ->where('departamento_id', $dto->origenId)
+                    ->decrement('cantidad', $dto->cantidad);
+            }
+
+            $dest = DB::table('inventario_ubicaciones')
+                ->where('item_id', $dto->itemId)
+                ->where('departamento_id', $dto->destinoId)
+                ->first();
+
+            if ($dest) {
+                DB::table('inventario_ubicaciones')
+                    ->where('id', $dest->id)
+                    ->increment('cantidad', $dto->cantidad);
+            } else {
+                DB::table('inventario_ubicaciones')->insert([
+                    'item_id' => $dto->itemId,
+                    'departamento_id' => $dto->destinoId,
+                    'cantidad' => $dto->cantidad,
+                    'updated_at' => now(),
+                ]);
+            }
+
+            DB::table('inventario_movimientos')->insert([
+                'item_id' => $dto->itemId,
+                'usuario_id' => $userId,
+                'origen_departamento_id' => $dto->origenId,
+                'destino_departamento_id' => $dto->destinoId,
+                'tipo_movimiento' => 'TRANSFERENCIA',
+                'cantidad' => $dto->cantidad,
+                'motivo' => $dto->motivo ?? 'Transferencia entre almacenes',
+                'fecha' => now(),
+            ]);
+        });
+    }
+
     private function toDomain(EloquentProductModel $model): Product
     {
         return new Product(

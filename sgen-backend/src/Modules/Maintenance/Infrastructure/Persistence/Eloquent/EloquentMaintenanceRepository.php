@@ -281,10 +281,10 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
         return DB::table('mantenimientos')->whereIn('id', $ids)->delete();
     }
 
-    public function complete(int $id, ?string $observations = null, ?float $cost = null): bool
+    public function complete(int $id, ?string $observations = null, ?float $cost = null, ?string $garantiaHasta = null): bool
     {
         $maintenance = DB::table('mantenimientos')->where('id', $id)->first();
-        
+
         if (!$maintenance) {
             return false;
         }
@@ -300,6 +300,9 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
         if ($cost !== null) {
             $payload['costo'] = $cost;
         }
+        if ($garantiaHasta !== null) {
+            $payload['garantia_hasta'] = $garantiaHasta;
+        }
 
         if ($maintenance->frecuencia !== 'unica') {
             $months = match($maintenance->frecuencia) {
@@ -309,7 +312,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
                 'anual' => 12,
                 default => 0,
             };
-            
+
             if ($months > 0) {
                 $payload['proxima_fecha'] = Carbon::now()->addMonths($months)->toDateString();
             }
@@ -327,6 +330,46 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
                 'fecha' => $newDate,
                 'updated_at' => Carbon::now(),
             ]) > 0;
+    }
+
+    public function addMaterial(int $mantenimientoId, int $itemId, int $cantidad, int $userId): bool
+    {
+        return (bool) DB::table('mantenimiento_materiales')->insert([
+            'mantenimiento_id' => $mantenimientoId,
+            'item_id' => $itemId,
+            'cantidad' => $cantidad,
+            'costo_unitario' => (float) (DB::table('inventario_items')->where('id', $itemId)->value('valor_compra') ?? 0),
+            'created_at' => now(),
+        ]);
+    }
+
+    public function getMateriales(int $mantenimientoId): array
+    {
+        return DB::table('mantenimiento_materiales')
+            ->join('inventario_items', 'mantenimiento_materiales.item_id', '=', 'inventario_items.id')
+            ->where('mantenimiento_materiales.mantenimiento_id', $mantenimientoId)
+            ->select([
+                'mantenimiento_materiales.id',
+                'mantenimiento_materiales.item_id',
+                'mantenimiento_materiales.cantidad',
+                'mantenimiento_materiales.costo_unitario',
+                'mantenimiento_materiales.created_at as fecha',
+                'inventario_items.codigo as item_codigo',
+                'inventario_items.nombre as item_nombre',
+            ])
+            ->orderBy('mantenimiento_materiales.id')
+            ->get()
+            ->map(fn ($m) => [
+                'id' => (int) $m->id,
+                'item_id' => (int) $m->item_id,
+                'item_codigo' => (string) $m->item_codigo,
+                'item_nombre' => (string) $m->item_nombre,
+                'cantidad' => (int) $m->cantidad,
+                'costo_unitario' => (float) $m->costo_unitario,
+                'costo_total' => round($m->costo_unitario * $m->cantidad, 2),
+                'fecha' => (string) $m->fecha,
+            ])
+            ->all();
     }
 
     public function cancel(int $id, string $reason): bool
@@ -394,9 +437,25 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
             ])
             ->all();
 
+        $inventoryItems = DB::table('inventario_items')
+            ->select('id', 'codigo', 'nombre', 'stock_actual', 'unidad_medida', 'valor_compra')
+            ->where('stock_actual', '>', 0)
+            ->orderBy('nombre')
+            ->get()
+            ->map(fn ($item) => [
+                'id' => (int) $item->id,
+                'codigo' => (string) $item->codigo,
+                'nombre' => (string) $item->nombre,
+                'stock_actual' => (int) $item->stock_actual,
+                'unidad_medida' => (string) ($item->unidad_medida ?? 'uds'),
+                'valor_compra' => (float) ($item->valor_compra ?? 0),
+            ])
+            ->all();
+
         return [
             'equipments' => $equipments,
             'technicians' => $technicians,
+            'inventory_items' => $inventoryItems,
             'types' => [
                 ['value' => 'preventivo', 'label' => 'Preventivo'],
                 ['value' => 'correctivo', 'label' => 'Correctivo'],

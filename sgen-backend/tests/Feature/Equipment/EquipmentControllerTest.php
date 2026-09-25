@@ -128,4 +128,134 @@ final class EquipmentControllerTest extends TestCase
             'id' => $this->equipmentId,
         ]);
     }
+
+    public function test_can_transfer_equipment_between_departments(): void
+    {
+        $origenId = (int) DB::table('departamentos')->insertGetId([
+            'nombre' => 'Dpto. Origen Traslado Test',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $destinoId = (int) DB::table('departamentos')->insertGetId([
+            'nombre' => 'Dpto. Destino Traslado Test',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('equipos')
+            ->where('id', $this->equipmentId)
+            ->update(['departamento_id' => $origenId]);
+
+        $response = $this->post('/equipos/trasladar', [
+            'equipo_id' => $this->equipmentId,
+            'departamento_origen_id' => $origenId,
+            'departamento_destino_id' => $destinoId,
+            'motivo' => 'Reorganización interna',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('equipos', [
+            'id' => $this->equipmentId,
+            'departamento_id' => $destinoId,
+        ]);
+    }
+
+    public function test_transfer_equipment_rejects_wrong_origin(): void
+    {
+        $origenId = (int) DB::table('departamentos')->insertGetId([
+            'nombre' => 'Dpto. Orgen Inexistente Test',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $destinoId = (int) DB::table('departamentos')->insertGetId([
+            'nombre' => 'Dpto. Destino Inválido Test',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->post('/equipos/trasladar', [
+            'equipo_id' => $this->equipmentId,
+            'departamento_origen_id' => $origenId,
+            'departamento_destino_id' => $destinoId,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertDatabaseHas('equipos', [
+            'id' => $this->equipmentId,
+            'departamento_id' => null,
+        ]);
+    }
+
+    public function test_can_register_equipment_with_unique_code(): void
+    {
+        $codigo = 'REG-' . strtoupper(uniqid());
+
+        $response = $this->post('/equipos/registrar', [
+            'codigo_inventario' => $codigo,
+            'tipo' => 'Switch',
+            'marca' => 'TP-Link',
+            'modelo' => 'TL-SG1008D',
+            'estado' => 'disponible',
+            'numero_serie' => 'SN-REG-' . uniqid(),
+        ]);
+
+        $response->assertRedirect('/equipos');
+        $this->assertDatabaseHas('equipos', [
+            'codigo_inventario' => $codigo,
+            'tipo' => 'Switch',
+        ]);
+    }
+
+    public function test_register_equipment_rejects_duplicate_code(): void
+    {
+        $codigo = (string) DB::table('equipos')
+            ->where('id', $this->equipmentId)
+            ->value('codigo_inventario');
+
+        $response = $this->post('/equipos/registrar', [
+            'codigo_inventario' => $codigo,
+            'tipo' => 'Switch',
+            'marca' => 'TP-Link',
+            'modelo' => 'TL-SG1008D',
+            'estado' => 'disponible',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('codigo_inventario');
+    }
+
+    public function test_create_equipment_rejects_duplicate_code(): void
+    {
+        $codigo = (string) DB::table('equipos')
+            ->where('id', $this->equipmentId)
+            ->value('codigo_inventario');
+
+        $response = $this->post('/equipos', [
+            'codigo_inventario' => $codigo,
+            'tipo' => 'Computadora',
+            'marca' => 'Dell',
+            'modelo' => 'Optiplex 7050',
+            'estado' => 'disponible',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('codigo_inventario');
+    }
+
+    public function test_can_generate_custody_act_pdf(): void
+    {
+        $response = $this->get("/equipos/{$this->equipmentId}/acta-pdf");
+
+        $response->assertStatus(200);
+        $this->assertSame('application/pdf', $response->headers->get('content-type'));
+    }
+
+    public function test_can_export_equipment_excel(): void
+    {
+        $response = $this->get('/equipos/export/excel');
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('text/csv', (string) $response->headers->get('content-type'));
+    }
 }

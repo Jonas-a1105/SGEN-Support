@@ -71,4 +71,13 @@ final class ReportsControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/pdf');
     }
+
+    public function test_can_export_equipment_excel_from_reports(): void
+    {
+        $response = $this->get('/reportes/equipos/excel');
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('text/csv', (string) $response->headers->get('content-type'));
+    }
 }
+

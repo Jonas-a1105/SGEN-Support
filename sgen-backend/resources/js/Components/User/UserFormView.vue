@@ -1,20 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import type { UserItem } from '@/Composables/useUserFilters';
+import type { UserItem, DepartmentLookup, EmployeeLookup } from '@/types';
 import UserCredentialPreview from './UserCredentialPreview.vue';
 import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
-
-interface DepartmentLookup {
-    id: number;
-    nombre: string;
-}
-
-interface EmployeeLookup {
-    id: number;
-    nombre: string;
-    apellido: string;
-    departamento_id: number | null;
-}
 
 const props = defineProps<{
     user?: UserItem | null;

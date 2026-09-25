@@ -15,7 +15,8 @@ final class UpdateTicketDTO
         public readonly ?int $categoriaId = null,
         public readonly ?string $fechaCierre = null,
         public readonly ?string $solucion = null,
-        public readonly ?int $tiempoAtencionMinutos = null
+        public readonly ?int $tiempoAtencionMinutos = null,
+        public readonly ?string $firma = null
     ) {
     }
 
@@ -33,7 +34,8 @@ final class UpdateTicketDTO
             categoriaId: isset($data['categoria_id']) ? (int) $data['categoria_id'] : null,
             fechaCierre: isset($data['fecha_cierre']) ? (string) $data['fecha_cierre'] : null,
             solucion: isset($data['solucion']) ? (string) $data['solucion'] : null,
-            tiempoAtencionMinutos: isset($data['tiempo_atencion_minutos']) ? (int) $data['tiempo_atencion_minutos'] : null
+            tiempoAtencionMinutos: isset($data['tiempo_atencion_minutos']) ? (int) $data['tiempo_atencion_minutos'] : null,
+            firma: isset($data['firma_base64']) ? (string) $data['firma_base64'] : (isset($data['firma']) ? (string) $data['firma'] : null)
         );
     }
 }

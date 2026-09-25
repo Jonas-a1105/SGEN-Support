@@ -65,14 +65,21 @@ export interface Employee {
 
 export interface InventoryMovement {
     id: number;
-    producto_id: number;
-    tipo: 'ENTRADA' | 'SALIDA' | 'AJUSTE' | 'TRANSFERENCIA' | string;
+    item_id?: number;
+    producto_id?: number;
+    tipo_movimiento?: string;
+    tipo: 'ENTRADA' | 'SALIDA' | 'AJUSTE' | 'TRANSFERENCIA' | 'CONSUMO' | 'BAJA' | string;
     cantidad: number;
     motivo: string;
+    referencia_id?: number | null;
+    referencia_tipo?: string | null;
     usuario_id?: number | null;
     usuario_nombre?: string | null;
     origen?: string | null;
     destino?: string | null;
+    origen_departamento_nombre?: string | null;
+    destino_departamento_nombre?: string | null;
+    fecha?: string | null;
     created_at?: string | null;
 }
 

@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import type { Equipment } from '@/Types/inventory';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
+
+const props = defineProps<{
+    equipment?: Equipment | null;
+}>();
 
 const emit = defineEmits<{
     (e: 'new-maintenance'): void;
@@ -16,7 +21,7 @@ const emit = defineEmits<{
         </div>
         <h3 class="empty-pane-title">Sin historial de mantenimiento</h3>
         <p class="empty-pane-desc">
-            No hay mantenimientos registrados para este equipo.
+            {{ props.equipment?.codigo_inventario ? `No hay mantenimientos preventivos o correctivos registrados para ${props.equipment.codigo_inventario}.` : 'No hay mantenimientos registrados para este equipo.' }}
         </p>
         <BaseButton
             variant="secondary"

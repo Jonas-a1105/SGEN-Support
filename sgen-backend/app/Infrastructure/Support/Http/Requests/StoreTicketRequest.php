@@ -19,17 +19,15 @@ final class StoreTicketRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'titulo' => ['nullable', 'string', 'max:255'],
-            'title' => ['nullable', 'string', 'max:255'],
-            'descripcion' => ['nullable', 'string'],
-            'description' => ['nullable', 'string'],
-            'equipo_id' => ['nullable', 'integer', 'exists:equipos,id'],
+            'titulo' => ['required', 'string', 'max:255'],
+            'descripcion' => ['required', 'string'],
+            'equipo_id' => ['required', 'integer', 'exists:equipos,id'],
             'categoria_id' => ['nullable', 'integer', 'exists:categorias,id'],
             'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
-            'prioridad' => ['nullable', 'string', 'in:baja,media,alta,critica'],
-            'estado' => ['nullable', 'string', 'in:pendiente,en_proceso,resuelto'],
-            'solicitante' => ['nullable', 'string', 'max:255'],
-            'departamento' => ['nullable', 'string', 'max:255'],
+            'prioridad' => ['required_without_all:impacto,urgencia', 'nullable', 'string', 'in:baja,media,alta,critica'],
+            'impacto' => ['nullable', 'string', 'in:bajo,medio,alto'],
+            'urgencia' => ['nullable', 'string', 'in:baja,media,alta'],
+            'estado' => ['sometimes', 'string', 'in:pendiente,en_proceso,resuelto'],
         ];
     }
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const emit = defineEmits<{
-    (e: 'downloadPreset', preset: 'inventory' | 'maintenance' | 'performance'): void;
+    (e: 'downloadPreset', preset: 'inventory' | 'maintenance' | 'performance' | 'equipment'): void;
 }>();
 </script>
 
@@ -79,7 +79,43 @@ const emit = defineEmits<{
                 </div>
             </div>
 
-            <!-- TARJETA 3: RENDIMIENTO DEL EQUIPO -->
+            <!-- TARJETA 3: EQUIPOS TECNOLÓGICOS -->
+            <div class="predefined-card" @click="emit('downloadPreset', 'equipment')">
+                <div class="predefined-card-head">
+                    <div class="predefined-icon-box equipment">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="2" y="3" width="20" height="14" rx="2" />
+                            <line x1="8" y1="21" x2="16" y2="21" />
+                            <line x1="12" y1="17" x2="12" y2="21" />
+                        </svg>
+                    </div>
+                    <button class="predefined-download-btn" type="button" title="Descargar reporte rápido">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="predefined-copy">
+                    <h3 class="predefined-title">Equipos & Activos</h3>
+                    <p class="predefined-desc">Parque tecnológico, asignaciones, estados y seriales.</p>
+                </div>
+
+                <div class="predefined-footer-row">
+                    <span class="predefined-status-time">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                        <span>Actualizado</span>
+                    </span>
+                    <span class="predefined-action-link">
+                        <span>Exportar</span>
+                        <span>→</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- TARJETA 4: RENDIMIENTO DEL EQUIPO -->
             <div class="predefined-card" @click="emit('downloadPreset', 'performance')">
                 <div class="predefined-card-head">
                     <div class="predefined-icon-box performance">
@@ -134,7 +170,7 @@ const emit = defineEmits<{
 
 .predefined-cards-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 18px;
 }
 
@@ -178,6 +214,11 @@ const emit = defineEmits<{
 .predefined-icon-box.maintenance {
     background: rgba(245, 158, 11, 0.14);
     color: #f59e0b;
+}
+
+.predefined-icon-box.equipment {
+    background: rgba(59, 130, 246, 0.14);
+    color: #3b82f6;
 }
 
 .predefined-icon-box.performance {
@@ -274,7 +315,13 @@ const emit = defineEmits<{
     text-decoration: none;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1200px) {
+    .predefined-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
     .predefined-cards-grid {
         grid-template-columns: 1fr;
     }

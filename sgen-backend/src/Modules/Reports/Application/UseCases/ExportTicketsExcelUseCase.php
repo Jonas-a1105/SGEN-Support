@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Application\UseCases;
 
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Reports\Domain\Ports\ReportsRepositoryInterface;
 
 final readonly class ExportTicketsExcelUseCase
@@ -13,7 +13,7 @@ final readonly class ExportTicketsExcelUseCase
         private ReportsRepositoryInterface $repository
     ) {}
 
-    public function execute(array $filters): Response
+    public function execute(array $filters): StreamedResponse
     {
         $tickets = $this->repository->getTicketsData($filters);
 

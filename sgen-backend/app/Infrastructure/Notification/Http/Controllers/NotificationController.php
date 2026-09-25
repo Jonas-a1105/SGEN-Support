@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
+use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Domain\Ports\NotificationRepositoryInterface;
 
 final class NotificationController extends Controller

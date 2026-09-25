@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import type { Equipment } from '@/Types/inventory';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
+
+const props = defineProps<{
+    equipment?: Equipment | null;
+}>();
 
 const emit = defineEmits<{
     (e: 'create-ticket'): void;
@@ -16,7 +21,7 @@ const emit = defineEmits<{
         </div>
         <h3 class="empty-pane-title">Sin tickets activos</h3>
         <p class="empty-pane-desc">
-            Este equipo funciona correctamente. No hay reportes de soporte pendientes.
+            {{ props.equipment?.codigo_inventario ? `No hay tickets pendientes registrados para ${props.equipment.codigo_inventario}.` : 'Este equipo funciona correctamente. No hay reportes de soporte pendientes.' }}
         </p>
         <BaseButton
             variant="primary"

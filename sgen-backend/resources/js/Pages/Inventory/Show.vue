@@ -3,26 +3,17 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link } from '@inertiajs/vue3';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseBadge from '@/Components/UI/BaseBadge.vue';
+import CardProductKardex from '@/Components/Inventory/Detail/CardProductKardex.vue';
+import type { Product, InventoryMovement } from '@/Types/inventory';
 
 interface Props {
-    product: {
-        id: number;
-        sku: string;
-        name: string;
-        category: string;
-        description?: string | null;
-        brand?: string | null;
-        model?: string | null;
-        unit_of_measure?: string | null;
-        current_stock: number;
-        minimum_stock: number;
-        is_low_stock: boolean;
-        purchase_price: number;
-        location?: string | null;
-    };
+    product: Product;
+    movements?: InventoryMovement[];
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+    movements: () => [],
+});
 </script>
 
 <template>
@@ -32,6 +23,7 @@ defineProps<Props>();
                 <span>←</span> Volver al catálogo de inventario
             </Link>
 
+            <!-- Product Header & Key Info Card -->
             <BaseCard padding="lg">
                 <header class="detail-header">
                     <div>
@@ -56,6 +48,9 @@ defineProps<Props>();
                     <p>{{ product.description }}</p>
                 </div>
             </BaseCard>
+
+            <!-- Kardex Movements Section -->
+            <CardProductKardex :movements="movements" />
         </div>
     </AppLayout>
 </template>
@@ -78,6 +73,11 @@ defineProps<Props>();
     font-weight: 600;
     color: var(--orange);
     text-decoration: none;
+    transition: opacity 0.15s ease;
+}
+
+.back-link:hover {
+    opacity: 0.8;
 }
 
 .detail-header {

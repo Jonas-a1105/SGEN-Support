@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import TicketDetailHeader from '@/Components/Support/Detail/TicketDetailHeader.vue';
 import TicketDetailTabs, { type TabKey } from '@/Components/Support/Detail/TicketDetailTabs.vue';
@@ -12,6 +12,9 @@ import TabRating from '@/Components/Support/Detail/TabRating.vue';
 import ModalAssignTechnician from '@/Components/Support/Detail/ModalAssignTechnician.vue';
 import ModalAddMaterial from '@/Components/Support/Detail/ModalAddMaterial.vue';
 import ModalEditField from '@/Components/Support/Detail/ModalEditField.vue';
+import ModalPauseTicket from '@/Components/Support/Detail/ModalPauseTicket.vue';
+import ModalResolveTicket from '@/Components/Support/Detail/ModalResolveTicket.vue';
+import ModalReopenTicket from '@/Components/Support/Detail/ModalReopenTicket.vue';
 import type {
     TicketDetail,
     TicketAsset,
@@ -40,6 +43,29 @@ const activeTab = ref<TabKey>('tabGeneral');
 const isAssignTechOpen = ref(false);
 const isAddMaterialOpen = ref(false);
 const isEditFieldOpen = ref(false);
+const isPauseTicketOpen = ref(false);
+const isResolveTicketOpen = ref(false);
+const isReopenTicketOpen = ref(false);
+
+const handleStartTicket = () => {
+    router.put(
+        `/soportes/${props.ticket.id}`,
+        { estado: 'en_proceso' },
+        { preserveScroll: true }
+    );
+};
+
+const handleResumeTicket = () => {
+    router.post(
+        `/soportes/${props.ticket.id}/reanudar`,
+        {},
+        { preserveScroll: true }
+    );
+};
+
+const handleReopenTicket = () => {
+    isReopenTicketOpen.value = true;
+};
 </script>
 
 <template>
@@ -47,8 +73,15 @@ const isEditFieldOpen = ref(false);
         <Head :title="`Soporte #${ticket.id} — ${ticket.title}`" />
 
         <div class="ticket-detail-view-container">
-            <!-- HEADER DEL TICKET -->
-            <TicketDetailHeader :ticket="ticket" />
+            <!-- HEADER DEL TICKET CON CICLO DE VIDA COMPLETO -->
+            <TicketDetailHeader
+                :ticket="ticket"
+                @start-ticket="handleStartTicket"
+                @open-pause="isPauseTicketOpen = true"
+                @resume-ticket="handleResumeTicket"
+                @open-resolve="isResolveTicketOpen = true"
+                @reopen-ticket="handleReopenTicket"
+            />
 
             <!-- PESTAÑAS DEL TICKET -->
             <TicketDetailTabs
@@ -71,6 +104,7 @@ const isEditFieldOpen = ref(false);
 
                 <TabAttachments
                     v-else-if="activeTab === 'tabAttachments'"
+                    :ticket-id="ticket.id"
                     :attachments="attachments"
                 />
 
@@ -109,6 +143,7 @@ const isEditFieldOpen = ref(false);
         <ModalAddMaterial
             :is-open="isAddMaterialOpen"
             :ticket-id="ticket.id"
+            :inventory-items="options.inventory_items"
             @close="isAddMaterialOpen = false"
         />
 
@@ -117,6 +152,24 @@ const isEditFieldOpen = ref(false);
             :ticket-id="ticket.id"
             :initial-status="ticket.status"
             @close="isEditFieldOpen = false"
+        />
+
+        <ModalPauseTicket
+            :is-open="isPauseTicketOpen"
+            :ticket-id="ticket.id"
+            @close="isPauseTicketOpen = false"
+        />
+
+        <ModalResolveTicket
+            :is-open="isResolveTicketOpen"
+            :ticket-id="ticket.id"
+            @close="isResolveTicketOpen = false"
+        />
+
+        <ModalReopenTicket
+            :is-open="isReopenTicketOpen"
+            :ticket-id="ticket.id"
+            @close="isReopenTicketOpen = false"
         />
     </AppLayout>
 </template>

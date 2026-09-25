@@ -30,7 +30,7 @@ const titulo = ref('');
 const descripcion = ref('');
 const solicitante = ref('');
 const departamento = ref('');
-const selectedTechnicianId = ref<number>(props.options.technicians?.[0]?.id ?? 38);
+const selectedTechnicianId = ref<number | null>(props.options.technicians?.[0]?.id ?? null);
 const isSubmitting = ref(false);
 const errorMessage = ref('');
 
@@ -54,6 +54,16 @@ const {
     }
 });
 
+// Preseleccionar equipo si viene por parámetro en la URL
+const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+const queryEquipoId = urlParams?.get('equipo_id') ? Number(urlParams.get('equipo_id')) : null;
+if (queryEquipoId && props.options.equipments) {
+    const matched = props.options.equipments.find((e) => e.id === queryEquipoId);
+    if (matched) {
+        selectEquipment(matched);
+    }
+}
+
 function handleSubmit() {
     if (!titulo.value.trim()) {
         errorMessage.value = 'El título del problema es obligatorio.';
@@ -65,6 +75,11 @@ function handleSubmit() {
         return;
     }
 
+    if (!selectedEquipmentId.value) {
+        errorMessage.value = 'Debe seleccionar un equipo afectado.';
+        return;
+    }
+
     isSubmitting.value = true;
     errorMessage.value = '';
 
@@ -73,10 +88,10 @@ function handleSubmit() {
         {
             titulo: titulo.value.trim(),
             descripcion: descripcion.value.trim(),
-            equipo_id: selectedEquipmentId.value ?? 238,
+            equipo_id: selectedEquipmentId.value,
             categoria_id: selectedCategoryId.value,
             prioridad: selectedPriority.value,
-            empleado_id: selectedTechnicianId.value,
+            empleado_id: selectedTechnicianId.value || undefined,
             solicitante: solicitante.value.trim() || undefined,
             departamento: departamento.value.trim() || undefined,
             estado: 'pendiente',

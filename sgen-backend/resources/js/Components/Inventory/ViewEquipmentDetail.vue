@@ -22,6 +22,7 @@ const emit = defineEmits<{
     (e: 'open-reassign', eq: Equipment): void;
     (e: 'view-history', eq: Equipment): void;
     (e: 'create-ticket', eq: Equipment): void;
+    (e: 'new-maintenance', eq: Equipment): void;
 }>();
 
 const activeSubtab = ref<'specs' | 'acq' | 'tickets' | 'maint'>('specs');
@@ -102,8 +103,8 @@ const handleDuplicate = () => {
             <div class="detail-column-stack">
                 <EquipmentSpecsGrid v-show="activeSubtab === 'specs'" :equipment="equipment" />
                 <EquipmentAcquisitionPane v-show="activeSubtab === 'acq'" :equipment="equipment" />
-                <EquipmentTicketsPane v-show="activeSubtab === 'tickets'" @create-ticket="emit('create-ticket', equipment)" />
-                <EquipmentMaintPane v-show="activeSubtab === 'maint'" @new-maintenance="emit('create-ticket', equipment)" />
+                <EquipmentTicketsPane v-show="activeSubtab === 'tickets'" :equipment="equipment" @create-ticket="emit('create-ticket', equipment)" />
+                <EquipmentMaintPane v-show="activeSubtab === 'maint'" :equipment="equipment" @new-maintenance="emit('new-maintenance', equipment)" />
             </div>
         </div>
     </section>

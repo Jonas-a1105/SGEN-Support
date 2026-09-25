@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Notification\Domain\Enums\NotificationType;
+namespace Modules\Notification\Domain\Enums;
 
 enum NotificationType: string
 {

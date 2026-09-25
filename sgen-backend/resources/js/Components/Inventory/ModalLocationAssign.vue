@@ -49,11 +49,14 @@ watch(
 );
 
 const submit = () => {
+    if (!props.equipment?.id) return;
+
     form.transform((data) => ({
         ...data,
         departamento_id: data.departamento_id ? Number(data.departamento_id) : null,
         empleado_id: data.empleado_id ? Number(data.empleado_id) : null,
-    })).post('/equipos/reasignar', {
+        ubicacion_fisica: data.ubicacion_fisica || null,
+    })).put(`/equipos/${props.equipment.id}`, {
         preserveScroll: true,
         onSuccess: () => emit('close'),
     });

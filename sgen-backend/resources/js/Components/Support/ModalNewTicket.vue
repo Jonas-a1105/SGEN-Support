@@ -71,8 +71,8 @@ watch(
             form.departamento = '';
             form.categoria_id = props.options.categories?.[0]?.id ?? 1;
             form.prioridad = 'media';
-            form.empleado_id = props.options.technicians?.[0]?.id ?? 38;
-            form.equipo_id = props.options.equipments?.[0]?.id ?? 238;
+            form.empleado_id = props.options.technicians?.[0]?.id ?? null;
+            form.equipo_id = props.options.equipments?.[0]?.id ?? null;
             form.estado = 'pendiente';
             form.isSubmitting = false;
         }
@@ -80,7 +80,7 @@ watch(
 );
 
 const handleSubmit = () => {
-    if (!form.titulo.trim() || form.isSubmitting) return;
+    if (!form.titulo.trim() || !form.equipo_id || form.isSubmitting) return;
 
     form.isSubmitting = true;
     router.post(

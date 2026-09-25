@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import type { Equipment } from '@/Types/inventory';
 import { useClientPagination } from '@/Composables/useClientPagination';
 import InventoryControlsBar from './Common/InventoryControlsBar.vue';
@@ -57,6 +58,23 @@ const {
 
 <template>
     <div>
+        <!-- AVISO CONTEXTUAL ITAM: ALMACÉN TI VS FLOTA ACTIVA -->
+        <div class="warehouse-info-banner">
+            <div class="banner-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+            </div>
+            <div class="banner-text">
+                <span>
+                    <strong>Stock en Almacén TI:</strong> Mostrando únicamente los equipos disponibles en resguardo (sin asignar), listos para entrega o reserva. Para auditar y gestionar toda la flota de activos asignados a usuarios y departamentos, visita el módulo de
+                    <Link href="/equipos" class="banner-link">Equipos TI &rarr;</Link>
+                </span>
+            </div>
+        </div>
+
         <!-- BUSCADOR GLOBAL -->
         <div class="global-search-card search-card-spaced">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
@@ -261,5 +279,46 @@ const {
 
 .w-full {
     width: 100%;
+}
+
+.warehouse-info-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+    background: rgba(var(--brand-rgb, 59, 130, 246), 0.08);
+    border: 1px solid rgba(var(--brand-rgb, 59, 130, 246), 0.22);
+    border-radius: var(--panel-radius, 12px);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.banner-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand);
+    flex-shrink: 0;
+}
+
+.banner-text {
+    flex: 1;
+}
+
+.banner-link {
+    color: var(--brand);
+    font-weight: 600;
+    text-decoration: underline;
+    margin-left: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    transition: opacity var(--transition-fast);
+}
+
+.banner-link:hover {
+    opacity: 0.8;
 }
 </style>

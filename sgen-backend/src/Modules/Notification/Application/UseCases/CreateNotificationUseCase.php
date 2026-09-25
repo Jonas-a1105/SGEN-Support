@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Notification\Application\UseCases;
 
+use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Domain\Models\Notification;
 use Modules\Notification\Domain\Ports\NotificationRepositoryInterface;
 

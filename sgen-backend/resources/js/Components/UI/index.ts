@@ -31,3 +31,4 @@ export type { TabItem } from './BaseTabs.vue';
 
 export { default as BaseDropdown } from './BaseDropdown.vue';
 export { default as BaseToastContainer } from './BaseToastContainer.vue';
+export { default as BaseSignaturePad } from './BaseSignaturePad.vue';

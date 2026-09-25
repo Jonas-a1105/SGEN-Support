@@ -133,10 +133,25 @@ final class MaintenanceControllerTest extends TestCase
         ]);
 
         $response->assertStatus(302);
+
+        if (! $this->checkMaintenanceCompleted($maintId)) {
+            $this->fail(
+                'Complete failed. Session error: ' .
+                json_encode(session('error'), JSON_UNESCAPED_UNICODE) .
+                ' | Session success: ' .
+                json_encode(session('success'), JSON_UNESCAPED_UNICODE)
+            );
+        }
+
         $this->assertDatabaseHas('mantenimientos', [
             'id' => $maintId,
             'estado' => 'completado',
         ]);
+    }
+
+    private function checkMaintenanceCompleted(int $id): bool
+    {
+        return DB::table('mantenimientos')->where('id', $id)->value('estado') === 'completado';
     }
 
     public function test_can_render_maintenance_dashboard(): void
@@ -201,5 +216,28 @@ final class MaintenanceControllerTest extends TestCase
             'tipoMantenimiento' => 'correctivo',
             'estado' => 'en_proceso',
         ]);
+    }
+
+    public function test_can_generate_maintenance_work_order_pdf(): void
+    {
+        $maintId = DB::table('mantenimientos')->insertGetId([
+            'equipo_id' => $this->equipmentId,
+            'fecha' => now()->toDateString(),
+            'tipo_mantenimiento' => 'preventivo',
+            'estado' => 'pendiente',
+            'descripcion' => 'Revisión y mantenimiento de componentes',
+            'frecuencia' => 'mensual',
+            'proxima_fecha' => now()->addMonth()->toDateString(),
+            'costo' => 50.00,
+            'tecnico_id' => $this->technicianId,
+            'observaciones' => 'Checklist preliminar aprobado',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->get("/mantenimientos/{$maintId}/pdf");
+
+        $response->assertStatus(200);
+        $this->assertSame('application/pdf', $response->headers->get('content-type'));
     }
 }

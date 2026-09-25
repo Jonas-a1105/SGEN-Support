@@ -28,6 +28,8 @@ final class UpdateTicketRequest extends FormRequest
             'fecha_cierre' => ['nullable', 'string'],
             'solucion' => ['nullable', 'string'],
             'tiempo_atencion_minutos' => ['nullable', 'integer'],
+            'firma_base64' => ['nullable', 'string', 'max:1000000'],
+            'firma' => ['nullable', 'string', 'max:1000000'],
         ];
     }
 }

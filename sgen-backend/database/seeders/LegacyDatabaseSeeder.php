@@ -16,11 +16,11 @@ class LegacyDatabaseSeeder extends Seeder
     {
         $dumpPath = base_path('../sgen_db.sql');
         if (! file_exists($dumpPath)) {
-            $this->command->warn("Dump file not found: $dumpPath");
-
+            $this->command->error("Archivo de dump no encontrado en: $dumpPath");
             return;
         }
 
+        $this->command->info("Cargando dump SQL desde: $dumpPath");
         $sql = file_get_contents($dumpPath);
 
         $tableOrder = [
@@ -52,10 +52,12 @@ class LegacyDatabaseSeeder extends Seeder
 
         foreach ($tableOrder as $table) {
             if (! isset($statementsByTable[$table])) {
+                $this->command->line("  - Saltando '$table' (sin sentencias INSERT)");
                 continue;
             }
 
             DB::table($table)->delete();
+            $totalInserted = 0;
 
             foreach ($statementsByTable[$table] as $entry) {
                 $cols = str_replace('`', '"', $entry['cols']);
@@ -84,11 +86,14 @@ class LegacyDatabaseSeeder extends Seeder
             } catch (\Throwable $e) {
                 // Sequence reset fallback
             }
+
+            $count = DB::table($table)->count();
+            $this->command->info("  ✔ Tabla '$table' poblada con $count registros.");
         }
 
         DB::statement("SET session_replication_role = 'origin';");
 
-        // Sync Spatie Roles
+        // Sync Spatie Roles & standard users
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $tecnicoRole = Role::firstOrCreate(['name' => 'tecnico', 'guard_name' => 'web']);
         $consultorRole = Role::firstOrCreate(['name' => 'consultor', 'guard_name' => 'web']);
@@ -98,16 +103,37 @@ class LegacyDatabaseSeeder extends Seeder
             $admin->password = Hash::make('admin123');
             $admin->save();
             $admin->syncRoles([$adminRole]);
+            $this->command->info("  ✔ Usuario 'admin' (ID: 1) configurado con clave 'admin123' (Rol: admin).");
         }
 
         $alexis = User::where('username', 'alexisd')->first();
         if ($alexis) {
+            $alexis->password = Hash::make('tecnico123');
+            $alexis->save();
             $alexis->syncRoles([$tecnicoRole]);
+            $this->command->info("  ✔ Usuario 'alexisd' configurado con clave 'tecnico123' (Rol: tecnico).");
         }
 
         $alejandro = User::where('username', 'Alejandro Medina')->first();
         if ($alejandro) {
+            $alejandro->password = Hash::make('admin123');
+            $alejandro->save();
             $alejandro->syncRoles([$adminRole]);
+            $this->command->info("  ✔ Usuario 'Alejandro Medina' configurado con clave 'admin123' (Rol: admin).");
         }
+
+        $tecnico = User::firstOrCreate(
+            ['username' => 'tecnico'],
+            ['password' => Hash::make('tecnico123'), 'rol' => 'tecnico', 'tema' => 'light']
+        );
+        $tecnico->syncRoles([$tecnicoRole]);
+
+        $consultor = User::firstOrCreate(
+            ['username' => 'consultor'],
+            ['password' => Hash::make('consultor123'), 'rol' => 'consultor', 'tema' => 'light']
+        );
+        $consultor->syncRoles([$consultorRole]);
+
+        $this->command->info("  ✔ Usuarios de prueba 'tecnico' y 'consultor' verificados.");
     }
 }

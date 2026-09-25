@@ -6,9 +6,11 @@ namespace App\Infrastructure\Reports\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Modules\Reports\Application\UseCases\ExportInventoryExcelUseCase;
+use Modules\Reports\Application\UseCases\ExportMaintenanceExcelUseCase;
 use Modules\Reports\Application\UseCases\ExportTicketsExcelUseCase;
 use Modules\Reports\Application\UseCases\GenerateInventoryPdfUseCase;
 use Modules\Reports\Application\UseCases\GenerateMaintenancePdfUseCase;
@@ -42,7 +44,17 @@ final class ReportsController extends Controller
         return $useCase->execute();
     }
 
+    public function inventoryExcel(ExportInventoryExcelUseCase $useCase): Response
+    {
+        return $useCase->execute();
+    }
+
     public function maintenancePdf(GenerateMaintenancePdfUseCase $useCase): Response
+    {
+        return $useCase->execute();
+    }
+
+    public function maintenanceExcel(ExportMaintenanceExcelUseCase $useCase): Response
     {
         return $useCase->execute();
     }

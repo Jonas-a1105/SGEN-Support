@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useTheme } from '@/Composables/useTheme';
+import NotificationBellDropdown from '@/Components/Notifications/NotificationBellDropdown.vue';
 
 defineProps<{ title?: string }>();
 
@@ -32,6 +33,8 @@ onMounted(() => {
             <h1 class="dash-title">{{ title || 'Inventario General' }}</h1>
             <div class="topbar-right">
                 <div class="header-tools">
+                    <NotificationBellDropdown />
+
                     <button class="border-control hide-mobile" type="button" @click="toggleBorderWidth" :title="'Alternar grosor de bordes (' + borderWidth + ')'">
                         <span class="tool-icon">⬚</span>
                         <span>Borde: {{ borderWidth }}</span>

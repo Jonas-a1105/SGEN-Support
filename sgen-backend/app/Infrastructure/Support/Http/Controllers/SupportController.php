@@ -9,6 +9,7 @@ use App\Infrastructure\Support\Http\Requests\AddCommentRequest;
 use App\Infrastructure\Support\Http\Requests\AddMaterialRequest;
 use App\Infrastructure\Support\Http\Requests\RateTicketRequest;
 use App\Infrastructure\Support\Http\Requests\ReassignTechnicianRequest;
+use App\Infrastructure\Support\Http\Requests\ReopenTicketRequest;
 use App\Infrastructure\Support\Http\Requests\StoreTicketRequest;
 use App\Infrastructure\Support\Http\Requests\UpdateTicketRequest;
 use Illuminate\Http\RedirectResponse;
@@ -19,14 +20,26 @@ use Modules\Support\Application\DTOs\CreateTicketDTO;
 use Modules\Support\Application\DTOs\UpdateTicketDTO;
 use Modules\Support\Application\UseCases\AddTicketCommentUseCase;
 use Modules\Support\Application\UseCases\AddTicketMaterialUseCase;
+use Modules\Support\Application\UseCases\BulkDeleteTicketsUseCase;
 use Modules\Support\Application\UseCases\CreateTicketUseCase;
 use Modules\Support\Application\UseCases\DeleteTicketUseCase;
+use Modules\Support\Application\UseCases\GenerateTicketPdfUseCase;
 use Modules\Support\Application\UseCases\GetCreateTicketDataUseCase;
 use Modules\Support\Application\UseCases\GetTicketDetailUseCase;
 use Modules\Support\Application\UseCases\ListTicketsUseCase;
+use Modules\Support\Application\UseCases\PauseTicketUseCase;
 use Modules\Support\Application\UseCases\RateTicketUseCase;
 use Modules\Support\Application\UseCases\ReassignTechnicianUseCase;
+use Modules\Support\Application\UseCases\ReopenTicketUseCase;
+use Modules\Support\Application\UseCases\ResumeTicketUseCase;
+use Modules\Support\Application\UseCases\SaveTicketSignatureUseCase;
 use Modules\Support\Application\UseCases\UpdateTicketUseCase;
+use Modules\Support\Application\UseCases\UploadTicketAttachmentUseCase;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Modules\Support\Domain\Ports\SupportRepositoryInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class SupportController extends Controller
 {
@@ -141,12 +154,18 @@ final class SupportController extends Controller
 
     
 
-    public function pause(int|string $id, PauseTicketUseCase $useCase): RedirectResponse
+    public function pause(int|string $id, Request $request, PauseTicketUseCase $useCase): RedirectResponse
     {
         try {
-            $useCase->execute($this->parseTicketId($id));
+            $validated = $request->validate([
+                'motivo' => ['required', 'string', 'max:500'],
+            ]);
+
+            $useCase->execute($this->parseTicketId($id), (string) $validated['motivo']);
 
             return back()->with('success', 'Ticket pausado. El tiempo de atención se detendrá.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->with('error', 'El motivo de pausa es obligatorio.');
         } catch (\Exception $e) {
             return back()->with('error', 'Error al pausar el ticket: ' . $e->getMessage());
         }
@@ -160,6 +179,19 @@ final class SupportController extends Controller
             return back()->with('success', 'Ticket reanudado. El tiempo de atención ha continuado.');
         } catch (\Exception $e) {
             return back()->with('error', 'Error al reanudar el ticket: ' . $e->getMessage());
+        }
+    }
+
+    public function reopen(int|string $id, ReopenTicketRequest $request, ReopenTicketUseCase $useCase): RedirectResponse
+    {
+        try {
+            $ticketId = $this->parseTicketId($id);
+            $userId = $request->user()?->id;
+            $useCase->execute($ticketId, (string) $request->validated('motivo'), $userId);
+
+            return back()->with('success', 'Ticket reabierto satisfactoriamente.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al reabrir el ticket: ' . $e->getMessage());
         }
     }
 
@@ -185,25 +217,107 @@ final class SupportController extends Controller
 
     public function uploadAttachment(int|string $id, Request $request, UploadTicketAttachmentUseCase $useCase): RedirectResponse
     {
-        $validated = $request->validate(['file' => 'required|file|max:10240']);
+        $request->validate([
+            'file' => [
+                'required',
+                'file',
+                'max:25600',
+                'mimes:pdf,jpg,jpeg,png,webp,zip,doc,docx,xls,xlsx,txt',
+            ],
+        ], [
+            'file.required' => 'Debe seleccionar un archivo.',
+            'file.max' => 'El archivo no puede exceder los 25 MB.',
+            'file.mimes' => 'Formato no permitido. Solo se aceptan PDF, JPG, PNG, WEBP, ZIP, DOC, DOCX, XLS, XLSX, TXT.',
+        ]);
+
         $file = $request->file('file');
+        $ticketId = $this->parseTicketId($id);
+
+        $checksum = hash_file('sha256', $file->getRealPath());
         $path = $file->store('ticket_attachments');
+        $userId = $request->user()?->id ?? 1;
 
         $attachmentId = $useCase->execute(
-            $this->parseTicketId($id),
+            $ticketId,
             $path,
             $file->getClientOriginalName(),
-            $file->getMimeType(),
+            $file->getMimeType() ?: 'application/octet-stream',
             $file->getSize(),
-            $request->user()?->id ?? 1
+            $userId,
+            $checksum
         );
 
-        return back()->with('success', 'Archivo adjunto subido correctamente.');
+        try {
+            DB::table('bitacora_acciones')->insert([
+                'usuario_id' => $userId,
+                'username' => $request->user()?->username ?? 'sistema',
+                'accion' => 'subir_archivo',
+                'entidad' => 'soporte',
+                'entidad_id' => $ticketId,
+                'enlace_tipo' => 'soporte',
+                'enlace_id' => $ticketId,
+                'datos_nuevos' => json_encode([
+                    'archivo_id' => $attachmentId,
+                    'nombre' => $file->getClientOriginalName(),
+                    'tamano_bytes' => $file->getSize(),
+                    'checksum_sha256' => $checksum,
+                ]),
+                'ip_address' => $request->ip() ?: '127.0.0.1',
+                'created_at' => Carbon::now(),
+            ]);
+        } catch (\Throwable) {
+        }
+
+        return back()->with('success', 'Archivo adjunto subido correctamente con validación de integridad SHA-256.');
+    }
+
+    public function downloadAttachment(int $attachmentId, SupportRepositoryInterface $repository): StreamedResponse
+    {
+        $attachment = $repository->getAttachmentById($attachmentId);
+        abort_if($attachment === null, 404, 'Archivo adjunto no encontrado.');
+
+        if (! Storage::exists($attachment->ruta)) {
+            abort(404, 'El archivo físico no se encuentra en el almacenamiento.');
+        }
+
+        return Storage::download(
+            $attachment->ruta,
+            $attachment->nombre_original,
+            [
+                'Content-Type' => $attachment->tipo_mime ?: 'application/octet-stream',
+            ]
+        );
     }
 
     public function deleteAttachment(int $attachmentId, Request $request, SupportRepositoryInterface $repository): RedirectResponse
     {
-        $repository->deleteAttachment($attachmentId);
+        $attachment = $repository->getAttachmentById($attachmentId);
+        if ($attachment !== null) {
+            if (Storage::exists($attachment->ruta)) {
+                Storage::delete($attachment->ruta);
+            }
+
+            $repository->deleteAttachment($attachmentId);
+
+            try {
+                DB::table('bitacora_acciones')->insert([
+                    'usuario_id' => $request->user()?->id,
+                    'username' => $request->user()?->username ?? 'sistema',
+                    'accion' => 'eliminar_archivo',
+                    'entidad' => 'soporte',
+                    'entidad_id' => $attachment->ticket_id,
+                    'enlace_tipo' => 'soporte',
+                    'enlace_id' => $attachment->ticket_id,
+                    'datos_anteriores' => json_encode([
+                        'archivo_id' => $attachmentId,
+                        'nombre' => $attachment->nombre_original,
+                    ]),
+                    'ip_address' => $request->ip() ?: '127.0.0.1',
+                    'created_at' => Carbon::now(),
+                ]);
+            } catch (\Throwable) {
+            }
+        }
 
         return back()->with('success', 'Archivo eliminado correctamente.');
     }
@@ -218,6 +332,28 @@ final class SupportController extends Controller
             return back()->with('error', 'Error al guardar valoración: ' . $e->getMessage());
         }
     }
-}
 
+    public function saveSignature(int|string $id, Request $request, SaveTicketSignatureUseCase $useCase): RedirectResponse
+    {
+        try {
+            $validated = $request->validate([
+                'firma_base64' => ['required', 'string', 'max:1000000'],
+            ]);
+
+            $useCase->execute($this->parseTicketId($id), (string) $validated['firma_base64']);
+
+            return back()->with('success', 'Firma registrada exitosamente.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al registrar la firma: ' . $e->getMessage());
+        }
+    }
+
+    public function generatePdf(int|string $id, GetTicketDetailUseCase $detailUseCase, GenerateTicketPdfUseCase $useCase): StreamedResponse|\Illuminate\Http\Response
+    {
+        $ticketId = $this->parseTicketId($id);
+        abort_if($detailUseCase->execute($ticketId) === null, 404, 'Ticket no encontrado.');
+
+        return $useCase->execute($ticketId);
+    }
+}
     

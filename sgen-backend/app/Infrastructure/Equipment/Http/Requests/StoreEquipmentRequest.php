@@ -19,9 +19,9 @@ final class StoreEquipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'codigo_inventario' => ['nullable', 'string', 'max:50'],
+            'codigo_inventario' => ['nullable', 'string', 'max:50', 'unique:equipos,codigo_inventario'],
             'id' => ['nullable', 'string', 'max:50'],
-            'numero_serie' => ['nullable', 'string', 'max:100'],
+            'numero_serie' => ['nullable', 'string', 'max:100', 'unique:equipos,numero_serie'],
             'tipo' => ['required', 'string', 'max:100'],
             'type' => ['nullable', 'string', 'max:100'],
             'marca' => ['nullable', 'string', 'max:100'],

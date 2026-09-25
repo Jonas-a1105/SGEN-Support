@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Notification\Domain\Models;
 
+use Modules\Notification\Domain\Enums\NotificationType;
+
 final class Notification
 {
     public function __construct(

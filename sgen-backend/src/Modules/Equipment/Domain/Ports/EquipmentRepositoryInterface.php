@@ -8,6 +8,8 @@ use Modules\Equipment\Application\DTOs\CreateEquipmentDTO;
 use Modules\Equipment\Application\DTOs\EquipmentDetailDTO;
 use Modules\Equipment\Application\DTOs\EquipmentKpisDTO;
 use Modules\Equipment\Application\DTOs\EquipmentListItemDTO;
+use Modules\Equipment\Application\DTOs\RegisterEquipmentDTO;
+use Modules\Equipment\Application\DTOs\TransferEquipmentDTO;
 use Modules\Equipment\Application\DTOs\UpdateEquipmentDTO;
 
 interface EquipmentRepositoryInterface
@@ -25,6 +27,16 @@ interface EquipmentRepositoryInterface
     public function getCompleteDetail(int $id): ?EquipmentDetailDTO;
 
     public function create(CreateEquipmentDTO $dto): int;
+
+    /**
+     * Alta rápida con unicidad de código patrimonial y serial.
+     */
+    public function register(RegisterEquipmentDTO $dto): int;
+
+    /**
+     * Traslada un equipo entre departamentos validando el origen.
+     */
+    public function transfer(TransferEquipmentDTO $dto): void;
 
     public function update(int $id, UpdateEquipmentDTO $dto): void;
 

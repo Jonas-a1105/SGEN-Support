@@ -1,38 +1,81 @@
 <script setup lang="ts">
+import { computed, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import type { Product } from '@/Types/inventory';
 import NewItemIdentification from './Forms/NewItemIdentification.vue';
 import NewItemTechSpecs from './Forms/NewItemTechSpecs.vue';
 import NewItemStockControl from './Forms/NewItemStockControl.vue';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 
+const props = defineProps<{
+    item?: Product | null;
+}>();
+
 const emit = defineEmits<{ (e: 'back'): void; (e: 'saved'): void }>();
 
+const isEdit = computed(() => !!props.item?.id);
+
 const form = useForm({
-    sku: '',
-    name: '',
-    category: 'Consumibles',
-    unit_of_measure: 'Unidad',
-    brand: '',
-    model: '',
-    initial_stock: 0,
-    minimum_stock: 5,
-    purchase_price: 0.0,
-    vendor: '',
-    purchase_date: '',
-    warranty_expiration: '',
-    location: 'Almacén Central',
-    description: '',
+    id: props.item?.id || null,
+    sku: props.item?.sku || '',
+    name: props.item?.name || '',
+    category: props.item?.category || 'Consumibles',
+    unit_of_measure: props.item?.unit_of_measure || 'Unidad',
+    brand: props.item?.brand || '',
+    model: props.item?.model || '',
+    initial_stock: props.item?.current_stock ?? 0,
+    minimum_stock: props.item?.minimum_stock ?? 5,
+    purchase_price: props.item?.purchase_price ?? 0.0,
+    vendor: props.item?.vendor || '',
+    purchase_date: props.item?.purchase_date || '',
+    warranty_expiration: props.item?.warranty_expiration || '',
+    location: props.item?.location || 'Almacén Central',
+    description: props.item?.description || '',
 });
 
+watch(
+    () => props.item,
+    (newItem) => {
+        if (newItem) {
+            form.id = newItem.id;
+            form.sku = newItem.sku || '';
+            form.name = newItem.name || '';
+            form.category = newItem.category || 'Consumibles';
+            form.unit_of_measure = newItem.unit_of_measure || 'Unidad';
+            form.brand = newItem.brand || '';
+            form.model = newItem.model || '';
+            form.initial_stock = newItem.current_stock ?? 0;
+            form.minimum_stock = newItem.minimum_stock ?? 5;
+            form.purchase_price = newItem.purchase_price ?? 0.0;
+            form.vendor = newItem.vendor || '';
+            form.purchase_date = newItem.purchase_date || '';
+            form.warranty_expiration = newItem.warranty_expiration || '';
+            form.location = newItem.location || 'Almacén Central';
+            form.description = newItem.description || '';
+        }
+    },
+    { immediate: true }
+);
+
 const submit = () => {
-    form.post('/inventario', {
-        preserveScroll: true,
-        onSuccess: () => {
-            emit('saved');
-            emit('back');
-        },
-    });
+    if (isEdit.value && props.item?.id) {
+        form.put(`/inventario/${props.item.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                emit('saved');
+                emit('back');
+            },
+        });
+    } else {
+        form.post('/inventario', {
+            preserveScroll: true,
+            onSuccess: () => {
+                emit('saved');
+                emit('back');
+            },
+        });
+    }
 };
 </script>
 
@@ -47,8 +90,8 @@ const submit = () => {
                         </svg>
                     </div>
                     <div>
-                        <h1 class="module-title">Registrar Nuevo Artículo</h1>
-                        <p class="module-subtitle">Agrega un nuevo producto al catálogo global.</p>
+                        <h1 class="module-title">{{ isEdit ? 'Editar Artículo' : 'Registrar Nuevo Artículo' }}</h1>
+                        <p class="module-subtitle">{{ isEdit ? 'Actualice la información y existencias del producto.' : 'Agrega un nuevo producto al catálogo global.' }}</p>
                     </div>
                 </div>
                 <div class="header-actions-row">
@@ -69,7 +112,7 @@ const submit = () => {
                         @click="submit"
                     >
                         <span>✓</span>
-                        <span>Guardar Producto</span>
+                        <span>{{ isEdit ? 'Actualizar Producto' : 'Guardar Producto' }}</span>
                     </BaseButton>
                 </div>
             </div>

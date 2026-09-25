@@ -3,14 +3,15 @@ import { ref, toRef } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { BasePageHeader, BaseButton, BaseEmptyState } from '@/Components/UI';
-import EquipmentKpiRow, { type EquipmentKpis } from '@/Components/Equipment/EquipmentKpiRow.vue';
+import EquipmentKpiRow from '@/Components/Equipment/EquipmentKpiRow.vue';
 import EquipmentToolbar from '@/Components/Equipment/EquipmentToolbar.vue';
 import EquipmentCard from '@/Components/Equipment/EquipmentCard.vue';
 import EquipmentTable from '@/Components/Equipment/EquipmentTable.vue';
-import ModalEquipmentForm, { type DepartmentOption, type EmployeeOption } from '@/Components/Equipment/ModalEquipmentForm.vue';
+import ModalEquipmentForm from '@/Components/Equipment/ModalEquipmentForm.vue';
 import ModalEquipmentDetail from '@/Components/Equipment/ModalEquipmentDetail.vue';
 import ModalEquipmentDelete from '@/Components/Equipment/ModalEquipmentDelete.vue';
-import { useEquipmentFilters, type EquipmentItem } from '@/Composables/useEquipmentFilters';
+import { useEquipmentFilters } from '@/Composables/useEquipmentFilters';
+import type { EquipmentItem, EquipmentKpis, DepartmentOption, EmployeeOption } from '@/types';
 
 const props = defineProps<{
     kpis: EquipmentKpis;
@@ -26,11 +27,13 @@ const rawEquipos = toRef(props, 'equipos');
 
 const {
     currentPillFilter,
+    selectedDepartment,
     searchQuery,
     isDense,
     activeViewMode,
     filteredEquipos,
     setPillFilter,
+    setDepartmentFilter,
     setViewMode,
     toggleDense,
 } = useEquipmentFilters(rawEquipos);
@@ -92,6 +95,10 @@ const handleConfirmDelete = () => {
         },
     });
 };
+
+const handleExportExcel = () => {
+    window.open('/equipos/export/excel', '_blank');
+};
 </script>
 
 <template>
@@ -112,9 +119,19 @@ const handleConfirmDelete = () => {
                     </svg>
                 </template>
                 <template #actions>
-                    <BaseButton variant="primary" @click="openCreateModal">
-                        + Nuevo Equipo
-                    </BaseButton>
+                    <div class="equipment-header-actions">
+                        <BaseButton variant="secondary" @click="handleExportExcel">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-btn-icon">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            <span>Exportar Excel</span>
+                        </BaseButton>
+                        <BaseButton variant="primary" @click="openCreateModal">
+                            + Nuevo Equipo
+                        </BaseButton>
+                    </div>
                 </template>
             </BasePageHeader>
 
@@ -127,7 +144,10 @@ const handleConfirmDelete = () => {
                 :search-query="searchQuery"
                 :view-mode="activeViewMode"
                 :is-dense="isDense"
+                :departments="options.departments"
+                :selected-department="selectedDepartment"
                 @update:current-pill="setPillFilter"
+                @update:selected-department="setDepartmentFilter"
                 @update:search-query="searchQuery = $event"
                 @update:view-mode="setViewMode"
                 @toggle-dense="toggleDense"
@@ -198,6 +218,20 @@ const handleConfirmDelete = () => {
     flex-direction: column;
     gap: 16px;
     padding-bottom: 24px;
+}
+
+.equipment-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-btn-icon {
+    width: 15px;
+    height: 15px;
+    margin-right: 6px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .equipment-cards-grid {

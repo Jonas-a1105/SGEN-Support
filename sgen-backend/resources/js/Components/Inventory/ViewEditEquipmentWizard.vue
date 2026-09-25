@@ -3,7 +3,6 @@ import { ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import type { Equipment, Department, Employee } from '@/Types/inventory';
 import StepperIndicator from './Forms/StepperIndicator.vue';
-import ImageDropzone from './Common/ImageDropzone.vue';
 import WizardStepBasic from './Forms/WizardStepBasic.vue';
 import WizardStepSpecs from './Forms/WizardStepSpecs.vue';
 import WizardStepLocation from './Forms/WizardStepLocation.vue';
@@ -79,13 +78,24 @@ const prevStep = () => {
 };
 
 const submit = () => {
-    form.post('/equipos', {
-        preserveScroll: true,
-        onSuccess: () => {
-            emit('saved');
-            emit('back');
-        },
-    });
+    const equipId = props.equipment?.id || form.id;
+    if (equipId) {
+        form.put(`/equipos/${equipId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                emit('saved');
+                emit('back');
+            },
+        });
+    } else {
+        form.post('/equipos', {
+            preserveScroll: true,
+            onSuccess: () => {
+                emit('saved');
+                emit('back');
+            },
+        });
+    }
 };
 
 const stepHeaders = [
@@ -131,11 +141,6 @@ const stepHeaders = [
                     <StepperIndicator
                         :current-step="wizardStep"
                         @select-step="wizardStep = $event"
-                    />
-
-                    <ImageDropzone
-                        title="Subir foto"
-                        compact
                     />
                 </div>
 

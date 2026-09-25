@@ -11,6 +11,8 @@ final class EquipmentKpisDTO
         public readonly int $operativos,
         public readonly int $enReparacion,
         public readonly int $fueraServicio,
+        public readonly int $enUso = 0,
+        public readonly int $disponibles = 0,
     ) {
     }
 
@@ -19,6 +21,8 @@ final class EquipmentKpisDTO
         return [
             'totalActivos' => $this->totalActivos,
             'operativos' => $this->operativos,
+            'enUso' => $this->enUso,
+            'disponibles' => $this->disponibles,
             'enReparacion' => $this->enReparacion,
             'fueraServicio' => $this->fueraServicio,
         ];

@@ -25,7 +25,19 @@ interface MaintenanceRepositoryInterface
 
     public function deleteBulk(array $ids): int;
 
-    public function complete(int $id, ?string $observations = null, ?float $cost = null): bool;
+    public function complete(int $id, ?string $observations = null, ?float $cost = null, ?string $garantiaHasta = null): bool;
+
+    /**
+     * Agrega una pieza de inventario a la orden de trabajo.
+     */
+    public function addMaterial(int $mantenimientoId, int $itemId, int $cantidad, int $userId): bool;
+
+    /**
+     * Lista las piezas consumidas por la orden.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getMateriales(int $mantenimientoId): array;
 
     public function postpone(int $id, string $newDate): bool;
 

@@ -64,7 +64,7 @@ const emit = defineEmits<{
                 </button>
 
                 <button
-                    v-if="scope === 'soportes'"
+                    v-if="['soportes', 'inventario', 'mantenimiento'].includes(scope)"
                     class="btn-export-outline"
                     type="button"
                     @click="emit('export-csv')"

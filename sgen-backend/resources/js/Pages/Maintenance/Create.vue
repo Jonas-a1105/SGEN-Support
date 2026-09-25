@@ -18,9 +18,13 @@ const props = defineProps<{
 
 const checklistTasks = ref<ChecklistTask[]>([]);
 const submitting = ref(false);
+const errorMessage = ref('');
+
+const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+const initialEquipoId = urlParams?.get('equipo_id') || '';
 
 const form = ref({
-    equipo_id: '',
+    equipo_id: initialEquipoId,
     fecha: '',
     tipo_mantenimiento: 'preventivo',
     estado: 'pendiente',
@@ -34,16 +38,18 @@ const form = ref({
 });
 
 const handleSubmit = () => {
+    errorMessage.value = '';
+
     if (!form.value.equipo_id) {
-        alert('Por favor seleccione un equipo.');
+        errorMessage.value = 'Por favor seleccione un equipo.';
         return;
     }
     if (!form.value.fecha) {
-        alert('Por favor indique la fecha y hora programada.');
+        errorMessage.value = 'Por favor indique la fecha y hora programada.';
         return;
     }
     if (!form.value.descripcion.trim()) {
-        alert('Por favor ingrese la descripción general.');
+        errorMessage.value = 'Por favor ingrese la descripción general.';
         return;
     }
 
@@ -123,6 +129,16 @@ const handleCancel = () => {
                     </BaseButton>
                 </template>
             </BasePageHeader>
+
+            <!-- MENSAJE DE VALIDACIÓN -->
+            <div v-if="errorMessage" class="maintenance-error-banner" role="alert">
+                <svg viewBox="0 0 24 24" class="error-banner-icon">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{{ errorMessage }}</span>
+            </div>
 
             <!-- CUADRÍCULA DEL FORMULARIO A 2 COLUMNAS -->
             <form class="schedule-grid-layout" @submit.prevent="handleSubmit">
@@ -216,6 +232,29 @@ const handleCancel = () => {
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.maintenance-error-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: var(--panel-radius, 10px);
+    color: var(--color-red, #ef4444);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.error-banner-icon {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
 }
 
 @media (max-width: 980px) {

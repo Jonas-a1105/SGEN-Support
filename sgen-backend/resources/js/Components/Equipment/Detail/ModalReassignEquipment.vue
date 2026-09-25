@@ -54,12 +54,17 @@ watch(
 
 const handleSaveReassignment = () => {
     isSubmitting.value = true;
+    const empId = reassignForm.value.empleado_id ? Number(reassignForm.value.empleado_id) : null;
+    const deptId = reassignForm.value.departamento_id ? Number(reassignForm.value.departamento_id) : null;
+    const targetStatus = empId ? 'en_uso' : (props.equipment.status === 'en_reparacion' || props.equipment.status === 'fuera_de_servicio' ? props.equipment.status : 'disponible');
+
     router.put(
         `/equipos/${props.equipment.id}`,
         {
-            departamento_id: reassignForm.value.departamento_id ? Number(reassignForm.value.departamento_id) : null,
-            empleado_id: reassignForm.value.empleado_id ? Number(reassignForm.value.empleado_id) : null,
+            departamento_id: deptId,
+            empleado_id: empId,
             ubicacion_fisica: reassignForm.value.ubicacion_fisica || null,
+            estado: targetStatus,
         },
         {
             preserveScroll: true,

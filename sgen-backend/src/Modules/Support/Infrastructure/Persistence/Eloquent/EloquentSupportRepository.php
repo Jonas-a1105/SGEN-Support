@@ -49,13 +49,6 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             }
         }
 
-        // Si no hay asignaciones pero el técnico por defecto tiene tickets
-        if ($myAssignments === 0) {
-            $myAssignments = (int) DB::table('soportes')
-                ->where('empleado_id', 38)
-                ->count();
-        }
-
         return new SupportKpisDTO(
             criticalPending: $criticalPending,
             generalQueue: $generalQueue,
@@ -96,11 +89,17 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             ->orderByDesc('soportes.id');
 
         // Filtro por estado
-        if (! empty($filters['estado']) && $filters['estado'] !== 'todos') {
-            $estado = (string) $filters['estado'];
-            if ($estado === 'proceso') {
+        if (! empty($filters['estado']) && $filters['estado'] !== 'todos' && $filters['estado'] !== 'all') {
+            $estado = strtolower(trim((string) $filters['estado']));
+            if ($estado === 'proceso' || $estado === 'en_proceso' || $estado === 'process') {
                 $query->where('soportes.estado', 'en_proceso');
-            } elseif ($estado === 'critica') {
+            } elseif ($estado === 'pendiente' || $estado === 'pending') {
+                $query->where('soportes.estado', 'pendiente');
+            } elseif ($estado === 'resuelto' || $estado === 'resolved') {
+                $query->where('soportes.estado', 'resuelto');
+            } elseif ($estado === 'en_espera' || $estado === 'espera' || $estado === 'waiting') {
+                $query->where('soportes.estado', 'en_espera');
+            } elseif ($estado === 'critica' || $estado === 'critical') {
                 $query->where(function ($q) {
                     $q->where('soportes.prioridad', 'critica')
                       ->orWhere('soportes.estado', 'pendiente');
@@ -207,20 +206,23 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
         return TicketDetailMapper::toDTO($ticket, $comments, $attachments, $materials);
     }
 
-    public function createTicket(CreateTicketDTO $dto, ?int $userId = null): int
+    public function createTicket(CreateTicketDTO $dto, ?int $userId = null, ?string $fechaVencimiento = null): int
     {
+        $now = Carbon::now();
+
         $id = DB::table('soportes')->insertGetId([
             'titulo' => $dto->titulo,
             'descripcion' => $dto->descripcion,
             'equipo_id' => $dto->equipoId,
             'categoria_id' => $dto->categoriaId,
-            'empleado_id' => $dto->empleadoId ?? 38,
-            'usuario_creacion_id' => $userId ?? 1,
+            'empleado_id' => $dto->empleadoId,
+            'usuario_creacion_id' => $userId,
             'prioridad' => $dto->prioridad,
             'estado' => $dto->estado,
-            'fecha' => Carbon::now(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'fecha' => $now,
+            'fecha_vencimiento' => $fechaVencimiento,
+            'created_at' => $now,
+            'updated_at' => $now,
         ]);
 
         return (int) $id;
@@ -242,6 +244,30 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
         if ($dto->estado !== null) {
             $payload['estado'] = $dto->estado;
             if ($dto->estado === 'resuelto') {
+                $now = Carbon::now();
+                $payload['fecha_resolucion'] = $now;
+                $payload['fecha_cierre'] = $now;
+
+                $ticket = DB::table('soportes')->where('id', $id)->first();
+                if ($ticket) {
+                    $start = $ticket->fecha_asignacion ? Carbon::parse($ticket->fecha_asignacion) : ($ticket->fecha ? Carbon::parse($ticket->fecha) : $now);
+                    $elapsed = max(1, (int) round(abs($now->diffInMinutes($start))));
+                    $paused = (int) ($ticket->tiempo_pausado_minutos ?? 0);
+                    $payload['tiempo_atencion_minutos'] = max(1, $elapsed - $paused);
+                }
+
+                if (!empty($dto->solucion)) {
+                    $payload['solucion'] = $dto->solucion;
+                    $actingUserId = auth()->id() ?? (int) (DB::table('usuarios')->value('id') ?? 1);
+                    DB::table('ticket_comentarios')->insert([
+                        'ticket_id' => $id,
+                        'usuario_id' => $actingUserId,
+                        'comentario' => "Ticket RESUELTO. Solución técnica: {$dto->solucion}",
+                        'es_interno' => false,
+                        'fecha' => $now,
+                    ]);
+                }
+            } elseif ($dto->estado === 'cerrado') {
                 $payload['fecha_cierre'] = Carbon::now();
             }
         }
@@ -259,6 +285,9 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
         }
         if ($dto->tiempoAtencionMinutos !== null) {
             $payload['tiempo_atencion_minutos'] = $dto->tiempoAtencionMinutos;
+        }
+        if ($dto->firma !== null) {
+            $payload['firma'] = $dto->firma;
         }
 
         return DB::table('soportes')->where('id', $id)->update($payload) > 0;
@@ -310,20 +339,49 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
         ]) > 0;
     }
 
-    public function pauseTicket(int $ticketId): bool
+    public function pauseTicket(int $ticketId, string $motivo, Carbon $pausedAt): bool
     {
         return DB::table('soportes')->where('id', $ticketId)->update([
             'estado' => 'en_espera',
+            'motivo_pausa' => $motivo,
             'updated_at' => Carbon::now(),
         ]) > 0;
     }
 
-    public function resumeTicket(int $ticketId): bool
+    public function resumeTicket(int $ticketId, ?Carbon $resumedAt = null): bool
     {
-        return DB::table('soportes')->where('id', $ticketId)->update([
-            'estado' => 'en_proceso',
-            'updated_at' => Carbon::now(),
-        ]) > 0;
+        $resumedAt ??= Carbon::now();
+
+        return DB::transaction(function () use ($ticketId, $resumedAt): bool {
+            $ticket = DB::table('soportes')
+                ->where('id', $ticketId)
+                ->lockForUpdate()
+                ->first();
+
+            if ($ticket === null) {
+                return false;
+            }
+
+            $payload = [
+                'estado' => 'en_proceso',
+                'motivo_pausa' => null,
+                'updated_at' => $resumedAt,
+            ];
+
+            if ($ticket->estado === 'en_espera') {
+                $lastUpdated = $ticket->updated_at ? Carbon::parse($ticket->updated_at) : $resumedAt;
+                $elapsedMinutes = max(0, (int) round(abs($resumedAt->diffInMinutes($lastUpdated))));
+                $pausedMinutes = (int) ($ticket->tiempo_pausado_minutos ?? 0) + $elapsedMinutes;
+                $payload['tiempo_pausado_minutos'] = $pausedMinutes;
+
+                if ($ticket->fecha_vencimiento !== null) {
+                    $payload['fecha_vencimiento'] = Carbon::parse($ticket->fecha_vencimiento)
+                        ->addMinutes($elapsedMinutes);
+                }
+            }
+
+            return DB::table('soportes')->where('id', $ticketId)->update($payload) > 0;
+        });
     }
 
     public function updateCloseDate(int $ticketId, string $newDate): bool
@@ -339,11 +397,6 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
         return DB::table('soportes')->whereIn('id', $ticketIds)->delete();
     }
 
-    public function generateTicketPdf(int $ticketId): string
-    {
-        return "/soportes/{$ticketId}/pdf";
-    }
-
     public function saveSignature(int $ticketId, string $signatureData): bool
     {
         return DB::table('soportes')->where('id', $ticketId)->update([
@@ -352,7 +405,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
         ]) > 0;
     }
 
-    public function uploadAttachment(int $ticketId, string $filePath, string $originalName, string $mimeType, int $size, int $userId): int
+    public function uploadAttachment(int $ticketId, string $filePath, string $originalName, string $mimeType, int $size, int $userId, ?string $checksumSha256 = null): int
     {
         return (int) DB::table('ticket_archivos')->insertGetId([
             'ticket_id' => $ticketId,
@@ -361,9 +414,15 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             'ruta' => $filePath,
             'tipo_mime' => $mimeType,
             'tamano_bytes' => $size,
+            'checksum_sha256' => $checksumSha256,
             'subido_por' => $userId,
             'fecha_subida' => Carbon::now(),
         ]);
+    }
+
+    public function getAttachmentById(int $attachmentId): ?object
+    {
+        return DB::table('ticket_archivos')->where('id', $attachmentId)->first();
     }
 
     public function deleteAttachment(int $attachmentId): bool
@@ -371,12 +430,34 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
         return DB::table('ticket_archivos')->where('id', $attachmentId)->delete() > 0;
     }
 
+    public function reopenTicket(int $ticketId, string $motivo, ?int $userId = null): bool
+    {
+        return DB::transaction(function () use ($ticketId, $motivo, $userId): bool {
+            $updated = DB::table('soportes')->where('id', $ticketId)->update([
+                'estado' => 'en_proceso',
+                'motivo_pausa' => null,
+                'updated_at' => Carbon::now(),
+            ]) > 0;
+
+            if ($updated) {
+                DB::table('ticket_comentarios')->insert([
+                    'ticket_id' => $ticketId,
+                    'usuario_id' => $userId ?? auth()->id() ?? (int) (DB::table('usuarios')->value('id') ?? 1),
+                    'comentario' => "Ticket REABIERTO. Motivo: {$motivo}",
+                    'es_interno' => false,
+                    'fecha' => Carbon::now(),
+                ]);
+            }
+
+            return $updated;
+        });
+    }
+
     public function getFormOptions(): array
     {
         $technicians = DB::table('empleados')
             ->select('id', 'nombre', 'apellido', 'email')
             ->where('rol', 'tecnico')
-            ->orWhere('id', 38)
             ->get()
             ->map(fn ($e) => [
                 'id' => $e->id,
@@ -387,14 +468,6 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 'active_tickets' => (int) DB::table('soportes')->where('empleado_id', $e->id)->where('estado', '!=', 'resuelto')->count(),
             ])
             ->all();
-
-        if (empty($technicians)) {
-            $technicians = [
-                ['id' => 38, 'name' => 'Alexis Datica', 'email' => 'alexis@sgen.com', 'initial' => 'A', 'specialty' => 'Soporte TI', 'active_tickets' => 0],
-                ['id' => 39, 'name' => 'Marcos Rodriguez', 'email' => 'marcos@sgen.com', 'initial' => 'M', 'specialty' => 'Redes & Servidores', 'active_tickets' => 1],
-                ['id' => 40, 'name' => 'Lucia Mendez', 'email' => 'lucia@sgen.com', 'initial' => 'L', 'specialty' => 'Hardware & Sistemas', 'active_tickets' => 0],
-            ];
-        }
 
         $equipments = DB::table('equipos')
             ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')

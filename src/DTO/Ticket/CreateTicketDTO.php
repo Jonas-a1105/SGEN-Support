@@ -19,14 +19,22 @@ readonly class CreateTicketDTO
         public ?int $categoriaId,
         public int $userId,
         public ?int $departamentoId = null
-    ) {}
+    ) {
+        if (mb_strlen(trim($this->descripcion)) < 10) {
+            throw new ValidationException(['descripcion' => 'La descripción debe tener al menos 10 caracteres.']);
+        }
+    }
 
     public static function fromRequest(array $post, int $userId, ?int $departamentoId = null): self
     {
+        if (!isset($post['prioridad']) || $post['prioridad'] === '') {
+            $post['prioridad'] = 'media';
+        }
+
         $validator = new Validator;
         $validation = $validator->make($post, [
             'equipo_id'    => 'required|integer|min:1',
-            'descripcion'  => 'required|string|min:10|max:5000',
+            'descripcion'  => 'required|min:10|max:5000',
             'prioridad'    => 'required|in:baja,media,alta,critica',
             'categoria_id' => 'nullable|integer|min:1',
         ]);
@@ -45,8 +53,8 @@ readonly class CreateTicketDTO
         return new self(
             equipoId: (int)$post['equipo_id'],
             descripcion: trim($post['descripcion']),
-            prioridad: $post['prioridad'],
-            categoriaId: $post['categoria_id'] ? (int)$post['categoria_id'] : null,
+            prioridad: (string)$post['prioridad'],
+            categoriaId: !empty($post['categoria_id']) ? (int)$post['categoria_id'] : null,
             userId: $userId,
             departamentoId: $departamentoId
         );

@@ -19,6 +19,7 @@ final class EquipmentListItemDTO
         public readonly ?string $assignedTo = null,
         public readonly ?string $location = null,
         public readonly ?string $ipAddress = null,
+        public readonly ?int $departmentId = null,
     ) {
     }
 
@@ -37,6 +38,7 @@ final class EquipmentListItemDTO
             'assignedTo' => $this->assignedTo,
             'location' => $this->location,
             'ipAddress' => $this->ipAddress,
+            'departmentId' => $this->departmentId,
         ];
     }
 }

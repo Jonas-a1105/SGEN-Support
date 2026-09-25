@@ -6,6 +6,8 @@ namespace App\Infrastructure\Maintenance\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Modules\Maintenance\Domain\Ports\MaintenanceRepositoryInterface;
+use Modules\Maintenance\Domain\Services\ChecklistValidator;
+use Modules\Maintenance\Domain\Services\RecurrenceEngine;
 use Modules\Maintenance\Infrastructure\Persistence\Eloquent\EloquentMaintenanceRepository;
 
 final class MaintenanceModuleServiceProvider extends ServiceProvider
@@ -16,6 +18,9 @@ final class MaintenanceModuleServiceProvider extends ServiceProvider
             MaintenanceRepositoryInterface::class,
             EloquentMaintenanceRepository::class
         );
+
+        $this->app->singleton(ChecklistValidator::class);
+        $this->app->singleton(RecurrenceEngine::class);
     }
 
     public function boot(): void

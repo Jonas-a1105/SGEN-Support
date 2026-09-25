@@ -24,4 +24,26 @@ interface ProductRepositoryInterface
      * @return array{total_items: int, total_units: int, low_stock_count: int, total_valuation: float}
      */
     public function getKpis(): array;
+
+    /**
+     * @return array<int, object>
+     */
+    public function getRecentMovements(int $limit = 50): array;
+
+    /**
+     * @return array<int, object>
+     */
+    public function getMovementsByProductId(int $productId, int $limit = 100): array;
+
+    /**
+     * @return array<int, object>
+     */
+    public function getLocations(): array;
+
+    /**
+     * @return array{equipos: array<int, object>, departamentos: array<int, object>, empleados: array<int, object>}
+     */
+    public function getInventoryDashboardLookups(): array;
+
+    public function transferStock(\Modules\Inventory\Application\DTOs\TransferStockDTO $dto, int $userId): void;
 }

@@ -60,11 +60,11 @@ const handleKpiSelect = (type: string) => {
     if (type === 'equipos') {
         router.visit('/inventario?tab=equipos');
     } else if (type === 'pendientes') {
-        router.visit('/soportes?estado=pending');
+        router.visit('/soportes?estado=pendiente');
     } else if (type === 'proceso') {
-        router.visit('/soportes?estado=process');
+        router.visit('/soportes?estado=en_proceso');
     } else if (type === 'resueltos') {
-        router.visit('/soportes?estado=resolved');
+        router.visit('/soportes?estado=resuelto');
     } else {
         router.visit('/soportes');
     }
@@ -75,7 +75,7 @@ const handlePointClicked = (pt: { month: string; val: number; year: number }) =>
 };
 
 const handleFilterInventory = (status: string) => {
-    router.visit('/inventario');
+    router.visit(`/inventario?tab=equipos&status=${encodeURIComponent(status)}`);
 };
 
 const handleOpenTicket = (id: number) => {
@@ -87,11 +87,11 @@ const handleViewAllTickets = () => {
 };
 
 const handleCreateTicket = () => {
-    router.visit('/soportes?nuevo=1');
+    router.visit('/soportes/crear');
 };
 
 const handleViewLogs = () => {
-    router.visit('/soportes');
+    router.visit('/auditoria');
 };
 </script>
 
@@ -99,7 +99,7 @@ const handleViewLogs = () => {
     <AppLayout title="Dashboard">
         <div class="dashboard-wrapper">
             <!-- Barra de Bienvenida -->
-            <DashboardWelcome />
+            <DashboardWelcome @open-appearance="isAppearanceOpen = true" />
 
             <!-- Rejilla de 4 KPIs -->
             <DashboardKpiGrid

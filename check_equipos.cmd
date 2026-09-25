@@ -1,0 +1,1 @@
+cmd /c "set PGPASSWORD=Jonas2006&& psql -h 127.0.0.1 -U postgres -d testing -c \"SELECT * FROM equipos LIMIT 1;\" 2>&1"

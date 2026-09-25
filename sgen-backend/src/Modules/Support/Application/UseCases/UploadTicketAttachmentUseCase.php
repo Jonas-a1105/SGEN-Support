@@ -12,8 +12,8 @@ final class UploadTicketAttachmentUseCase
         private SupportRepositoryInterface $repository
     ) {}
 
-    public function execute(int $ticketId, string $filePath, string $originalName, string $mimeType, int $size, int $userId): int
+    public function execute(int $ticketId, string $filePath, string $originalName, string $mimeType, int $size, int $userId, ?string $checksumSha256 = null): int
     {
-        return $this->repository->uploadAttachment($ticketId, $filePath, $originalName, $mimeType, $size, $userId);
+        return $this->repository->uploadAttachment($ticketId, $filePath, $originalName, $mimeType, $size, $userId, $checksumSha256);
     }
 }

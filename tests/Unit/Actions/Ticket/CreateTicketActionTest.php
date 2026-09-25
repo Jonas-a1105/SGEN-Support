@@ -60,7 +60,7 @@ it('lanza ValidationException si equipo no existe', function () {
     $action = new CreateTicketAction($ticketService, $soporteModel, $equipoModel);
     $dto = new CreateTicketDTO(
         equipoId: 999,
-        descripcion: 'Test',
+        descripcion: 'Descripción válida para el equipo',
         prioridad: 'media',
         categoriaId: null,
         userId: 1
@@ -85,7 +85,7 @@ it('lanza ForbiddenException si técnico intenta crear ticket fuera de su depto'
     $action = new CreateTicketAction($ticketService, $soporteModel, $equipoModel);
     $dto = new CreateTicketDTO(
         equipoId: 1,
-        descripcion: 'Test',
+        descripcion: 'Descripción válida para el equipo',
         prioridad: 'media',
         categoriaId: null,
         userId: 1,

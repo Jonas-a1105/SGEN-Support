@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 import type {
     Product,
     Equipment,
@@ -23,6 +24,7 @@ import ViewNewItemForm from './ViewNewItemForm.vue';
 import ViewEditEquipmentWizard from './ViewEditEquipmentWizard.vue';
 import ModalAdjustStock from './ModalAdjustStock.vue';
 import ModalLocationAssign from './ModalLocationAssign.vue';
+import ModalTransferStock from './ModalTransferStock.vue';
 import { useInventoryFilters } from '@/Composables/useInventoryFilters';
 
 const props = defineProps<{
@@ -42,9 +44,16 @@ const currentView = ref<'list' | 'equipment-detail' | 'item-detail' | 'distribut
 const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 const activeTab = ref<'articulos' | 'equipos'>(urlParams?.get('tab') === 'equipos' ? 'equipos' : 'articulos');
 const selectedItem = ref<Product | null>(null);
+const selectedItemForEdit = ref<Product | null>(null);
 const selectedEquipment = ref<Equipment | null>(null);
 const isAdjustOpen = ref(false);
 const isLocationAssignOpen = ref(false);
+const isTransferOpen = ref(false);
+
+const openTransfer = (item?: Product) => {
+    selectedItem.value = item || null;
+    isTransferOpen.value = true;
+};
 
 const openItem = (item: Product) => {
     selectedItem.value = item;
@@ -70,15 +79,44 @@ const openReassign = (eq: Equipment) => {
     selectedEquipment.value = eq;
     isLocationAssignOpen.value = true;
 };
+
+const openCreateArticle = () => {
+    selectedItemForEdit.value = null;
+    currentView.value = 'new-item';
+};
+
+const openEditItem = (item: Product) => {
+    selectedItemForEdit.value = item;
+    currentView.value = 'new-item';
+};
+
+const handleCreateTicket = (eq?: Equipment | null) => {
+    const equip = eq || selectedEquipment.value;
+    if (equip?.id) {
+        router.visit(`/soportes/crear?equipo_id=${equip.id}`);
+    } else {
+        router.visit('/soportes/crear');
+    }
+};
+
+const handleCreateMaintenance = (eq?: Equipment | null) => {
+    const equip = eq || selectedEquipment.value;
+    if (equip?.id) {
+        router.visit(`/mantenimientos/crear?equipo_id=${equip.id}`);
+    } else {
+        router.visit('/mantenimientos/crear');
+    }
+};
 </script>
 
 <template>
     <div class="inventory-wrapper">
         <template v-if="currentView === 'list'">
             <InventoryHeader
-                @open-create-article="currentView = 'new-item'"
+                @open-create-article="openCreateArticle"
                 @open-create-equipment="openCreateEquipment"
                 @open-adjust="openAdjust()"
+                @open-transfer="openTransfer()"
             />
             <InventoryKpiGrid :kpis="kpis" />
             <div class="section-nav-strip">
@@ -88,7 +126,7 @@ const openReassign = (eq: Equipment) => {
                     type="button"
                     @click="activeTab = 'articulos'"
                 >
-                    <span>Artículos de Inventario</span>
+                    <span>Artículos &amp; Repuestos</span>
                     <span class="tab-badge-pill">{{ products.length }}</span>
                 </button>
                 <button
@@ -97,7 +135,7 @@ const openReassign = (eq: Equipment) => {
                     type="button"
                     @click="activeTab = 'equipos'"
                 >
-                    <span>Equipos en Stock</span>
+                    <span>Equipos en Almacén (Disponibles)</span>
                     <span class="tab-badge-pill">{{ equipos.length }}</span>
                 </button>
             </div>
@@ -126,6 +164,8 @@ const openReassign = (eq: Equipment) => {
             @back="currentView = 'list'"
             @edit="currentView = 'edit-equipment'"
             @open-reassign="openReassign"
+            @create-ticket="handleCreateTicket"
+            @new-maintenance="handleCreateMaintenance"
         />
 
         <ViewItemDetail
@@ -135,7 +175,7 @@ const openReassign = (eq: Equipment) => {
             @view-distribution="currentView = 'distribution'"
             @view-history="currentView = 'history'"
             @open-adjust="openAdjust(selectedItem)"
-            @edit="currentView = 'new-item'"
+            @edit="openEditItem(selectedItem)"
         />
 
         <ViewStockDistribution
@@ -155,6 +195,7 @@ const openReassign = (eq: Equipment) => {
 
         <ViewNewItemForm
             v-else-if="currentView === 'new-item'"
+            :item="selectedItemForEdit"
             @back="currentView = 'list'"
             @saved="currentView = 'list'"
         />
@@ -181,6 +222,14 @@ const openReassign = (eq: Equipment) => {
             :departamentos="departamentos"
             :empleados="empleados || []"
             @close="isLocationAssignOpen = false"
+        />
+
+        <ModalTransferStock
+            :is-open="isTransferOpen"
+            :products="products"
+            :departamentos="departamentos"
+            :preselected-item="selectedItem"
+            @close="isTransferOpen = false"
         />
     </div>
 </template>

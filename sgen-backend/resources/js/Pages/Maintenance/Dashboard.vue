@@ -3,27 +3,7 @@ import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { formatDate as formatDateUtil } from '@/Utils/formatters';
-
-interface MaintenanceKpis {
-    pending: number;
-    inProcess: number;
-    completed: number;
-    upcoming: number;
-    overdue: number;
-    total: number;
-}
-
-interface MaintenanceItem {
-    id: number;
-    fecha: string;
-    tipoMantenimiento: string;
-    estado: string;
-    descripcion: string;
-    frecuencia: string;
-    proximaFecha?: string;
-    equipoCodigo?: string;
-    equipoTipo?: string;
-}
+import type { MaintenanceKpis, MaintenanceItem } from '@/types';
 
 const props = defineProps<{
     kpis: MaintenanceKpis;

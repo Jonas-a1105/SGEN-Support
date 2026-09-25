@@ -11,17 +11,46 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const emit = defineEmits<{
+    (e: 'start-ticket'): void;
+    (e: 'open-pause'): void;
+    (e: 'resume-ticket'): void;
+    (e: 'open-resolve'): void;
+    (e: 'reopen-ticket'): void;
+}>();
+
 const badgeVariant = computed<BadgeVariant>(() => {
-    const raw = (props.ticket.status_variant || props.ticket.status || '').toLowerCase();
+    const raw = (props.ticket.raw_status || props.ticket.status_variant || props.ticket.status || '').toLowerCase();
     if (raw.includes('resuelto') || raw.includes('resolved')) return 'success';
+    if (raw.includes('espera') || raw.includes('waiting')) return 'warning';
     if (raw.includes('proceso') || raw.includes('process')) return 'info';
-    if (raw.includes('pendiente') || raw.includes('pending')) return 'warning';
     if (raw.includes('critica') || raw.includes('critical')) return 'danger';
+    if (raw.includes('pendiente') || raw.includes('pending')) return 'warning';
     return 'neutral';
 });
 
+const rawStatus = computed(() => {
+    return (props.ticket.raw_status || props.ticket.status || '').toLowerCase();
+});
+
+const isPending = computed(() => {
+    return rawStatus.value === 'pendiente' || rawStatus.value === 'pending' || rawStatus.value === 'critical';
+});
+
+const isInProcess = computed(() => {
+    return rawStatus.value === 'en_proceso' || rawStatus.value === 'process';
+});
+
+const isWaiting = computed(() => {
+    return rawStatus.value === 'en_espera' || rawStatus.value === 'waiting';
+});
+
+const isResolved = computed(() => {
+    return rawStatus.value === 'resuelto' || rawStatus.value === 'resolved';
+});
+
 const handleDownloadPdf = () => {
-    window.print();
+    window.open(`/soportes/${props.ticket.id}/pdf`, '_blank');
 };
 
 const handleGoBack = () => {
@@ -69,6 +98,76 @@ const handleGoBack = () => {
             </div>
 
             <div class="ticket-header-right">
+                <!-- ACCIONES RÁPIDAS DEL CICLO DE VIDA -->
+                <div class="lifecycle-actions">
+                    <button
+                        v-if="isPending"
+                        class="action-btn btn-primary"
+                        type="button"
+                        @click="emit('start-ticket')"
+                        title="Iniciar atención y mover a 'En Proceso'"
+                    >
+                        <svg viewBox="0 0 24 24" class="btn-icon">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <span>Iniciar Atención</span>
+                    </button>
+
+                    <button
+                        v-if="isInProcess"
+                        class="action-btn btn-warning"
+                        type="button"
+                        @click="emit('open-pause')"
+                        title="Pausar ticket y pausar cálculo de SLA"
+                    >
+                        <svg viewBox="0 0 24 24" class="btn-icon">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                        <span>Pausar</span>
+                    </button>
+
+                    <button
+                        v-if="isInProcess"
+                        class="action-btn btn-success"
+                        type="button"
+                        @click="emit('open-resolve')"
+                        title="Resolver ticket y registrar diagnóstico/solución"
+                    >
+                        <svg viewBox="0 0 24 24" class="btn-icon">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Resolver</span>
+                    </button>
+
+                    <button
+                        v-if="isWaiting"
+                        class="action-btn btn-primary"
+                        type="button"
+                        @click="emit('resume-ticket')"
+                        title="Reanudar atención técnica"
+                    >
+                        <svg viewBox="0 0 24 24" class="btn-icon">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <span>Reanudar</span>
+                    </button>
+
+                    <button
+                        v-if="isResolved"
+                        class="action-btn btn-outline"
+                        type="button"
+                        @click="emit('reopen-ticket')"
+                        title="Reabrir ticket para continuar soporte"
+                    >
+                        <svg viewBox="0 0 24 24" class="btn-icon">
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        <span>Reabrir</span>
+                    </button>
+                </div>
+
                 <BaseBadge :variant="badgeVariant" size="md">
                     {{ ticket.status_label }}
                 </BaseBadge>
@@ -111,6 +210,19 @@ const handleGoBack = () => {
                 </BaseDropdown>
             </div>
         </section>
+
+        <!-- AVISO DE TICKET PAUSADO -->
+        <div v-if="isWaiting && ticket.motivo_pausa" class="pause-reason-alert">
+            <svg viewBox="0 0 24 24" class="alert-icon">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <div class="alert-text">
+                <strong>Ticket en Pausa:</strong>
+                <span>{{ ticket.motivo_pausa }}</span>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -270,6 +382,120 @@ const handleGoBack = () => {
 
 .dropdown-item:hover {
     background: var(--stroke-subtle);
+}
+
+.lifecycle-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    border: 1px solid transparent;
+    box-shadow: none;
+    line-height: 1;
+}
+
+.btn-icon {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.btn-primary {
+    background: var(--brand-primary, #6366f1);
+    color: #ffffff;
+    border-color: var(--brand-primary, #6366f1);
+}
+
+.btn-primary .btn-icon {
+    fill: currentColor;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+.btn-warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.btn-warning .btn-icon {
+    fill: currentColor;
+}
+
+.btn-warning:hover {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.5);
+}
+
+.btn-success {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.btn-success:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.btn-outline {
+    background: var(--stroke-subtle);
+    color: var(--text);
+    border-color: var(--stroke);
+}
+
+.btn-outline:hover {
+    background: var(--stroke-hover);
+    border-color: var(--stroke-hover);
+}
+
+.pause-reason-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--panel-radius, 12px);
+    padding: 12px 18px;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.alert-icon {
+    width: 18px;
+    height: 18px;
+    stroke: #d97706;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.alert-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.4;
+}
+
+.alert-text strong {
+    color: #d97706;
+    font-weight: 700;
 }
 
 @media (max-width: 768px) {

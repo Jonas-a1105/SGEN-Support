@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { BaseModal, BaseButton, BaseInput, BaseTextarea } from '@/Components/UI';
 import type { MaintenanceDetail } from './types';
@@ -12,6 +12,18 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
+
+const isPeriodic = computed(() => props.maintenance.frecuencia && props.maintenance.frecuencia !== 'unica');
+
+const recurrenceDescription = computed(() => {
+    switch (props.maintenance.frecuencia) {
+        case 'mensual': return 'en 1 mes';
+        case 'trimestral': return 'en 3 meses';
+        case 'semestral': return 'en 6 meses';
+        case 'anual': return 'en 1 año';
+        default: return 'automáticamente';
+    }
+});
 
 const completeForm = ref({
     costo: props.maintenance.costo || 0,
@@ -60,6 +72,18 @@ const handleComplete = () => {
         <form @submit.prevent="handleComplete" class="modal-form-stack">
             <div class="modal-intro-text">
                 El mantenimiento <strong>#{{ maintenance.id }}</strong> se registrará como concluido y pasará al estado completado.
+            </div>
+
+            <div v-if="isPeriodic" class="recurrence-notice">
+                <svg viewBox="0 0 24 24" class="notice-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <div>
+                    <strong>Recurrencia ({{ maintenance.frecuencia.toUpperCase() }}):</strong>
+                    <span> El CMMS programará automáticamente la próxima cita {{ recurrenceDescription }}.</span>
+                </div>
             </div>
 
             <div class="form-group">
@@ -119,6 +143,27 @@ const handleComplete = () => {
     background: var(--stroke-subtle);
     border-radius: 8px;
     border: var(--stroke-w) solid var(--stroke);
+}
+
+.recurrence-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(79, 70, 229, 0.08);
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.45;
+}
+
+.notice-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--primary);
+    flex-shrink: 0;
+    margin-top: 1px;
 }
 
 .form-group {

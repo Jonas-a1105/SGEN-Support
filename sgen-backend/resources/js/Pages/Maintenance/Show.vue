@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { BaseKpiCard } from '@/Components/UI';
@@ -7,6 +7,7 @@ import { formatCurrency, formatDate } from '@/Utils/formatters';
 import MaintenanceDetailHeader from '@/Components/Maintenance/Detail/MaintenanceDetailHeader.vue';
 import CardMaintenanceAsset from '@/Components/Maintenance/Detail/CardMaintenanceAsset.vue';
 import CardWorkDetail from '@/Components/Maintenance/Detail/CardWorkDetail.vue';
+import CardMaintenanceMaterials from '@/Components/Maintenance/Detail/CardMaintenanceMaterials.vue';
 import CardTechnicalObservations from '@/Components/Maintenance/Detail/CardTechnicalObservations.vue';
 import CardMaintenanceHistory from '@/Components/Maintenance/Detail/CardMaintenanceHistory.vue';
 import SidebarPlanning from '@/Components/Maintenance/Detail/SidebarPlanning.vue';
@@ -16,9 +17,11 @@ import ModalCompleteMaintenance from '@/Components/Maintenance/Detail/ModalCompl
 import ModalPostponeMaintenance from '@/Components/Maintenance/Detail/ModalPostponeMaintenance.vue';
 import ModalCancelMaintenance from '@/Components/Maintenance/Detail/ModalCancelMaintenance.vue';
 import ModalEditMaintenance from '@/Components/Maintenance/Detail/ModalEditMaintenance.vue';
+import ModalAddMaintenanceMaterial from '@/Components/Maintenance/Detail/ModalAddMaintenanceMaterial.vue';
 import type {
     MaintenanceDetail,
     FormOptions,
+    MaintenanceMaterialItem,
 } from '@/Components/Maintenance/Detail/types';
 
 export type {
@@ -26,19 +29,31 @@ export type {
     EquipmentInfo,
     RelatedMaintenance,
     FormOptions,
+    MaintenanceMaterialItem,
 } from '@/Components/Maintenance/Detail/types';
 
 const props = defineProps<{
     maintenance: MaintenanceDetail;
     options?: FormOptions;
+    materiales?: MaintenanceMaterialItem[];
 }>();
 
 const isCompleteModalOpen = ref(false);
 const isPostponeModalOpen = ref(false);
 const isCancelModalOpen = ref(false);
 const isEditModalOpen = ref(false);
+const isMaterialModalOpen = ref(false);
 
+const totalMaterialsCost = computed(() => {
+    return (props.materiales || []).reduce((acc, m) => {
+        const subtotal = m.costo_total ?? (Number(m.cantidad || 0) * Number(m.costo_unitario || 0));
+        return acc + subtotal;
+    }, 0);
+});
 
+const totalConsolidatedCost = computed(() => {
+    return Number(props.maintenance.costo || 0) + totalMaterialsCost.value;
+});
 </script>
 
 <template>
@@ -58,9 +73,9 @@ const isEditModalOpen = ref(false);
             <!-- 4 KPI Metrics Row -->
             <section class="maint-kpi-grid" aria-label="Métricas de la orden de mantenimiento">
                 <BaseKpiCard
-                    label="COSTO ESTIMADO / FINAL"
-                    :value="formatCurrency(maintenance.costo)"
-                    :subtext="`Tipo: ${maintenance.tipoMantenimiento}`"
+                    label="COSTO TOTAL CONSOLIDADO"
+                    :value="formatCurrency(totalConsolidatedCost)"
+                    :subtext="props.materiales?.length ? `M. Obra: ${formatCurrency(maintenance.costo)} + Repuestos` : `Mano de obra / servicio`"
                     color="brand"
                 />
                 <BaseKpiCard
@@ -97,6 +112,13 @@ const isEditModalOpen = ref(false);
                         :is-completed="maintenance.estado === 'completado'"
                     />
 
+                    <!-- Consumed Materials & Parts Card -->
+                    <CardMaintenanceMaterials
+                        :materiales="materiales"
+                        :is-closed="['completado', 'cancelado'].includes(maintenance.estado)"
+                        @open-modal="isMaterialModalOpen = true"
+                    />
+
                     <!-- Technical Observations Card -->
                     <CardTechnicalObservations
                         v-if="maintenance.observaciones"
@@ -114,7 +136,10 @@ const isEditModalOpen = ref(false);
                         :tecnico-nombre="maintenance.tecnicoNombre"
                         :realizado-por="maintenance.realizadoPor"
                     />
-                    <SidebarFinancial :maintenance="maintenance" />
+                    <SidebarFinancial
+                        :maintenance="maintenance"
+                        :materiales="materiales"
+                    />
                 </aside>
             </div>
         </div>
@@ -143,6 +168,13 @@ const isEditModalOpen = ref(false);
             :maintenance="maintenance"
             :options="options"
             @close="isEditModalOpen = false"
+        />
+
+        <ModalAddMaintenanceMaterial
+            :is-open="isMaterialModalOpen"
+            :maintenance-id="maintenance.id"
+            :inventory-items="options?.inventory_items || []"
+            @close="isMaterialModalOpen = false"
         />
     </AppLayout>
 </template>

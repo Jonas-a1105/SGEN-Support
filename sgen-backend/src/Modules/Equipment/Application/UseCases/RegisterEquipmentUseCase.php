@@ -2,16 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Modules\Inventory\Application\UseCases;
+namespace Modules\Equipment\Application\UseCases;
 
-use Illuminate\Support\Facades\DB;
-use Modules\Inventory\Application\DTOs\RegisterEquipmentDTO;
+use Modules\Equipment\Application\DTOs\CreateEquipmentDTO;
+use Modules\Equipment\Application\DTOs\RegisterEquipmentDTO;
 
-final readonly class RegisterEquipmentUseCase
+/**
+ * Registra un equipo nuevo (alta rápida) con unicidad validada
+ * de código patrimonial y número de serie.
+ */
+final class RegisterEquipmentUseCase
 {
+    public function __construct(
+        private readonly CreateEquipmentUseCase $createEquipmentUseCase
+    ) {
+    }
+
     public function execute(RegisterEquipmentDTO $dto): int
     {
-        return (int) DB::table('equipos')->insertGetId([
+        return $this->createEquipmentUseCase->execute(CreateEquipmentDTO::fromArray([
             'codigo_inventario' => $dto->codigoInventario,
             'tipo' => $dto->tipo,
             'marca' => $dto->marca,
@@ -28,8 +37,6 @@ final readonly class RegisterEquipmentUseCase
             'ubicacion_fisica' => $dto->ubicacionFisica,
             'valor_compra' => $dto->valorCompra,
             'proveedor' => $dto->proveedor,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ]));
     }
 }

@@ -48,6 +48,7 @@ export interface TicketAttachment {
     mime: string;
     url: string;
     date: string;
+    checksum?: string;
 }
 
 export interface ConsumedMaterial {
@@ -78,7 +79,10 @@ export interface TicketDetailData {
     title: string;
     description: string;
     status: string;
+    raw_status?: string;
     status_label: string;
+    status_variant?: string;
+    motivo_pausa?: string | null;
     priority: string;
     priority_label: string;
     category: string;
@@ -92,16 +96,18 @@ export interface TicketDetailData {
     close_date: string;
     attention_time: string;
     sla_on_time: boolean;
+    solution?: string | null;
+    firma?: string | null;
 }
 
-export interface TicketDetail {
-    ticket: TicketDetailData;
-    asset: TicketAsset;
-    comments: TicketComment[];
-    attachments: TicketAttachment[];
-    materials: ConsumedMaterial[];
-    rating: TicketRating;
-    log_entries: LogEntry[];
+export interface TicketDetail extends TicketDetailData {
+    ticket?: TicketDetailData;
+    asset?: TicketAsset;
+    comments?: TicketComment[];
+    attachments?: TicketAttachment[];
+    materials?: ConsumedMaterial[];
+    rating?: TicketRating;
+    log_entries?: LogEntry[];
 }
 
 export interface TechnicianOption {
