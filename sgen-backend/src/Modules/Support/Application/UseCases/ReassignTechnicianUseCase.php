@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Modules\Support\Application\UseCases;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
-use Modules\Notification\Domain\Enums\NotificationType;
+use Modules\Support\Domain\Events\TicketAssigned;
+use Modules\Support\Domain\Ports\DomainEventDispatcher;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 
 final class ReassignTechnicianUseCase
 {
     public function __construct(
         private readonly SupportRepositoryInterface $repository,
-        private readonly CreateNotificationUseCase $notificationUseCase
+        private readonly DomainEventDispatcher $events
     ) {}
 
     public function execute(int $ticketId, int $employeeId): bool
@@ -21,24 +21,9 @@ final class ReassignTechnicianUseCase
         $success = $this->repository->reassignTechnician($ticketId, $employeeId);
 
         if ($success) {
-            $techUserId = DB::table('usuarios')->where('empleado_id', $employeeId)->value('id')
-                       ?? DB::table('empleados')->where('id', $employeeId)->value('usuario_id');
+            $titulo = (string) (DB::table('soportes')->where('id', $ticketId)->value('titulo') ?? '');
 
-            if ($techUserId) {
-                $ticket = DB::table('soportes')->where('id', $ticketId)->first(['id', 'titulo']);
-                try {
-                    $this->notificationUseCase->execute(
-                        (int) $techUserId,
-                        NotificationType::TICKET_ASIGNADO,
-                        'Ticket Asignado',
-                        "Se te ha asignado el ticket #{$ticketId}: ".($ticket->titulo ?? ''),
-                        "/soportes/{$ticketId}"
-                    );
-                } catch (\Throwable $e) {
-                    // La notificación no detiene la operación, pero jamás falla en silencio.
-                    report($e);
-                }
-            }
+            $this->events->dispatch(new TicketAssigned($ticketId, $employeeId, $titulo));
         }
 
         return $success;

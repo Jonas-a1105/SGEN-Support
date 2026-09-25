@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Modules\Audit\Application\Services\BitacoraLogger;
 use Modules\Support\Domain\Enums\TicketStatus;
 
 final class AutoCloseResolvedTicketsCommand extends Command
@@ -112,22 +113,19 @@ final class AutoCloseResolvedTicketsCommand extends Command
                     ]);
                 }
 
-                // Bitácora de auditoría
-                DB::table('bitacora_acciones')->insert([
-                    'usuario_id' => $systemUserId,
-                    'username' => $systemUsername,
-                    'accion' => 'autocierre_ticket',
-                    'entidad' => 'soporte',
-                    'entidad_id' => $ticket->id,
-                    'enlace_tipo' => 'soporte',
-                    'enlace_id' => $ticket->id,
-                    'datos_nuevos' => json_encode([
+                // Bitácora de auditoría (canal centralizado: jamás silencioso)
+                app(BitacoraLogger::class)->record(
+                    accion: 'autocierre_ticket',
+                    entidad: 'soporte',
+                    entidadId: (int) $ticket->id,
+                    datosNuevos: [
                         'dias_espera' => $dias,
                         'motivo' => 'Autocierre programado según política de SLA y calidad',
-                    ]),
-                    'ip_address' => '127.0.0.1',
-                    'created_at' => $now,
-                ]);
+                    ],
+                    usuarioId: $systemUserId !== null ? (int) $systemUserId : null,
+                    username: $systemUsername,
+                    ip: '127.0.0.1',
+                );
 
                 $closedCount++;
             });

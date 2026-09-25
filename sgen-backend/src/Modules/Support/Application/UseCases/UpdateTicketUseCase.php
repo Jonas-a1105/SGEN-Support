@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Modules\Support\Application\UseCases;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
-use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Support\Application\DTOs\UpdateTicketDTO;
+use Modules\Support\Domain\Events\TicketResolved;
+use Modules\Support\Domain\Ports\DomainEventDispatcher;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 
 final class UpdateTicketUseCase
 {
     public function __construct(
         private readonly SupportRepositoryInterface $repository,
-        private readonly CreateNotificationUseCase $notificationUseCase
+        private readonly DomainEventDispatcher $events
     ) {}
 
     public function execute(int $id, UpdateTicketDTO $dto): bool
@@ -23,20 +23,12 @@ final class UpdateTicketUseCase
 
         if ($success && $dto->estado === 'resuelto') {
             $ticket = DB::table('soportes')->where('id', $id)->first(['id', 'titulo', 'usuario_creacion_id']);
-            if ($ticket?->usuario_creacion_id) {
-                try {
-                    $this->notificationUseCase->execute(
-                        (int) $ticket->usuario_creacion_id,
-                        NotificationType::TICKET_ESTADO_CAMBIADO,
-                        'Ticket Resuelto',
-                        "Tu ticket #{$id} ({$ticket->titulo}) ha sido marcado como resuelto. Ya puedes calificar la atención recibida.",
-                        "/soportes/{$id}"
-                    );
-                } catch (\Throwable $e) {
-                    // La notificación no detiene la operación, pero jamás falla en silencio.
-                    report($e);
-                }
-            }
+
+            $this->events->dispatch(new TicketResolved(
+                $id,
+                (string) ($ticket->titulo ?? ''),
+                $ticket?->usuario_creacion_id !== null ? (int) $ticket->usuario_creacion_id : null,
+            ));
         }
 
         return $success;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Support\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Audit\Application\Services\BitacoraLogger;
 use Modules\Support\Application\DTOs\CreateTicketDTO;
 use Modules\Support\Application\DTOs\UpdateTicketDTO;
 use Modules\Support\Application\UseCases\AddTicketCommentUseCase;
@@ -273,7 +273,7 @@ final class SupportController extends Controller
         return back()->with('success', "Se eliminaron {$count} tickets.");
     }
 
-    public function uploadAttachment(int|string $id, Request $request, UploadTicketAttachmentUseCase $useCase): RedirectResponse
+    public function uploadAttachment(int|string $id, Request $request, UploadTicketAttachmentUseCase $useCase, BitacoraLogger $bitacora): RedirectResponse
     {
         $request->validate([
             'file' => [
@@ -305,28 +305,21 @@ final class SupportController extends Controller
             $checksum
         );
 
-        try {
-            DB::table('bitacora_acciones')->insert([
-                'usuario_id' => $userId,
-                'username' => $request->user()->username ?? 'sistema',
-                'accion' => 'subir_archivo',
-                'entidad' => 'soporte',
-                'entidad_id' => $ticketId,
-                'enlace_tipo' => 'soporte',
-                'enlace_id' => $ticketId,
-                'datos_nuevos' => json_encode([
-                    'archivo_id' => $attachmentId,
-                    'nombre' => $file->getClientOriginalName(),
-                    'tamano_bytes' => $file->getSize(),
-                    'checksum_sha256' => $checksum,
-                ]),
-                'ip_address' => $request->ip() ?: '127.0.0.1',
-                'created_at' => Carbon::now(),
-            ]);
-        } catch (\Throwable $e) {
-            // La bitácora es evidencia forense: un fallo jamás pasa en silencio.
-            report($e);
-        }
+        // Bitácora por canal centralizado (módulo Audit).
+        $bitacora->record(
+            accion: 'subir_archivo',
+            entidad: 'soporte',
+            entidadId: $ticketId,
+            datosNuevos: [
+                'archivo_id' => $attachmentId,
+                'nombre' => $file->getClientOriginalName(),
+                'tamano_bytes' => $file->getSize(),
+                'checksum_sha256' => $checksum,
+            ],
+            usuarioId: $userId,
+            username: $request->user()->username,
+            ip: $request->ip() ?: '127.0.0.1',
+        );
 
         return back()->with('success', 'Archivo adjunto subido correctamente con validación de integridad SHA-256.');
     }
@@ -356,7 +349,7 @@ final class SupportController extends Controller
         );
     }
 
-    public function deleteAttachment(int $attachmentId, Request $request, SupportRepositoryInterface $repository): RedirectResponse
+    public function deleteAttachment(int $attachmentId, Request $request, SupportRepositoryInterface $repository, BitacoraLogger $bitacora): RedirectResponse
     {
         $attachment = $repository->getAttachmentById($attachmentId);
         if ($attachment !== null) {
@@ -366,26 +359,19 @@ final class SupportController extends Controller
 
             $repository->deleteAttachment($attachmentId);
 
-            try {
-                DB::table('bitacora_acciones')->insert([
-                    'usuario_id' => $request->user()?->id,
-                    'username' => $request->user()->username ?? 'sistema',
-                    'accion' => 'eliminar_archivo',
-                    'entidad' => 'soporte',
-                    'entidad_id' => $attachment->ticket_id,
-                    'enlace_tipo' => 'soporte',
-                    'enlace_id' => $attachment->ticket_id,
-                    'datos_anteriores' => json_encode([
-                        'archivo_id' => $attachmentId,
-                        'nombre' => $attachment->nombre_original,
-                    ]),
-                    'ip_address' => $request->ip() ?: '127.0.0.1',
-                    'created_at' => Carbon::now(),
-                ]);
-            } catch (\Throwable $e) {
-                // La bitácora es evidencia forense: un fallo jamás pasa en silencio.
-                report($e);
-            }
+            // Bitácora por canal centralizado (módulo Audit).
+            $bitacora->record(
+                accion: 'eliminar_archivo',
+                entidad: 'soporte',
+                entidadId: (int) $attachment->ticket_id,
+                datosAnteriores: [
+                    'archivo_id' => $attachmentId,
+                    'nombre' => $attachment->nombre_original,
+                ],
+                usuarioId: (int) $request->user()->id,
+                username: $request->user()->username,
+                ip: $request->ip() ?: '127.0.0.1',
+            );
         }
 
         return back()->with('success', 'Archivo eliminado correctamente.');

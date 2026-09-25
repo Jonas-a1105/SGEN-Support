@@ -5,44 +5,36 @@ declare(strict_types=1);
 namespace Modules\Support\Application\UseCases;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
-use Modules\Notification\Domain\Enums\NotificationType;
+use Modules\Support\Domain\Events\TicketReopened;
+use Modules\Support\Domain\Ports\DomainEventDispatcher;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 
+/**
+ * Reapertura de tickets: SOLO válida sobre tickets con estado "resuelto",
+ * revirtiendo temporalmente a "en_proceso" para una nueva atención.
+ * La legalidad de la transición la verifica el repositorio contra la
+ * máquina de estados del dominio; aquí solo se publica el hecho consumado.
+ */
 final class ReopenTicketUseCase
 {
     public function __construct(
         private readonly SupportRepositoryInterface $repository,
-        private readonly CreateNotificationUseCase $notificationUseCase
+        private readonly DomainEventDispatcher $events
     ) {}
 
     public function execute(int $ticketId, string $motivo, ?int $userId = null): bool
     {
-        $ticket = DB::table('soportes')->where('id', $ticketId)->first();
-        if ($ticket === null) {
-            return false;
-        }
-
         $success = $this->repository->reopenTicket($ticketId, $motivo, $userId);
 
-        if ($success && $ticket->empleado_id) {
-            $techUserId = DB::table('usuarios')->where('empleado_id', $ticket->empleado_id)->value('id')
-                       ?? DB::table('empleados')->where('id', $ticket->empleado_id)->value('usuario_id');
+        if ($success) {
+            $ticket = DB::table('soportes')->where('id', $ticketId)->first(['id', 'titulo', 'empleado_id']);
 
-            if ($techUserId) {
-                try {
-                    $this->notificationUseCase->execute(
-                        (int) $techUserId,
-                        NotificationType::TICKET_ESTADO_CAMBIADO,
-                        'Ticket Reabierto',
-                        "El ticket #{$ticketId} ({$ticket->titulo}) fue reabierto: {$motivo}",
-                        "/soportes/{$ticketId}"
-                    );
-                } catch (\Throwable $e) {
-                    // La notificación no detiene la operación, pero jamás falla en silencio.
-                    report($e);
-                }
-            }
+            $this->events->dispatch(new TicketReopened(
+                $ticketId,
+                (string) ($ticket->titulo ?? ''),
+                $motivo,
+                $ticket->empleado_id !== null ? (int) $ticket->empleado_id : null,
+            ));
         }
 
         return $success;
