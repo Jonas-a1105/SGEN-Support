@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useId } from 'vue';
+
 interface Props {
     modelValue: string | number;
     label?: string;
@@ -23,15 +25,20 @@ withDefaults(defineProps<Props>(), {
 defineEmits<{
     (e: 'update:modelValue', value: string | number): void;
 }>();
+
+// Asociación programática label↔input (accesibilidad real: lectores de pantalla
+// y herramientas de testing pueden resolver los campos por su etiqueta).
+const inputId = useId();
 </script>
 
 <template>
     <div class="field-group">
-        <label v-if="label" class="field-label">
+        <label v-if="label" class="field-label" :for="inputId">
             {{ label }}
             <span v-if="required" class="field-required">*</span>
         </label>
         <input
+            :id="inputId"
             :type="type"
             :value="modelValue"
             :placeholder="placeholder"
@@ -39,6 +46,7 @@ defineEmits<{
             :min="min"
             :max="max"
             :step="step"
+            :required="required"
             :class="['field-input', { 'has-error': !!error }]"
             @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         >

@@ -8,9 +8,12 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "typecheck": "vue-tsc --noEmit"
+        "typecheck": "vue-tsc --noEmit",
+        "test:e2e": "playwright test",
+        "test:e2e:install": "playwright install chromium"
     },
     "devDependencies": {
+        "@playwright/test": "^1.63.0",
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",

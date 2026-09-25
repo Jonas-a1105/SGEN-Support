@@ -22,3 +22,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Playwright E2E
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
