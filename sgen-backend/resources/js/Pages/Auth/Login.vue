@@ -40,6 +40,11 @@ const submit = () => {
                 <BaseButton type="submit" variant="primary" :loading="form.processing" class="w-full">
                     Iniciar Sesión
                 </BaseButton>
+
+                <p class="auth-help">
+                    ¿Olvidaste tu contraseña? Solicita un restablecimiento al administrador del sistema:
+                    recibirás una clave temporal y deberás definir una nueva al ingresar.
+                </p>
             </form>
         </BaseCard>
     </div>
@@ -106,6 +111,17 @@ const submit = () => {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+.auth-help {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    text-align: center;
+    border-top: var(--stroke-w) solid var(--stroke-subtle);
+    padding-top: 12px;
 }
 
 .remember-label {

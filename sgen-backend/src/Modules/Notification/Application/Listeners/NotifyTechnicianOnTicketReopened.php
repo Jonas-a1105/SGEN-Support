@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Modules\Notification\Application\Listeners;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
 use Modules\Notification\Domain\Enums\NotificationType;
+use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
 use Modules\Support\Domain\Events\TicketReopened;
 
 final class NotifyTechnicianOnTicketReopened
@@ -36,6 +38,16 @@ final class NotifyTechnicianOnTicketReopened
                 "El ticket #{$event->ticketId} ({$event->ticketTitulo}) fue reabierto: {$event->motivo}",
                 "/soportes/{$event->ticketId}"
             );
+
+            // Canal correo: solo si el técnico tiene email registrado.
+            $email = DB::table('usuarios')->where('id', $techUserId)->value('email');
+            if ($email) {
+                Mail::to((string) $email)->send(new TicketNotificationMail(
+                    'Ticket reabierto',
+                    "El ticket #{$event->ticketId} ({$event->ticketTitulo}) fue reabierto. Motivo: {$event->motivo}",
+                    "/soportes/{$event->ticketId}",
+                ));
+            }
         } catch (\Throwable $e) {
             // La notificación no detiene la operación, pero jamás falla en silencio.
             report($e);

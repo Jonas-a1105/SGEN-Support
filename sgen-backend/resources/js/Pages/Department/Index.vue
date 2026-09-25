@@ -8,6 +8,7 @@ import DepartmentCard from '@/Components/Department/DepartmentCard.vue';
 import DepartmentTable from '@/Components/Department/DepartmentTable.vue';
 import DepartmentFormView from '@/Components/Department/DepartmentFormView.vue';
 import type { LeadershipCandidate } from '@/Types/department';
+import { useToast } from '@/Composables/useToast';
 import ModalDepartmentDelete from '@/Components/Department/ModalDepartmentDelete.vue';
 import { useDepartmentFilters, type DepartmentItem } from '@/Composables/useDepartmentFilters';
 
@@ -18,6 +19,7 @@ const props = defineProps<{
 }>();
 
 const rawDepartments = toRef(props, 'departamentos');
+const { addToast } = useToast();
 
 const {
     searchQuery,
@@ -65,7 +67,7 @@ const handleSaveDepartment = (payload: Record<string, unknown>) => {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al actualizar el departamento.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     } else {
@@ -75,7 +77,7 @@ const handleSaveDepartment = (payload: Record<string, unknown>) => {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al registrar el departamento.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     }
@@ -91,7 +93,7 @@ const handleConfirmDelete = () => {
         },
         onError: (errors) => {
             const firstErr = Object.values(errors)[0] || 'Error al eliminar el departamento.';
-            alert(firstErr);
+            addToast({ type: 'error', title: firstErr });
         },
     });
 };

@@ -26,7 +26,8 @@ final readonly class CreateUserUseCase
             role: $roleEnum,
             theme: 'light',
             employeeId: $dto->empleadoId,
-            departmentId: $dto->departamentoId
+            departmentId: $dto->departamentoId,
+            email: $dto->email
         );
 
         return $this->repository->save($user);

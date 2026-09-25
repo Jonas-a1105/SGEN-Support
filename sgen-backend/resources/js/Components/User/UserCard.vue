@@ -7,8 +7,9 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'edit', user: UserItem): void;
-    (e: 'delete', user: UserItem): void;
+(e: 'edit', user: UserItem): void;
+(e: 'delete', user: UserItem): void;
+(e: 'reset-password', user: UserItem): void;
 }>();
 
 function getRoleToneClass(rol: string): string {
@@ -54,7 +55,10 @@ function getRoleToneClass(rol: string): string {
                     <button class="btn-card-action" type="button" title="Editar" @click="emit('edit', user)">
                         <svg viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
                     </button>
-                    <button class="btn-card-action delete" type="button" title="Eliminar" @click="emit('delete', user)">
+                    <button class="btn-card-action reset" type="button" title="Restablecer contraseña" @click="emit('reset-password', user)">
+    <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
+</button>
+<button class="btn-card-action delete" type="button" title="Eliminar" @click="emit('delete', user)">
                         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
                     </button>
                 </div>

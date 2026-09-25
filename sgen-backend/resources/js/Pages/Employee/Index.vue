@@ -9,6 +9,7 @@ import EmployeeCard from '@/Components/Employee/EmployeeCard.vue';
 import EmployeeTable from '@/Components/Employee/EmployeeTable.vue';
 import EmployeeFormView, { type DepartmentSelectOption, type UserSelectOption } from '@/Components/Employee/EmployeeFormView.vue';
 import ModalEmployeeDelete from '@/Components/Employee/ModalEmployeeDelete.vue';
+import { useToast } from '@/Composables/useToast';
 import { useEmployeeFilters, type EmployeeItem } from '@/Composables/useEmployeeFilters';
 
 const props = defineProps<{
@@ -22,6 +23,7 @@ const props = defineProps<{
 }>();
 
 const rawEmployees = toRef(props, 'empleados');
+const { addToast } = useToast();
 
 const {
     currentDeptFilter,
@@ -73,7 +75,7 @@ const handleSaveEmployee = (payload: Record<string, unknown>) => {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al actualizar la ficha del empleado.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     } else {
@@ -83,7 +85,7 @@ const handleSaveEmployee = (payload: Record<string, unknown>) => {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al registrar el empleado.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     }
@@ -99,7 +101,7 @@ const handleConfirmDelete = () => {
         },
         onError: (errors) => {
             const firstErr = Object.values(errors)[0] || 'Error al eliminar el empleado.';
-            alert(firstErr);
+            addToast({ type: 'error', title: firstErr });
         },
     });
 };

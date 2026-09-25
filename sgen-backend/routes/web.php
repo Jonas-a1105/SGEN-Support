@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Modules\About\Infrastructure\Http\Controllers\AboutController;
 use Modules\Audit\Infrastructure\Http\Controllers\AuditController;
 use Modules\Auth\Infrastructure\Http\Controllers\AuthController;
@@ -23,7 +24,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// Rutas Protegidas (Autenticación Requerida)
+// Rutas Protegidas (Autenticación Requerida)// Rutas Protegidas (Autenticación Requerida)
 //
 // Autorización por permisos (Spatie): las rutas GET operativas quedan
 // abiertas a todo usuario autenticado; las mutaciones exigen el permiso
@@ -37,6 +38,9 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Cuenta: cambio de contraseña obligatorio (cuentas con clave temporal).
+    Route::get('/cuenta/contrasena', fn () => Inertia::render('Auth/ForcePasswordChange'))->name('cuenta.contrasena');
 
     Route::prefix('inventario')->name('inventario.')->group(function () {
         Route::get('/', [InventoryController::class, 'index'])->name('index');
@@ -139,6 +143,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::match(['put', 'patch'], '/{id}', [UserController::class, 'update'])->name('update');
+        Route::post('/{id}/restablecer', [UserController::class, 'resetPassword'])->name('reset-password');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
     });
 

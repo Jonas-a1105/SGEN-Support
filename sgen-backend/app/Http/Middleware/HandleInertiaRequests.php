@@ -39,16 +39,23 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'auth' => [
+            'auth' => fn (): array => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,
                     'username' => $request->user()->username,
                     'rol' => $request->user()->rol,
+                    'tema' => $request->user()->tema,
+                    'must_change_password' => (bool) ($request->user()->must_change_password ?? false),
+                    'empleado_id' => $request->user()->empleado_id,
+                    'departamento_id' => $request->user()->departamento_id,
                 ] : null,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
+                'warning' => $request->session()->get('warning'),
+                // Contraseña temporal de restablecimiento: solo se muestra una vez.
+                'temp_password' => $request->session()->pull('temp_password'),
             ],
         ];
     }

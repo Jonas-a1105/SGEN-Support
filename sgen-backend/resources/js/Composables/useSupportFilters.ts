@@ -35,7 +35,8 @@ export function useSupportFilters(tickets: Ref<TicketListItem[]> | { value: Tick
             if (currentFilter === 'pending' && status !== 'pending') return false;
             if (currentFilter === 'resolved' && status !== 'resolved') return false;
             if (currentFilter === 'closed' && status !== 'closed' && ticket.status !== 'cerrado') return false;
-            if (currentFilter === 'my' && !ticket.is_mine) return false;
+            // "Mis Tickets": asignados a mí O creados por mí (unión con el KPI my_assignments)
+            if (currentFilter === 'my' && !ticket.es_mia_asignacion && !ticket.is_mine) return false;
 
             // 2. Filtro de búsqueda en vivo
             if (query !== '') {

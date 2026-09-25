@@ -33,8 +33,8 @@ final class EloquentUserRepository implements UserRepositoryInterface
                 'empleados.email as empleado_email'
             );
 
-        if (!empty($filters['search'])) {
-            $search = '%' . trim((string) $filters['search']) . '%';
+        if (! empty($filters['search'])) {
+            $search = '%'.trim((string) $filters['search']).'%';
             $query->where(function ($q) use ($search) {
                 $q->where('usuarios.username', 'like', $search)
                     ->orWhere('empleados.nombre', 'like', $search)
@@ -43,7 +43,7 @@ final class EloquentUserRepository implements UserRepositoryInterface
             });
         }
 
-        if (!empty($filters['rol'])) {
+        if (! empty($filters['rol'])) {
             $query->where('usuarios.rol', (string) $filters['rol']);
         }
 
@@ -64,7 +64,8 @@ final class EloquentUserRepository implements UserRepositoryInterface
             theme: (string) ($row->tema ?? 'light'),
             employeeId: $row->empleado_id !== null ? (int) $row->empleado_id : null,
             departmentId: $row->departamento_id !== null ? (int) $row->departamento_id : null,
-            id: (int) $row->id
+            id: (int) $row->id,
+            email: $row->email ?? null
         );
     }
 
@@ -82,7 +83,8 @@ final class EloquentUserRepository implements UserRepositoryInterface
             theme: (string) ($row->tema ?? 'light'),
             employeeId: $row->empleado_id !== null ? (int) $row->empleado_id : null,
             departmentId: $row->departamento_id !== null ? (int) $row->departamento_id : null,
-            id: (int) $row->id
+            id: (int) $row->id,
+            email: $row->email ?? null
         );
     }
 
@@ -95,6 +97,9 @@ final class EloquentUserRepository implements UserRepositoryInterface
             'tema' => $user->theme(),
             'empleado_id' => $user->employeeId(),
             'departamento_id' => $user->departmentId(),
+            'email' => $user->email(),
+            // Cuenta nueva creada por administración: cambio obligatorio en el primer ingreso.
+            'must_change_password' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -109,16 +114,18 @@ final class EloquentUserRepository implements UserRepositoryInterface
                 'rol' => $user->role()->value,
                 'empleado_id' => $user->employeeId(),
                 'departamento_id' => $user->departmentId(),
+                'email' => $user->email(),
                 'updated_at' => now(),
             ]);
     }
 
-    public function updatePassword(int $id, string $hashedPassword): void
+    public function updatePassword(int $id, string $hashedPassword, bool $mustChange = false): void
     {
         DB::table('usuarios')
             ->where('id', $id)
             ->update([
                 'password' => $hashedPassword,
+                'must_change_password' => $mustChange,
                 'updated_at' => now(),
             ]);
     }

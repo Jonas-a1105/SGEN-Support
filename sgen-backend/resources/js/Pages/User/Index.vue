@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, toRef } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
+import { ref, toRef, watch } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { BasePageHeader, BaseButton, BaseEmptyState } from '@/Components/UI';
 import { useUserFilters, type UserItem } from '@/Composables/useUserFilters';
+import { useToast } from '@/Composables/useToast';
 import UserKpiRow, { type UserKpis } from '@/Components/User/UserKpiRow.vue';
 import UserToolbar from '@/Components/User/UserToolbar.vue';
 import UserTable from '@/Components/User/UserTable.vue';
@@ -25,6 +26,24 @@ const props = defineProps<{
 
 const usersRef = toRef(props, 'users');
 const { search, selectedRole, viewMode, isDense, filteredUsers } = useUserFilters(usersRef);
+const { addToast } = useToast();
+const page = usePage();
+
+// Credencial temporal tras restablecimiento: se muestra una sola vez.
+watch(
+    () => (page.props.flash as { temp_password?: { user_id: number; password: string } | null })?.temp_password,
+    (payload) => {
+        if (payload?.password) {
+            addToast({
+                type: 'warning',
+                title: 'Contraseña temporal generada',
+                message: `Entrégala al usuario (deberá cambiarla al ingresar): ${payload.password}`,
+                duration: 0,
+            });
+        }
+    },
+    { immediate: true }
+);
 
 // Subviews: 'directory' | 'form'
 const activeView = ref<'directory' | 'form'>('directory');
@@ -44,8 +63,7 @@ function openEditForm(user: UserItem) {
     activeView.value = 'form';
 }
 
-function openDeleteModal(user: UserItem) {
-    deletingUser.value = user;
+function openDeleteModal(user: UserItem) {    deletingUser.value = user;
     showDeleteModal.value = true;
 }
 
@@ -64,7 +82,7 @@ function handleSaveUser(payload: {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al actualizar el usuario.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     } else {
@@ -74,21 +92,25 @@ function handleSaveUser(payload: {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al registrar el usuario.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     }
 }
 
 function handleConfirmDelete(id: number) {
-    router.delete(`/usuarios/${id}`, {
-        onSuccess: () => {
-            showDeleteModal.value = false;
-        },
-        onError: (errors) => {
-            const firstErr = Object.values(errors)[0] || 'Error al eliminar el usuario.';
-            alert(firstErr);
-        },
+router.delete(`/usuarios/${id}`, {
+onSuccess: () => {
+showDeleteModal.value = false;
+},
+onError: () => addToast({ type: 'error', title: 'No se pudo eliminar el usuario.' }),
+});
+}
+
+function handleResetPassword(user: UserItem) {
+    router.post(`/usuarios/${user.id}/restablecer`, {}, {
+        preserveScroll: true,
+        onError: () => addToast({ type: 'error', title: 'No se pudo restablecer la contraseña.' }),
     });
 }
 </script>
@@ -136,6 +158,7 @@ function handleConfirmDelete(id: number) {
                     :is-dense="isDense"
                     @edit="openEditForm"
                     @delete="openDeleteModal"
+                    @reset-password="handleResetPassword"
                 />
 
                 <!-- Cards View -->
@@ -146,6 +169,7 @@ function handleConfirmDelete(id: number) {
                         :user="user"
                         @edit="openEditForm"
                         @delete="openDeleteModal"
+                        @reset-password="handleResetPassword"
                     />
                     <BaseEmptyState
                         v-if="filteredUsers.length === 0"

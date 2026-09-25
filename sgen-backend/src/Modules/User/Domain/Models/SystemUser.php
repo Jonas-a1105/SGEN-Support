@@ -16,7 +16,8 @@ final class SystemUser
         private UserRole $role,
         private string $theme,
         private ?int $employeeId,
-        private ?int $departmentId
+        private ?int $departmentId,
+        private ?string $email = null
     ) {
         $trimmedUsername = trim($this->username);
         if ($trimmedUsername === '') {
@@ -31,9 +32,10 @@ final class SystemUser
         string $theme = 'light',
         ?int $employeeId = null,
         ?int $departmentId = null,
-        ?int $id = null
+        ?int $id = null,
+        ?string $email = null
     ): self {
-        return new self($id, $username, $password, $role, $theme, $employeeId, $departmentId);
+        return new self($id, $username, $password, $role, $theme, $employeeId, $departmentId, $email);
     }
 
     public function id(): ?int
@@ -69,6 +71,11 @@ final class SystemUser
     public function departmentId(): ?int
     {
         return $this->departmentId;
+    }
+
+    public function email(): ?string
+    {
+        return $this->email;
     }
 
     public function update(

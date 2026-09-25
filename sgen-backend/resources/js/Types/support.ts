@@ -29,6 +29,8 @@ export interface TicketListItem {
     status_label: string;
     priority: 'baja' | 'media' | 'alta' | 'critica' | string;
     is_mine: boolean;
+    /** true si el ticket está asignado al EMPLEADO vinculado al usuario actual. */
+    es_mia_asignacion: boolean;
     description: string;
 }
 

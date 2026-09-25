@@ -33,8 +33,8 @@ final readonly class UpdateUserUseCase
 
         $this->repository->update($updated);
 
-        if (!empty($dto->password)) {
-            $this->repository->updatePassword($id, bcrypt($dto->password));
+        if (! empty($dto->password)) {
+            $this->repository->updatePassword($id, bcrypt($dto->password), true) /* cambio obligado al siguiente ingreso */;
         }
     }
 }

@@ -22,7 +22,7 @@ interface UserRepositoryInterface
 
     public function update(SystemUser $user): void;
 
-    public function updatePassword(int $id, string $hashedPassword): void;
+    public function updatePassword(int $id, string $hashedPassword, bool $mustChange = false): void;
 
     public function delete(int $id): void;
 

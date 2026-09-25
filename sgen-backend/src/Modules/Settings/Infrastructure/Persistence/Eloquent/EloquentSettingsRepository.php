@@ -58,6 +58,8 @@ final class EloquentSettingsRepository implements SettingsRepositoryInterface
             ->where('id', $userId)
             ->update([
                 'password' => $hashedPassword,
+                // El propio usuario acaba de elegir su contraseña: fin de la cuarentena.
+                'must_change_password' => false,
                 'updated_at' => now(),
             ]);
     }

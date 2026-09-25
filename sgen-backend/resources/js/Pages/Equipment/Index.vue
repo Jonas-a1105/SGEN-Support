@@ -11,6 +11,7 @@ import ModalEquipmentForm from '@/Components/Equipment/ModalEquipmentForm.vue';
 import ModalEquipmentDetail from '@/Components/Equipment/ModalEquipmentDetail.vue';
 import ModalEquipmentDelete from '@/Components/Equipment/ModalEquipmentDelete.vue';
 import { useEquipmentFilters } from '@/Composables/useEquipmentFilters';
+import { useToast } from '@/Composables/useToast';
 import type { EquipmentItem, EquipmentKpis, DepartmentOption, EmployeeOption } from '@/Types';
 
 const props = defineProps<{
@@ -40,6 +41,7 @@ const {
 
 // Modales
 const showFormModal = ref(false);
+const { addToast } = useToast();
 const editingEquipment = ref<EquipmentItem | null>(null);
 
 const showDetailModal = ref(false);
@@ -79,7 +81,7 @@ const handleSaveEquipment = (payload: Record<string, unknown>) => {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al actualizar el equipo. Verifique los datos.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     } else {
@@ -89,7 +91,7 @@ const handleSaveEquipment = (payload: Record<string, unknown>) => {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al registrar el equipo. Verifique los datos.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     }
@@ -105,7 +107,7 @@ const handleConfirmDelete = () => {
         },
         onError: (errors) => {
             const firstErr = Object.values(errors)[0] || 'Error al eliminar el equipo.';
-            alert(firstErr);
+            addToast({ type: 'error', title: firstErr });
         },
     });
 };

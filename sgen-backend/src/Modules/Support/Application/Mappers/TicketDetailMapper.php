@@ -102,8 +102,26 @@ final class TicketDetailMapper
             ];
         }
 
-        // 6. Entradas de Bitácora Técnica (placeholder — tabla real no existe aún)
-        $logEntries = [];
+        // 6. Bitácora Técnica: notas internas del técnico + hitos del ciclo de vida
+        //    (reaperturas, autocierres), con fecha y autoría. Fuente real: ticket_comentarios.
+        $logEntries = $commentsRecords
+            ->filter(function ($c): bool {
+                $texto = (string) $c->comentario;
+
+                return (bool) $c->es_interno
+                    || str_starts_with($texto, 'Ticket REABIERTO')
+                    || str_starts_with($texto, 'Ticket cerrado automáticamente');
+            })
+            ->map(fn ($c) => [
+                'id' => (int) $c->id,
+                'title' => (bool) $c->es_interno ? 'Nota técnica interna' : 'Evento del ciclo de vida',
+                'body' => (string) $c->comentario,
+                'content' => (string) $c->comentario,
+                'date' => Carbon::parse($c->fecha)->format('d/m/Y H:i'),
+                'author' => (string) ($c->username ?? 'Sistema'),
+            ])
+            ->values()
+            ->all();
 
         // 7. Ficha del Ticket
         $ticketData = [

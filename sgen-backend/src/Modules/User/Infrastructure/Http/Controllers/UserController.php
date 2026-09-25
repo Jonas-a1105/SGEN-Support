@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Modules\User\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\User\Infrastructure\Http\Requests\StoreUserRequest;
-use Modules\User\Infrastructure\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +14,10 @@ use Modules\User\Application\DTOs\UpdateUserDTO;
 use Modules\User\Application\UseCases\CreateUserUseCase;
 use Modules\User\Application\UseCases\DeleteUserUseCase;
 use Modules\User\Application\UseCases\GetUserDirectoryUseCase;
+use Modules\User\Application\UseCases\ResetUserPasswordUseCase;
 use Modules\User\Application\UseCases\UpdateUserUseCase;
+use Modules\User\Infrastructure\Http\Requests\StoreUserRequest;
+use Modules\User\Infrastructure\Http\Requests\UpdateUserRequest;
 
 final class UserController extends Controller
 {
@@ -46,5 +47,19 @@ final class UserController extends Controller
         $useCase->execute($id);
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado satisfactoriamente.');
+    }
+
+    /**
+     * Restablecimiento operado por administración: la contraseña temporal
+     * viaja una sola vez por flash de sesión y el usuario deberá cambiarla
+     * en su próximo ingreso.
+     */
+    public function resetPassword(int $id, ResetUserPasswordUseCase $useCase): RedirectResponse
+    {
+        $temporary = $useCase->execute($id);
+
+        return back()
+            ->with('success', 'Contraseña restablecida. El usuario deberá cambiarla al ingresar.')
+            ->with('temp_password', ['user_id' => $id, 'password' => $temporary]);
     }
 }

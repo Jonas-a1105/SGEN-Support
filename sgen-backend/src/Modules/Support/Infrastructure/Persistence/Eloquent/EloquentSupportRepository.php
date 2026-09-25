@@ -65,6 +65,13 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
     public function listTickets(array $filters = []): array
     {
         $currentUserId = isset($filters['user_id']) ? (int) $filters['user_id'] : null;
+        // Identidad del empleado vinculado al usuario actual (para "mis asignaciones").
+        $miEmpleadoId = $currentUserId !== null
+            ? (int) (DB::table('usuarios')->where('id', $currentUserId)->value('empleado_id') ?? 0)
+            : null;
+        if ($miEmpleadoId === 0) {
+            $miEmpleadoId = null;
+        }
 
         $query = DB::table('soportes')
             ->leftJoin('categorias', 'soportes.categoria_id', '=', 'categorias.id')
@@ -81,6 +88,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 'soportes.prioridad',
                 'soportes.fecha',
                 'soportes.usuario_creacion_id',
+                'soportes.empleado_id',
                 'categorias.nombre as categoria_nombre',
                 'tech.id as tech_id',
                 'tech.nombre as tech_nombre',
@@ -150,7 +158,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 ->all();
 
         return $records
-            ->map(fn ($row) => TicketListItemMapper::fromDatabaseRow($row, $commentCounts, $currentUserId))
+            ->map(fn ($row) => TicketListItemMapper::fromDatabaseRow($row, $commentCounts, $currentUserId, $miEmpleadoId))
             ->all();
     }
 

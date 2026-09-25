@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { BaseButton, BasePageHeader } from '@/Components/UI';
 import { useCategoryFilters, type CategoryItem } from '@/Composables/useCategoryFilters';
+import { useToast } from '@/Composables/useToast';
 import CategoryKpiRow, { type CategoryKpis } from '@/Components/Category/CategoryKpiRow.vue';
 import CategoryToolbar from '@/Components/Category/CategoryToolbar.vue';
 import CategoryTable from '@/Components/Category/CategoryTable.vue';
@@ -23,6 +24,7 @@ const { search, filteredCategories } = useCategoryFilters(categoriesRef);
 
 // Form modal state
 const showFormModal = ref(false);
+const { addToast } = useToast();
 const editingCategory = ref<CategoryItem | null>(null);
 
 // Delete modal state
@@ -58,7 +60,7 @@ function handleSaveCategory(payload: {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al actualizar la categoría.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     } else {
@@ -68,7 +70,7 @@ function handleSaveCategory(payload: {
             },
             onError: (errors) => {
                 const firstErr = Object.values(errors)[0] || 'Error al crear la categoría.';
-                alert(firstErr);
+                addToast({ type: 'error', title: firstErr });
             },
         });
     }
@@ -81,7 +83,7 @@ function handleConfirmDelete(id: number) {
         },
         onError: (errors) => {
             const firstErr = Object.values(errors)[0] || 'Error al eliminar la categoría.';
-            alert(firstErr);
+            addToast({ type: 'error', title: firstErr });
         },
     });
 }

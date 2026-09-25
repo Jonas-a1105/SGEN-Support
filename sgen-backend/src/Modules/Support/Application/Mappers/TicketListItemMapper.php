@@ -14,7 +14,7 @@ final class TicketListItemMapper
      * @param  array<int|string, int>  $commentCounts
      * @return array<string, mixed>
      */
-    public static function fromDatabaseRow(object $row, array $commentCounts = [], ?int $currentUserId = null): array
+    public static function fromDatabaseRow(object $row, array $commentCounts = [], ?int $currentUserId = null, ?int $empleadoDelUsuario = null): array
     {
         $techFull = trim(($row->tech_nombre ?? '').' '.($row->tech_apellido ?? ''));
         if ($techFull === '') {
@@ -57,6 +57,9 @@ final class TicketListItemMapper
             'status_label' => $statusEnum->label(),
             'priority' => $priorityEnum->value,
             'is_mine' => ($currentUserId !== null && (int) ($row->usuario_creacion_id ?? 0) === $currentUserId),
+            'es_mia_asignacion' => $empleadoDelUsuario !== null
+                && ($row->empleado_id ?? null) !== null
+                && (int) $row->empleado_id === $empleadoDelUsuario,
             'description' => (string) ($row->descripcion ?? ''),
         ];
     }

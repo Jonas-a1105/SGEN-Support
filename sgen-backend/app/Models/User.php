@@ -13,9 +13,11 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * @property int $id
  * @property string $username
+ * @property string|null $email
  * @property string $password
  * @property string $rol
  * @property string $tema
+ * @property bool $must_change_password
  * @property int|null $empleado_id
  * @property int|null $departamento_id
  */
@@ -30,11 +32,13 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'username',
+        'email',
         'password',
         'rol',
         'tema',
         'empleado_id',
         'departamento_id',
+        'must_change_password',
     ];
 
     /**
@@ -52,6 +56,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
         ];
     }
 

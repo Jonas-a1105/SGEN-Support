@@ -13,7 +13,8 @@ final readonly class CreateUserDTO
         public ?int $departamentoId,
         public ?int $empleadoId,
         public ?string $empleadoNombre = null,
-        public ?string $empleadoEmail = null
+        public ?string $empleadoEmail = null,
+        public ?string $email = null
     ) {}
 
     /**
@@ -25,10 +26,11 @@ final readonly class CreateUserDTO
             username: (string) ($data['username'] ?? ''),
             password: (string) ($data['password'] ?? ''),
             rol: (string) ($data['rol'] ?? 'tecnico'),
-            departamentoId: !empty($data['departamento_id']) ? (int) $data['departamento_id'] : null,
-            empleadoId: !empty($data['empleado_id']) ? (int) $data['empleado_id'] : null,
+            departamentoId: ! empty($data['departamento_id']) ? (int) $data['departamento_id'] : null,
+            empleadoId: ! empty($data['empleado_id']) ? (int) $data['empleado_id'] : null,
             empleadoNombre: isset($data['empleado_nombre']) ? (string) $data['empleado_nombre'] : null,
-            empleadoEmail: isset($data['empleado_email']) ? (string) $data['empleado_email'] : null
+            empleadoEmail: isset($data['empleado_email']) ? (string) $data['empleado_email'] : null,
+            email: isset($data['email']) && $data['email'] !== '' ? (string) $data['email'] : null
         );
     }
 }
