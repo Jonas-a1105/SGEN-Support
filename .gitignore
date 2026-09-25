@@ -92,12 +92,14 @@ coverage/
 .nyc_output/
 
 # ------------------------------------------------------------------------------
-# Database Backups & Local Data (Preserve schema and base seeds)
+# Database Backups & Local Data (Preserve schema only; data dumps NEVER versioned)
 # ------------------------------------------------------------------------------
 *.sql
 !database/schema.sql
-!database/sgen_db.sql
-!database/sgen_db_fixed.sql
+# Auditoría 2026-09-25: se eliminaron las excepciones de sgen_db.sql y
+# sgen_db_fixed.sql (contenían PII y hashes reales) y se les retiró del tracking.
+sgen-backend/sgen_db
+sgen-backend/sgen_db.*
 /backups/
 /dumps/
 
@@ -149,4 +151,3 @@ simulate_client.bat
 estructura_proyecto.txt
 public/debug_*.php
 REFACTOR_COMPARISON.md
-
