@@ -37,7 +37,7 @@ jobs:
       DB_DATABASE_TESTING: ci_test
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -80,7 +80,7 @@ jobs:
         working-directory: sgen-backend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
