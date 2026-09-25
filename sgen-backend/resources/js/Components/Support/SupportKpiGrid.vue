@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BaseKpiCard } from '@/Components/UI';
-import type { SupportKpis } from '@/types/support';
+import type { SupportKpis } from '@/Types/support';
 
 defineProps<{
     kpis: SupportKpis;

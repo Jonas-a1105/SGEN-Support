@@ -9,9 +9,9 @@ use Modules\Inventory\Domain\Exceptions\InsufficientStockException;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 
 /**
- * Registra el consumo de un material/repuesto en un ticket de forma ATÓMICA:
- * dentro de una transacción con bloqueo de fila, descuenta el stock real
- * del ítem y deja la fila espejo en inventario_consumos.
+ * Registra el consumo de un material/repuesto en un ticket de forma ATÃ“MICA:
+ * dentro de una transacciÃ³n con bloqueo de fila, descuenta el stock real
+ * del Ã­tem y deja la fila espejo en inventario_consumos.
  */
 final class AddTicketMaterialUseCase
 {
@@ -32,7 +32,7 @@ final class AddTicketMaterialUseCase
                 ->first();
 
             if ($item === null) {
-                throw new \RuntimeException("El ítem #{$itemId} no existe en inventario.");
+                throw new \DomainException("El Ã­tem #{$itemId} no existe en inventario.");
             }
 
             if ((int) $item->stock_actual < $quantity) {

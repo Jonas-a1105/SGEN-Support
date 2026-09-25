@@ -3,7 +3,7 @@ import { router, Link } from '@inertiajs/vue3';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import { BaseAvatar } from '@/Components/UI';
 import TicketStatusIcon from '@/Components/Support/TicketStatusIcon.vue';
-import type { TicketListItem } from '@/types/support';
+import type { TicketListItem } from '@/Types/support';
 
 const props = defineProps<{
     ticket: TicketListItem;

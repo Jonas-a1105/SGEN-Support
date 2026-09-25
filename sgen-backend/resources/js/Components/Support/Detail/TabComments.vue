@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { BaseBadge, BaseButton, BaseAvatar } from '@/Components/UI';
-import type { TicketComment } from '@/types/support';
+import type { TicketComment } from '@/Types/support';
 import { IconLock, IconEye } from '@tabler/icons-vue';
 
 interface Props {

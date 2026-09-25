@@ -3,7 +3,7 @@ import { router } from '@inertiajs/vue3';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import TicketStatusBadge from '@/Components/Support/TicketStatusBadge.vue';
-import type { TicketListItem } from '@/types/support';
+import type { TicketListItem } from '@/Types/support';
 
 interface Props {
     isOpen: boolean;

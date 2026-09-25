@@ -3,7 +3,7 @@ import { reactive, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
-import type { InventoryItemOption } from '@/types/support';
+import type { InventoryItemOption } from '@/Types/support';
 import { IconAlertTriangle } from '@tabler/icons-vue';
 
 interface Props {

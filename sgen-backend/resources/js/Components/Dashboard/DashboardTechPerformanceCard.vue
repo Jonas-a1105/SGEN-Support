@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseCard from '@/Components/UI/BaseCard.vue';
-import type { TechPerformanceItem } from '@/types/DashboardMetrics';
+import type { TechPerformanceItem } from '@/Types/DashboardMetrics';
 
 defineProps<{
     technicians: TechPerformanceItem[];

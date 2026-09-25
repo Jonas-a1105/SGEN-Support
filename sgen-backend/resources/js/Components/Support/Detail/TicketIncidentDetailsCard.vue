@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { BaseAvatar, BaseBadge } from '@/Components/UI';
 import type { BadgeVariant } from '@/Utils/badgeVariants';
-import type { TicketDetail } from '@/types/support';
+import type { TicketDetail } from '@/Types/support';
 
 const props = defineProps<{
     ticket: TicketDetail;

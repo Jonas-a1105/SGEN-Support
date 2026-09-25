@@ -24,7 +24,7 @@ import type {
     TicketRating,
     LogEntry,
     SupportFormOptions,
-} from '@/types/support';
+} from '@/Types/support';
 
 interface Props {
     ticket: TicketDetail;

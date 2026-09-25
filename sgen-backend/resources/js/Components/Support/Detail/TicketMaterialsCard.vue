@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ConsumedMaterial } from '@/types/support';
+import type { ConsumedMaterial } from '@/Types/support';
 
 defineProps<{
     materials: ConsumedMaterial[];

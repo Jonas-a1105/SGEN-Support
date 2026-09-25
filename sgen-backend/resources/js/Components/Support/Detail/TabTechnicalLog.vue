@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LogEntry } from '@/types/support';
+import type { LogEntry } from '@/Types/support';
 import TechnicalLogEditor from './TechnicalLogEditor.vue';
 import TechnicalLogHistory from './TechnicalLogHistory.vue';
 import TechnicalProtocolCard from './TechnicalProtocolCard.vue';

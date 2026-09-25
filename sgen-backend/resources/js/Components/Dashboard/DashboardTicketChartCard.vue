@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
 import TicketVolumeSvgChart from './TicketVolumeSvgChart.vue';
-import type { TicketVolumeData } from '@/types/DashboardMetrics';
+import type { TicketVolumeData } from '@/Types/DashboardMetrics';
 
 const props = defineProps<{
     data: TicketVolumeData;

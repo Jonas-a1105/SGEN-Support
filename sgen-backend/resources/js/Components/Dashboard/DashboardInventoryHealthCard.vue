@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseCard from '@/Components/UI/BaseCard.vue';
-import type { InventoryHealthData } from '@/types/DashboardMetrics';
+import type { InventoryHealthData } from '@/Types/DashboardMetrics';
 
 defineProps<{
     health: InventoryHealthData;

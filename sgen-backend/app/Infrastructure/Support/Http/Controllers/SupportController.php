@@ -41,9 +41,16 @@ use Modules\Support\Application\UseCases\UpdateTicketUseCase;
 use Modules\Support\Application\UseCases\UploadTicketAttachmentUseCase;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 final class SupportController extends Controller
 {
+    /**
+     * Errores de negocio (DomainException) llevan mensajes deliberados y
+     * seguros para el usuario final. Cualquier otro fallo se reporta al
+     * log y se responde con un mensaje genérico: jamás se expone el
+     * detalle interno (SQL, trazas, rutas) al cliente.
+     */
     public function index(Request $request, ListTicketsUseCase $useCase): Response
     {
         try {
@@ -53,8 +60,10 @@ final class SupportController extends Controller
             $data = $useCase->execute($filters, $userId);
 
             return Inertia::render('Support/Index', $data);
-        } catch (\Exception $e) {
-            return Inertia::render('Error', ['message' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return Inertia::render('Error', ['message' => 'No se pudo cargar la bandeja de tickets. Inténtelo de nuevo.']);
         }
     }
 
@@ -64,8 +73,10 @@ final class SupportController extends Controller
             $data = $useCase->execute();
 
             return Inertia::render('Support/Create', $data);
-        } catch (\Exception $e) {
-            return Inertia::render('Error', ['message' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return Inertia::render('Error', ['message' => 'No se pudo cargar el formulario de creación. Inténtelo de nuevo.']);
         }
     }
 
@@ -74,15 +85,19 @@ final class SupportController extends Controller
         return (int) str_ireplace('T-', '', (string) $id);
     }
 
-    public function show(int|string $id, GetTicketDetailUseCase $useCase): Response
+    public function show(int|string $id, Request $request, GetTicketDetailUseCase $useCase): Response
     {
         try {
-            $data = $useCase->execute($this->parseTicketId($id));
+            $data = $useCase->execute($this->parseTicketId($id), $request->user()?->id);
             abort_if($data === null, 404, 'Ticket no encontrado.');
 
             return Inertia::render('Support/Show', $data);
-        } catch (\Exception $e) {
-            return Inertia::render('Error', ['message' => $e->getMessage()]);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+
+            return Inertia::render('Error', ['message' => 'No se pudo cargar el detalle del ticket. Inténtelo de nuevo.']);
         }
     }
 
@@ -93,8 +108,12 @@ final class SupportController extends Controller
             $ticketId = $useCase->execute($dto, $request->user()?->id);
 
             return redirect()->route('soportes.show', $ticketId)->with('success', 'Ticket creado correctamente.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al crear el ticket: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al crear el ticket. Inténtelo de nuevo.');
         }
     }
 
@@ -104,8 +123,12 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id), UpdateTicketDTO::fromArray($request->validated()));
 
             return back()->with('success', 'Ticket actualizado correctamente.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al actualizar el ticket: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al actualizar el ticket. Inténtelo de nuevo.');
         }
     }
 
@@ -115,8 +138,12 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id));
 
             return redirect()->route('soportes.index')->with('success', 'Ticket eliminado satisfactoriamente.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar el ticket: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al eliminar el ticket. Inténtelo de nuevo.');
         }
     }
 
@@ -126,8 +153,12 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id), (int) $request->validated('empleado_id'));
 
             return back()->with('success', 'Técnico reasignado correctamente.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al reasignar técnico: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al reasignar técnico. Inténtelo de nuevo.');
         }
     }
 
@@ -138,8 +169,12 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id), $userId, (string) $request->validated('comentario'), (bool) $request->validated('es_interno', false));
 
             return back()->with('success', 'Comentario añadido.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al añadir comentario: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al añadir el comentario. Inténtelo de nuevo.');
         }
     }
 
@@ -150,8 +185,12 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id), (int) $request->validated('item_id'), (int) $request->validated('cantidad'), $userId);
 
             return back()->with('success', 'Material registrado en el ticket.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al registrar material: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al registrar el material. Inténtelo de nuevo.');
         }
     }
 
@@ -167,8 +206,12 @@ final class SupportController extends Controller
             return back()->with('success', 'Ticket pausado. El tiempo de atención se detendrá.');
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->with('error', 'El motivo de pausa es obligatorio.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al pausar el ticket: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al pausar el ticket. Inténtelo de nuevo.');
         }
     }
 
@@ -178,8 +221,12 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id));
 
             return back()->with('success', 'Ticket reanudado. El tiempo de atención ha continuado.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al reanudar el ticket: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al reanudar el ticket. Inténtelo de nuevo.');
         }
     }
 
@@ -191,8 +238,12 @@ final class SupportController extends Controller
             $useCase->execute($ticketId, (string) $request->validated('motivo'), $userId);
 
             return back()->with('success', 'Ticket reabierto satisfactoriamente.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al reabrir el ticket: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al reabrir el ticket. Inténtelo de nuevo.');
         }
     }
 
@@ -203,14 +254,20 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id), new UpdateTicketDTO(fechaCierre: $validated['fecha_cierre']));
 
             return back()->with('success', 'Fecha de cierre actualizada.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al actualizar la fecha de cierre: '.$e->getMessage());
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->with('error', 'La fecha de cierre no es válida.');
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al actualizar la fecha de cierre. Inténtelo de nuevo.');
         }
     }
 
     public function bulkDelete(Request $request, BulkDeleteTicketsUseCase $useCase): RedirectResponse
     {
-        $validated = $request->validate(['ids' => 'required|array']);
+        $validated = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
         $count = $useCase->execute($validated['ids']);
 
         return back()->with('success', "Se eliminaron {$count} tickets.");
@@ -266,16 +323,25 @@ final class SupportController extends Controller
                 'ip_address' => $request->ip() ?: '127.0.0.1',
                 'created_at' => Carbon::now(),
             ]);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            // La bitácora es evidencia forense: un fallo jamás pasa en silencio.
+            report($e);
         }
 
         return back()->with('success', 'Archivo adjunto subido correctamente con validación de integridad SHA-256.');
     }
 
-    public function downloadAttachment(int $attachmentId, SupportRepositoryInterface $repository): StreamedResponse
+    public function downloadAttachment(int $attachmentId, Request $request, SupportRepositoryInterface $repository): StreamedResponse
     {
         $attachment = $repository->getAttachmentById($attachmentId);
         abort_if($attachment === null, 404, 'Archivo adjunto no encontrado.');
+
+        // Alcance por fila: el operador solo descarga adjuntos de sus tickets.
+        $user = $request->user();
+        if ($user !== null && $user->rol === 'operador') {
+            $ownerId = (int) DB::table('soportes')->where('id', $attachment->ticket_id)->value('usuario_creacion_id');
+            abort_if($ownerId !== (int) $user->id, 404, 'Archivo adjunto no encontrado.');
+        }
 
         if (! Storage::exists($attachment->ruta)) {
             abort(404, 'El archivo físico no se encuentra en el almacenamiento.');
@@ -316,7 +382,9 @@ final class SupportController extends Controller
                     'ip_address' => $request->ip() ?: '127.0.0.1',
                     'created_at' => Carbon::now(),
                 ]);
-            } catch (\Throwable) {
+            } catch (\Throwable $e) {
+                // La bitácora es evidencia forense: un fallo jamás pasa en silencio.
+                report($e);
             }
         }
 
@@ -329,8 +397,12 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id), (string) $request->validated('rating'), $request->validated('comentario'));
 
             return back()->with('success', 'Valoración guardada. ¡Gracias por tu opinión!');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al guardar valoración: '.$e->getMessage());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al guardar la valoración. Inténtelo de nuevo.');
         }
     }
 
@@ -344,15 +416,21 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id), (string) $validated['firma_base64']);
 
             return back()->with('success', 'Firma registrada exitosamente.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al registrar la firma: '.$e->getMessage());
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->with('error', 'La firma no es válida.');
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al registrar la firma. Inténtelo de nuevo.');
         }
     }
 
-    public function generatePdf(int|string $id, GetTicketDetailUseCase $detailUseCase, GenerateTicketPdfUseCase $useCase): StreamedResponse|\Illuminate\Http\Response
+    public function generatePdf(int|string $id, Request $request, GetTicketDetailUseCase $detailUseCase, GenerateTicketPdfUseCase $useCase): StreamedResponse|\Illuminate\Http\Response
     {
         $ticketId = $this->parseTicketId($id);
-        abort_if($detailUseCase->execute($ticketId) === null, 404, 'Ticket no encontrado.');
+        abort_if($detailUseCase->execute($ticketId, $request->user()?->id) === null, 404, 'Ticket no encontrado.');
 
         return $useCase->execute($ticketId);
     }

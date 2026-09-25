@@ -1,5 +1,5 @@
 /**
  * Re-exportación para retrocompatibilidad.
- * Definición canónica centralizada en @/types/employee
+ * Definición canónica centralizada en @/Types/employee
  */
-export * from '@/types/employee';
+export * from '@/Types/employee';

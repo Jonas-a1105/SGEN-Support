@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TicketDetail, TicketAsset, ConsumedMaterial } from '@/types/support';
+import type { TicketDetail, TicketAsset, ConsumedMaterial } from '@/Types/support';
 import TicketIncidentDetailsCard from './TicketIncidentDetailsCard.vue';
 import TicketAffectedAssetCard from './TicketAffectedAssetCard.vue';
 import TicketMaterialsCard from './TicketMaterialsCard.vue';

@@ -106,8 +106,13 @@ final class MaintenanceController extends Controller
             );
 
             return back()->with('success', 'Mantenimiento marcado como completado.');
-        } catch (\RuntimeException $e) {
+        } catch (\DomainException $e) {
+            // Error de negocio con mensaje deliberado y seguro para el usuario.
             return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al completar el mantenimiento. Inténtelo de nuevo.');
         }
     }
 
@@ -123,8 +128,13 @@ final class MaintenanceController extends Controller
             );
 
             return back()->with('success', 'Material agregado a la orden y descontado del inventario.');
-        } catch (\Throwable $e) {
+        } catch (\DomainException $e) {
+            // Error de negocio con mensaje deliberado y seguro para el usuario.
             return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al agregar el material. Inténtelo de nuevo.');
         }
     }
 

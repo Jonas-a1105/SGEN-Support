@@ -34,8 +34,9 @@ final class ReassignTechnicianUseCase
                         "Se te ha asignado el ticket #{$ticketId}: ".($ticket?->titulo ?? ''),
                         "/soportes/{$ticketId}"
                     );
-                } catch (\Throwable) {
-                    // Silencioso ante fallos puntuales
+                } catch (\Throwable $e) {
+                    // La notificación no detiene la operación, pero jamás falla en silencio.
+                    report($e);
                 }
             }
         }

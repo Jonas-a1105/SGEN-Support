@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import BaseCard from '@/Components/UI/BaseCard.vue';
-import type { StatusTicketItem } from '@/types/DashboardMetrics';
+import type { StatusTicketItem } from '@/Types/DashboardMetrics';
 
 const props = defineProps<{
     pending: StatusTicketItem[];

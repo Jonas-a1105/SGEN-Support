@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TicketAsset } from '@/types/support';
+import type { TicketAsset } from '@/Types/support';
 
 defineProps<{
     asset: TicketAsset;

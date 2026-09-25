@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { BaseSearchToolbar, BaseToggleSwitch } from '@/Components/UI';
-import type { SupportKpis } from '@/types/support';
+import type { SupportKpis } from '@/Types/support';
 
 interface Props {
     kpis: SupportKpis;

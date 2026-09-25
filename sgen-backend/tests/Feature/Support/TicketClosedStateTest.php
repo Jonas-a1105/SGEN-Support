@@ -106,6 +106,8 @@ final class TicketClosedStateTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
+        // Los errores de dominio SÍ llegan al usuario: su mensaje es deliberado y seguro.
+        $response->assertSessionHas('error', fn (string $message): bool => str_contains($message, 'Transición no permitida'));
         $this->assertSame('cerrado', DB::table('soportes')->where('id', $ticketId)->value('estado'));
     }
 

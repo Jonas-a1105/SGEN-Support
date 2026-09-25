@@ -32,8 +32,9 @@ final class UpdateTicketUseCase
                         "Tu ticket #{$id} ({$ticket->titulo}) ha sido marcado como resuelto. Ya puedes calificar la atención recibida.",
                         "/soportes/{$id}"
                     );
-                } catch (\Throwable) {
-                    // Silencioso ante fallos puntuales
+                } catch (\Throwable $e) {
+                    // La notificación no detiene la operación, pero jamás falla en silencio.
+                    report($e);
                 }
             }
         }

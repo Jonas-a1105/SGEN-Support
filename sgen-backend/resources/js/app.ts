@@ -1,7 +1,6 @@
 import '../css/app.css';
 import { createApp, h, type DefineComponent } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
-import { createPinia } from 'pinia';
 import { ZiggyVue } from 'ziggy-js';
 
 const appName = import.meta.env.VITE_APP_NAME || 'SGEN Support';
@@ -17,10 +16,8 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props, plugin }) {
-        const pinia = createPinia();
         createApp({ render: () => h(App, props) })
             .use(plugin)
-            .use(pinia)
             .use(ZiggyVue)
             .mount(el);
     },

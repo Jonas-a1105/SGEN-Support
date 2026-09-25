@@ -27,7 +27,6 @@ return [
     CategoryModuleServiceProvider::class,
     UserModuleServiceProvider::class,
     AuditModuleServiceProvider::class,
-    App\Infrastructure\Audit\Providers\AuditModuleServiceProvider::class,
     SettingsModuleServiceProvider::class,
     AboutModuleServiceProvider::class,
     MaintenanceModuleServiceProvider::class,

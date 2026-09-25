@@ -4,7 +4,7 @@ import { router } from '@inertiajs/vue3';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
-import type { SupportFormOptions } from '@/types/support';
+import type { SupportFormOptions } from '@/Types/support';
 
 interface Props {
     isOpen: boolean;

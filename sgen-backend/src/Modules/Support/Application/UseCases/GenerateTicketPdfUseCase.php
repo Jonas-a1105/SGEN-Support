@@ -21,7 +21,7 @@ final class GenerateTicketPdfUseCase
         $detail = $this->repository->findById($ticketId);
 
         if ($detail === null) {
-            throw new \RuntimeException("Ticket #{$ticketId} no encontrado.");
+            throw new \DomainException("Ticket #{$ticketId} no encontrado.");
         }
 
         $viewData = $this->dataAssembler->assemble($detail);

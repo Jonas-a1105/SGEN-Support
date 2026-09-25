@@ -15,10 +15,11 @@ final readonly class GetSystemAboutUseCase
         $dbDriver = 'MySQL (PDO)';
 
         try {
-            $dbVersion = DB::select('SELECT VERSION() as v')[0]->v ?? '8.0';
-            $dbDriver = "MySQL {$dbVersion}";
-        } catch (\Throwable) {
-            $dbDriver = 'MySQL';
+            $dbVersion = DB::select('SELECT VERSION() as v')[0]->v ?? null;
+            $dbDriver = $dbVersion ?? ucfirst(DB::connection()->getDriverName());
+        } catch (\Throwable $e) {
+            report($e);
+            $dbDriver = ucfirst(DB::connection()->getDriverName());
         }
 
         $technicalCards = [

@@ -11,7 +11,7 @@ import ModalNewTicket from '@/Components/Support/ModalNewTicket.vue';
 import ModalConfirmDelete from '@/Components/Support/ModalConfirmDelete.vue';
 import ModalTicketQuickDetail from '@/Components/Support/ModalTicketQuickDetail.vue';
 import { useSupportFilters } from '@/Composables/useSupportFilters';
-import type { SupportKpis, TicketListItem, SupportFormOptions } from '@/types/support';
+import type { SupportKpis, TicketListItem, SupportFormOptions } from '@/Types/support';
 
 interface Props {
     kpis: SupportKpis;

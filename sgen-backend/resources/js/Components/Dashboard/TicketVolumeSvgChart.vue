@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { TicketVolumeData } from '@/types/DashboardMetrics';
+import type { TicketVolumeData } from '@/Types/DashboardMetrics';
 
 const props = defineProps<{
     data: TicketVolumeData;

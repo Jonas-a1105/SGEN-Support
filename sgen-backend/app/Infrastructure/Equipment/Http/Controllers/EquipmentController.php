@@ -63,8 +63,13 @@ final class EquipmentController extends Controller
             $useCase->execute(CreateEquipmentDTO::fromArray($request->validated()));
 
             return redirect()->route('equipos.index')->with('success', 'Equipo registrado exitosamente.');
-        } catch (\RuntimeException $e) {
+        } catch (\DomainException $e) {
+            // Error de negocio con mensaje deliberado y seguro para el usuario.
             return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al procesar el equipo. Inténtelo de nuevo.');
         }
     }
 
@@ -88,8 +93,13 @@ final class EquipmentController extends Controller
             $useCase->execute($request->toDTO());
 
             return back()->with('success', 'Equipo trasladado correctamente.');
-        } catch (\RuntimeException $e) {
+        } catch (\DomainException $e) {
+            // Error de negocio con mensaje deliberado y seguro para el usuario.
             return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al procesar el equipo. Inténtelo de nuevo.');
         }
     }
 
@@ -99,8 +109,13 @@ final class EquipmentController extends Controller
             $useCase->execute($request->toDTO());
 
             return redirect()->route('equipos.index')->with('success', 'Equipo registrado exitosamente.');
-        } catch (\RuntimeException $e) {
+        } catch (\DomainException $e) {
+            // Error de negocio con mensaje deliberado y seguro para el usuario.
             return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al procesar el equipo. Inténtelo de nuevo.');
         }
     }
 

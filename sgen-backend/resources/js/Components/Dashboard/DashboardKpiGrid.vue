@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BaseKpiCard } from '@/Components/UI';
-import type { DashboardKpis } from '@/types/DashboardMetrics';
+import type { DashboardKpis } from '@/Types/DashboardMetrics';
 
 defineProps<{
     kpis: DashboardKpis;

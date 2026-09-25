@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import BaseCard from '@/Components/UI/BaseCard.vue';
-import type { InventoryHealthData } from '@/types/DashboardMetrics';
+import type { InventoryHealthData } from '@/Types/DashboardMetrics';
 
 const props = defineProps<{
     health: InventoryHealthData;

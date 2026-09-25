@@ -73,7 +73,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             $query->where('equipos.tipo', 'ilike', '%'.$filters['tipo'].'%');
         }
 
-        // Búsqueda general
+        // BÃºsqueda general
         if (! empty($filters['search'])) {
             $term = '%'.trim((string) $filters['search']).'%';
             $query->where(function ($q) use ($term) {
@@ -151,7 +151,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
                     $warrantyStatus = $warrantyPercent > 33 ? 'active' : 'warning';
                     $daysRemaining = (int) ceil(($end - $now) / 86400);
                     $warrantyRemaining = $daysRemaining > 365
-                        ? round($daysRemaining / 365, 1).' años'
+                        ? round($daysRemaining / 365, 1).' aÃ±os'
                         : round($daysRemaining / 30).' meses';
                 }
             }
@@ -190,7 +190,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
                     'estado' => (string) ($m->estado ?? 'completado'),
                     'descripcion' => (string) ($m->descripcion ?? ''),
                     'costo' => (float) ($m->costo ?? 0),
-                    'realizadoPor' => (string) ($m->realizado_por ?? 'Técnico de soporte'),
+                    'realizadoPor' => (string) ($m->realizado_por ?? 'TÃ©cnico de soporte'),
                     'fecha' => isset($m->fecha) ? Carbon::parse($m->fecha)->format('d/m/Y') : null,
                     'proximaFecha' => isset($m->proxima_fecha) ? Carbon::parse($m->proxima_fecha)->format('d/m/Y') : null,
                 ];
@@ -262,7 +262,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
 
         $now = Carbon::now();
 
-        // Determinar código de inventario si no fue provisto
+        // Determinar cÃ³digo de inventario si no fue provisto
         $code = trim($dto->inventoryCode);
         if ($code === '') {
             $maxId = (int) DB::table('equipos')->max('id');
@@ -280,8 +280,8 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             ->exists();
 
         if ($duplicate) {
-            throw new \RuntimeException(
-                "Ya existe un equipo con el código '{$code}'"
+            throw new \DomainException(
+                "Ya existe un equipo con el cÃ³digo '{$code}'"
                 .(! empty($dto->serialNumber) ? " o el serial '{$dto->serialNumber}'" : '').'.'
             );
         }
@@ -353,7 +353,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
                 throw EquipmentNotFoundException::withId($dto->equipoId);
             }
 
-            throw new \RuntimeException(
+            throw new \DomainException(
                 "El equipo #{$dto->equipoId} no pertenece al departamento de origen #{$dto->departamentoOrigenId}."
             );
         }

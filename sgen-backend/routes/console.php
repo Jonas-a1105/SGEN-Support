@@ -23,11 +23,21 @@ Artisan::command('sla:verify', function () {
         ->get();
 
     foreach ($tickets as $ticket) {
-        $this->info("Ticket T-{$ticket->id} ha superado el tiempo de resoluciÃ³n SLA. Enviando alertas...");
+        $this->info("Ticket T-{$ticket->id} ha superado el tiempo de resolución SLA. Enviando alertas...");
 
-        // Registrar notificaciÃ³n en base de datos
+        // El destinatario es el USUARIO vinculado al técnico asignado
+        // (empleado_id NO es usuario_id) o, en su defecto, un administrador.
+        $destinatarioId = DB::table('usuarios')->where('empleado_id', $ticket->empleado_id)->value('id')
+            ?? DB::table('usuarios')->where('rol', 'admin')->orderBy('id')->value('id');
+
+        if ($destinatarioId === null) {
+            $this->warn("Ticket T-{$ticket->id}: sin destinatario para la alerta de SLA; se omite la notificación.");
+
+            continue;
+        }
+
         DB::table('notificaciones')->insert([
-            'usuario_id' => $ticket->empleado_id ?? 38,
+            'usuario_id' => $destinatarioId,
             'tipo' => 'ticket_vencimiento',
             'titulo' => 'Alerta de SLA superado',
             'mensaje' => "El ticket T-{$ticket->id} ({$ticket->titulo}) ha excedido su tiempo de vencimiento.",
@@ -46,7 +56,7 @@ Artisan::command('sla:verify', function () {
             ]);
     }
 
-    $this->info('VerificaciÃ³n completada.');
+    $this->info('Verificación completada.');
 })->purpose('Verifica los tiempos de SLA vencidos en tickets y genera notificaciones');
 
 Artisan::command('mantenimientos:materializar', function () {

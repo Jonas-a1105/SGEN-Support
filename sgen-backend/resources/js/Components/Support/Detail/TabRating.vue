@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import type { TicketRating } from '@/types/support';
+import type { TicketRating } from '@/Types/support';
 
 interface Props {
     ticketId: number;

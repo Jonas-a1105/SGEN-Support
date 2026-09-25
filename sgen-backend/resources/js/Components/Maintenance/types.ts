@@ -1,5 +1,5 @@
 /**
  * Re-exportación para retrocompatibilidad.
- * Definición canónica centralizada en @/types/maintenance
+ * Definición canónica centralizada en @/Types/maintenance
  */
-export * from '@/types/maintenance';
+export * from '@/Types/maintenance';

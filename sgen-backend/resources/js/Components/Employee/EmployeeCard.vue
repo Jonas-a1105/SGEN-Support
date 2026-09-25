@@ -3,7 +3,7 @@ import { Link, router } from '@inertiajs/vue3';
 import { BaseAvatar, BaseBadge } from '@/Components/UI';
 import type { EmployeeItem } from '@/Composables/useEmployeeFilters';
 
-defineProps<{
+const props = defineProps<{
     employee: EmployeeItem;
     isDense?: boolean;
 }>();

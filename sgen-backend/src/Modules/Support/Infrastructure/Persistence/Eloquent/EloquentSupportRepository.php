@@ -114,6 +114,11 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             }
         }
 
+        // Alcance por fila: el solicitante (rol operador) solo ve lo suyo.
+        if (! empty($filters['solo_propios']) && ! empty($filters['user_id'])) {
+            $query->where('soportes.usuario_creacion_id', (int) $filters['user_id']);
+        }
+
         // Búsqueda de texto
         if (! empty($filters['search'])) {
             $search = '%'.trim((string) $filters['search']).'%';

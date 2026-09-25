@@ -1,5 +1,5 @@
 import { ref, computed, type Ref } from 'vue';
-import type { TicketListItem } from '@/types/support';
+import type { TicketListItem } from '@/Types/support';
 
 export function useSupportFilters(tickets: Ref<TicketListItem[]> | { value: TicketListItem[] }, defaultFilter = 'all') {
     const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;

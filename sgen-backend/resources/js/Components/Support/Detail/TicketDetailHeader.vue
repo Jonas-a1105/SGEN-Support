@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { BaseBadge, BaseDropdown } from '@/Components/UI';
 import type { BadgeVariant } from '@/Utils/badgeVariants';
-import type { TicketDetail } from '@/types/support';
+import type { TicketDetail } from '@/Types/support';
 
 interface Props {
     ticket: TicketDetail;

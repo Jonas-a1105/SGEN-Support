@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import BaseCard from '@/Components/UI/BaseCard.vue';
-import type { RecentActivityItem } from '@/types/DashboardMetrics';
+import type { RecentActivityItem } from '@/Types/DashboardMetrics';
 
 defineProps<{
     activities: RecentActivityItem[];

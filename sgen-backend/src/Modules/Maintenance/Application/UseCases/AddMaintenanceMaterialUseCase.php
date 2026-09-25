@@ -9,8 +9,8 @@ use Modules\Inventory\Domain\Exceptions\InsufficientStockException;
 use Modules\Maintenance\Domain\Ports\MaintenanceRepositoryInterface;
 
 /**
- * Registra una pieza usada en una orden de trabajo de forma ATÓMICA:
- * transacción + lockForUpdate sobre inventario_items, descuenta stock real,
+ * Registra una pieza usada en una orden de trabajo de forma ATÃ“MICA:
+ * transacciÃ³n + lockForUpdate sobre inventario_items, descuenta stock real,
  * deja fila espejo en inventario_movimientos y en mantenimiento_materiales.
  */
 final class AddMaintenanceMaterialUseCase
@@ -29,11 +29,11 @@ final class AddMaintenanceMaterialUseCase
             $mantenimiento = DB::table('mantenimientos')->where('id', $mantenimientoId)->first();
 
             if ($mantenimiento === null) {
-                throw new \RuntimeException("La orden de trabajo #{$mantenimientoId} no existe.");
+                throw new \DomainException("La orden de trabajo #{$mantenimientoId} no existe.");
             }
 
             if (in_array($mantenimiento->estado, ['completado', 'cancelado'], true)) {
-                throw new \RuntimeException('No se pueden agregar materiales a una orden completada o cancelada.');
+                throw new \DomainException('No se pueden agregar materiales a una orden completada o cancelada.');
             }
 
             $item = DB::table('inventario_items')
@@ -42,7 +42,7 @@ final class AddMaintenanceMaterialUseCase
                 ->first();
 
             if ($item === null) {
-                throw new \RuntimeException("El ítem #{$itemId} no existe en inventario.");
+                throw new \DomainException("El Ã­tem #{$itemId} no existe en inventario.");
             }
 
             if ((int) $item->stock_actual < $cantidad) {

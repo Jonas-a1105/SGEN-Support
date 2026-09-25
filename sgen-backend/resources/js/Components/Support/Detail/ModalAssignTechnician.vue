@@ -5,7 +5,7 @@ import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import BaseAvatar from '@/Components/UI/BaseAvatar.vue';
 import BaseBadge from '@/Components/UI/BaseBadge.vue';
-import type { TicketDetail, TicketAsset, SupportFormOptions } from '@/types/support';
+import type { TicketDetail, TicketAsset, SupportFormOptions } from '@/Types/support';
 
 interface Props {
     isOpen: boolean;

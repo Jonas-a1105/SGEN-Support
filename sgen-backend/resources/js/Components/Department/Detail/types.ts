@@ -1,5 +1,5 @@
 /**
  * Re-exportación para retrocompatibilidad.
- * Definición canónica centralizada en @/types/department
+ * Definición canónica centralizada en @/Types/department
  */
-export * from '@/types/department';
+export * from '@/Types/department';

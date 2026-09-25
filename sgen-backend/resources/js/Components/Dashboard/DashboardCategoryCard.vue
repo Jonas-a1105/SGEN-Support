@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseCard from '@/Components/UI/BaseCard.vue';
-import type { TopCategoryData } from '@/types/DashboardMetrics';
+import type { TopCategoryData } from '@/Types/DashboardMetrics';
 
 defineProps<{
     category: TopCategoryData;

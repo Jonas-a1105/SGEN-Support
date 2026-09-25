@@ -13,11 +13,11 @@ use Modules\Maintenance\Domain\Services\RecurrenceEngine;
 /**
  * Completa una orden de trabajo (PASO de cierre del CMMS):
  *
- * 1. Valida el checklist: si hay tareas pendientes, exige flag explícito
- *    de omisión con justificación (regla del documento maestro).
- * 2. Cierra la orden con garantía de reparación de 90 días.
- * 3. Si es recurrente, materializa automáticamente la SIGUIENTE orden
- *    de la serie con serie_padre_id encadenado — nadie la crea a mano.
+ * 1. Valida el checklist: si hay tareas pendientes, exige flag explÃ­cito
+ *    de omisiÃ³n con justificaciÃ³n (regla del documento maestro).
+ * 2. Cierra la orden con garantÃ­a de reparaciÃ³n de 90 dÃ­as.
+ * 3. Si es recurrente, materializa automÃ¡ticamente la SIGUIENTE orden
+ *    de la serie con serie_padre_id encadenado â€” nadie la crea a mano.
  */
 final class CompleteMaintenanceUseCase
 {
@@ -40,35 +40,35 @@ final class CompleteMaintenanceUseCase
         $mantenimiento = DB::table('mantenimientos')->where('id', $id)->first();
 
         if ($mantenimiento === null) {
-            throw new \RuntimeException("La orden de trabajo #{$id} no existe.");
+            throw new \DomainException("La orden de trabajo #{$id} no existe.");
         }
 
         if ($mantenimiento->estado === 'completado') {
-            throw new \RuntimeException('La orden ya está completada.');
+            throw new \DomainException('La orden ya estÃ¡ completada.');
         }
 
         if ($mantenimiento->estado === 'cancelado') {
-            throw new \RuntimeException('No se puede completar una orden cancelada.');
+            throw new \DomainException('No se puede completar una orden cancelada.');
         }
 
         $checklist = $this->checklistValidator->normalize($checklistRaw ?? $mantenimiento->checklist);
         $pending = $this->checklistValidator->pendingTasks($checklist);
 
         if ($pending !== [] && ! $omitPendingTasks) {
-            throw new \RuntimeException(
+            throw new \DomainException(
                 'El checklist tiene tareas pendientes: '.implode(', ', $pending).
-                '. Complétalas o omítelas con justificación.'
+                '. ComplÃ©talas o omÃ­telas con justificaciÃ³n.'
             );
         }
 
         if ($pending !== [] && $omitPendingTasks && ($omissionJustification === null || trim($omissionJustification) === '')) {
-            throw new \InvalidArgumentException('La omisión de tareas pendientes exige una justificación.');
+            throw new \InvalidArgumentException('La omisiÃ³n de tareas pendientes exige una justificaciÃ³n.');
         }
 
         if ($pending !== [] && $omitPendingTasks) {
             $omissionNote = 'Tareas omitidas ('.now()->format('d/m/Y H:i').'): '
                 .implode(', ', $pending)
-                .' — Justificación: '.trim($omissionJustification);
+                .' â€” JustificaciÃ³n: '.trim($omissionJustification);
             $observations = $observations !== null && $observations !== ''
                 ? $observations.' | '.$omissionNote
                 : $omissionNote;
@@ -99,7 +99,7 @@ final class CompleteMaintenanceUseCase
 
             $this->materializeNextInSeries($id, $mantenimiento, $nextDate);
 
-            // Restaurar equipo a operativo si estaba en reparación
+            // Restaurar equipo a operativo si estaba en reparaciÃ³n
             $equipo = DB::table('equipos')->where('id', $mantenimiento->equipo_id)->first();
             if ($equipo && $equipo->estado === 'en_reparacion') {
                 DB::table('equipos')->where('id', $mantenimiento->equipo_id)->update([

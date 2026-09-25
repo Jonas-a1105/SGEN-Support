@@ -13,7 +13,7 @@ import DashboardTechPerformanceCard from '@/Components/Dashboard/DashboardTechPe
 import DashboardOperationsDistributionCard from '@/Components/Dashboard/DashboardOperationsDistributionCard.vue';
 import DashboardRecentActivityCard from '@/Components/Dashboard/DashboardRecentActivityCard.vue';
 import DashboardAppearanceModal from '@/Components/Dashboard/DashboardAppearanceModal.vue';
-import type { DashboardMetrics } from '@/types/DashboardMetrics';
+import type { DashboardMetrics } from '@/Types/DashboardMetrics';
 
 const props = defineProps<{
     metrics: DashboardMetrics;
