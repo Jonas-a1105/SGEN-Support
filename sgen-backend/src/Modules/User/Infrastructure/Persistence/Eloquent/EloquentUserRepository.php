@@ -88,6 +88,11 @@ final class EloquentUserRepository implements UserRepositoryInterface
         );
     }
 
+    public function countAdmins(): int
+    {
+        return (int) DB::table('usuarios')->where('rol', 'admin')->count();
+    }
+
     public function save(SystemUser $user): int
     {
         return (int) DB::table('usuarios')->insertGetId([

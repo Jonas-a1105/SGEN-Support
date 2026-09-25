@@ -37,14 +37,22 @@ final class UserController extends Controller
 
     public function update(int $id, UpdateUserRequest $request, UpdateUserUseCase $useCase): RedirectResponse
     {
-        $useCase->execute($id, UpdateUserDTO::fromArray($request->validated()));
+        try {
+            $useCase->execute($id, UpdateUserDTO::fromArray($request->validated()));
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'Usuario actualizado correctamente.');
     }
 
     public function destroy(int $id, DeleteUserUseCase $useCase): RedirectResponse
     {
-        $useCase->execute($id);
+        try {
+            $useCase->execute($id);
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado satisfactoriamente.');
     }

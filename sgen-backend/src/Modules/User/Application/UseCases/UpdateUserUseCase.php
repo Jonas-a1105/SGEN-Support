@@ -6,6 +6,7 @@ namespace Modules\User\Application\UseCases;
 
 use Modules\User\Application\DTOs\UpdateUserDTO;
 use Modules\User\Domain\Enums\UserRole;
+use Modules\User\Domain\Exceptions\LastAdminProtectionException;
 use Modules\User\Domain\Exceptions\UserNotFoundException;
 use Modules\User\Domain\Ports\UserRepositoryInterface;
 
@@ -24,11 +25,18 @@ final readonly class UpdateUserUseCase
 
         $roleEnum = UserRole::tryFromString($dto->rol);
 
+        // Protección estructural: el último administrador no puede degradarse.
+        $eraAdmin = $user->role()->value === 'admin';
+        if ($eraAdmin && $roleEnum->value !== 'admin' && $this->repository->countAdmins() <= 1) {
+            throw LastAdminProtectionException::demoting();
+        }
+
         $updated = $user->update(
             username: $dto->username,
             role: $roleEnum,
             departmentId: $dto->departamentoId,
-            employeeId: $dto->empleadoId
+            employeeId: $dto->empleadoId,
+            email: $dto->email
         );
 
         $this->repository->update($updated);

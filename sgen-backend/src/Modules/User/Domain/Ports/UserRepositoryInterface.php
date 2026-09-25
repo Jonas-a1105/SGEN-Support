@@ -23,6 +23,9 @@ interface UserRepositoryInterface
      */
     public function findByEmpleadoId(int $empleadoId): ?SystemUser;
 
+    /** Cuenta de administradores activos (para la protección del último admin). */
+    public function countAdmins(): int;
+
     public function save(SystemUser $user): int;
 
     public function update(SystemUser $user): void;

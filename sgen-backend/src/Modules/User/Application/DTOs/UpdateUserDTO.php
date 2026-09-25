@@ -11,7 +11,8 @@ final readonly class UpdateUserDTO
         public ?string $password,
         public string $rol,
         public ?int $departamentoId,
-        public ?int $empleadoId
+        public ?int $empleadoId,
+        public ?string $email = null
     ) {}
 
     /**
@@ -21,10 +22,11 @@ final readonly class UpdateUserDTO
     {
         return new self(
             username: (string) ($data['username'] ?? ''),
-            password: !empty($data['password']) ? (string) $data['password'] : null,
+            password: ! empty($data['password']) ? (string) $data['password'] : null,
             rol: (string) ($data['rol'] ?? 'tecnico'),
-            departamentoId: !empty($data['departamento_id']) ? (int) $data['departamento_id'] : null,
-            empleadoId: !empty($data['empleado_id']) ? (int) $data['empleado_id'] : null
+            departamentoId: ! empty($data['departamento_id']) ? (int) $data['departamento_id'] : null,
+            empleadoId: ! empty($data['empleado_id']) ? (int) $data['empleado_id'] : null,
+            email: isset($data['email']) && $data['email'] !== '' ? (string) $data['email'] : null
         );
     }
 }

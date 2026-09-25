@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Application\UseCases;
 
+use Modules\User\Domain\Exceptions\LastAdminProtectionException;
 use Modules\User\Domain\Exceptions\UserNotFoundException;
 use Modules\User\Domain\Ports\UserRepositoryInterface;
 
@@ -18,6 +19,11 @@ final readonly class DeleteUserUseCase
         $user = $this->repository->findById($id);
         if ($user === null) {
             throw UserNotFoundException::withId($id);
+        }
+
+        // Protección estructural: jamás puede desaparecer el último administrador.
+        if ($user->role()->value === 'admin' && $this->repository->countAdmins() <= 1) {
+            throw LastAdminProtectionException::deleting();
         }
 
         $this->repository->delete($id);

@@ -82,7 +82,8 @@ final class SystemUser
         string $username,
         UserRole $role,
         ?int $departmentId,
-        ?int $employeeId
+        ?int $employeeId,
+        ?string $email = null
     ): self {
         return new self(
             $this->id,
@@ -91,7 +92,8 @@ final class SystemUser
             $role,
             $this->theme,
             $employeeId,
-            $departmentId
+            $departmentId,
+            $email ?? $this->email
         );
     }
 }
