@@ -18,6 +18,11 @@ interface UserRepositoryInterface
 
     public function findByUsername(string $username): ?SystemUser;
 
+    /**
+     * Resuelve el USUARIO de sistema vinculado a un EMPLEADO (credenciales y email).
+     */
+    public function findByEmpleadoId(int $empleadoId): ?SystemUser;
+
     public function save(SystemUser $user): int;
 
     public function update(SystemUser $user): void;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Notification\Application\Listeners;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
 use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
 use Modules\Support\Domain\Events\TicketAssigned;
+use Modules\User\Domain\Ports\UserRepositoryInterface;
 
 /**
  * El módulo Notification escucha hechos del dominio Support: Support ya no
@@ -18,14 +18,15 @@ use Modules\Support\Domain\Events\TicketAssigned;
 final class NotifyTechnicianOnTicketAssigned
 {
     public function __construct(
-        private readonly CreateNotificationUseCase $createNotification
+        private readonly CreateNotificationUseCase $createNotification,
+        private readonly UserRepositoryInterface $users
     ) {}
 
     public function handle(TicketAssigned $event): void
     {
         try {
-            $techUserId = DB::table('usuarios')->where('empleado_id', $event->empleadoId)->value('id')
-                ?? DB::table('empleados')->where('id', $event->empleadoId)->value('usuario_id');
+            $techUser = $this->users->findByEmpleadoId($event->empleadoId);
+            $techUserId = $techUser?->id();
 
             if (! $techUserId) {
                 return;
@@ -40,9 +41,9 @@ final class NotifyTechnicianOnTicketAssigned
             );
 
             // Canal correo: solo si el usuario técnico tiene email registrado.
-            $email = DB::table('usuarios')->where('id', $techUserId)->value('email');
+            $email = $this->users->findById((int) $techUserId)?->email();
             if ($email) {
-                Mail::to((string) $email)->send(new TicketNotificationMail(
+                Mail::to($email)->send(new TicketNotificationMail(
                     'Ticket asignado',
                     "Se te ha asignado el ticket #{$event->ticketId}: {$event->ticketTitulo}",
                     "/soportes/{$event->ticketId}",

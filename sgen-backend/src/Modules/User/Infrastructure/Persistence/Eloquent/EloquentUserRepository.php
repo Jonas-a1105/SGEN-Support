@@ -105,6 +105,31 @@ final class EloquentUserRepository implements UserRepositoryInterface
         ]);
     }
 
+    public function findByEmpleadoId(int $empleadoId): ?SystemUser
+    {
+        $row = DB::table('usuarios')->where('empleado_id', $empleadoId)->first();
+        if ($row === null) {
+            // Puente legacy: el empleado puede referenciar al usuario desde su lado.
+            $row = DB::table('usuarios')
+                ->whereIn('id', fn ($q) => $q->select('usuario_id')->from('empleados')->where('id', $empleadoId))
+                ->first();
+        }
+        if ($row === null) {
+            return null;
+        }
+
+        return SystemUser::create(
+            username: (string) $row->username,
+            password: (string) $row->password,
+            role: UserRole::tryFromString((string) $row->rol),
+            theme: (string) ($row->tema ?? 'light'),
+            employeeId: $row->empleado_id !== null ? (int) $row->empleado_id : null,
+            departmentId: $row->departamento_id !== null ? (int) $row->departamento_id : null,
+            id: (int) $row->id,
+            email: $row->email ?? null
+        );
+    }
+
     public function update(SystemUser $user): void
     {
         DB::table('usuarios')

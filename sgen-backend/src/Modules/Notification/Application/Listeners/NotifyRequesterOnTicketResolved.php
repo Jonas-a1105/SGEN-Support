@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Notification\Application\Listeners;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
 use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
 use Modules\Support\Domain\Events\TicketResolved;
+use Modules\User\Domain\Ports\UserRepositoryInterface;
 
 final class NotifyRequesterOnTicketResolved
 {
     public function __construct(
-        private readonly CreateNotificationUseCase $createNotification
+        private readonly CreateNotificationUseCase $createNotification,
+        private readonly UserRepositoryInterface $users
     ) {}
 
     public function handle(TicketResolved $event): void
@@ -33,9 +34,9 @@ final class NotifyRequesterOnTicketResolved
             );
 
             // Canal correo: solo si el solicitante tiene email registrado.
-            $email = DB::table('usuarios')->where('id', $event->usuarioCreacionId)->value('email');
+            $email = $this->users->findById($event->usuarioCreacionId)?->email();
             if ($email) {
-                Mail::to((string) $email)->send(new TicketNotificationMail(
+                Mail::to($email)->send(new TicketNotificationMail(
                     'Ticket resuelto',
                     "Tu ticket #{$event->ticketId} ({$event->ticketTitulo}) ha sido resuelto. Ya puedes calificar la atención recibida.",
                     "/soportes/{$event->ticketId}",

@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Notification\Application\Listeners;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
 use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
 use Modules\Support\Domain\Events\TicketReopened;
+use Modules\User\Domain\Ports\UserRepositoryInterface;
 
 final class NotifyTechnicianOnTicketReopened
 {
     public function __construct(
-        private readonly CreateNotificationUseCase $createNotification
+        private readonly CreateNotificationUseCase $createNotification,
+        private readonly UserRepositoryInterface $users
     ) {}
 
     public function handle(TicketReopened $event): void
@@ -24,8 +25,7 @@ final class NotifyTechnicianOnTicketReopened
         }
 
         try {
-            $techUserId = DB::table('usuarios')->where('empleado_id', $event->empleadoId)->value('id')
-                ?? DB::table('empleados')->where('id', $event->empleadoId)->value('usuario_id');
+            $techUserId = $this->users->findByEmpleadoId($event->empleadoId)?->id();
 
             if (! $techUserId) {
                 return;
@@ -40,9 +40,9 @@ final class NotifyTechnicianOnTicketReopened
             );
 
             // Canal correo: solo si el técnico tiene email registrado.
-            $email = DB::table('usuarios')->where('id', $techUserId)->value('email');
+            $email = $this->users->findById((int) $techUserId)?->email();
             if ($email) {
-                Mail::to((string) $email)->send(new TicketNotificationMail(
+                Mail::to($email)->send(new TicketNotificationMail(
                     'Ticket reabierto',
                     "El ticket #{$event->ticketId} ({$event->ticketTitulo}) fue reabierto. Motivo: {$event->motivo}",
                     "/soportes/{$event->ticketId}",
