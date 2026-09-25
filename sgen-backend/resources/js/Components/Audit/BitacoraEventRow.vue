@@ -60,7 +60,7 @@ const entityBadgeVariant = computed<BadgeVariant>(() => {
     switch (entityType.value) {
         case 'ticket': return 'info';
         case 'equipment': return 'warning';
-        case 'user': return 'primary';
+        case 'user': return 'accent';
         case 'dept': return 'neutral';
         case 'inventory': return 'success';
         case 'security': return 'danger';

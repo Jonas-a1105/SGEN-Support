@@ -10,7 +10,7 @@ import UserTable from '@/Components/User/UserTable.vue';
 import UserCard from '@/Components/User/UserCard.vue';
 import UserFormView from '@/Components/User/UserFormView.vue';
 import ModalUserDelete from '@/Components/User/ModalUserDelete.vue';
-import type { DepartmentLookup, EmployeeLookup } from '@/types';
+import type { DepartmentLookup, EmployeeLookup } from '@/Types';
 
 const props = defineProps<{
     users: UserItem[];

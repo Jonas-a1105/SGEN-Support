@@ -28,7 +28,7 @@ const form = useForm({
 const productOptions = computed<ComboboxOption[]>(() =>
     props.products.map((p) => ({
         value: p.id,
-        label: `${p.codigo} - ${p.nombre} (Stock: ${p.stock_actual})`,
+        label: `${p.sku} - ${p.name} (Stock: ${p.current_stock})`,
     }))
 );
 

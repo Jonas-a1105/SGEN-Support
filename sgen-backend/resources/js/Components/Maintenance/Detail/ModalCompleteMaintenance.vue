@@ -102,7 +102,7 @@ const handleComplete = () => {
                 <BaseTextarea
                     v-model="completeForm.observaciones"
                     placeholder="Detalles de las piezas cambiadas, pruebas realizadas o dictamen final..."
-                    rows="4"
+                    :rows="4"
                 />
             </div>
 

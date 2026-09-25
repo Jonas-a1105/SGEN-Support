@@ -6,14 +6,14 @@ import type { FormTechnician } from './types';
 const props = defineProps<{
     requester: string;
     department: string;
-    selectedTechId: number;
+    selectedTechId: number | null;
     technicians?: FormTechnician[];
 }>();
 
 const emit = defineEmits<{
     (e: 'update:requester', value: string): void;
     (e: 'update:department', value: string): void;
-    (e: 'update:selectedTechId', value: number): void;
+    (e: 'update:selectedTechId', value: number | null): void;
 }>();
 
 const technicianOptions = computed(() =>
@@ -22,7 +22,7 @@ const technicianOptions = computed(() =>
         label: tech.name,
         sublabel: `${tech.specialty} • ${tech.active_tickets} tickets activos`,
         badge: tech.active_tickets === 0 ? 'Disponible' : `${tech.active_tickets} act.`,
-        badgeVariant: (tech.active_tickets === 0 ? 'success' : 'warning') as any,
+        badgeVariant: tech.active_tickets === 0 ? ('success' as const) : ('warning' as const),
     }))
 );
 </script>
@@ -66,7 +66,7 @@ const technicianOptions = computed(() =>
                 label="Técnico Responsable Asignado"
                 placeholder="Seleccionar técnico..."
                 :options="technicianOptions"
-                @update:model-value="(val) => emit('update:selectedTechId', Number(val))"
+                @update:model-value="(val) => emit('update:selectedTechId', val === '' || val === null || val === undefined ? null : Number(val))"
             />
         </div>
     </div>

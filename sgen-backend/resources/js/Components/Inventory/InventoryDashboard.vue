@@ -118,7 +118,7 @@ const handleCreateMaintenance = (eq?: Equipment | null) => {
                 @open-adjust="openAdjust()"
                 @open-transfer="openTransfer()"
             />
-            <InventoryKpiGrid :kpis="kpis" />
+            <InventoryKpiGrid :kpis="{ ...kpis }" />
             <div class="section-nav-strip">
                 <button
                     class="section-tab-btn"

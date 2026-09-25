@@ -19,7 +19,7 @@ const isSubmitting = ref(false);
 
 const handleTransferSubmit = (payload: TransferStockPayload) => {
     isSubmitting.value = true;
-    router.post('/inventario/transferir', payload, {
+    router.post('/inventario/transferir', { ...payload }, {
         preserveScroll: true,
         onFinish: () => {
             isSubmitting.value = false;

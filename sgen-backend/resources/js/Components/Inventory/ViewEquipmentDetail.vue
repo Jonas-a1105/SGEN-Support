@@ -46,6 +46,11 @@ const handleDuplicate = () => {
         codigo_inventario: `${props.equipment.codigo_inventario}-COPIA`,
     });
 };
+
+const handlePrint = () => {
+    isDropdownOpen.value = false;
+    window.print();
+};
 </script>
 
 <template>
@@ -73,7 +78,7 @@ const handleDuplicate = () => {
                     :is-open="isDropdownOpen"
                     @toggle="toggleDropdown"
                     @history="isDropdownOpen = false; emit('view-history', equipment)"
-                    @print="isDropdownOpen = false; window.print()"
+                    @print="handlePrint()"
                     @duplicate="handleDuplicate"
                 />
             </div>

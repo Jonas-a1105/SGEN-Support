@@ -72,6 +72,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             ->leftJoin('equipos', 'soportes.equipo_id', '=', 'equipos.id')
             ->leftJoin('empleados as requester', 'equipos.empleado_id', '=', 'requester.id')
             ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('departamentos as tech_depto', 'tech.departamento_id', '=', 'tech_depto.id')
             ->select([
                 'soportes.id',
                 'soportes.titulo',
@@ -84,6 +85,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 'tech.id as tech_id',
                 'tech.nombre as tech_nombre',
                 'tech.apellido as tech_apellido',
+                'tech_depto.nombre as tech_depto_nombre',
                 'requester.nombre as req_nombre',
                 'requester.apellido as req_apellido',
                 'departamentos.nombre as depto_nombre',
@@ -136,12 +138,16 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
 
         $records = $query->limit(50)->get();
 
-        // Obtener conteos de comentarios agrupados
-        $commentCounts = DB::table('ticket_comentarios')
-            ->select('ticket_id', DB::raw('count(*) as count'))
-            ->groupBy('ticket_id')
-            ->pluck('count', 'ticket_id')
-            ->all();
+        // Conteos de comentarios SOLO para la página visible (evita escaneo total de la tabla).
+        $pageIds = $records->pluck('id')->all();
+        $commentCounts = $pageIds === []
+            ? []
+            : DB::table('ticket_comentarios')
+                ->select('ticket_id', DB::raw('count(*) as count'))
+                ->whereIn('ticket_id', $pageIds)
+                ->groupBy('ticket_id')
+                ->pluck('count', 'ticket_id')
+                ->all();
 
         return $records
             ->map(fn ($row) => TicketListItemMapper::fromDatabaseRow($row, $commentCounts, $currentUserId))

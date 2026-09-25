@@ -35,7 +35,7 @@ const getStatusBadgeVariant = (status: string) => {
 
 const getTypeBadgeVariant = (type: string) => {
     switch (type) {
-        case 'preventivo': return 'brand';
+        case 'preventivo': return 'accent';
         case 'correctivo': return 'warning';
         case 'predictivo': return 'info';
         default: return 'neutral';

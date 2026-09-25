@@ -6,7 +6,8 @@ import { BasePageHeader, BaseButton, BaseEmptyState } from '@/Components/UI';
 import DepartmentToolbar from '@/Components/Department/DepartmentToolbar.vue';
 import DepartmentCard from '@/Components/Department/DepartmentCard.vue';
 import DepartmentTable from '@/Components/Department/DepartmentTable.vue';
-import DepartmentFormView, { type LeadershipCandidate } from '@/Components/Department/DepartmentFormView.vue';
+import DepartmentFormView from '@/Components/Department/DepartmentFormView.vue';
+import type { LeadershipCandidate } from '@/Types/department';
 import ModalDepartmentDelete from '@/Components/Department/ModalDepartmentDelete.vue';
 import { useDepartmentFilters, type DepartmentItem } from '@/Composables/useDepartmentFilters';
 
@@ -55,8 +56,10 @@ const openDeleteModal = (dept: DepartmentItem) => {
 };
 
 const handleSaveDepartment = (payload: Record<string, unknown>) => {
+    // Inertia tipa sus payloads como Record<string, any>: casteo explícito en el límite de IO.
+    const body = payload as Record<string, any>;
     if (editingDepartment.value) {
-        router.put(`/departamentos/${editingDepartment.value.numericId}`, payload, {
+        router.put(`/departamentos/${editingDepartment.value.numericId}`, body, {
             onSuccess: () => {
                 backToList();
             },
@@ -66,7 +69,7 @@ const handleSaveDepartment = (payload: Record<string, unknown>) => {
             },
         });
     } else {
-        router.post('/departamentos', payload, {
+        router.post('/departamentos', body, {
             onSuccess: () => {
                 backToList();
             },

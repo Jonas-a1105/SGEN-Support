@@ -58,7 +58,7 @@ const managerInitials = computed(() => {
 });
 
 const selectCandidate = (cand: LeadershipCandidate) => {
-    managerName.value = cand.name;
+    managerName.value = `${cand.nombre} ${cand.apellido}`.trim();
     managerId.value = cand.id;
     showCandidatesModal.value = false;
 };
@@ -170,6 +170,7 @@ const handleSubmit = () => {
         <!-- MODAL PARA SELECCIONAR JEFE DE ÁREA -->
         <ModalSelectDepartmentLeader
             v-if="showCandidatesModal"
+            :is-open="showCandidatesModal"
             :candidates="candidates"
             @close="showCandidatesModal = false"
             @select="selectCandidate"

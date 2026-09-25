@@ -1,108 +1,91 @@
-name: Continuous Integration
+name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, master, develop]
   pull_request:
-    branches: [main, develop]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
-  backend-tests:
-    name: Backend Test Suite (PHP 8.2 / Laravel 12)
+  backend:
+    name: Backend (PHP 8.3 + PostgreSQL)
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ci_test
+          POSTGRES_USER: sgen
+          POSTGRES_PASSWORD: sgen
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sgen -d ci_test"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+
     defaults:
       run:
         working-directory: sgen-backend
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: ci_test
+      DB_USERNAME: sgen
+      DB_PASSWORD: sgen
+      DB_DATABASE_TESTING: ci_test
 
-      - name: Setup PHP Environment
-        uses: shivammathur/setup-php@v2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: mbstring, bcmath, curl, dom, fileinfo, gd, intl, json, openssl, pdo, pdo_sqlite, sqlite3, zip
+          php-version: "8.3"
+          extensions: pgsql, pdo_pgsql, mbstring, bcmath, fileinfo
           coverage: none
 
-      - name: Cache Composer Dependencies
-        uses: actions/cache@v4
-        with:
-          path: sgen-backend/vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('sgen-backend/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
+      - name: Instalar dependencias PHP
+        run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Install Composer Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Copy Test Environment File
+      - name: Preparar aplicación
         run: |
           cp .env.example .env
           php artisan key:generate
 
-      - name: Run Backend Tests (PHPUnit / Pest)
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ':memory:'
-          SESSION_DRIVER: array
-          QUEUE_CONNECTION: sync
-          CACHE_STORE: array
-        run: php artisan test --ansi
+      - name: Migrar y provisionar RBAC en la BD de pruebas
+        run: |
+          php artisan migrate --force
+          php artisan db:seed --class="Database\Seeders\RolesAndPermissionsSeeder" --force
 
-      - name: Code Style Check (Laravel Pint)
-        run: ./vendor/bin/pint --test
+      - name: Pint (estilo, sin modificar)
+        run: vendor/bin/pint --test
 
-  frontend-build:
-    name: Frontend Build & Type Validation (Vue 3 / Vite)
+      - name: Suite de tests
+        run: php artisan test
+
+  frontend:
+    name: Frontend (typecheck + build)
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: sgen-backend
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: "22"
+          cache: npm
           cache-dependency-path: sgen-backend/package-lock.json
 
-      - name: Install NPM Dependencies
+      - name: Instalar dependencias Node
         run: npm ci
 
-      - name: Build Production Assets
+      - name: Typecheck estricto (vue-tsc)
+        run: npm run typecheck
+
+      - name: Build de producción
         run: npm run build
-
-  security-audit:
-    name: Security & Vulnerability Audit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          coverage: none
-
-      - name: Audit Backend Dependencies
-        working-directory: sgen-backend
-        run: composer audit || true
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Audit Frontend Dependencies
-        working-directory: sgen-backend
-        run: npm audit --audit-level=high || true

@@ -40,8 +40,9 @@ const uploadFile = (file: File) => {
         forceFormData: true,
         preserveScroll: true,
         onProgress: (progress) => {
-            if (progress.percentage) {
-                uploadProgress.value = progress.percentage;
+            const percentage = progress?.percentage;
+            if (typeof percentage === 'number') {
+                uploadProgress.value = percentage;
             }
         },
         onSuccess: () => {

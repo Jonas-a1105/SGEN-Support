@@ -10,6 +10,7 @@ export function useInventoryFilters(initialFilters: InventoryFilters = {}) {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     const applyFilters = () => {
+        const query: Record<string, string | boolean> = {};
         const queryTerm = (search.value || '').trim();
         if (queryTerm) query.search = queryTerm;
         if (categoria.value) query.categoria = categoria.value;
@@ -27,6 +28,10 @@ export function useInventoryFilters(initialFilters: InventoryFilters = {}) {
         debounceTimer = setTimeout(applyFilters, 300);
     });
 
+    const toggleLowStock = () => {
+        lowStock.value = !lowStock.value;
+    };
+
     const resetFilters = () => {
         search.value = '';
         categoria.value = '';
@@ -38,6 +43,7 @@ export function useInventoryFilters(initialFilters: InventoryFilters = {}) {
         search,
         categoria,
         lowStock,
+        toggleLowStock,
         resetFilters,
     };
 }

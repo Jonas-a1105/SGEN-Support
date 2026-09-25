@@ -17,7 +17,7 @@ export interface ReportHistoryItem {
     title: string;
     scope: ReportScope;
     date: string;
-    format: 'pdf' | 'excel';
+    format: 'pdf' | 'excel' | 'csv';
     user: string;
     filters: string;
     url: string;

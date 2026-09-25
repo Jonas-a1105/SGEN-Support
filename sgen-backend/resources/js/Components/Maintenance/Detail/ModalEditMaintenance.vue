@@ -178,7 +178,7 @@ const handleSaveEdit = () => {
                 <label class="form-label">Descripción del Trabajo *</label>
                 <BaseTextarea
                     v-model="editForm.descripcion"
-                    rows="3"
+                    :rows="3"
                     required
                 />
             </div>
@@ -187,7 +187,7 @@ const handleSaveEdit = () => {
                 <label class="form-label">Observaciones Adicionales</label>
                 <BaseTextarea
                     v-model="editForm.observaciones"
-                    rows="2"
+                    :rows="2"
                 />
             </div>
 

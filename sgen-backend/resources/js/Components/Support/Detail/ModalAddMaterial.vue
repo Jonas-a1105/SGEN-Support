@@ -146,7 +146,7 @@ const handleSubmit = () => {
                     variant="primary"
                     type="submit"
                     :loading="form.isSubmitting"
-                    :disabled="form.isSubmitting || !form.item_id || isStockInsufficient || (selectedItem && selectedItem.stock <= 0)"
+                    :disabled="form.isSubmitting || !form.item_id || isStockInsufficient || !!(selectedItem && selectedItem.stock <= 0)"
                 >
                     Descontar e Imputar
                 </BaseButton>

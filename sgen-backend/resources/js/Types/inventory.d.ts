@@ -12,6 +12,10 @@ export interface Product {
     is_low_stock: boolean;
     purchase_price: number;
     location?: string | null;
+    /** Metadatos de adquisición gestionados por el formulario (aún no persistidos por el backend). */
+    vendor?: string | null;
+    purchase_date?: string | null;
+    warranty_expiration?: string | null;
 }
 
 export interface Equipment {

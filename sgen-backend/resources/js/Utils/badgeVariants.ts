@@ -2,7 +2,7 @@
  * Maps system entity statuses and priorities to standard BaseBadge variants.
  */
 
-export type BadgeVariant = 'brand' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'accent' | 'code';
+export type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'accent' | 'code';
 
 export function getStatusBadgeVariant(status?: string | null): BadgeVariant {
     if (!status) return 'neutral';
@@ -35,7 +35,7 @@ export function getStatusBadgeVariant(status?: string | null): BadgeVariant {
             return 'info';
 
         case 'preventivo':
-            return 'brand';
+            return 'accent';
 
         case 'cerrado':
             return 'neutral';

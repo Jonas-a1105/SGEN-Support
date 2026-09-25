@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseAvatar from '@/Components/UI/BaseAvatar.vue';
+import type { LeadershipCandidate } from '@/Types/department';
 
-export interface LeadershipCandidate {
-    id: number;
-    name: string;
-    role: string;
-    init: string;
-}
+// Re-exportación para retrocompatibilidad con consumidores que importan el tipo desde aquí.
+export type { LeadershipCandidate };
 
 defineProps<{
     isOpen: boolean;
@@ -18,6 +15,9 @@ const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'select', candidate: LeadershipCandidate): void;
 }>();
+
+const candidateName = (cand: LeadershipCandidate) => `${cand.nombre} ${cand.apellido}`.trim();
+const candidateRole = (cand: LeadershipCandidate) => cand.cargo ?? 'Sin cargo asignado';
 </script>
 
 <template>
@@ -36,10 +36,10 @@ const emit = defineEmits<{
                 role="button"
                 tabindex="0"
             >
-                <BaseAvatar :name="cand.name" size="sm" />
+                <BaseAvatar :name="candidateName(cand)" size="sm" />
                 <div class="candidate-copy">
-                    <strong class="candidate-name">{{ cand.name }}</strong>
-                    <span class="candidate-role">{{ cand.role }}</span>
+                    <strong class="candidate-name">{{ candidateName(cand) }}</strong>
+                    <span class="candidate-role">{{ candidateRole(cand) }}</span>
                 </div>
             </div>
             <div v-if="candidates.length === 0" class="empty-notice">

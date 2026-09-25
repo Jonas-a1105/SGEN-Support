@@ -65,7 +65,7 @@ const handleCancel = () => {
                 <BaseTextarea
                     v-model="cancelForm.motivo"
                     placeholder="Indica el motivo por el cual se anula la orden..."
-                    rows="3"
+                    :rows="3"
                     required
                 />
             </div>

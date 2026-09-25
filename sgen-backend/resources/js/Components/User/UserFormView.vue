@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import type { UserItem, DepartmentLookup, EmployeeLookup } from '@/types';
+import type { UserItem, DepartmentLookup, EmployeeLookup } from '@/Types';
 import UserCredentialPreview from './UserCredentialPreview.vue';
 import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
 

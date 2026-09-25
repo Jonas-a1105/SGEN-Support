@@ -64,8 +64,10 @@ const openDeleteModal = (emp: EmployeeItem) => {
 };
 
 const handleSaveEmployee = (payload: Record<string, unknown>) => {
+    // Inertia tipa sus payloads como Record<string, any>: casteo explícito en el límite de IO.
+    const body = payload as Record<string, any>;
     if (editingEmployee.value) {
-        router.put(`/personal/${editingEmployee.value.numericId}`, payload, {
+        router.put(`/personal/${editingEmployee.value.numericId}`, body, {
             onSuccess: () => {
                 backToDirectory();
             },
@@ -75,7 +77,7 @@ const handleSaveEmployee = (payload: Record<string, unknown>) => {
             },
         });
     } else {
-        router.post('/personal', payload, {
+        router.post('/personal', body, {
             onSuccess: () => {
                 backToDirectory();
             },

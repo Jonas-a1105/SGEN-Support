@@ -49,7 +49,7 @@ const emit = defineEmits<{
             <div v-else class="materials-list-box">
                 <div v-for="mat in materials" :key="mat.id" class="material-item-row">
                     <div class="mat-info">
-                        <strong class="mat-name">{{ mat.name }}</strong>
+                        <strong class="mat-name">{{ mat.item_name }}</strong>
                         <span class="mat-code">{{ mat.code }} • {{ mat.date }}</span>
                     </div>
                     <div class="mat-qty-badge">

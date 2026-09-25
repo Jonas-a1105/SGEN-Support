@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BaseSearchToolbar, BaseToggleSwitch, BaseViewModeToggle } from '@/Components/UI';
-import type { DepartmentOption } from '@/types';
+import type { DepartmentOption } from '@/Types';
 import {
     IconLayoutGrid,
     IconArchive,

@@ -11,7 +11,7 @@ import ModalEquipmentForm from '@/Components/Equipment/ModalEquipmentForm.vue';
 import ModalEquipmentDetail from '@/Components/Equipment/ModalEquipmentDetail.vue';
 import ModalEquipmentDelete from '@/Components/Equipment/ModalEquipmentDelete.vue';
 import { useEquipmentFilters } from '@/Composables/useEquipmentFilters';
-import type { EquipmentItem, EquipmentKpis, DepartmentOption, EmployeeOption } from '@/types';
+import type { EquipmentItem, EquipmentKpis, DepartmentOption, EmployeeOption } from '@/Types';
 
 const props = defineProps<{
     kpis: EquipmentKpis;
@@ -69,8 +69,10 @@ const openDeleteModal = (item: EquipmentItem) => {
 };
 
 const handleSaveEquipment = (payload: Record<string, unknown>) => {
+    // Inertia tipa sus payloads como Record<string, any>: casteo explícito en el límite de IO.
+    const body = payload as Record<string, any>;
     if (editingEquipment.value) {
-        router.put(`/equipos/${editingEquipment.value.numericId}`, payload, {
+        router.put(`/equipos/${editingEquipment.value.numericId}`, body, {
             onSuccess: () => {
                 showFormModal.value = false;
                 editingEquipment.value = null;
@@ -81,7 +83,7 @@ const handleSaveEquipment = (payload: Record<string, unknown>) => {
             },
         });
     } else {
-        router.post('/equipos', payload, {
+        router.post('/equipos', body, {
             onSuccess: () => {
                 showFormModal.value = false;
             },

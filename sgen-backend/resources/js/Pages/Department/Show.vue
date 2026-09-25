@@ -38,7 +38,7 @@ const tabs = computed<TabItem[]>(() => [
     { key: 'overview', label: 'Visión General' },
     { key: 'employees', label: 'Colaboradores', count: props.department.empleados?.length },
     { key: 'assets', label: 'Equipos & Activos', count: props.department.equipos?.length },
-    { key: 'inventory', label: 'Artículos Inventario', count: props.department.consumables?.length },
+    { key: 'inventory', label: 'Artículos Inventario', count: props.department.consumibles?.length },
 ]);
 
 // Modals
@@ -177,7 +177,7 @@ const handleConfirmUnlink = () => {
 
                         <TabDepartmentInventory
                             v-else-if="activeTab === 'inventory'"
-                            :consumibles="department.consumables"
+                            :consumibles="department.consumibles"
                         />
                     </div>
                 </div>

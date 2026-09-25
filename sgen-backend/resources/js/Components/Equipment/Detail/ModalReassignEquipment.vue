@@ -26,8 +26,8 @@ const employeeOptions = computed<ComboboxOption[]>(() => [
     { value: '', label: 'Sin custodio asignado' },
     ...(props.equipment.empleados || []).map((e) => ({
         value: e.id,
-        label: e.nombre,
-        sublabel: e.cargo,
+        label: e.nombre ?? e.nombre_completo ?? '—',
+        sublabel: e.cargo ?? undefined,
     })),
 ]);
 

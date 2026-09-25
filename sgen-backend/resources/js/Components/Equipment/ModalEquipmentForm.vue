@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
-import type { DepartmentOption, EmployeeOption } from '@/types';
+import type { DepartmentOption, EmployeeOption } from '@/Types';
 
 const props = defineProps<{
     show: boolean;
@@ -54,7 +54,7 @@ const employeeOptions = computed(() => [
     { value: '', label: '-- Sin Usuario Asignado (En Almacén) --' },
     ...props.employees.map((e) => ({
         value: e.id,
-        label: e.nombre_completo,
+        label: e.nombre_completo ?? e.nombre ?? '—',
         sublabel: e.cargo || undefined,
     })),
 ]);
@@ -89,7 +89,7 @@ watch(
 
 watch(formEmpId, (newEmpId) => {
     if (!props.editEquipment) {
-        if (newEmpId && newEmpId !== '') {
+        if (newEmpId) {
             formStatus.value = 'En Uso';
         } else {
             formStatus.value = 'Disponible';

@@ -173,7 +173,7 @@ const handleGoBack = () => {
                     {{ ticket.status_label }}
                 </BaseBadge>
 
-                <BaseBadge v-if="ticket.sla_on_time" variant="brand" size="md" dot>
+                <BaseBadge v-if="ticket.sla_on_time" variant="accent" size="md" dot>
                     A TIEMPO (SLA)
                 </BaseBadge>
 

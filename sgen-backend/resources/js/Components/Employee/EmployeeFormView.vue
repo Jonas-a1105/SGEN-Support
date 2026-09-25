@@ -141,7 +141,7 @@ const handleSubmit = () => {
                 <div>
                     <h1 class="module-title">{{ editEmployee ? 'Editar Colaborador' : 'Registrar Colaborador' }}</h1>
                     <p class="module-subtitle">
-                        {{ editEmployee ? `Actualiza la ficha institucional de ${editEmployee.name}.` : 'Ingresa la información personal y laboral del nuevo colaborador.' }}
+                        {{ editEmployee ? `Actualiza la ficha institucional de ${editEmployee.fullName}.` : 'Ingresa la información personal y laboral del nuevo colaborador.' }}
                     </p>
                 </div>
             </div>
@@ -270,7 +270,7 @@ const handleSubmit = () => {
                 :id-doc="idDoc"
                 :dept-name="previewDeptName"
                 :initials="previewInitials"
-                :is-verified-user="isVerifiedUser"
+                :is-verified-user="!!isVerifiedUser"
             />
         </form>
     </section>

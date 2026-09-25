@@ -1,3 +1,5 @@
+import type { DepartmentOption } from './equipment';
+
 export interface SupportKpis {
     critical_pending: number;
     general_queue: number;
@@ -14,12 +16,20 @@ export interface TicketListItem {
     category: string;
     requester: string;
     dept: string;
+    department: string;
     tech: string;
+    tech_name: string;
+    tech_dept: string;
     tech_init: string;
     date: string;
     comments: number;
-    status: 'resolved' | 'process' | 'pending' | 'critical' | string;
+    comments_count: number;
+    status: 'resolved' | 'process' | 'pending' | 'waiting' | 'closed' | 'critical' | string;
+    status_variant: string;
+    status_label: string;
     priority: 'baja' | 'media' | 'alta' | 'critica' | string;
+    is_mine: boolean;
+    description: string;
 }
 
 export interface TicketAsset {
@@ -69,6 +79,7 @@ export interface LogEntry {
     id: number;
     title: string;
     body: string;
+    content?: string;
     date: string;
     author: string;
 }
@@ -130,11 +141,6 @@ export interface EquipmentOption {
 }
 
 export interface CategoryOption {
-    id: number;
-    name: string;
-}
-
-export interface DepartmentOption {
     id: number;
     name: string;
 }

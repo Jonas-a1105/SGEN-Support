@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { formatDate as formatDateUtil } from '@/Utils/formatters';
-import type { MaintenanceKpis, MaintenanceItem } from '@/types';
+import type { MaintenanceKpis, MaintenanceItem } from '@/Types';
 
 const props = defineProps<{
     kpis: MaintenanceKpis;
