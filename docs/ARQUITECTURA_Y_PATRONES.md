@@ -27,15 +27,19 @@ Modules/{Modulo}/
 │   ├── Mappers/             # Transformadores de filas BD -> DTOs de presentación
 │   └── Ports/               # Contratos específicos de aplicación (e.g. Ensambladores de PDF)
 │
-└── Infrastructure/          # IMPLEMENTACIÓN TÉCNICA
+└── Infrastructure/          # IMPLEMENTACIÓN TÉCNICA Y ENTREGA
+    ├── Http/                # Controllers delgados + FormRequests (adaptadores de entrada)
+    ├── Providers/           # ServiceProviders del módulo (bindings de puertos)
     ├── Persistence/         # Repositorios Eloquent/DB que implementan los Domain Ports
+    ├── Notifications/       # Adaptadores de notificación del módulo (e.g. Inventario)
     └── Presentation/        # Ensambladores específicos (e.g. PdfTicketDataAssembler)
 ```
 
-### Capa de Adaptadores HTTP (`sgen-backend/app/Infrastructure/{Modulo}/`)
-- **`Http/Controllers/`**: Controladores web/API delgados.
-- **`Http/Requests/`**: FormRequests de validación y sanitización previa.
-- **`Providers/`**: ServiceProviders encargados de registrar la inyección de dependencias (`$this->app->bind(...)`).
+> **Unificación 2026-09-25:** la antigua capa `app/Infrastructure/{Modulo}/` fue eliminada.
+> **Todo** módulo vive completo bajo `src/Modules/{Modulo}/` con namespace `Modules\{Modulo}\...`.
+> `app/` solo conserva preocupaciones de framework: `Models/User`, `Http/Middleware`
+> (incl. `SecurityHeaders`), `Http/Controllers/Controller` (base), `Console/Commands`,
+> `Providers/AppServiceProvider` y `Support/Rbac/PermissionCatalog`.
 
 ---
 
