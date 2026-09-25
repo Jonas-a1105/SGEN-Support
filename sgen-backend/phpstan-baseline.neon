@@ -1,0 +1,541 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Class App\\Models\\User uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method Modules\\Audit\\Application\\UseCases\\LogActionUseCase\:\:execute\(\) has parameter \$newData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Audit/Application/UseCases/LogActionUseCase.php
+
+		-
+			message: '#^Method Modules\\Audit\\Application\\UseCases\\LogActionUseCase\:\:execute\(\) has parameter \$oldData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Audit/Application/UseCases/LogActionUseCase.php
+
+		-
+			message: '#^Method Modules\\Audit\\Domain\\Ports\\AuditLogRepositoryInterface\:\:findByEntity\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Audit/Domain/Ports/AuditLogRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Audit\\Domain\\Ports\\AuditLogRepositoryInterface\:\:findByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Audit/Domain/Ports/AuditLogRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Audit\\Domain\\Ports\\AuditLogRepositoryInterface\:\:findRecent\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Audit/Domain/Ports/AuditLogRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Audit\\Infrastructure\\Persistence\\Eloquent\\EloquentAuditLogRepository\:\:findByEntity\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Audit/Infrastructure/Persistence/Eloquent/EloquentAuditLogRepository.php
+
+		-
+			message: '#^Method Modules\\Audit\\Infrastructure\\Persistence\\Eloquent\\EloquentAuditLogRepository\:\:findByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Audit/Infrastructure/Persistence/Eloquent/EloquentAuditLogRepository.php
+
+		-
+			message: '#^Method Modules\\Audit\\Infrastructure\\Persistence\\Eloquent\\EloquentAuditLogRepository\:\:findRecent\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Audit/Infrastructure/Persistence/Eloquent/EloquentAuditLogRepository.php
+
+		-
+			message: '#^Method Modules\\Audit\\Infrastructure\\Persistence\\Eloquent\\EloquentAuditRepository\:\:listSessions\(\) should return array\<array\<string, mixed\>\> but returns array\<int, stdClass\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Modules/Audit/Infrastructure/Persistence/Eloquent/EloquentAuditRepository.php
+
+		-
+			message: '#^Method Modules\\Category\\Infrastructure\\Persistence\\Eloquent\\EloquentCategoryRepository\:\:listWithStats\(\) should return array\<array\<string, mixed\>\> but returns array\<int, stdClass\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Modules/Category/Infrastructure/Persistence/Eloquent/EloquentCategoryRepository.php
+
+		-
+			message: '#^Method Modules\\Department\\Application\\DTOs\\CreateDepartmentDTO\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Department/Application/DTOs/CreateDepartmentDTO.php
+
+		-
+			message: '#^Method Modules\\Department\\Application\\DTOs\\DepartmentListItemDTO\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Department/Application/DTOs/DepartmentListItemDTO.php
+
+		-
+			message: '#^Method Modules\\Department\\Application\\DTOs\\UpdateDepartmentDTO\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Department/Application/DTOs/UpdateDepartmentDTO.php
+
+		-
+			message: '#^Method Modules\\Employee\\Application\\DTOs\\CreateEmployeeDTO\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Employee/Application/DTOs/CreateEmployeeDTO.php
+
+		-
+			message: '#^Method Modules\\Employee\\Application\\DTOs\\EmployeeDetailDTO\:\:__construct\(\) has parameter \$departamentos with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Employee/Application/DTOs/EmployeeDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Employee\\Application\\DTOs\\EmployeeDetailDTO\:\:__construct\(\) has parameter \$equipos with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Employee/Application/DTOs/EmployeeDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Employee\\Application\\DTOs\\EmployeeDetailDTO\:\:__construct\(\) has parameter \$tickets with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Employee/Application/DTOs/EmployeeDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Employee\\Application\\DTOs\\EmployeeDetailDTO\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Employee/Application/DTOs/EmployeeDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Employee\\Application\\DTOs\\EmployeeKpisDTO\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Employee/Application/DTOs/EmployeeKpisDTO.php
+
+		-
+			message: '#^Method Modules\\Employee\\Application\\DTOs\\EmployeeListItemDTO\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Employee/Application/DTOs/EmployeeListItemDTO.php
+
+		-
+			message: '#^Method Modules\\Employee\\Application\\DTOs\\UpdateEmployeeDTO\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Employee/Application/DTOs/UpdateEmployeeDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\CreateEquipmentDTO\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/CreateEquipmentDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentDetailDTO\:\:__construct\(\) has parameter \$departamentos with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/EquipmentDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentDetailDTO\:\:__construct\(\) has parameter \$empleados with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/EquipmentDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentDetailDTO\:\:__construct\(\) has parameter \$maintenances with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/EquipmentDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentDetailDTO\:\:__construct\(\) has parameter \$tickets with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/EquipmentDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentDetailDTO\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/EquipmentDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentKpisDTO\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/EquipmentKpisDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentListItemDTO\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/EquipmentListItemDTO.php
+
+		-
+			message: '#^Method Modules\\Equipment\\Application\\DTOs\\UpdateEquipmentDTO\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Equipment/Application/DTOs/UpdateEquipmentDTO.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Modules/Equipment/Application/Mappers/EquipmentListItemMapper.php
+
+		-
+			message: '#^Property Modules\\Equipment\\Application\\DTOs\\EquipmentListItemDTO\:\:\$dept \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: src/Modules/Equipment/Application/UseCases/ExportEquipmentExcelUseCase.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: src/Modules/Inventory/Infrastructure/Notifications/LogInventoryNotificationService.php
+
+		-
+			message: '#^Method Modules\\Inventory\\Infrastructure\\Persistence\\Eloquent\\Models\\EloquentProductModel\:\:movimientos\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Modules/Inventory/Infrastructure/Persistence/Eloquent/Models/EloquentProductModel.php
+
+		-
+			message: '#^Method Modules\\Inventory\\Infrastructure\\Persistence\\Eloquent\\Models\\EloquentStockMovementModel\:\:item\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Modules/Inventory/Infrastructure/Persistence/Eloquent/Models/EloquentStockMovementModel.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Application\\DTOs\\MaintenanceDetailDTO\:\:__construct\(\) has parameter \$checklist with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Application/DTOs/MaintenanceDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Application\\DTOs\\MaintenanceDetailDTO\:\:__construct\(\) has parameter \$equipo with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Application/DTOs/MaintenanceDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Application\\DTOs\\MaintenanceDetailDTO\:\:__construct\(\) has parameter \$historialEquipo with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Application/DTOs/MaintenanceDetailDTO.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Application\\UseCases\\GetMaintenanceDetailUseCase\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Application/UseCases/GetMaintenanceDetailUseCase.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Application\\UseCases\\GetUpcomingMaintenanceUseCase\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Application/UseCases/GetUpcomingMaintenanceUseCase.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Application\\UseCases\\ListMaintenanceUseCase\:\:execute\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Application/UseCases/ListMaintenanceUseCase.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Application\\UseCases\\ListMaintenanceUseCase\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Application/UseCases/ListMaintenanceUseCase.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Domain\\Ports\\MaintenanceRepositoryInterface\:\:deleteBulk\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Domain/Ports/MaintenanceRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Domain\\Ports\\MaintenanceRepositoryInterface\:\:getFormOptions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Domain/Ports/MaintenanceRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Domain\\Ports\\MaintenanceRepositoryInterface\:\:getUpcoming\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Domain/Ports/MaintenanceRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Domain\\Ports\\MaintenanceRepositoryInterface\:\:listMaintenance\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Domain/Ports/MaintenanceRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Domain\\Ports\\MaintenanceRepositoryInterface\:\:listMaintenance\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Domain/Ports/MaintenanceRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Domain\\Services\\ChecklistValidator\:\:isComplete\(\) has parameter \$tasks with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Domain/Services/ChecklistValidator.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Domain\\Services\\ChecklistValidator\:\:pendingTasks\(\) has parameter \$tasks with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Domain/Services/ChecklistValidator.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Http\\Requests\\AddMaintenanceMaterialRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Http/Requests/AddMaintenanceMaterialRequest.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Http\\Requests\\CancelMaintenanceRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Http/Requests/CancelMaintenanceRequest.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Http\\Requests\\CompleteMaintenanceRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Http/Requests/CompleteMaintenanceRequest.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Http\\Requests\\PostponeMaintenanceRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Http/Requests/PostponeMaintenanceRequest.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Http\\Requests\\StoreMaintenanceRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Http/Requests/StoreMaintenanceRequest.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Http\\Requests\\UpdateMaintenanceRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Http/Requests/UpdateMaintenanceRequest.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Persistence\\Eloquent\\EloquentMaintenanceRepository\:\:deleteBulk\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Persistence/Eloquent/EloquentMaintenanceRepository.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Persistence\\Eloquent\\EloquentMaintenanceRepository\:\:getFormOptions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Persistence/Eloquent/EloquentMaintenanceRepository.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Persistence\\Eloquent\\EloquentMaintenanceRepository\:\:getUpcoming\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Persistence/Eloquent/EloquentMaintenanceRepository.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Persistence\\Eloquent\\EloquentMaintenanceRepository\:\:listMaintenance\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Persistence/Eloquent/EloquentMaintenanceRepository.php
+
+		-
+			message: '#^Method Modules\\Maintenance\\Infrastructure\\Persistence\\Eloquent\\EloquentMaintenanceRepository\:\:listMaintenance\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Maintenance/Infrastructure/Persistence/Eloquent/EloquentMaintenanceRepository.php
+
+		-
+			message: '#^Method Modules\\Notification\\Domain\\Ports\\NotificationRepositoryInterface\:\:findByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Notification/Domain/Ports/NotificationRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Notification\\Domain\\Ports\\NotificationRepositoryInterface\:\:findUnreadByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Notification/Domain/Ports/NotificationRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Notification\\Infrastructure\\Persistence\\Eloquent\\EloquentNotificationRepository\:\:findByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Notification/Infrastructure/Persistence/Eloquent/EloquentNotificationRepository.php
+
+		-
+			message: '#^Method Modules\\Notification\\Infrastructure\\Persistence\\Eloquent\\EloquentNotificationRepository\:\:findUnreadByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Notification/Infrastructure/Persistence/Eloquent/EloquentNotificationRepository.php
+
+		-
+			message: '#^Method Modules\\Reports\\Application\\UseCases\\ExportTicketsExcelUseCase\:\:execute\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Application/UseCases/ExportTicketsExcelUseCase.php
+
+		-
+			message: '#^Method Modules\\Reports\\Application\\UseCases\\GenerateTicketsPdfUseCase\:\:execute\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Application/UseCases/GenerateTicketsPdfUseCase.php
+
+		-
+			message: '#^Method Modules\\Reports\\Application\\UseCases\\GetReportsFormDataUseCase\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Application/UseCases/GetReportsFormDataUseCase.php
+
+		-
+			message: '#^Method Modules\\Reports\\Domain\\Ports\\ReportsRepositoryInterface\:\:getFormData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Domain/Ports/ReportsRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Reports\\Domain\\Ports\\ReportsRepositoryInterface\:\:getInventoryData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Domain/Ports/ReportsRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Reports\\Domain\\Ports\\ReportsRepositoryInterface\:\:getMaintenanceData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Domain/Ports/ReportsRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Reports\\Domain\\Ports\\ReportsRepositoryInterface\:\:getPerformanceData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Domain/Ports/ReportsRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Reports\\Domain\\Ports\\ReportsRepositoryInterface\:\:getTicketsData\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Domain/Ports/ReportsRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Reports\\Domain\\Ports\\ReportsRepositoryInterface\:\:getTicketsData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Domain/Ports/ReportsRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Reports\\Infrastructure\\Persistence\\Eloquent\\EloquentReportsRepository\:\:getFormData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Infrastructure/Persistence/Eloquent/EloquentReportsRepository.php
+
+		-
+			message: '#^Method Modules\\Reports\\Infrastructure\\Persistence\\Eloquent\\EloquentReportsRepository\:\:getInventoryData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Infrastructure/Persistence/Eloquent/EloquentReportsRepository.php
+
+		-
+			message: '#^Method Modules\\Reports\\Infrastructure\\Persistence\\Eloquent\\EloquentReportsRepository\:\:getMaintenanceData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Infrastructure/Persistence/Eloquent/EloquentReportsRepository.php
+
+		-
+			message: '#^Method Modules\\Reports\\Infrastructure\\Persistence\\Eloquent\\EloquentReportsRepository\:\:getPerformanceData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Infrastructure/Persistence/Eloquent/EloquentReportsRepository.php
+
+		-
+			message: '#^Method Modules\\Reports\\Infrastructure\\Persistence\\Eloquent\\EloquentReportsRepository\:\:getTicketsData\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Infrastructure/Persistence/Eloquent/EloquentReportsRepository.php
+
+		-
+			message: '#^Method Modules\\Reports\\Infrastructure\\Persistence\\Eloquent\\EloquentReportsRepository\:\:getTicketsData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Reports/Infrastructure/Persistence/Eloquent/EloquentReportsRepository.php
+
+		-
+			message: '#^Method Modules\\Support\\Application\\UseCases\\BulkDeleteTicketsUseCase\:\:execute\(\) has parameter \$ticketIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Support/Application/UseCases/BulkDeleteTicketsUseCase.php
+
+		-
+			message: '#^Method Modules\\Support\\Domain\\Ports\\SupportRepositoryInterface\:\:bulkDeleteTickets\(\) has parameter \$ticketIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Support/Domain/Ports/SupportRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Support\\Domain\\Ports\\SupportRepositoryInterface\:\:getFormOptions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Support/Domain/Ports/SupportRepositoryInterface.php
+
+		-
+			message: '#^Method Modules\\Support\\Infrastructure\\Http\\Controllers\\SupportController\:\:generatePdf\(\) never returns Symfony\\Component\\HttpFoundation\\StreamedResponse so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Modules/Support/Infrastructure/Http/Controllers/SupportController.php
+
+		-
+			message: '#^Method Modules\\Support\\Infrastructure\\Persistence\\Eloquent\\EloquentSupportRepository\:\:bulkDeleteTickets\(\) has parameter \$ticketIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Support/Infrastructure/Persistence/Eloquent/EloquentSupportRepository.php
+
+		-
+			message: '#^Method Modules\\Support\\Infrastructure\\Persistence\\Eloquent\\EloquentSupportRepository\:\:getFormOptions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Modules/Support/Infrastructure/Persistence/Eloquent/EloquentSupportRepository.php
+
+		-
+			message: '#^Parameter \#2 \$commentsRecords of static method Modules\\Support\\Application\\Mappers\\TicketDetailMapper\:\:toDTO\(\) expects Illuminate\\Support\\Collection\<int, object\>, Illuminate\\Support\\Collection\<int, stdClass\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Modules/Support/Infrastructure/Persistence/Eloquent/EloquentSupportRepository.php
+
+		-
+			message: '#^Parameter \#3 \$attachmentsRecords of static method Modules\\Support\\Application\\Mappers\\TicketDetailMapper\:\:toDTO\(\) expects Illuminate\\Support\\Collection\<int, object\>, Illuminate\\Support\\Collection\<int, stdClass\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Modules/Support/Infrastructure/Persistence/Eloquent/EloquentSupportRepository.php
+
+		-
+			message: '#^Parameter \#4 \$materialsRecords of static method Modules\\Support\\Application\\Mappers\\TicketDetailMapper\:\:toDTO\(\) expects Illuminate\\Support\\Collection\<int, object\>, Illuminate\\Support\\Collection\<int, stdClass\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Modules/Support/Infrastructure/Persistence/Eloquent/EloquentSupportRepository.php
+
+		-
+			message: '#^Method Modules\\User\\Infrastructure\\Persistence\\Eloquent\\EloquentUserRepository\:\:listWithDetails\(\) should return array\<array\<string, mixed\>\> but returns array\<int, stdClass\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Modules/User/Infrastructure/Persistence/Eloquent/EloquentUserRepository.php

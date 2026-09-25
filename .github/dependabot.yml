@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: composer
+    directory: /sgen-backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+
+  - package-ecosystem: npm
+    directory: /sgen-backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

@@ -31,7 +31,7 @@ final class ReassignTechnicianUseCase
                         (int) $techUserId,
                         NotificationType::TICKET_ASIGNADO,
                         'Ticket Asignado',
-                        "Se te ha asignado el ticket #{$ticketId}: ".($ticket?->titulo ?? ''),
+                        "Se te ha asignado el ticket #{$ticketId}: ".($ticket->titulo ?? ''),
                         "/soportes/{$ticketId}"
                     );
                 } catch (\Throwable $e) {

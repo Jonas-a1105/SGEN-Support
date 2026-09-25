@@ -3,171 +3,483 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Inventario Corporativo</title>
+<title>Inventario Corporativo — SGEN Support</title>
+<meta name="description" content="Gestión profesional de inventario corporativo con KPIs, filtros y export/import CSV." />
 <style>
-:root{--bg:#f8fafc;--card:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--primary:#0ea5e9;--primary-600:#0284c7;--primary-100:#e0f2fe;--danger:#ef4444;--success:#10b981}
+:root{
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#111827;
+  --muted:#6b7280;
+  --primary:#0ea5e9;
+  --primary-600:#0284c7;
+  --primary-100:#e0f2fe;
+  --danger:#ef4444;
+  --danger-100:#fee2e2;
+  --success:#10b981;
+  --warning:#f59e0b;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --radius:12px;
+  --radius-sm:8px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;font-weight:600}
-header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--border);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;z-index:10}
-header h1{margin:0;font-size:20px}
-.container{max-width:1400px;margin:28px auto;padding:0 28px}
-.toolbar{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
-.toolbar input, .toolbar select{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-weight:600;font-family:inherit;width:220px}
-.btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+header{
+  position:sticky;top:0;z-index:30;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--primary)}
+h1{font-size:18px;margin:0}
+.container{max-width:1400px;margin:28px auto;padding:0 24px}
+.kpis{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px
+}
+.kpi{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;box-shadow:var(--shadow)
+}
+.kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .value{font-size:28px;font-weight:700;margin-top:6px}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.toolbar{
+  display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:18px;box-shadow:var(--shadow)
+}
+.toolbar .grow{flex:1}
+.input, select, button{
+  font-family:inherit;font-weight:500
+}
+.input, select{
+  background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;font-size:14px;outline:none;transition:border .15s
+}
+.input:focus, select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-100)}
+.btn{
+  background:var(--primary);color:#fff;border:none;border-radius:10px;
+  padding:10px 16px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+  transition:background .15s,transform .05s
+}
 .btn:hover{background:var(--primary-600)}
-.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--text)}
-.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border)}
-th{background:#f9fafb;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
-tr:hover{background:#f9fafb}
-.badge{padding:4px 8px;border-radius:999px;font-size:11px;font-weight:600}
-.badge.ok{background:#ecfdf5;color:var(--success)}
-.badge.low{background:#fff7ed;color:#ea580c}
-.badge.zero{background:#fef2f2;color:var(--danger)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50}
+.btn:active{transform:translateY(1px)}
+.btn-ghost{background:#fff;color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{background:#f9fafb}
+.btn-danger{background:var(--danger)} .btn-danger:hover{background:#dc2626}
+.btn-sm{padding:6px 10px;font-size:12px}
+.table-wrap{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow)
+}
+.table-scroll{overflow:auto}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;min-width:900px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th{background:#f9fafb;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;position:sticky;top:0}
+tbody tr:hover{background:#fcfcff}
+.badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;display:inline-block}
+.badge.ok{background:#ecfdf5;color:#065f46}
+.badge.low{background:#fffbeb;color:#92400e}
+.badge.zero{background:var(--danger-100);color:#991b1b}
+.empty{
+  padding:64px 24px;text-align:center;color:var(--muted)
+}
+.empty .icon{font-size:32px;margin-bottom:8px}
+.modal{position:fixed;inset:0;background:rgba(17,24,39,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:24px}
 .modal.open{display:flex}
-.modal-card{background:var(--card);border-radius:12px;padding:22px;width:480px;max-width:90vw;border:1px solid var(--border)}
-.modal-card h3{margin:0 0 12px}
-.modal-card label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
-.modal-card input, .modal-card select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-weight:600}
-.modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
-.kpi .l{font-size:12px;color:var(--muted)}
-.kpi .v{font-size:26px;margin-top:6px}
-@media(max-width:1024px){.kpis{grid-template-columns:repeat(2,1fr)}.toolbar input,.toolbar select{width:100%}}
+.modal-card{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  width:560px;max-width:100%;box-shadow:var(--shadow);padding:24px
+}
+.modal-card h3{margin:0 0 16px;font-size:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+input, select{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-weight:500
+}
+input:focus, select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-100);outline:none}
+.error{color:var(--danger);font-size:12px;margin-top:4px;display:none}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.toast{
+  position:fixed;right:20px;bottom:20px;background:#111827;color:#fff;padding:12px 16px;border-radius:10px;
+  box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:all .2s;z-index:60
+}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:1024px){.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.kpis{grid-template-columns:1fr}.toolbar .grow{flex-basis:100%}.form-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
-  <h1>Inventario Corporativo</h1>
-  <button class="btn" id="addBtn">Nuevo artículo</button>
+  <div class="brand"><span class="dot"></span><h1>Inventario Corporativo</h1></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-ghost btn-sm" id="importBtn">Importar CSV</button>
+    <button class="btn btn-sm" id="addBtn">Nuevo artículo</button>
+    <input type="file" id="fileInput" accept=".csv,text/csv" style="display:none">
+  </div>
 </header>
+
 <div class="container">
   <div class="kpis">
-    <div class="kpi"><div class="l">Total artículos</div><div class="v" id="kpiTotal">0</div></div>
-    <div class="kpi"><div class="l">Stock total</div><div class="v" id="kpiStock">0</div></div>
-    <div class="kpi"><div class="l">Bajo stock</div><div class="v" id="kpiLow">0</div></div>
-    <div class="kpi"><div class="l">Valor inventario</div><div class="v" id="kpiValue">Bs 0</div></div>
+    <div class="kpi"><div class="label">Total artículos</div><div class="value" id="kpiTotal">0</div><div class="sub">registrados</div></div>
+    <div class="kpi"><div class="label">Stock total</div><div class="value" id="kpiStock">0</div><div class="sub">unidades</div></div>
+    <div class="kpi"><div class="label">Bajo stock</div><div class="value" id="kpiLow">0</div><div class="sub">requiere atención</div></div>
+    <div class="kpi"><div class="label">Valor inventario</div><div class="value" id="kpiValue">Bs 0,00</div><div class="sub">stock × precio</div></div>
   </div>
+
   <div class="toolbar">
-    <input id="search" placeholder="Buscar por código, nombre o categoría">
-    <select id="catFilter"><option value="">Todas categorías</option></select>
-    <select id="statusFilter"><option value="">Todos estados</option><option value="ok">Ok</option><option value="low">Bajo stock</option><option value="zero">Sin stock</option></select>
+    <input id="search" class="input grow" placeholder="Buscar por código, nombre o categoría" aria-label="Buscar">
+    <select id="catFilter" aria-label="Filtrar por categoría"><option value="">Todas categorías</option></select>
+    <select id="statusFilter" aria-label="Filtrar por estado">
+      <option value="">Todos estados</option>
+      <option value="ok">Ok</option>
+      <option value="low">Bajo stock</option>
+      <option value="zero">Sin stock</option>
+    </select>
     <button class="btn btn-ghost" id="exportBtn">Exportar CSV</button>
   </div>
+
   <div class="table-wrap">
-    <table>
-      <thead><tr><th>Código</th><th>Nombre</th><th>Categoría</th><th>Stock</th><th>Min</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
-      <tbody id="tbody"></tbody>
-    </table>
+    <div class="table-scroll">
+      <table aria-label="Inventario">
+        <thead>
+          <tr>
+            <th>Código</th><th>Nombre</th><th>Categoría</th><th>Stock</th><th>Mín.</th><th>Precio</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="emptyState" class="empty" hidden>
+      <div class="icon">📦</div>
+      <div style="font-weight:600;margin-bottom:4px">Sin resultados</div>
+      <div>Prueba ajustando los filtros o agrega un nuevo artículo.</div>
+    </div>
   </div>
 </div>
-<div class="modal" id="modal">
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal-card">
     <h3 id="modalTitle">Nuevo artículo</h3>
-    <form id="form">
-      <label>Código</label><input id="fCode" required>
-      <label>Nombre</label><input id="fName" required>
-      <label>Categoría</label><input id="fCat" required>
-      <label>Stock actual</label><input id="fStock" type="number" min="0" required>
-      <label>Stock mínimo</label><input id="fMin" type="number" min="0" required>
-      <label>Precio Bs</label><input id="fPrice" type="number" step="0.01" min="0" required>
+    <form id="form" novalidate>
+      <div class="form-grid">
+        <div class="full">
+          <label for="fCode">Código *</label>
+          <input id="fCode" required pattern="[A-Za-z0-9\-]{3,32}" maxlength="32" autocomplete="off" aria-describedby="eCode">
+          <div class="error" id="eCode">Código requerido, 3-32 caracteres alfanuméricos.</div>
+        </div>
+        <div class="full">
+          <label for="fName">Nombre *</label>
+          <input id="fName" required minlength="2" maxlength="120" aria-describedby="eName">
+          <div class="error" id="eName">Nombre requerido.</div>
+        </div>
+        <div>
+          <label for="fCat">Categoría *</label>
+          <input id="fCat" required maxlength="64" list="catList" aria-describedby="eCat">
+          <datalist id="catList"></datalist>
+          <div class="error" id="eCat">Categoría requerida.</div>
+        </div>
+        <div>
+          <label for="fStock">Stock actual *</label>
+          <input id="fStock" type="number" min="0" step="1" required aria-describedby="eStock">
+          <div class="error" id="eStock">Stock válido requerido.</div>
+        </div>
+        <div>
+          <label for="fMin">Stock mínimo *</label>
+          <input id="fMin" type="number" min="0" step="1" required aria-describedby="eMin">
+          <div class="error" id="eMin">Mínimo válido requerido.</div>
+        </div>
+        <div>
+          <label for="fPrice">Precio Bs *</label>
+          <input id="fPrice" type="number" min="0" step="0.01" required aria-describedby="ePrice">
+          <div class="error" id="ePrice">Precio válido requerido.</div>
+        </div>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="cancelBtn">Cancelar</button>
-        <button type="submit" class="btn">Guardar</button>
+        <button type="submit" class="btn" id="saveBtn">Guardar</button>
       </div>
     </form>
   </div>
 </div>
-<script>
-const storeKey='inv_v1';
-let items=JSON.parse(localStorage.getItem(storeKey)||'[]');
-if(!items.length){
-  items=[
-    {code:'ITM-001',name:'Teclado mecánico',cat:'Periféricos',stock:45,min:10,price:250},
-    {code:'ITM-002',name:'Monitor 24"',cat:'Pantallas',stock:12,min:5,price:1200},
-    {code:'ITM-003',name:'Silla ergonómica',cat:'Mobiliario',stock:3,min:4,price:850},
-    {code:'ITM-004',name:'Router WiFi 6',cat:'Redes',stock:0,min:2,price:420}
-  ];
-  save();
-}
-const tbody=document.getElementById('tbody');
-const search=document.getElementById('search');
-const catFilter=document.getElementById('catFilter');
-const statusFilter=document.getElementById('statusFilter');
-let editIndex=-1;
 
-function save(){localStorage.setItem(storeKey,JSON.stringify(items));render()}
-function statusBadge(it){
-  if(it.stock===0) return {txt:'sin stock',cls:'zero'};
-  if(it.stock<=it.min) return {txt:'bajo stock',cls:'low'};
-  return {txt:'ok',cls:'ok'};
-}
-function render(){
-  const q=search.value.toLowerCase();
-  const cat=catFilter.value;
-  const st=statusFilter.value;
-  const filtered=items.filter(it=>{
-    const matchQ=!q||it.code.toLowerCase().includes(q)||it.name.toLowerCase().includes(q)||it.cat.toLowerCase().includes(q);
-    const matchCat=!cat||it.cat===cat;
-    const s=statusBadge(it).cls;
-    const matchSt=!st||s===st;
-    return matchQ&&matchCat&&matchSt;
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const storeKey = 'inv_v2_pro';
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const fmt = new Intl.NumberFormat('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtInt = new Intl.NumberFormat('es-BO');
+  const escapeHtml = str => String(str).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  const toast = (msg) => {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>el.classList.remove('show'),3000);
+  };
+  const debounce = (fn,ms=200)=>{let t; return (...a)=>{clearTimeout(t); t=setTimeout(()=>fn(...a),ms)}};
+
+  let items = [];
+  try {
+    const raw = localStorage.getItem(storeKey);
+    items = raw ? JSON.parse(raw) : [];
+  } catch { items = []; }
+  if (!Array.isArray(items) || items.length === 0) {
+    items = [
+      {code:'ITM-001',name:'Teclado mecánico',cat:'Periféricos',stock:45,min:10,price:250.00},
+      {code:'ITM-002',name:'Monitor 24"',cat:'Pantallas',stock:12,min:5,price:1200.00},
+      {code:'ITM-003',name:'Silla ergonómica',cat:'Mobiliario',stock:3,min:4,price:850.00},
+      {code:'ITM-004',name:'Router WiFi 6',cat:'Redes',stock:0,min:2,price:420.00}
+    ];
+    save();
+  }
+
+  const state = {
+    query:'',
+    cat:'',
+    status:'',
+    editIndex:-1
+  };
+
+  const tbody = $('#tbody');
+  const emptyState = $('#emptyState');
+  const search = $('#search');
+  const catFilter = $('#catFilter');
+  const statusFilter = $('#statusFilter');
+  const modal = $('#modal');
+  const form = $('#form');
+  const modalTitle = $('#modalTitle');
+
+  function save(){
+    try{
+      localStorage.setItem(storeKey, JSON.stringify(items));
+    }catch(e){
+      toast('Error al guardar: almacenamiento lleno');
+    }
+    render();
+  }
+
+  function statusBadge(it){
+    if (it.stock===0) return {txt:'sin stock',cls:'zero'};
+    if (it.stock <= it.min) return {txt:'bajo stock',cls:'low'};
+    return {txt:'ok',cls:'ok'};
+  }
+
+  function validateForm(data){
+    const errors = {};
+    if(!data.code || !/^[A-Za-z0-9\-]{3,32}$/.test(data.code)) errors.code='Código inválido';
+    else if (items.some((it,i)=> it.code.toUpperCase()===data.code.toUpperCase() && i!==state.editIndex)) errors.code='Código duplicado';
+    if(!data.name || data.name.trim().length<2) errors.name='Nombre requerido';
+    if(!data.cat || data.cat.trim().length===0) errors.cat='Categoría requerida';
+    if(!Number.isFinite(data.stock) || data.stock<0) errors.stock='Stock inválido';
+    if(!Number.isFinite(data.min) || data.min<0) errors.min='Mínimo inválido';
+    if(!Number.isFinite(data.price) || data.price<0) errors.price='Precio inválido';
+    return errors;
+  }
+
+  function showFieldErrors(errors){
+    ['code','name','cat','stock','min','price'].forEach(k=>{
+      const el = $('#e'+k[0].toUpperCase()+k.slice(1));
+      const input = $('#f'+k[0].toUpperCase()+k.slice(1));
+      if(el && input){
+        if(errors[k]){ el.style.display='block'; input.setAttribute('aria-invalid','true'); }
+        else { el.style.display='none'; input.removeAttribute('aria-invalid'); }
+      }
+    });
+  }
+
+  function render(){
+    const q = state.query.toLowerCase();
+    const cat = state.cat;
+    const st = state.status;
+    const filtered = items.filter(it=>{
+      const matchQ = !q || [it.code,it.name,it.cat].some(v=>String(v).toLowerCase().includes(q));
+      const matchCat = !cat || it.cat===cat;
+      const s = statusBadge(it).cls;
+      const matchSt = !st || s===st;
+      return matchQ && matchCat && matchSt;
+    });
+
+    tbody.innerHTML = '';
+    if(filtered.length===0){
+      emptyState.hidden = false;
+    }else{
+      emptyState.hidden = true;
+      const frag = document.createDocumentFragment();
+      filtered.forEach(it=>{
+        const idx = items.indexOf(it);
+        const s = statusBadge(it);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(it.code)}</td>
+          <td>${escapeHtml(it.name)}</td>
+          <td>${escapeHtml(it.cat)}</td>
+          <td>${fmtInt.format(it.stock)}</td>
+          <td>${fmtInt.format(it.min)}</td>
+          <td>Bs ${fmt.format(it.price)}</td>
+          <td><span class="badge ${s.cls}">${s.txt}</span></td>
+          <td>
+            <button class="btn btn-ghost btn-sm" data-edit="${idx}">Editar</button>
+            <button class="btn btn-ghost btn-sm btn-danger" data-del="${idx}">Eliminar</button>
+          </td>`;
+        frag.appendChild(tr);
+      });
+      tbody.appendChild(frag);
+    }
+
+    $$('#tbody button[data-edit]').forEach(b=>b.addEventListener('click',()=>openEdit(+b.dataset.edit)));
+    $$('#tbody button[data-del]').forEach(b=>b.addEventListener('click',()=>removeItem(+b.dataset.del)));
+
+    // KPIs
+    $('#kpiTotal').textContent = fmtInt.format(items.length);
+    const stockSum = items.reduce((a,b)=>a+b.stock,0);
+    $('#kpiStock').textContent = fmtInt.format(stockSum);
+    const low = items.filter(it=>it.stock>0 && it.stock<=it.min).length;
+    $('#kpiLow').textContent = fmtInt.format(low);
+    const val = items.reduce((a,b)=>a+b.stock*b.price,0);
+    $('#kpiValue').textContent = 'Bs '+fmt.format(val);
+
+    // categories
+    const cats = [...new Set(items.map(i=>i.cat))].sort((a,b)=>a.localeCompare(b,'es'));
+    const currentCat = catFilter.value;
+    catFilter.innerHTML = '<option value="">Todas categorías</option>'+cats.map(c=>`<option value="${escapeHtml(c)}"${c===currentCat?' selected':''}>${escapeHtml(c)}</option>`).join('');
+    $('#catList').innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">`).join('');
+  }
+
+  function openEdit(idx){
+    state.editIndex = idx;
+    const it = items[idx];
+    modalTitle.textContent = idx>=0 ? 'Editar artículo' : 'Nuevo artículo';
+    $('#fCode').value = it?.code ?? '';
+    $('#fName').value = it?.name ?? '';
+    $('#fCat').value = it?.cat ?? '';
+    $('#fStock').value = it?.stock ?? '';
+    $('#fMin').value = it?.min ?? '';
+    $('#fPrice').value = it?.price ?? '';
+    modal.classList.add('open');
+    setTimeout(()=>$('#fCode').focus(),50);
+    document.addEventListener('keydown', onEsc);
+  }
+
+  function closeModal(){
+    modal.classList.remove('open');
+    state.editIndex = -1;
+    form.reset();
+    document.removeEventListener('keydown', onEsc);
+  }
+
+  function onEsc(e){ if(e.key==='Escape') closeModal(); }
+
+  function removeItem(idx){
+    if(!confirm('¿Eliminar este artículo? Esta acción no se puede deshacer.')) return;
+    items.splice(idx,1);
+    save();
+    toast('Artículo eliminado');
+  }
+
+  // Events
+  $('#addBtn').addEventListener('click',()=>openEdit(-1));
+  $('#cancelBtn').addEventListener('click',closeModal);
+  modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(); });
+
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const data = {
+      code: $('#fCode').value.trim().toUpperCase(),
+      name: $('#fName').value.trim(),
+      cat: $('#fCat').value.trim(),
+      stock: Number($('#fStock').value),
+      min: Number($('#fMin').value),
+      price: Number(parseFloat($('#fPrice').value).toFixed(2))
+    };
+    const errors = validateForm(data);
+    showFieldErrors(errors);
+    if(Object.keys(errors).length) { toast('Corrige los errores del formulario'); return; }
+    if(state.editIndex>=0){ items[state.editIndex]=data; toast('Artículo actualizado'); }
+    else { items.push(data); toast('Artículo creado'); }
+    save();
+    closeModal();
   });
-  tbody.innerHTML='';
-  filtered.forEach((it,i)=>{
-    const s=statusBadge(it);
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${it.code}</td><td>${it.name}</td><td>${it.cat}</td><td>${it.stock}</td><td>${it.min}</td><td>Bs ${Number(it.price).toFixed(2)}</td><td><span class="badge ${s.cls}">${s.txt}</span></td><td><button data-i="${items.indexOf(it)}" class="btn btn-ghost" style="padding:6px 10px;font-size:12px">Editar</button> <button data-d="${items.indexOf(it)}" class="btn btn-ghost" style="padding:6px 10px;font-size:12px;color:var(--danger)">Eliminar</button></td>`;
-    tbody.appendChild(tr);
+
+  search.addEventListener('input', debounce(()=>{ state.query = search.value; render(); },200));
+  catFilter.addEventListener('change',()=>{ state.cat = catFilter.value; render(); });
+  statusFilter.addEventListener('change',()=>{ state.status = statusFilter.value; render(); });
+
+  // CSV Export
+  $('#exportBtn').addEventListener('click',()=>{
+    const header = 'Código,Nombre,Categoría,Stock,Min,Precio\n';
+    const rows = items.map(i=>{
+      const esc = v=> `"${String(v).replace(/"/g,'""')}"`;
+      return [esc(i.code),esc(i.name),esc(i.cat),i.stock,i.min,i.price.toFixed(2)].join(',');
+    }).join('\n');
+    const blob = new Blob(['\ufeff'+header+rows],{type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `inventario_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('CSV exportado');
   });
-  tbody.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>openEdit(items[+b.dataset.i],items.indexOf(items[+b.dataset.i])));
-  tbody.querySelectorAll('button[data-d]').forEach(b=>b.onclick=()=>{if(confirm('¿Eliminar?')){items.splice(+b.dataset.i,1);save()}});
-  // kpis
-  document.getElementById('kpiTotal').textContent=items.length;
-  const stockSum=items.reduce((a,b)=>a+b.stock,0);
-  document.getElementById('kpiStock').textContent=stockSum;
-  const low=items.filter(it=>it.stock<=it.min && it.stock>0).length;
-  document.getElementById('kpiLow').textContent=low;
-  const val=items.reduce((a,b)=>a+b.stock*b.price,0);
-  document.getElementById('kpiValue').textContent='Bs '+val.toFixed(2);
-  // cats
-  const cats=[...new Set(items.map(i=>i.cat))].sort();
-  catFilter.innerHTML='<option value="">Todas categorías</option>'+cats.map(c=>`<option ${c===catFilter.value?'selected':''}>${c}</option>`).join('');
-}
-function openEdit(item,idx){
-  editIndex=idx;
-  document.getElementById('modalTitle').textContent=idx>=0?'Editar artículo':'Nuevo artículo';
-  document.getElementById('fCode').value=item?item.code:'';
-  document.getElementById('fName').value=item?item.name:'';
-  document.getElementById('fCat').value=item?item.cat:'';
-  document.getElementById('fStock').value=item?item.stock:'';
-  document.getElementById('fMin').value=item?item.min:'';
-  document.getElementById('fPrice').value=item?item.price:'';
-  document.getElementById('modal').classList.add('open');
-}
-function closeModal(){document.getElementById('modal').classList.remove('open');editIndex=-1}
-document.getElementById('addBtn').onclick=()=>openEdit(null,-1);
-document.getElementById('cancelBtn').onclick=closeModal;
-document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
-document.getElementById('form').onsubmit=e=>{
-  e.preventDefault();
-  const obj={code:document.getElementById('fCode').value.trim(),name:document.getElementById('fName').value.trim(),cat:document.getElementById('fCat').value.trim(),stock:+document.getElementById('fStock').value,min:+document.getElementById('fMin').value,price:+document.getElementById('fPrice').value};
-  if(editIndex>=0){items[editIndex]=obj}else{items.push(obj)};
-  save();closeModal();
-};
-search.oninput=render;
-catFilter.onchange=render;
-statusFilter.onchange=render;
-document.getElementById('exportBtn').onclick=()=>{
-  const header='Código,Nombre,Categoría,Stock,Min,Precio\n';
-  const rows=items.map(i=>`${i.code},${i.name},${i.cat},${i.stock},${i.min},${i.price}`).join('\n');
-  const blob=new Blob([header+rows],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='inventario.csv';a.click();
-};
-render();
+
+  // CSV Import
+  $('#importBtn').addEventListener('click',()=>$('#fileInput').click());
+  $('#fileInput').addEventListener('change',e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const text = reader.result;
+        const lines = text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+        if(lines.length<2) throw new Error('CSV vacío');
+        const head = lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase());
+        const idx = k=>head.indexOf(k);
+        const newItems = [];
+        for(let i=1;i<lines.length;i++){
+          const cols = lines[i].split(',').map(c=>c.replace(/^"|"$/g,'').replace(/""/g,'"'));
+          const obj = {
+            code: (cols[idx('código')]||cols[idx('code')])?.trim(),
+            name: (cols[idx('nombre')]||cols[idx('name')])?.trim(),
+            cat: (cols[idx('categoría')]||cols[idx('categoria')]||cols[idx('cat')])?.trim(),
+            stock: Number(cols[idx('stock')]),
+            min: Number(cols[idx('min')]),
+            price: Number(cols[idx('precio')]||cols[idx('price')])
+          };
+          if(obj.code && obj.name) newItems.push(obj);
+        }
+        if(!confirm(`Importar ${newItems.length} artículos? Esto reemplazará el inventario actual.`)) return;
+        items = newItems;
+        save();
+        toast(`Importados ${newItems.length} artículos`);
+      }catch(err){
+        toast('Error al importar CSV');
+        console.error(err);
+      }finally{
+        e.target.value='';
+      }
+    };
+    reader.readAsText(file,'utf-8');
+  });
+
+  // Initial render
+  render();
+})();
 </script>
 </body>
 </html>

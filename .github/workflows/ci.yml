@@ -43,7 +43,10 @@ jobs:
         with:
           php-version: "8.3"
           extensions: pgsql, pdo_pgsql, mbstring, bcmath, fileinfo
-          coverage: none
+          coverage: pcov
+
+      - name: Auditoría de dependencias PHP
+        run: composer audit --no-interaction
 
       - name: Instalar dependencias PHP
         run: composer install --no-interaction --prefer-dist --no-progress
@@ -61,8 +64,12 @@ jobs:
       - name: Pint (estilo, sin modificar)
         run: vendor/bin/pint --test
 
-      - name: Suite de tests
-        run: php artisan test
+      - name: Análisis estático (PHPStan nivel 6, baseline congelado)
+        run: composer analyse
+
+      - name: Suite de tests con reporte de cobertura
+        run: php artisan test --coverage-text
+        # TODO: una vez medida la cobertura real en CI, fijar umbral bloqueante (--min=X) y subirlo progresivamente.
 
   frontend:
     name: Frontend (typecheck + build)
@@ -83,6 +90,9 @@ jobs:
 
       - name: Instalar dependencias Node
         run: npm ci
+
+      - name: Auditoría de dependencias Node (alta+crítica bloquea)
+        run: npm audit --audit-level=high
 
       - name: Typecheck estricto (vue-tsc)
         run: npm run typecheck

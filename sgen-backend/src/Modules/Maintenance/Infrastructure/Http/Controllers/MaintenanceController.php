@@ -5,16 +5,9 @@ declare(strict_types=1);
 namespace Modules\Maintenance\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Maintenance\Infrastructure\Http\Requests\AddMaintenanceMaterialRequest;
-use Modules\Maintenance\Infrastructure\Http\Requests\CancelMaintenanceRequest;
-use Modules\Maintenance\Infrastructure\Http\Requests\CompleteMaintenanceRequest;
-use Modules\Maintenance\Infrastructure\Http\Requests\PostponeMaintenanceRequest;
-use Modules\Maintenance\Infrastructure\Http\Requests\StoreMaintenanceRequest;
-use Modules\Maintenance\Infrastructure\Http\Requests\UpdateMaintenanceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\Maintenance\Application\UseCases\AddMaintenanceMaterialUseCase;
@@ -28,6 +21,12 @@ use Modules\Maintenance\Application\UseCases\GetUpcomingMaintenanceUseCase;
 use Modules\Maintenance\Application\UseCases\ListMaintenanceUseCase;
 use Modules\Maintenance\Application\UseCases\UpdateMaintenanceUseCase;
 use Modules\Maintenance\Domain\Ports\MaintenanceRepositoryInterface;
+use Modules\Maintenance\Infrastructure\Http\Requests\AddMaintenanceMaterialRequest;
+use Modules\Maintenance\Infrastructure\Http\Requests\CancelMaintenanceRequest;
+use Modules\Maintenance\Infrastructure\Http\Requests\CompleteMaintenanceRequest;
+use Modules\Maintenance\Infrastructure\Http\Requests\PostponeMaintenanceRequest;
+use Modules\Maintenance\Infrastructure\Http\Requests\StoreMaintenanceRequest;
+use Modules\Maintenance\Infrastructure\Http\Requests\UpdateMaintenanceRequest;
 
 final class MaintenanceController extends Controller
 {
@@ -119,7 +118,7 @@ final class MaintenanceController extends Controller
     public function addMaterial(int $id, AddMaintenanceMaterialRequest $request, AddMaintenanceMaterialUseCase $useCase): RedirectResponse
     {
         try {
-            $userId = (int) ($request->user()?->id ?? DB::table('usuarios')->orderBy('id')->value('id') ?? 1);
+            $userId = (int) $request->user()->id;
             $useCase->execute(
                 $id,
                 $request->itemId(),

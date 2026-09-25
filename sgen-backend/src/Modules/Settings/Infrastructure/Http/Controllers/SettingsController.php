@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Modules\Settings\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Settings\Infrastructure\Http\Requests\UpdateSettingsRequest;
-use Modules\Settings\Infrastructure\Http\Requests\UpdateUserPasswordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,12 +14,14 @@ use Modules\Settings\Application\DTOs\UpdateSettingsDTO;
 use Modules\Settings\Application\UseCases\GetSettingsUseCase;
 use Modules\Settings\Application\UseCases\UpdateSettingsUseCase;
 use Modules\Settings\Application\UseCases\UpdateUserPasswordUseCase;
+use Modules\Settings\Infrastructure\Http\Requests\UpdateSettingsRequest;
+use Modules\Settings\Infrastructure\Http\Requests\UpdateUserPasswordRequest;
 
 final class SettingsController extends Controller
 {
     public function index(Request $request, GetSettingsUseCase $useCase): Response
     {
-        $userId = (int) ($request->user()?->id ?? 1);
+        $userId = (int) $request->user()->id;
 
         return Inertia::render('Settings/Index', [
             'settings' => $useCase->execute($userId)->toArray(),

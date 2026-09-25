@@ -5,13 +5,6 @@ declare(strict_types=1);
 namespace Modules\Support\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Support\Infrastructure\Http\Requests\AddCommentRequest;
-use Modules\Support\Infrastructure\Http\Requests\AddMaterialRequest;
-use Modules\Support\Infrastructure\Http\Requests\RateTicketRequest;
-use Modules\Support\Infrastructure\Http\Requests\ReassignTechnicianRequest;
-use Modules\Support\Infrastructure\Http\Requests\ReopenTicketRequest;
-use Modules\Support\Infrastructure\Http\Requests\StoreTicketRequest;
-use Modules\Support\Infrastructure\Http\Requests\UpdateTicketRequest;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,6 +33,13 @@ use Modules\Support\Application\UseCases\SaveTicketSignatureUseCase;
 use Modules\Support\Application\UseCases\UpdateTicketUseCase;
 use Modules\Support\Application\UseCases\UploadTicketAttachmentUseCase;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
+use Modules\Support\Infrastructure\Http\Requests\AddCommentRequest;
+use Modules\Support\Infrastructure\Http\Requests\AddMaterialRequest;
+use Modules\Support\Infrastructure\Http\Requests\RateTicketRequest;
+use Modules\Support\Infrastructure\Http\Requests\ReassignTechnicianRequest;
+use Modules\Support\Infrastructure\Http\Requests\ReopenTicketRequest;
+use Modules\Support\Infrastructure\Http\Requests\StoreTicketRequest;
+use Modules\Support\Infrastructure\Http\Requests\UpdateTicketRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -308,7 +308,7 @@ final class SupportController extends Controller
         try {
             DB::table('bitacora_acciones')->insert([
                 'usuario_id' => $userId,
-                'username' => $request->user()?->username ?? 'sistema',
+                'username' => $request->user()->username ?? 'sistema',
                 'accion' => 'subir_archivo',
                 'entidad' => 'soporte',
                 'entidad_id' => $ticketId,
@@ -369,7 +369,7 @@ final class SupportController extends Controller
             try {
                 DB::table('bitacora_acciones')->insert([
                     'usuario_id' => $request->user()?->id,
-                    'username' => $request->user()?->username ?? 'sistema',
+                    'username' => $request->user()->username ?? 'sistema',
                     'accion' => 'eliminar_archivo',
                     'entidad' => 'soporte',
                     'entidad_id' => $attachment->ticket_id,

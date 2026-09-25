@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Inventory\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Inventory\Infrastructure\Http\Requests\AdjustStockRequest;
-use Modules\Inventory\Infrastructure\Http\Requests\StoreProductRequest;
-use Modules\Inventory\Infrastructure\Http\Requests\TransferStockRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +18,9 @@ use Modules\Inventory\Application\UseCases\GetInventoryDashboardUseCase;
 use Modules\Inventory\Application\UseCases\GetProductDetailUseCase;
 use Modules\Inventory\Application\UseCases\TransferStockUseCase;
 use Modules\Inventory\Domain\Ports\ProductRepositoryInterface;
+use Modules\Inventory\Infrastructure\Http\Requests\AdjustStockRequest;
+use Modules\Inventory\Infrastructure\Http\Requests\StoreProductRequest;
+use Modules\Inventory\Infrastructure\Http\Requests\TransferStockRequest;
 
 class InventoryController extends Controller
 {
@@ -50,7 +50,7 @@ class InventoryController extends Controller
 
     public function transferStock(TransferStockRequest $request, TransferStockUseCase $useCase): RedirectResponse
     {
-        $userId = (int) ($request->user()?->id ?? DB::table('usuarios')->orderBy('id')->value('id') ?? 1);
+        $userId = (int) $request->user()->id;
         $useCase->execute($request->toDTO(), $userId);
 
         return back()->with('success', 'Transferencia de stock procesada con éxito.');

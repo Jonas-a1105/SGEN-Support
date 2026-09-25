@@ -84,7 +84,7 @@ final class AutoCloseResolvedTicketsCommand extends Command
                 }
 
                 $systemUserId = $systemUser?->id;
-                $systemUsername = $systemUser?->username ?? 'sistema';
+                $systemUsername = $systemUser->username ?? 'sistema';
 
                 // Comentario automático del sistema
                 if ($systemUserId !== null) {

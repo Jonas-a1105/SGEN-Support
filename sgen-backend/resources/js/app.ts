@@ -8,12 +8,13 @@ const appName = import.meta.env.VITE_APP_NAME || 'SGEN Support';
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => {
-        const pages = import.meta.glob<DefineComponent>('./Pages/**/*.vue', { eager: true });
+        // Code-splitting por página: cada ruta carga su propio chunk (bundle eager eliminado).
+        const pages = import.meta.glob<DefineComponent>('./Pages/**/*.vue');
         const page = pages[`./Pages/${name}.vue`];
         if (!page) {
             throw new Error(`Inertia page not found: ./Pages/${name}.vue`);
         }
-        return page;
+        return page();
     },
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
