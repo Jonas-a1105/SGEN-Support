@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Inventario Corporativo</title>
+<style>
+:root{--bg:#f8fafc;--card:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--primary:#0ea5e9;--primary-600:#0284c7;--primary-100:#e0f2fe;--danger:#ef4444;--success:#10b981}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;font-weight:600}
+header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--border);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;z-index:10}
+header h1{margin:0;font-size:20px}
+.container{max-width:1400px;margin:28px auto;padding:0 28px}
+.toolbar{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.toolbar input, .toolbar select{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-weight:600;font-family:inherit;width:220px}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--primary-600)}
+.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--text)}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f9fafb;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+tr:hover{background:#f9fafb}
+.badge{padding:4px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.badge.ok{background:#ecfdf5;color:var(--success)}
+.badge.low{background:#fff7ed;color:#ea580c}
+.badge.zero{background:#fef2f2;color:var(--danger)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50}
+.modal.open{display:flex}
+.modal-card{background:var(--card);border-radius:12px;padding:22px;width:480px;max-width:90vw;border:1px solid var(--border)}
+.modal-card h3{margin:0 0 12px}
+.modal-card label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+.modal-card input, .modal-card select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-weight:600}
+.modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi .v{font-size:26px;margin-top:6px}
+@media(max-width:1024px){.kpis{grid-template-columns:repeat(2,1fr)}.toolbar input,.toolbar select{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Inventario Corporativo</h1>
+  <button class="btn" id="addBtn">Nuevo artículo</button>
+</header>
+<div class="container">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Total artículos</div><div class="v" id="kpiTotal">0</div></div>
+    <div class="kpi"><div class="l">Stock total</div><div class="v" id="kpiStock">0</div></div>
+    <div class="kpi"><div class="l">Bajo stock</div><div class="v" id="kpiLow">0</div></div>
+    <div class="kpi"><div class="l">Valor inventario</div><div class="v" id="kpiValue">Bs 0</div></div>
+  </div>
+  <div class="toolbar">
+    <input id="search" placeholder="Buscar por código, nombre o categoría">
+    <select id="catFilter"><option value="">Todas categorías</option></select>
+    <select id="statusFilter"><option value="">Todos estados</option><option value="ok">Ok</option><option value="low">Bajo stock</option><option value="zero">Sin stock</option></select>
+    <button class="btn btn-ghost" id="exportBtn">Exportar CSV</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Código</th><th>Nombre</th><th>Categoría</th><th>Stock</th><th>Min</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <h3 id="modalTitle">Nuevo artículo</h3>
+    <form id="form">
+      <label>Código</label><input id="fCode" required>
+      <label>Nombre</label><input id="fName" required>
+      <label>Categoría</label><input id="fCat" required>
+      <label>Stock actual</label><input id="fStock" type="number" min="0" required>
+      <label>Stock mínimo</label><input id="fMin" type="number" min="0" required>
+      <label>Precio Bs</label><input id="fPrice" type="number" step="0.01" min="0" required>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="cancelBtn">Cancelar</button>
+        <button type="submit" class="btn">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+const storeKey='inv_v1';
+let items=JSON.parse(localStorage.getItem(storeKey)||'[]');
+if(!items.length){
+  items=[
+    {code:'ITM-001',name:'Teclado mecánico',cat:'Periféricos',stock:45,min:10,price:250},
+    {code:'ITM-002',name:'Monitor 24"',cat:'Pantallas',stock:12,min:5,price:1200},
+    {code:'ITM-003',name:'Silla ergonómica',cat:'Mobiliario',stock:3,min:4,price:850},
+    {code:'ITM-004',name:'Router WiFi 6',cat:'Redes',stock:0,min:2,price:420}
+  ];
+  save();
+}
+const tbody=document.getElementById('tbody');
+const search=document.getElementById('search');
+const catFilter=document.getElementById('catFilter');
+const statusFilter=document.getElementById('statusFilter');
+let editIndex=-1;
+
+function save(){localStorage.setItem(storeKey,JSON.stringify(items));render()}
+function statusBadge(it){
+  if(it.stock===0) return {txt:'sin stock',cls:'zero'};
+  if(it.stock<=it.min) return {txt:'bajo stock',cls:'low'};
+  return {txt:'ok',cls:'ok'};
+}
+function render(){
+  const q=search.value.toLowerCase();
+  const cat=catFilter.value;
+  const st=statusFilter.value;
+  const filtered=items.filter(it=>{
+    const matchQ=!q||it.code.toLowerCase().includes(q)||it.name.toLowerCase().includes(q)||it.cat.toLowerCase().includes(q);
+    const matchCat=!cat||it.cat===cat;
+    const s=statusBadge(it).cls;
+    const matchSt=!st||s===st;
+    return matchQ&&matchCat&&matchSt;
+  });
+  tbody.innerHTML='';
+  filtered.forEach((it,i)=>{
+    const s=statusBadge(it);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${it.code}</td><td>${it.name}</td><td>${it.cat}</td><td>${it.stock}</td><td>${it.min}</td><td>Bs ${Number(it.price).toFixed(2)}</td><td><span class="badge ${s.cls}">${s.txt}</span></td><td><button data-i="${items.indexOf(it)}" class="btn btn-ghost" style="padding:6px 10px;font-size:12px">Editar</button> <button data-d="${items.indexOf(it)}" class="btn btn-ghost" style="padding:6px 10px;font-size:12px;color:var(--danger)">Eliminar</button></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>openEdit(items[+b.dataset.i],items.indexOf(items[+b.dataset.i])));
+  tbody.querySelectorAll('button[data-d]').forEach(b=>b.onclick=()=>{if(confirm('¿Eliminar?')){items.splice(+b.dataset.i,1);save()}});
+  // kpis
+  document.getElementById('kpiTotal').textContent=items.length;
+  const stockSum=items.reduce((a,b)=>a+b.stock,0);
+  document.getElementById('kpiStock').textContent=stockSum;
+  const low=items.filter(it=>it.stock<=it.min && it.stock>0).length;
+  document.getElementById('kpiLow').textContent=low;
+  const val=items.reduce((a,b)=>a+b.stock*b.price,0);
+  document.getElementById('kpiValue').textContent='Bs '+val.toFixed(2);
+  // cats
+  const cats=[...new Set(items.map(i=>i.cat))].sort();
+  catFilter.innerHTML='<option value="">Todas categorías</option>'+cats.map(c=>`<option ${c===catFilter.value?'selected':''}>${c}</option>`).join('');
+}
+function openEdit(item,idx){
+  editIndex=idx;
+  document.getElementById('modalTitle').textContent=idx>=0?'Editar artículo':'Nuevo artículo';
+  document.getElementById('fCode').value=item?item.code:'';
+  document.getElementById('fName').value=item?item.name:'';
+  document.getElementById('fCat').value=item?item.cat:'';
+  document.getElementById('fStock').value=item?item.stock:'';
+  document.getElementById('fMin').value=item?item.min:'';
+  document.getElementById('fPrice').value=item?item.price:'';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');editIndex=-1}
+document.getElementById('addBtn').onclick=()=>openEdit(null,-1);
+document.getElementById('cancelBtn').onclick=closeModal;
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+document.getElementById('form').onsubmit=e=>{
+  e.preventDefault();
+  const obj={code:document.getElementById('fCode').value.trim(),name:document.getElementById('fName').value.trim(),cat:document.getElementById('fCat').value.trim(),stock:+document.getElementById('fStock').value,min:+document.getElementById('fMin').value,price:+document.getElementById('fPrice').value};
+  if(editIndex>=0){items[editIndex]=obj}else{items.push(obj)};
+  save();closeModal();
+};
+search.oninput=render;
+catFilter.onchange=render;
+statusFilter.onchange=render;
+document.getElementById('exportBtn').onclick=()=>{
+  const header='Código,Nombre,Categoría,Stock,Min,Precio\n';
+  const rows=items.map(i=>`${i.code},${i.name},${i.cat},${i.stock},${i.min},${i.price}`).join('\n');
+  const blob=new Blob([header+rows],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='inventario.csv';a.click();
+};
+render();
+</script>
+</body>
+</html>
