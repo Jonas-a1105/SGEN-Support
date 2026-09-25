@@ -13,8 +13,7 @@ final class EquipmentKpisDTO
         public readonly int $fueraServicio,
         public readonly int $enUso = 0,
         public readonly int $disponibles = 0,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

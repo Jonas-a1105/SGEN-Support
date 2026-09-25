@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Support\Domain\Ports;
 
+use Carbon\Carbon;
 use Modules\Support\Application\DTOs\CreateTicketDTO;
 use Modules\Support\Application\DTOs\SupportKpisDTO;
 use Modules\Support\Application\DTOs\TicketDetailDTO;
@@ -19,7 +20,7 @@ interface SupportRepositoryInterface
     /**
      * Lista tickets con filtros de estado, prioridad, técnico, solicitante y búsqueda.
      *
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return array<int, array<string, mixed>>
      */
     public function listTickets(array $filters = []): array;
@@ -79,12 +80,12 @@ interface SupportRepositoryInterface
     /**
      * Pausa un ticket dejando el motivo obligatorio registrado.
      */
-    public function pauseTicket(int $ticketId, string $motivo, \Carbon\Carbon $pausedAt): bool;
+    public function pauseTicket(int $ticketId, string $motivo, Carbon $pausedAt): bool;
 
     /**
      * Reanuda un ticket, acumulando los minutos de pausa y extendiendo el SLA.
      */
-    public function resumeTicket(int $ticketId, ?\Carbon\Carbon $resumedAt = null): bool;
+    public function resumeTicket(int $ticketId, ?Carbon $resumedAt = null): bool;
 
     public function updateCloseDate(int $ticketId, string $newDate): bool;
 

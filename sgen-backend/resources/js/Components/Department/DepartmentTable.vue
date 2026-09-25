@@ -97,11 +97,12 @@ const getProgressWidthClass = (percent: number) => {
             </template>
 
             <template #cell-actions="{ item }">
-                <div class="table-actions-group">
+                <div class="table-actions-group" @click.stop>
                     <Link
                         :href="`/departamentos/${item.numericId}`"
                         class="action-mini-btn view"
                         title="Ver detalle del departamento"
+                        @click.stop
                     >
                         <svg viewBox="0 0 24 24">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -110,7 +111,7 @@ const getProgressWidthClass = (percent: number) => {
                     </Link>
                     <button
                         class="action-mini-btn edit"
-                        @click="emit('edit', item)"
+                        @click.stop="emit('edit', item)"
                         type="button"
                         title="Editar departamento"
                     >
@@ -121,7 +122,7 @@ const getProgressWidthClass = (percent: number) => {
                     </button>
                     <button
                         class="action-mini-btn delete"
-                        @click="emit('delete', item)"
+                        @click.stop="emit('delete', item)"
                         type="button"
                         title="Eliminar departamento"
                     >

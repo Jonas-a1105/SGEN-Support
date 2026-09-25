@@ -56,11 +56,19 @@ function handleSaveCategory(payload: {
             onSuccess: () => {
                 showFormModal.value = false;
             },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al actualizar la categoría.';
+                alert(firstErr);
+            },
         });
     } else {
         router.post('/categorias', payload, {
             onSuccess: () => {
                 showFormModal.value = false;
+            },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al crear la categoría.';
+                alert(firstErr);
             },
         });
     }
@@ -70,6 +78,10 @@ function handleConfirmDelete(id: number) {
     router.delete(`/categorias/${id}`, {
         onSuccess: () => {
             showDeleteModal.value = false;
+        },
+        onError: (errors) => {
+            const firstErr = Object.values(errors)[0] || 'Error al eliminar la categoría.';
+            alert(firstErr);
         },
     });
 }

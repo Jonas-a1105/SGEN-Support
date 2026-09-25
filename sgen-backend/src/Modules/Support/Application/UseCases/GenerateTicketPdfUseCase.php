@@ -29,6 +29,6 @@ final class GenerateTicketPdfUseCase
         $pdf = Pdf::loadView('support.ticket-pdf', $viewData)
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('Acta_Servicio_' . $viewData['ticket']['code'] . '.pdf');
+        return $pdf->stream('Acta_Servicio_'.$viewData['ticket']['code'].'.pdf');
     }
 }

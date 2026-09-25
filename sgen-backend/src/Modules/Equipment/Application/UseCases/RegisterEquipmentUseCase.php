@@ -15,8 +15,7 @@ final class RegisterEquipmentUseCase
 {
     public function __construct(
         private readonly CreateEquipmentUseCase $createEquipmentUseCase
-    ) {
-    }
+    ) {}
 
     public function execute(RegisterEquipmentDTO $dto): int
     {

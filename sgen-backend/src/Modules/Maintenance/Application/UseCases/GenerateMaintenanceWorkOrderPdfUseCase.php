@@ -12,8 +12,7 @@ final class GenerateMaintenanceWorkOrderPdfUseCase
 {
     public function __construct(
         private readonly MaintenanceRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $maintenanceId): Response
     {

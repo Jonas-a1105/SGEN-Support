@@ -49,7 +49,7 @@ final class LogInventoryNotificationService implements InventoryNotificationInte
                     );
                 }
             } catch (\Throwable $e) {
-                Log::error('Fallo al despachar notificación de inventario en BD: ' . $e->getMessage());
+                Log::error('Fallo al despachar notificación de inventario en BD: '.$e->getMessage());
             }
         }
     }

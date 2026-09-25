@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HelpDesk Dashboard Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f8fafc;--card:#ffffff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--primary:rgb(116,179,0);--primary-600:rgb(92,143,0);--primary-100:rgb(230,245,220)}
+:root[data-theme="blue"]{--primary:rgb(116,179,255);--primary-600:rgb(92,148,220);--primary-100:rgb(225,238,255)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;font-weight:600;overflow-x:hidden}
+header{padding:24px 32px;border-bottom:1px solid var(--border);background:var(--card);position:sticky;top:0;z-index:100;backdrop-filter:saturate(180%) blur(8px)}
+header h1{margin:0;font-size:20px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+header p{margin:4px 0 0;color:var(--muted);font-weight:500;font-size:13px}
+main{padding:24px 32px 24px 100px;max-width:1500px;margin:0 auto;min-height:0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px;grid-auto-rows:minmax(0,auto)}
+.grid > *{min-height:0;scroll-margin-top:90px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,0.03);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;overflow:hidden}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.06);border-color:var(--primary-600)}
+.card h3{margin:0 0 12px;font-size:14px;color:var(--muted);font-weight:600}
+.kpis{grid-column:span 12;display:grid;grid-template-columns:repeat(6,1fr);gap:20px;scroll-margin-top:90px}
+.kpi{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:16px;transition:transform .18s ease, box-shadow .18s ease}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.06)}
+.kpi .label{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .value{font-size:28px;margin-top:6px}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:4px;font-weight:500}
+.chart{grid-column:span 6;height:320px;min-height:0}
+.chart.full{grid-column:span 12;height:380px}
+.chart.wide{grid-column:span 8;height:360px}
+.side{grid-column:span 4;height:360px;overflow:auto}
+canvas{width:100%!important;height:100%!important;display:block}
+.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 14px;border-radius:10px;font-weight:600;font-family:"Segoe UI";cursor:pointer;transition:all .15s ease}
+.btn:hover{border-color:var(--primary-600);transform:translateY(-1px)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--primary-100);color:var(--primary-600);font-size:11px;font-weight:600;margin-left:8px}
+.nav-pill{position:fixed;left:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:200}
+.nav-item{position:relative}
+.nav-item>a{background:var(--card);border:1px solid var(--border);padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;display:block;transition:all .15s ease}
+.nav-item>a:hover,.nav-item:hover>a{background:var(--primary-100);border-color:var(--primary-600)}
+.nav-dropdown{position:absolute;left:100%;top:0;margin-left:8px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 0;min-width:180px;display:none;box-shadow:0 10px 30px rgba(0,0,0,0.1)}
+.nav-item:hover .nav-dropdown{display:block}
+.nav-dropdown a{display:block;padding:8px 14px;text-decoration:none;color:var(--text);font-size:12px;font-weight:600}
+.nav-dropdown a:hover{background:var(--primary-100)}
+.mobile-nav{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:none;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:8px 12px;box-shadow:0 10px 30px rgba(0,0,0,0.12);gap:8px;z-index:200}
+.mobile-nav a{padding:6px 10px;border-radius:999px;text-decoration:none;color:var(--text);font-size:12px;font-weight:600}
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--primary-100)}
+.timeline-item{position:relative;margin:14px 0}
+.timeline-item::before{content:"";position:absolute;left:-16px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--primary);border:2px solid var(--card);box-shadow:0 0 0 2px var(--primary-100);transition:transform .2s ease}
+.timeline-item:hover::before{transform:scale(1.3)}
+.timeline-item .time{font-size:11px;color:var(--muted);font-weight:600}
+.timeline-item .msg{font-size:13px;margin-top:2px}
+.converter input{width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;font-family:"Segoe UI";font-weight:600;font-size:14px;margin:6px 0;background:var(--card);color:var(--text)}
+.converter .row{display:flex;gap:8px;margin:8px 0}
+.converter .row button{flex:1}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;font-weight:500}
+@media(max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1024px){main{padding:24px 32px}.kpis{grid-template-columns:repeat(2,1fr)}.chart,.wide,.side{grid-column:span 12}.nav-pill{display:none}.mobile-nav{display:flex}}
+@media(max-width:640px){header h1{flex-direction:column;align-items:flex-start;gap:10px}}
+</style>
+</head>
+<body>
+<div class="nav-pill">
+  <div class="nav-item">
+    <a href="#kpis">KPIs</a>
+    <div class="nav-dropdown">
+      <a href="#kpi-resumen">Resumen</a>
+      <a href="#kpi-sla">SLA</a>
+      <a href="#kpi-activos">Activos</a>
+    </div>
+  </div>
+  <div class="nav-item">
+    <a href="#graficas">Gráficas</a>
+    <div class="nav-dropdown">
+      <a href="#graficas">Estados</a>
+      <a href="#chart-prioridad">Prioridad</a>
+      <a href="#chart-tecnicos">Técnicos</a>
+    </div>
+  </div>
+  <div class="nav-item"><a href="#timeline">Timeline</a></div>
+  <div class="nav-item"><a href="#divisas">Divisas</a></div>
+</div>
+<div class="mobile-nav">
+  <a href="#kpis">KPIs</a>
+  <a href="#graficas">Gráficas</a>
+  <a href="#timeline">Timeline</a>
+  <a href="#divisas">Divisas</a>
+</div>
+<header>
+  <h1>
+    <span>HelpDesk corporativo <span class="badge">en vivo</span></span>
+    <button id="themeToggle" class="btn">Cambiar acento</button>
+  </h1>
+  <p>Vista ejecutiva de incidencias, SLA y activos · actualización en tiempo real</p>
+</header>
+<main>
+<section class="grid">
+  <section id="kpis" class="kpis">
+    <div id="kpi-resumen" class="kpi card"><div class="label">tickets abiertos</div><div class="value" style="color:var(--primary)">1,248</div><div class="sub">+3.2% vs semana</div></div>
+    <div id="kpi-sla" class="kpi card"><div class="label">cumplimiento sla</div><div class="value" style="color:var(--primary)">87.4%</div><div class="sub">objetivo 85%</div></div>
+    <div class="kpi card"><div class="label">tiempo medio</div><div class="value" style="color:var(--primary)">4.2 h</div><div class="sub">-11 min vs mes</div></div>
+    <div class="kpi card"><div class="label">satisfacción</div><div class="value" style="color:var(--primary)">4.6 / 5</div><div class="sub">342 valoraciones</div></div>
+    <div class="kpi card"><div class="label">tickets críticos</div><div class="value" style="color:var(--primary)">48</div><div class="sub">12 vencidos</div></div>
+    <div id="kpi-activos" class="kpi card"><div class="label">activos asignados</div><div class="value" style="color:var(--primary)">1,104</div><div class="sub">82% en uso</div></div>
+  </section>
+  <section id="graficas" class="card chart"><h3>tickets por estado</h3><canvas id="statusBar"></canvas></section>
+  <section id="chart-prioridad" class="card chart"><h3>distribución por prioridad</h3><canvas id="priorityDoughnut"></canvas></section>
+  <section id="chart-evolucion" class="card chart full"><h3>evolución de tickets últimos 12 meses</h3><canvas id="trendLine"></canvas></section>
+  <section id="chart-tecnicos" class="card chart"><h3>carga por técnico</h3><canvas id="techBar"></canvas></section>
+  <section id="chart-sla" class="card chart"><h3>cumplimiento sla por prioridad</h3><canvas id="slaBar"></canvas></section>
+  <section id="chart-equipos" class="card chart"><h3>estado de equipos</h3><canvas id="equipPie"></canvas></section>
+  <section id="chart-radar" class="card wide"><h3>radar de métricas sla</h3><canvas id="slaRadar"></canvas></section>
+  <section id="timeline" class="card side"><h3>timeline de ticket #T-2841</h3><div class="timeline" id="timelineList"></div></section>
+  <section id="divisas" class="card side"><h3>tasa dólar ↔ Bs</h3>
+    <div class="converter">
+      <div>Dólares USD</div><input id="usd" type="number" value="100" min="0" step="0.01">
+      <div>Bolívares Bs</div><input id="bs" type="number" value="3650" min="0" step="0.01">
+      <div class="row"><button class="btn" id="toBs">USD → Bs</button><button class="btn" id="toUsd">Bs → USD</button></div>
+      <div style="font-size:12px;color:var(--muted)">Tasa: <b id="rate">36.50</b> Bs/USD</div>
+    </div>
+  </section>
+</section>
+</main>
+<footer>sgen-support · dashboard corporativo · producción</footer>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+const root=document.documentElement;
+const toggleBtn=document.getElementById('themeToggle');
+function setTheme(t){root.dataset.theme=t;localStorage.setItem('theme',t);toggleBtn.textContent='Acento: '+(t==='blue'?'azul':'verde')}
+setTheme(localStorage.getItem('theme')||'');
+toggleBtn.onclick=()=>setTheme(root.dataset.theme==='blue'?'':'blue');
+
+function getP(){return getComputedStyle(root).getPropertyValue('--primary').trim()}
+function getP600(){return getComputedStyle(root).getPropertyValue('--primary-600').trim()}
+function rgbaFromRgb(rgb,a){
+ const m=(rgb||'').match(/\d+/g);
+ return m&&m.length>=3?`rgba(${m[0]},${m[1]},${m[2]},${a})`:`rgba(116,179,0,${a})`;
+}
+
+const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Segoe UI',weight:600}}},tooltip:{backgroundColor:'#111827',titleColor:'#fff',bodyColor:'#fff'}},animation:{duration:800,easing:'easeOutQuart'},scales:{x:{ticks:{font:{family:'Segoe UI',weight:600}}},y:{ticks:{font:{family:'Segoe UI',weight:600}}}}};
+
+function renderAll(){
+ const p=getP(),p600=getP600();
+ const isBlue=root.dataset.theme==='blue';
+ const priorityPalette=isBlue?['rgb(116,179,255)','rgb(92,148,220)','rgb(59,130,246)','rgb(29,78,216)']:['rgb(180,210,120)','rgb(140,190,60)','rgb(116,179,0)','rgb(70,130,20)'];
+ const equipPalette=isBlue?['rgb(116,179,255)','rgb(147,197,253)','rgb(59,130,246)','rgb(30,64,175)']:['rgb(116,179,0)','rgb(180,210,120)','rgb(140,190,60)','rgb(70,130,20)'];
+
+ ['statusBar','priorityDoughnut','trendLine','techBar','slaBar','equipPie','slaRadar'].forEach(id=>{const c=Chart.getChart(id);c&&c.destroy()});
+ new Chart(document.getElementById('statusBar'),{type:'bar',data:{labels:['pendiente','en proceso','en espera','resuelto','cerrado'],datasets:[{data:[342,418,156,289,43],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:{...opts,plugins:{legend:{display:false}}}});
+ new Chart(document.getElementById('priorityDoughnut'),{type:'doughnut',data:{labels:['baja','media','alta','crítica'],datasets:[{data:[420,512,268,48],backgroundColor:priorityPalette,borderWidth:1,borderColor:'#fff',hoverOffset:10}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Segoe UI',weight:600}}}}}});
+ new Chart(document.getElementById('trendLine'),{type:'line',data:{labels:['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'],datasets:[{label:'creados',data:[210,235,260,245,280,310,295,330,365,340,310,285],borderColor:p,backgroundColor:rgbaFromRgb(p,0.12),fill:true,tension:0.35,borderWidth:2,pointRadius:0},{label:'resueltos',data:[195,220,240,230,265,295,280,315,340,320,295,270],borderColor:p600,backgroundColor:rgbaFromRgb(p600,0.12),fill:true,tension:0.35,borderWidth:2,pointRadius:0}]},options:{...opts,plugins:{legend:{labels:{font:{family:'Segoe UI',weight:600}}}}}});
+ new Chart(document.getElementById('techBar'),{type:'bar',data:{labels:['Ana','Carlos','María','Luis','Sofía','Jorge','Patricia'],datasets:[{data:[38,52,44,61,47,33,29],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:{...opts,plugins:{legend:{display:false}}}});
+ new Chart(document.getElementById('slaBar'),{type:'bar',data:{labels:['baja','media','alta','crítica'],datasets:[{data:[96,89,82,71],backgroundColor:p,borderColor:p600,borderWidth:1,borderRadius:6}]},options:{...opts,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100}}}});
+ new Chart(document.getElementById('equipPie'),{type:'pie',data:{labels:['en uso','en resguardo','en reparación','disponible'],datasets:[{data:[726,184,98,96],backgroundColor:equipPalette,borderWidth:1,borderColor:'#fff',hoverOffset:10}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Segoe UI',weight:600}}}}}});
+ new Chart(document.getElementById('slaRadar'),{type:'radar',data:{labels:['tiempo','calidad','cumplimiento','satisfacción','proactividad'],datasets:[{label:'actual',data:[78,85,87,92,74],borderColor:p,backgroundColor:rgbaFromRgb(p,0.18),pointBackgroundColor:p},{label:'objetivo',data:[80,80,85,85,80],borderColor:p600,backgroundColor:rgbaFromRgb(p600,0.08),pointBackgroundColor:p600}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{angleLines:{color:'#e5e7eb'},grid:{color:'#e5e7eb'},pointLabels:{font:{family:'Segoe UI',weight:600}},suggestedMin:0,suggestedMax:100,ticks:{stepSize:20}}}}});
+}
+renderAll();
+new MutationObserver(renderAll).observe(root,{attributes:true,attributeFilter:['data-theme']});
+
+const tl=[{t:'08:12',m:'Ticket creado por solicitante'},{t:'09:04',m:'Asignado a Carlos'},{t:'10:21',m:'Comentario interno: falta repuesto'},{t:'13:45',m:'Estado → en espera'},{t:'16:10',m:'Repuesto recibido'},{t:'16:42',m:'Estado → en proceso'},{t:'18:05',m:'Ticket resuelto y firmado'}];
+document.getElementById('timelineList').innerHTML=tl.map(i=>`<div class="timeline-item"><div class="time">${i.t}</div><div class="msg">${i.m}</div></div>`).join('');
+
+let rate=36.50;
+const usdEl=document.getElementById('usd'), bsEl=document.getElementById('bs');
+document.getElementById('toBs').onclick=()=>{const v=parseFloat(usdEl.value);bsEl.value=isNaN(v)?'':(v*rate).toFixed(2)};
+document.getElementById('toUsd').onclick=()=>{const v=parseFloat(bsEl.value);usdEl.value=isNaN(v)?'':(v/rate).toFixed(2)};
+usdEl.oninput=e=>{const v=parseFloat(e.target.value);bsEl.value=isNaN(v)?'':(v*rate).toFixed(2)};
+bsEl.oninput=e=>{const v=parseFloat(e.target.value);usdEl.value=isNaN(v)?'':(v/rate).toFixed(2)};
+});
+</script>
+</body>
+</html>

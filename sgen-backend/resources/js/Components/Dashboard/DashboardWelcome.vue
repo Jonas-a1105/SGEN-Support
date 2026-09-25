@@ -29,7 +29,7 @@ const operatorName = computed(() => {
 <template>
     <section class="welcome-bar">
         <div class="welcome-content">
-            <h2 class="welcome-title">¡Bienvenido de nuevo, {{ operatorName }}! 👋</h2>
+            <h2 class="welcome-title">¡Bienvenido de nuevo, {{ operatorName }}!</h2>
             <p class="welcome-desc">Aquí tienes el resumen operativo del día y el estado general de la infraestructura tecnológica.</p>
         </div>
         <button

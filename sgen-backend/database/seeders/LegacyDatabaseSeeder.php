@@ -17,6 +17,7 @@ class LegacyDatabaseSeeder extends Seeder
         $dumpPath = base_path('../sgen_db.sql');
         if (! file_exists($dumpPath)) {
             $this->command->error("Archivo de dump no encontrado en: $dumpPath");
+
             return;
         }
 
@@ -53,6 +54,7 @@ class LegacyDatabaseSeeder extends Seeder
         foreach ($tableOrder as $table) {
             if (! isset($statementsByTable[$table])) {
                 $this->command->line("  - Saltando '$table' (sin sentencias INSERT)");
+
                 continue;
             }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseCombobox from '@/Components/UI/BaseCombobox.vue';
+import { IconTag } from '@tabler/icons-vue';
 
 defineProps<{
     name: string;
@@ -34,7 +35,10 @@ const unitOptions = [
 
 <template>
     <div>
-        <span class="form-section-title">🏷 Ficha Técnica</span>
+        <span class="form-section-title">
+            <IconTag :size="16" stroke-width="2" class="inline-icon" />
+            <span>Ficha Técnica</span>
+        </span>
 
         <div class="form-group">
             <label class="form-label" for="inputItemName">

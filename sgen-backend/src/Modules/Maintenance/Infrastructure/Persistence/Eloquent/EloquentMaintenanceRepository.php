@@ -66,20 +66,20 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
             ])
             ->orderByDesc('mantenimientos.fecha');
 
-        if (!empty($filters['estado']) && $filters['estado'] !== 'todos') {
+        if (! empty($filters['estado']) && $filters['estado'] !== 'todos') {
             $query->where('mantenimientos.estado', $filters['estado']);
         }
 
-        if (!empty($filters['tipo']) && $filters['tipo'] !== 'todos') {
+        if (! empty($filters['tipo']) && $filters['tipo'] !== 'todos') {
             $query->where('mantenimientos.tipo_mantenimiento', $filters['tipo']);
         }
 
-        if (!empty($filters['search'])) {
-            $search = '%' . trim($filters['search']) . '%';
+        if (! empty($filters['search'])) {
+            $search = '%'.trim($filters['search']).'%';
             $query->where(function ($q) use ($search) {
                 $q->where('mantenimientos.descripcion', 'ILIKE', $search)
-                  ->orWhere('equipos.codigo_inventario', 'ILIKE', $search)
-                  ->orWhere('equipos.tipo', 'ILIKE', $search);
+                    ->orWhere('equipos.codigo_inventario', 'ILIKE', $search)
+                    ->orWhere('equipos.tipo', 'ILIKE', $search);
             });
         }
 
@@ -122,7 +122,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
             ])
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return null;
         }
 
@@ -134,7 +134,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
         }
 
         $fecha = Carbon::parse($record->fecha);
-        $isOverdue = $fecha->isPast() && !in_array($record->estado, ['completado', 'cancelado'], true);
+        $isOverdue = $fecha->isPast() && ! in_array($record->estado, ['completado', 'cancelado'], true);
 
         $historial = DB::table('mantenimientos')
             ->leftJoin('usuarios', 'mantenimientos.tecnico_id', '=', 'usuarios.id')
@@ -209,7 +209,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
     {
         $estado = 'pendiente';
         $fechaProgramada = Carbon::parse($dto->fecha);
-        
+
         if ($fechaProgramada <= Carbon::now()) {
             $estado = 'en_proceso';
         }
@@ -285,7 +285,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
     {
         $maintenance = DB::table('mantenimientos')->where('id', $id)->first();
 
-        if (!$maintenance) {
+        if (! $maintenance) {
             return false;
         }
 
@@ -305,7 +305,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
         }
 
         if ($maintenance->frecuencia !== 'unica') {
-            $months = match($maintenance->frecuencia) {
+            $months = match ($maintenance->frecuencia) {
                 'mensual' => 1,
                 'trimestral' => 3,
                 'semestral' => 6,
@@ -432,7 +432,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
             ->get()
             ->map(fn ($e) => [
                 'id' => $e->id,
-                'name' => trim($e->nombre . ' ' . ($e->apellido ?? '')),
+                'name' => trim($e->nombre.' '.($e->apellido ?? '')),
                 'email' => $e->email ?? '',
             ])
             ->all();

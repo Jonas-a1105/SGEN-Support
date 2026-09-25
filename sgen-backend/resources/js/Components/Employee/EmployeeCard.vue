@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { BaseAvatar, BaseBadge } from '@/Components/UI';
 import type { EmployeeItem } from '@/Composables/useEmployeeFilters';
 
@@ -12,10 +12,21 @@ const emit = defineEmits<{
     (e: 'edit', employee: EmployeeItem): void;
     (e: 'delete', employee: EmployeeItem): void;
 }>();
+
+const navigateToDetail = () => {
+    router.visit(`/personal/${props.employee.numericId}`);
+};
 </script>
 
 <template>
-    <article class="employee-card" :class="{ dense: isDense }">
+    <article
+        class="employee-card"
+        :class="{ dense: isDense }"
+        role="button"
+        tabindex="0"
+        @click="navigateToDetail"
+        @keydown.enter="navigateToDetail"
+    >
         <div class="card-main-content">
             <div class="card-top-identity">
                 <div class="card-user-row">
@@ -25,7 +36,7 @@ const emit = defineEmits<{
                         size="md"
                     />
                     <div class="emp-identity-info">
-                        <Link :href="`/personal/${employee.numericId}`" class="emp-name-link">
+                        <Link :href="`/personal/${employee.numericId}`" class="emp-name-link" @click.stop>
                             <h3 class="emp-name-text">{{ employee.fullName }}</h3>
                         </Link>
                         <span class="emp-position-sub">{{ employee.position }}</span>
@@ -94,6 +105,7 @@ const emit = defineEmits<{
                     :href="`/personal/${employee.numericId}`"
                     class="btn-mini-action view"
                     title="Ver perfil completo"
+                    @click.stop
                 >
                     <svg viewBox="0 0 24 24">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -102,7 +114,7 @@ const emit = defineEmits<{
                 </Link>
                 <button
                     class="btn-mini-action edit"
-                    @click="emit('edit', employee)"
+                    @click.stop="emit('edit', employee)"
                     type="button"
                     title="Editar ficha"
                 >
@@ -113,7 +125,7 @@ const emit = defineEmits<{
                 </button>
                 <button
                     class="btn-mini-action delete"
-                    @click="emit('delete', employee)"
+                    @click.stop="emit('delete', employee)"
                     type="button"
                     title="Eliminar registro"
                 >
@@ -138,6 +150,7 @@ const emit = defineEmits<{
     justify-content: space-between;
     transition: border-color 0.2s ease, transform 0.2s ease;
     box-shadow: none !important;
+    cursor: pointer;
 }
 
 .employee-card:hover {

@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { BaseSearchToolbar, BaseToggleSwitch, BaseViewModeToggle } from '@/Components/UI';
 import type { DepartmentOption } from '@/types';
+import {
+    IconLayoutGrid,
+    IconArchive,
+    IconUserCheck,
+    IconTools,
+    IconCircleOff,
+    IconBuildingCommunity,
+} from '@tabler/icons-vue';
 
 defineProps<{
     currentPill: string;
@@ -30,6 +38,7 @@ const emit = defineEmits<{
         <template #prepend>
             <BaseToggleSwitch
                 :model-value="isDense"
+                label="Compacto"
                 title="Alternar modo de visualización compacto"
                 @change="emit('toggle-dense')"
             />
@@ -44,7 +53,8 @@ const emit = defineEmits<{
                         @click="emit('update:currentPill', 'all')"
                         type="button"
                     >
-                        Todos
+                        <IconLayoutGrid :size="14" stroke-width="2" class="pill-icon" />
+                        <span>Todos</span>
                     </button>
                     <button
                         class="filter-pill"
@@ -53,7 +63,8 @@ const emit = defineEmits<{
                         type="button"
                         title="Equipos en Almacén TI / Reserva listos para asignar"
                     >
-                        📦 En Almacén (Disponibles)
+                        <IconArchive :size="14" stroke-width="2" class="pill-icon" />
+                        <span>En Almacén (Disponibles)</span>
                     </button>
                     <button
                         class="filter-pill"
@@ -62,7 +73,8 @@ const emit = defineEmits<{
                         type="button"
                         title="Equipos asignados y operando en departamentos"
                     >
-                        👤 En Uso (Asignados)
+                        <IconUserCheck :size="14" stroke-width="2" class="pill-icon" />
+                        <span>En Uso (Asignados)</span>
                     </button>
                     <button
                         class="filter-pill"
@@ -70,7 +82,8 @@ const emit = defineEmits<{
                         @click="emit('update:currentPill', 'Reparación')"
                         type="button"
                     >
-                        🛠️ Reparación
+                        <IconTools :size="14" stroke-width="2" class="pill-icon" />
+                        <span>Reparación</span>
                     </button>
                     <button
                         class="filter-pill"
@@ -78,18 +91,20 @@ const emit = defineEmits<{
                         @click="emit('update:currentPill', 'Baja')"
                         type="button"
                     >
-                        ⛔ Baja
+                        <IconCircleOff :size="14" stroke-width="2" class="pill-icon" />
+                        <span>Baja</span>
                     </button>
                 </div>
 
                 <div v-if="departments && departments.length > 0" class="dept-filter-wrap">
+                    <IconBuildingCommunity :size="14" stroke-width="1.8" class="dept-select-icon" />
                     <select
                         :value="selectedDepartment || 'all'"
                         class="dept-select"
                         @change="emit('update:selectedDepartment', ($event.target as HTMLSelectElement).value)"
                         title="Filtrar equipos por departamento asignado"
                     >
-                        <option value="all">🏢 Todos los departamentos</option>
+                        <option value="all">Todos los departamentos</option>
                         <option v-for="d in departments" :key="d.id" :value="d.id">
                             {{ d.nombre }}
                         </option>
@@ -122,6 +137,9 @@ const emit = defineEmits<{
 }
 
 .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     background: transparent;
     border: var(--stroke-w) solid var(--stroke);
     color: var(--text-muted);
@@ -132,6 +150,10 @@ const emit = defineEmits<{
     box-shadow: none !important;
     transition: all 0.2s ease;
     white-space: nowrap;
+}
+
+.pill-icon {
+    flex-shrink: 0;
 }
 
 .filter-pill:hover {
@@ -146,12 +168,21 @@ const emit = defineEmits<{
 }
 
 .dept-filter-wrap {
+    position: relative;
     display: inline-flex;
     align-items: center;
 }
 
+.dept-select-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--text-muted);
+    pointer-events: none;
+    z-index: 1;
+}
+
 .dept-select {
-    padding: 5px 12px;
+    padding: 5px 12px 5px 30px;
     font-size: 12px;
     font-family: inherit;
     border-radius: 20px;

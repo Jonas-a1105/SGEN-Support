@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Application\UseCases;
 
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Reports\Domain\Ports\ReportsRepositoryInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class ExportMaintenanceExcelUseCase
 {
@@ -19,7 +19,7 @@ final readonly class ExportMaintenanceExcelUseCase
 
         $headers = [
             'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="Reporte_Mantenimientos_' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="Reporte_Mantenimientos_'.date('Y-m-d').'.csv"',
         ];
 
         $callback = function () use ($orders) {
@@ -42,7 +42,7 @@ final readonly class ExportMaintenanceExcelUseCase
 
             foreach ($orders as $order) {
                 fputcsv($output, [
-                    '#M-' . $order->id,
+                    '#M-'.$order->id,
                     $order->equipo_codigo ?? 'N/A',
                     ucfirst((string) ($order->equipo_tipo ?? 'Genérico')),
                     ucfirst((string) ($order->tipo_mantenimiento ?? 'Preventivo')),

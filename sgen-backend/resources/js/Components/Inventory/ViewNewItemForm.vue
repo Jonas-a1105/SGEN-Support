@@ -7,6 +7,7 @@ import NewItemTechSpecs from './Forms/NewItemTechSpecs.vue';
 import NewItemStockControl from './Forms/NewItemStockControl.vue';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
+import { IconCheck } from '@tabler/icons-vue';
 
 const props = defineProps<{
     item?: Product | null;
@@ -111,7 +112,7 @@ const submit = () => {
                         :loading="form.processing"
                         @click="submit"
                     >
-                        <span>✓</span>
+                        <IconCheck :size="16" stroke-width="2" />
                         <span>{{ isEdit ? 'Actualizar Producto' : 'Guardar Producto' }}</span>
                     </BaseButton>
                 </div>

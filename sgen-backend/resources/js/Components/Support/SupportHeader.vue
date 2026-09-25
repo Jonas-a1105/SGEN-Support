@@ -16,11 +16,9 @@ import { BasePageHeader, BaseButton } from '@/Components/UI';
         </template>
 
         <template #actions>
-            <Link href="/soportes/crear" class="link-no-style">
-                <BaseButton variant="primary">
-                    + Nuevo Ticket
-                </BaseButton>
-            </Link>
+            <BaseButton variant="primary" href="/soportes/crear">
+                + Nuevo Ticket
+            </BaseButton>
         </template>
     </BasePageHeader>
 </template>

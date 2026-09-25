@@ -17,8 +17,7 @@ final class AddMaintenanceMaterialUseCase
 {
     public function __construct(
         private readonly MaintenanceRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $mantenimientoId, int $itemId, int $cantidad, int $userId): bool
     {

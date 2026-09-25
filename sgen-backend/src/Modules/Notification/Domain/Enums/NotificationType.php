@@ -15,7 +15,7 @@ enum NotificationType: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::TICKET_ASIGNADO => 'Ticket Asignado',
             self::TICKET_VENCIMIENTO => 'Ticket por Vencer',
             self::TICKET_ESTADO_CAMBIADO => 'Cambio de Estado',

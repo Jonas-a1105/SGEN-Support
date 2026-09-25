@@ -30,7 +30,7 @@ final class SettingsController extends Controller
 
     public function update(UpdateSettingsRequest $request, UpdateSettingsUseCase $useCase): RedirectResponse
     {
-        $userId = (int) ($request->user()?->id ?? 1);
+        $userId = (int) $request->user()->id;
         $useCase->execute($userId, UpdateSettingsDTO::fromArray($request->validated()));
 
         return back()->with('success', 'Preferencias actualizadas correctamente.');
@@ -38,7 +38,7 @@ final class SettingsController extends Controller
 
     public function updatePassword(UpdateUserPasswordRequest $request, UpdateUserPasswordUseCase $useCase): RedirectResponse
     {
-        $userId = (int) ($request->user()?->id ?? 1);
+        $userId = (int) $request->user()->id;
         $useCase->execute($userId, UpdatePasswordDTO::fromArray($request->validated()));
 
         return back()->with('success', 'Contraseña actualizada con éxito.');

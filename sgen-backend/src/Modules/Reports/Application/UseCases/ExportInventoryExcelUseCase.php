@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Application\UseCases;
 
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Reports\Domain\Ports\ReportsRepositoryInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class ExportInventoryExcelUseCase
 {
@@ -19,7 +19,7 @@ final readonly class ExportInventoryExcelUseCase
 
         $headers = [
             'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="Reporte_Inventario_' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="Reporte_Inventario_'.date('Y-m-d').'.csv"',
         ];
 
         $callback = function () use ($items) {

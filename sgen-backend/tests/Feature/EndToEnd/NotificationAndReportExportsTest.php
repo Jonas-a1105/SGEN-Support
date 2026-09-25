@@ -95,7 +95,7 @@ final class NotificationAndReportExportsTest extends TestCase
     {
         // Insert dummy inventory item
         $itemId = DB::table('inventario_items')->insertGetId([
-            'codigo' => 'TEST-EXP-' . strtoupper(uniqid()),
+            'codigo' => 'TEST-EXP-'.strtoupper(uniqid()),
             'nombre' => 'Teclado Mecánico RGB',
             'categoria' => 'Periféricos',
             'stock_actual' => 12,
@@ -118,17 +118,17 @@ final class NotificationAndReportExportsTest extends TestCase
     {
         // Insert department & equipment
         $deptId = DB::table('departamentos')->insertGetId([
-            'nombre' => 'Dpto Export ' . uniqid(),
+            'nombre' => 'Dpto Export '.uniqid(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         $eqId = DB::table('equipos')->insertGetId([
-            'codigo_inventario' => 'EQ-EXP-' . strtoupper(uniqid()),
+            'codigo_inventario' => 'EQ-EXP-'.strtoupper(uniqid()),
             'tipo' => 'impresora',
             'marca' => 'HP',
             'modelo' => 'LaserJet Pro',
-            'numero_serie' => 'SN-HP-' . uniqid(),
+            'numero_serie' => 'SN-HP-'.uniqid(),
             'estado' => 'disponible',
             'departamento_id' => $deptId,
             'created_at' => now(),

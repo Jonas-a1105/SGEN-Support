@@ -10,7 +10,9 @@ final class UpdateTicketRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user !== null && $user->can('soportes.manage');
     }
 
     /**
@@ -22,7 +24,7 @@ final class UpdateTicketRequest extends FormRequest
             'titulo' => ['nullable', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string'],
             'prioridad' => ['nullable', 'string', 'in:baja,media,alta,critica'],
-            'estado' => ['nullable', 'string', 'in:pendiente,en_proceso,resuelto'],
+            'estado' => ['nullable', 'string', 'in:pendiente,en_proceso,resuelto,cerrado'],
             'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
             'categoria_id' => ['nullable', 'integer', 'exists:categorias,id'],
             'fecha_cierre' => ['nullable', 'string'],

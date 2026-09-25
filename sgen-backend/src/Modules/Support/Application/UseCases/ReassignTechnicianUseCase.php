@@ -14,8 +14,7 @@ final class ReassignTechnicianUseCase
     public function __construct(
         private readonly SupportRepositoryInterface $repository,
         private readonly CreateNotificationUseCase $notificationUseCase
-    ) {
-    }
+    ) {}
 
     public function execute(int $ticketId, int $employeeId): bool
     {
@@ -32,7 +31,7 @@ final class ReassignTechnicianUseCase
                         (int) $techUserId,
                         NotificationType::TICKET_ASIGNADO,
                         'Ticket Asignado',
-                        "Se te ha asignado el ticket #{$ticketId}: " . ($ticket?->titulo ?? ''),
+                        "Se te ha asignado el ticket #{$ticketId}: ".($ticket?->titulo ?? ''),
                         "/soportes/{$ticketId}"
                     );
                 } catch (\Throwable) {

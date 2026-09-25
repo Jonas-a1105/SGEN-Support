@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import BaseBadge from '@/Components/UI/BaseBadge.vue';
 import BaseDatePicker from '@/Components/UI/BaseDatePicker.vue';
+import { IconPackage, IconMapPin } from '@tabler/icons-vue';
 
 defineProps<{
     initialStock: number;
@@ -25,9 +26,13 @@ const emit = defineEmits<{
 <template>
     <div class="form-stock-control-panel">
         <div class="form-control-header">
-            <span class="form-section-title-inline">📦 Control de Stock</span>
+            <span class="form-section-title-inline">
+                <IconPackage :size="16" stroke-width="2" class="inline-icon" />
+                <span>Control de Stock</span>
+            </span>
             <BaseBadge variant="info">
-                📍 Asignación: {{ location || 'Almacén Central' }}
+                <IconMapPin :size="12" stroke-width="2" class="inline-icon" />
+                <span>Asignación: {{ location || 'Almacén Central' }}</span>
             </BaseBadge>
         </div>
 

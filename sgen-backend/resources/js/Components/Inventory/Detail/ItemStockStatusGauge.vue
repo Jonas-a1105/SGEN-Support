@@ -4,6 +4,7 @@ import type { Product } from '@/Types/inventory';
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseBadge from '@/Components/UI/BaseBadge.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
+import { IconTrendingUp } from '@tabler/icons-vue';
 
 const props = defineProps<{
     product: Product;
@@ -31,7 +32,7 @@ const valuation = computed(() => {
                 :variant="isAvailable ? 'success' : 'danger'"
                 id="detailItemStockBadge"
             >
-                {{ isAvailable ? '✓ Disponible' : '✕ Agotado' }}
+                {{ isAvailable ? 'Disponible' : 'Agotado' }}
             </BaseBadge>
         </div>
 
@@ -63,7 +64,7 @@ const valuation = computed(() => {
                 class="w-full"
                 @click="emit('request-replenishment')"
             >
-                <span>📈</span>
+                <IconTrendingUp :size="16" stroke-width="2" />
                 <span>Solicitar Reposición</span>
             </BaseButton>
             <BaseButton

@@ -37,6 +37,9 @@ export function getStatusBadgeVariant(status?: string | null): BadgeVariant {
         case 'preventivo':
             return 'brand';
 
+        case 'cerrado':
+            return 'neutral';
+
         default:
             return 'neutral';
     }

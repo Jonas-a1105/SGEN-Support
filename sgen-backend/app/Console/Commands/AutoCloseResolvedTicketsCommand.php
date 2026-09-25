@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Modules\Support\Domain\Enums\TicketStatus;
 
 final class AutoCloseResolvedTicketsCommand extends Command
 {
@@ -35,7 +36,7 @@ final class AutoCloseResolvedTicketsCommand extends Command
         $this->info("Buscando tickets resueltos antes del {$threshold->format('Y-m-d H:i:s')} ({$dias} días)...");
 
         $tickets = DB::table('soportes')
-            ->where('estado', 'resuelto')
+            ->where('estado', TicketStatus::RESUELTO->value)
             ->where(function ($query) use ($threshold) {
                 $query->where('fecha_resolucion', '<=', $threshold)
                     ->orWhere(function ($q) use ($threshold) {
@@ -43,10 +44,11 @@ final class AutoCloseResolvedTicketsCommand extends Command
                             ->where('updated_at', '<=', $threshold);
                     });
             })
-            ->get(['id', 'titulo', 'empleado_id', 'usuario_creacion_id']);
+            ->get(['id', 'titulo', 'estado', 'empleado_id', 'usuario_creacion_id']);
 
         if ($tickets->isEmpty()) {
             $this->info('No hay tickets resueltos pendientes de autocierre.');
+
             return self::SUCCESS;
         }
 
@@ -54,11 +56,21 @@ final class AutoCloseResolvedTicketsCommand extends Command
         $now = Carbon::now();
 
         foreach ($tickets as $ticket) {
+            // Defensa en profundidad: el comando jamás viola el ciclo de vida
+            // del dominio. Solo RESUELTO → CERRADO es una transición legal.
+            $currentStatus = TicketStatus::tryFromString((string) $ticket->estado);
+
+            if (! $currentStatus->canTransitionTo(TicketStatus::CERRADO)) {
+                $this->warn("  · Ticket #T-{$ticket->id} omitido: transición {$currentStatus->label()} → Cerrado no permitida.");
+
+                continue;
+            }
+
             DB::transaction(function () use ($ticket, $now, $dias, &$closedCount) {
                 DB::table('soportes')
                     ->where('id', $ticket->id)
                     ->update([
-                        'estado' => 'cerrado',
+                        'estado' => TicketStatus::CERRADO->value,
                         'fecha_cierre' => $now,
                         'updated_at' => $now,
                     ]);

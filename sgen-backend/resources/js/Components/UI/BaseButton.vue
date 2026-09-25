@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+
 interface Props {
-    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'subtle' | 'warning';
     size?: 'sm' | 'md' | 'lg';
     type?: 'button' | 'submit' | 'reset';
     disabled?: boolean;
     loading?: boolean;
+    href?: string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -13,6 +16,7 @@ withDefaults(defineProps<Props>(), {
     type: 'button',
     disabled: false,
     loading: false,
+    href: undefined,
 });
 
 defineEmits<{
@@ -21,7 +25,19 @@ defineEmits<{
 </script>
 
 <template>
+    <Link
+        v-if="href"
+        :href="href"
+        :class="['btn-base', `btn-${variant}`, `btn-${size}`, { 'is-loading': loading, 'is-disabled': disabled }]"
+        @click="$emit('click', $event)"
+    >
+        <span v-if="loading" class="btn-spinner" />
+        <span class="btn-content">
+            <slot />
+        </span>
+    </Link>
     <button
+        v-else
         :type="type"
         :disabled="disabled || loading"
         :class="['btn-base', `btn-${variant}`, `btn-${size}`, { 'is-loading': loading }]"
@@ -119,9 +135,35 @@ defineEmits<{
     border-color: transparent;
     color: var(--text-muted);
 }
-.btn-ghost:hover:not(:disabled) {
+.btn-ghost:hover:not(:disabled):not(.is-disabled) {
     background-color: var(--stroke-subtle);
     color: var(--text);
+}
+
+.btn-subtle {
+    background-color: var(--stroke-subtle);
+    border-color: var(--stroke);
+    color: var(--text);
+}
+.btn-subtle:hover:not(:disabled):not(.is-disabled) {
+    background-color: var(--stroke);
+    border-color: var(--stroke-hover);
+}
+
+.btn-warning {
+    background-color: #f59e0b;
+    border-color: #f59e0b;
+    color: #ffffff;
+}
+.btn-warning:hover:not(:disabled):not(.is-disabled) {
+    opacity: 0.9;
+}
+
+.btn-base:disabled,
+.btn-base.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .btn-spinner {

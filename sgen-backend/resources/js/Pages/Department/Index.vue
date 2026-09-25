@@ -60,11 +60,19 @@ const handleSaveDepartment = (payload: Record<string, unknown>) => {
             onSuccess: () => {
                 backToList();
             },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al actualizar el departamento.';
+                alert(firstErr);
+            },
         });
     } else {
         router.post('/departamentos', payload, {
             onSuccess: () => {
                 backToList();
+            },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al registrar el departamento.';
+                alert(firstErr);
             },
         });
     }
@@ -77,6 +85,10 @@ const handleConfirmDelete = () => {
         onSuccess: () => {
             showDeleteModal.value = false;
             deletingDepartment.value = null;
+        },
+        onError: (errors) => {
+            const firstErr = Object.values(errors)[0] || 'Error al eliminar el departamento.';
+            alert(firstErr);
         },
     });
 };

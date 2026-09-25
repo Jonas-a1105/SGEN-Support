@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Equipment\Application\UseCases;
 
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Equipment\Domain\Ports\EquipmentRepositoryInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class ExportEquipmentExcelUseCase
 {
@@ -14,17 +14,17 @@ final readonly class ExportEquipmentExcelUseCase
     ) {}
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      */
     public function execute(array $filters = []): StreamedResponse
     {
         $items = $this->repository->list($filters);
 
-        $filename = 'Equipos_Tecnologicos_' . date('Y-m-d') . '.csv';
+        $filename = 'Equipos_Tecnologicos_'.date('Y-m-d').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
         $callback = function () use ($items) {

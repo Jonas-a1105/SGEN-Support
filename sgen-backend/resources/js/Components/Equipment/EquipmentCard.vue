@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { BaseBadge } from '@/Components/UI';
 import type { BadgeVariant } from '@/Utils/badgeVariants';
 import type { EquipmentItem } from '@/Composables/useEquipmentFilters';
@@ -15,6 +15,10 @@ const emit = defineEmits<{
     (e: 'edit', item: EquipmentItem): void;
     (e: 'delete', item: EquipmentItem): void;
 }>();
+
+const navigateToDetail = () => {
+    router.visit(`/equipos/${props.item.numericId}`);
+};
 
 const badgeVariant = computed<BadgeVariant>(() => {
     switch (props.item.status) {
@@ -36,7 +40,14 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
 </script>
 
 <template>
-    <article class="device-card" :class="{ dense: isDense }">
+    <article
+        class="device-card"
+        :class="{ dense: isDense }"
+        role="button"
+        tabindex="0"
+        @click="navigateToDetail"
+        @keydown.enter="navigateToDetail"
+    >
         <div class="card-main-content">
             <div class="card-top-row">
                 <div class="device-type-icon-box" aria-hidden="true">
@@ -70,6 +81,7 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
                     :href="`/equipos/${item.numericId}`"
                     class="arrow-ext-btn"
                     title="Abrir ficha detallada del equipo"
+                    @click.stop
                 >
                     <svg viewBox="0 0 24 24">
                         <line x1="7" y1="17" x2="17" y2="7"></line>
@@ -79,7 +91,7 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
             </div>
 
             <div class="card-info-block">
-                <Link :href="`/equipos/${item.numericId}`" class="card-device-title-link">
+                <Link :href="`/equipos/${item.numericId}`" class="card-device-title-link" @click.stop>
                     <h2 class="card-device-title">{{ item.name }}</h2>
                 </Link>
                 <span class="card-sku-id">ID: {{ item.id }}</span>
@@ -105,7 +117,7 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
             <div class="card-actions-mini-group">
                 <button
                     class="action-mini-btn view"
-                    @click="emit('view', item)"
+                    @click.stop="emit('view', item)"
                     type="button"
                     title="Vista rápida"
                 >
@@ -116,7 +128,7 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
                 </button>
                 <button
                     class="action-mini-btn edit"
-                    @click="emit('edit', item)"
+                    @click.stop="emit('edit', item)"
                     type="button"
                     title="Editar equipo"
                 >
@@ -127,7 +139,7 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
                 </button>
                 <button
                     class="action-mini-btn delete"
-                    @click="emit('delete', item)"
+                    @click.stop="emit('delete', item)"
                     type="button"
                     title="Eliminar equipo"
                 >
@@ -152,6 +164,7 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
     justify-content: space-between;
     transition: border-color 0.2s ease, transform 0.2s ease;
     box-shadow: none !important;
+    cursor: pointer;
 }
 
 .device-card:hover {

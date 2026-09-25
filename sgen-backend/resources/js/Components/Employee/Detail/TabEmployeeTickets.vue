@@ -79,11 +79,13 @@ const getTicketStatusVariant = (estado: string): 'success' | 'warning' | 'info' 
             title="Sin tickets asociados"
             description="No se registran solicitudes o incidencias de soporte creadas por este colaborador."
         >
-            <Link :href="`/soportes/crear?empleado_id=${employeeId}`">
-                <BaseButton variant="primary" size="md">
-                    Crear Ticket para este Colaborador
-                </BaseButton>
-            </Link>
+            <BaseButton
+                variant="primary"
+                size="md"
+                :href="`/soportes/crear?empleado_id=${employeeId}`"
+            >
+                Crear Ticket para este Colaborador
+            </BaseButton>
         </BaseEmptyState>
     </div>
 </template>

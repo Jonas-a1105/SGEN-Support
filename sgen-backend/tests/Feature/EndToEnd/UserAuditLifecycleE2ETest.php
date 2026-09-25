@@ -45,12 +45,12 @@ final class UserAuditLifecycleE2ETest extends TestCase
 
     public function test_complete_user_and_audit_lifecycle(): void
     {
-        $uniqueUsername = 'tecnico_e2e_' . rand(1000, 9999);
+        $uniqueUsername = 'tecnico_e2e_'.rand(1000, 9999);
 
-        // 1. Crear nuevo usuario
+        // 1. Crear nuevo usuario (contraseña fuerte y no filtrada: política S3)
         $createPayload = [
             'username' => $uniqueUsername,
-            'password' => 'Temporal2026*',
+            'password' => 'Kx9#mQ2$vL8!zP4w',
             'rol' => 'tecnico',
         ];
 
@@ -64,7 +64,7 @@ final class UserAuditLifecycleE2ETest extends TestCase
 
         // 2. Actualizar rol a 'admin'
         $updatePayload = [
-            'username' => $uniqueUsername . '_promoted',
+            'username' => $uniqueUsername.'_promoted',
             'rol' => 'admin',
         ];
 
@@ -73,7 +73,7 @@ final class UserAuditLifecycleE2ETest extends TestCase
 
         $updatedUser = DB::table('usuarios')->where('id', $userId)->first();
         $this->assertSame('admin', $updatedUser->rol);
-        $this->assertSame($uniqueUsername . '_promoted', $updatedUser->username);
+        $this->assertSame($uniqueUsername.'_promoted', $updatedUser->username);
 
         // 3. Actualizar preferencias de tema
         $settingsResponse = $this->post('/configuracion', [
@@ -84,13 +84,19 @@ final class UserAuditLifecycleE2ETest extends TestCase
         $reloadedAdmin = DB::table('usuarios')->where('id', $this->adminUser->id)->first();
         $this->assertSame('dark', $reloadedAdmin->tema);
 
-        // 4. Actualizar contraseña del usuario
+        // 4. Actualizar contraseña del usuario (campos reales del FormRequest)
         $passwordResponse = $this->post('/configuracion/password', [
             'current_password' => 'secret1234',
-            'password' => 'NuevaPassword2026!',
-            'password_confirmation' => 'NuevaPassword2026!',
+            'new_password' => 'Rt5$kN8!qW3#xZ9m',
+            'new_password_confirmation' => 'Rt5$kN8!qW3#xZ9m',
         ]);
         $passwordResponse->assertRedirect();
+
+        // La contraseña realmente cambió: el hash ya no corresponde a la anterior.
+        $this->assertFalse(
+            password_verify('secret1234', (string) DB::table('usuarios')->where('id', $this->adminUser->id)->value('password')),
+            'La contraseña debió actualizarse en la base de datos.'
+        );
 
         // 5. Consultar directorio de usuarios
         $usersIndexResponse = $this->get('/usuarios');

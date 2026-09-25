@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Maintenance\Domain\Ports;
 
-use Modules\Maintenance\Application\DTOs\MaintenanceKpisDTO;
 use Modules\Maintenance\Application\DTOs\CreateMaintenanceDTO;
-use Modules\Maintenance\Application\DTOs\UpdateMaintenanceDTO;
 use Modules\Maintenance\Application\DTOs\MaintenanceDetailDTO;
+use Modules\Maintenance\Application\DTOs\MaintenanceKpisDTO;
+use Modules\Maintenance\Application\DTOs\UpdateMaintenanceDTO;
 
 interface MaintenanceRepositoryInterface
 {

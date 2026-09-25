@@ -51,11 +51,13 @@ const props = defineProps<{
             title="Sin mantenimientos registrados"
             description="No hay intervenciones o mantenimientos preventivos/correctivos cargados para este equipo."
         >
-            <Link :href="`/mantenimientos/crear?equipo_id=${equipmentId}`">
-                <BaseButton variant="primary" size="md">
-                    Registrar Mantenimiento
-                </BaseButton>
-            </Link>
+            <BaseButton
+                variant="primary"
+                size="md"
+                :href="`/mantenimientos/crear?equipo_id=${equipmentId}`"
+            >
+                Registrar Mantenimiento
+            </BaseButton>
         </BaseEmptyState>
     </div>
 </template>

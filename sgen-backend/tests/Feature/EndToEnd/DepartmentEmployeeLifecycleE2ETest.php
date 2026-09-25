@@ -61,8 +61,8 @@ final class DepartmentEmployeeLifecycleE2ETest extends TestCase
         $deptId = (int) $dept->id;
 
         // 2. Crear nuevo empleado
-        $email = 'eduardo.telecom.' . uniqid() . '@sgen.com';
-        $cedula = 'V-' . rand(10000000, 99999999);
+        $email = 'eduardo.telecom.'.uniqid().'@sgen.com';
+        $cedula = 'V-'.rand(10000000, 99999999);
 
         $empPayload = [
             'nombre' => 'Eduardo',
@@ -93,8 +93,8 @@ final class DepartmentEmployeeLifecycleE2ETest extends TestCase
 
         // 4. Asignar activo/equipo al departamento
         $eqId = (int) DB::table('equipos')->insertGetId([
-            'codigo_inventario' => 'ROUTER-E2E-' . rand(1000, 9999),
-            'numero_serie' => 'SN-RTR-' . uniqid(),
+            'codigo_inventario' => 'ROUTER-E2E-'.rand(1000, 9999),
+            'numero_serie' => 'SN-RTR-'.uniqid(),
             'tipo' => 'Router',
             'marca' => 'MikroTik',
             'modelo' => 'CCR1009-7G-1C-1S+',

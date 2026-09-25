@@ -15,8 +15,7 @@ final class UpdateTicketUseCase
     public function __construct(
         private readonly SupportRepositoryInterface $repository,
         private readonly CreateNotificationUseCase $notificationUseCase
-    ) {
-    }
+    ) {}
 
     public function execute(int $id, UpdateTicketDTO $dto): bool
     {

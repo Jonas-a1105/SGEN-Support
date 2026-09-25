@@ -61,11 +61,12 @@ const emit = defineEmits<{
                             </span>
                         </td>
                         <td class="text-right">
-                            <div class="row-actions">
+                            <div class="row-actions" @click.stop>
                                 <Link
                                     :href="`/mantenimientos/${item.id}`"
                                     class="btn-row-action view"
                                     title="Ver detalle del mantenimiento"
+                                    @click.stop
                                 >
                                     <svg viewBox="0 0 24 24">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -77,7 +78,7 @@ const emit = defineEmits<{
                                     class="btn-row-action complete"
                                     type="button"
                                     title="Marcar como completado"
-                                    @click="emit('complete', item.id)"
+                                    @click.stop="emit('complete', item.id)"
                                 >
                                     <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                                 </button>
@@ -85,7 +86,7 @@ const emit = defineEmits<{
                                     class="btn-row-action delete"
                                     type="button"
                                     title="Eliminar mantenimiento"
-                                    @click="emit('delete', item.id)"
+                                    @click.stop="emit('delete', item.id)"
                                 >
                                     <svg viewBox="0 0 24 24">
                                         <polyline points="3 6 5 6 21 6" />

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Application\UseCases;
 
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Reports\Domain\Ports\ReportsRepositoryInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class ExportTicketsExcelUseCase
 {
@@ -19,7 +19,7 @@ final readonly class ExportTicketsExcelUseCase
 
         $headers = [
             'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="Reporte_Tickets_' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="Reporte_Tickets_'.date('Y-m-d').'.csv"',
         ];
 
         $callback = function () use ($tickets) {
@@ -30,13 +30,13 @@ final readonly class ExportTicketsExcelUseCase
 
             foreach ($tickets as $ticket) {
                 fputcsv($output, [
-                    'T-' . $ticket->id,
+                    'T-'.$ticket->id,
                     $ticket->titulo,
                     $ticket->fecha,
                     ucfirst(str_replace('_', ' ', (string) $ticket->estado)),
                     ucfirst((string) $ticket->prioridad),
                     $ticket->categoria_nombre ?? 'Sin categoría',
-                    trim(($ticket->tech_nombre ?? '') . ' ' . ($ticket->tech_apellido ?? '')) ?: 'Sin asignar',
+                    trim(($ticket->tech_nombre ?? '').' '.($ticket->tech_apellido ?? '')) ?: 'Sin asignar',
                     $ticket->depto_nombre ?? 'Sin departamento',
                     $ticket->equipo_codigo ?? 'N/A',
                     $ticket->fecha_cierre ?? 'Pendiente',

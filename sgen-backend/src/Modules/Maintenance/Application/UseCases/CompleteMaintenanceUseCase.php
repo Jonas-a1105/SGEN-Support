@@ -27,8 +27,7 @@ final class CompleteMaintenanceUseCase
         private readonly MaintenanceRepositoryInterface $repository,
         private readonly ChecklistValidator $checklistValidator,
         private readonly RecurrenceEngine $recurrenceEngine
-    ) {
-    }
+    ) {}
 
     public function execute(
         int $id,
@@ -57,7 +56,7 @@ final class CompleteMaintenanceUseCase
 
         if ($pending !== [] && ! $omitPendingTasks) {
             throw new \RuntimeException(
-                'El checklist tiene tareas pendientes: ' . implode(', ', $pending) .
+                'El checklist tiene tareas pendientes: '.implode(', ', $pending).
                 '. Complétalas o omítelas con justificación.'
             );
         }
@@ -67,11 +66,11 @@ final class CompleteMaintenanceUseCase
         }
 
         if ($pending !== [] && $omitPendingTasks) {
-            $omissionNote = 'Tareas omitidas (' . now()->format('d/m/Y H:i') . '): '
-                . implode(', ', $pending)
-                . ' — Justificación: ' . trim($omissionJustification);
+            $omissionNote = 'Tareas omitidas ('.now()->format('d/m/Y H:i').'): '
+                .implode(', ', $pending)
+                .' — Justificación: '.trim($omissionJustification);
             $observations = $observations !== null && $observations !== ''
-                ? $observations . ' | ' . $omissionNote
+                ? $observations.' | '.$omissionNote
                 : $omissionNote;
         }
 

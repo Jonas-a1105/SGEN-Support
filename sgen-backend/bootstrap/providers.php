@@ -1,23 +1,36 @@
 <?php
 
+use App\Infrastructure\Dashboard\Providers\DashboardModuleServiceProvider;
+use App\Infrastructure\Department\Providers\DepartmentModuleServiceProvider;
+use App\Infrastructure\Employee\Providers\EmployeeModuleServiceProvider;
+use App\Infrastructure\Equipment\Providers\EquipmentModuleServiceProvider;
 use App\Infrastructure\Inventory\Providers\InventoryModuleServiceProvider;
+use App\Infrastructure\Maintenance\Providers\MaintenanceModuleServiceProvider;
+use App\Infrastructure\Notification\Providers\NotificationModuleServiceProvider;
+use App\Infrastructure\Reports\Providers\ReportsModuleServiceProvider;
+use App\Infrastructure\Support\Providers\SupportModuleServiceProvider;
 use App\Providers\AppServiceProvider;
+use Modules\About\AboutModuleServiceProvider;
+use Modules\Audit\AuditModuleServiceProvider;
+use Modules\Category\CategoryModuleServiceProvider;
+use Modules\Settings\SettingsModuleServiceProvider;
+use Modules\User\UserModuleServiceProvider;
 
 return [
     AppServiceProvider::class,
     InventoryModuleServiceProvider::class,
-    \App\Infrastructure\Dashboard\Providers\DashboardModuleServiceProvider::class,
-    \App\Infrastructure\Support\Providers\SupportModuleServiceProvider::class,
-    \App\Infrastructure\Equipment\Providers\EquipmentModuleServiceProvider::class,
-    \App\Infrastructure\Employee\Providers\EmployeeModuleServiceProvider::class,
-    \App\Infrastructure\Department\Providers\DepartmentModuleServiceProvider::class,
-    \Modules\Category\CategoryModuleServiceProvider::class,
-    \Modules\User\UserModuleServiceProvider::class,
-    \Modules\Audit\AuditModuleServiceProvider::class,
-    \App\Infrastructure\Audit\Providers\AuditModuleServiceProvider::class,
-    \Modules\Settings\SettingsModuleServiceProvider::class,
-    \Modules\About\AboutModuleServiceProvider::class,
-    \App\Infrastructure\Maintenance\Providers\MaintenanceModuleServiceProvider::class,
-    \App\Infrastructure\Reports\Providers\ReportsModuleServiceProvider::class,
-    \App\Infrastructure\Notification\Providers\NotificationModuleServiceProvider::class,
+    DashboardModuleServiceProvider::class,
+    SupportModuleServiceProvider::class,
+    EquipmentModuleServiceProvider::class,
+    EmployeeModuleServiceProvider::class,
+    DepartmentModuleServiceProvider::class,
+    CategoryModuleServiceProvider::class,
+    UserModuleServiceProvider::class,
+    AuditModuleServiceProvider::class,
+    App\Infrastructure\Audit\Providers\AuditModuleServiceProvider::class,
+    SettingsModuleServiceProvider::class,
+    AboutModuleServiceProvider::class,
+    MaintenanceModuleServiceProvider::class,
+    ReportsModuleServiceProvider::class,
+    NotificationModuleServiceProvider::class,
 ];

@@ -26,6 +26,7 @@ final class InventoryLifecycleE2ETest extends TestCase
     use DatabaseTransactions;
 
     private User $adminUser;
+
     private int $deptDestinoId;
 
     protected function setUp(): void
@@ -51,7 +52,7 @@ final class InventoryLifecycleE2ETest extends TestCase
 
     public function test_complete_inventory_lifecycle(): void
     {
-        $rawSku = 'TONER-HP-E2E-' . rand(1000, 9999);
+        $rawSku = 'TONER-HP-E2E-'.rand(1000, 9999);
 
         // 1. Registro de nuevo producto
         $createPayload = [

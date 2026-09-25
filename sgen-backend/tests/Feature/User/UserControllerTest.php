@@ -45,7 +45,7 @@ final class UserControllerTest extends TestCase
         $response = $this->get('/usuarios');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('User/Index')
             ->has('users')
             ->has('kpis')
@@ -58,7 +58,7 @@ final class UserControllerTest extends TestCase
     {
         $payload = [
             'username' => 'tech_new_guy',
-            'password' => 'secret1234',
+            'password' => 'Soporte2026*sgen',
             'rol' => 'tecnico',
         ];
 

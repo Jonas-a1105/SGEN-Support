@@ -73,11 +73,12 @@ const getStatusClass = (status: string) => {
             </template>
 
             <template #cell-actions="{ item }">
-                <div class="table-actions-group">
+                <div class="table-actions-group" @click.stop>
                     <Link
                         :href="`/equipos/${item.numericId}`"
                         class="action-mini-btn view"
                         title="Ver ficha completa del equipo"
+                        @click.stop
                     >
                         <svg viewBox="0 0 24 24">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -86,7 +87,7 @@ const getStatusClass = (status: string) => {
                     </Link>
                     <button
                         class="action-mini-btn edit"
-                        @click="emit('edit', item)"
+                        @click.stop="emit('edit', item)"
                         type="button"
                         title="Editar equipo"
                     >
@@ -97,7 +98,7 @@ const getStatusClass = (status: string) => {
                     </button>
                     <button
                         class="action-mini-btn delete"
-                        @click="emit('delete', item)"
+                        @click.stop="emit('delete', item)"
                         type="button"
                         title="Eliminar equipo"
                     >

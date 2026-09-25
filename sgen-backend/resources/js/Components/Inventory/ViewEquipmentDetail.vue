@@ -9,6 +9,12 @@ import EquipmentAcquisitionPane from './Detail/EquipmentAcquisitionPane.vue';
 import EquipmentTicketsPane from './Detail/EquipmentTicketsPane.vue';
 import EquipmentMaintPane from './Detail/EquipmentMaintPane.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
+import {
+    IconSettings,
+    IconFileDescription,
+    IconMessageDots,
+    IconTools,
+} from '@tabler/icons-vue';
 
 const props = defineProps<{
     equipment: Equipment;
@@ -76,19 +82,19 @@ const handleDuplicate = () => {
         <!-- PESTAÑAS INTERNAS DEL EQUIPO -->
         <div class="detail-tabs-pillbar">
             <button class="sub-tab-btn" :class="{ active: activeSubtab === 'specs' }" type="button" @click="activeSubtab = 'specs'">
-                <span>⚙</span>
+                <IconSettings :size="15" stroke-width="2" />
                 <span>Especificaciones</span>
             </button>
             <button class="sub-tab-btn" :class="{ active: activeSubtab === 'acq' }" type="button" @click="activeSubtab = 'acq'">
-                <span>📄</span>
+                <IconFileDescription :size="15" stroke-width="2" />
                 <span>Adquisición</span>
             </button>
             <button class="sub-tab-btn" :class="{ active: activeSubtab === 'tickets' }" type="button" @click="activeSubtab = 'tickets'">
-                <span>💬</span>
+                <IconMessageDots :size="15" stroke-width="2" />
                 <span>Soportes</span>
             </button>
             <button class="sub-tab-btn" :class="{ active: activeSubtab === 'maint' }" type="button" @click="activeSubtab = 'maint'">
-                <span>🛠</span>
+                <IconTools :size="15" stroke-width="2" />
                 <span>Mantenimiento</span>
             </button>
         </div>

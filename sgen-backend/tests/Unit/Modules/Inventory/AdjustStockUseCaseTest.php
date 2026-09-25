@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Modules\Inventory;
 
 use Modules\Inventory\Application\DTOs\StockAdjustmentDTO;
+use Modules\Inventory\Application\DTOs\TransferStockDTO;
 use Modules\Inventory\Application\UseCases\AdjustStockUseCase;
 use Modules\Inventory\Domain\Enums\MovementType;
 use Modules\Inventory\Domain\Models\Product;
@@ -86,9 +87,7 @@ final class AdjustStockUseCaseTest extends TestCase
                 return ['equipos' => [], 'departamentos' => [], 'empleados' => []];
             }
 
-            public function transferStock(\Modules\Inventory\Application\DTOs\TransferStockDTO $dto, int $userId): void
-            {
-            }
+            public function transferStock(TransferStockDTO $dto, int $userId): void {}
         };
 
         $notified = false;

@@ -69,11 +69,19 @@ const handleSaveEmployee = (payload: Record<string, unknown>) => {
             onSuccess: () => {
                 backToDirectory();
             },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al actualizar la ficha del empleado.';
+                alert(firstErr);
+            },
         });
     } else {
         router.post('/personal', payload, {
             onSuccess: () => {
                 backToDirectory();
+            },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al registrar el empleado.';
+                alert(firstErr);
             },
         });
     }
@@ -86,6 +94,10 @@ const handleConfirmDelete = () => {
         onSuccess: () => {
             showDeleteModal.value = false;
             deletingEmployee.value = null;
+        },
+        onError: (errors) => {
+            const firstErr = Object.values(errors)[0] || 'Error al eliminar el empleado.';
+            alert(firstErr);
         },
     });
 };

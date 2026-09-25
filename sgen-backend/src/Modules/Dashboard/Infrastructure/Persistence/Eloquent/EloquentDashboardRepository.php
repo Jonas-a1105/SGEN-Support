@@ -109,7 +109,7 @@ final class EloquentDashboardRepository implements DashboardRepositoryInterface
             ->limit(5)
             ->get()
             ->map(fn ($t) => [
-                'name' => trim($t->nombre . ' ' . ($t->apellido ?? '')),
+                'name' => trim($t->nombre.' '.($t->apellido ?? '')),
                 'score' => (int) $t->total,
                 'percentage' => 0,
             ])

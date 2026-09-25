@@ -16,8 +16,7 @@ final class TransferEquipmentUseCase
 {
     public function __construct(
         private readonly EquipmentRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(TransferEquipmentDTO $dto): void
     {

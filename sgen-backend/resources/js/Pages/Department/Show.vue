@@ -11,6 +11,7 @@ import TabDepartmentInventory from '@/Components/Department/Detail/TabDepartment
 import ModalAssignEmployee from '@/Components/Department/Detail/ModalAssignEmployee.vue';
 import ModalAssignEquipment from '@/Components/Department/Detail/ModalAssignEquipment.vue';
 import ModalEditDepartment from '@/Components/Department/Detail/ModalEditDepartment.vue';
+import { IconUsers, IconDevices, IconPackages, IconTicket } from '@tabler/icons-vue';
 import type {
     DepartmentDetail,
     DepartmentEmployee,
@@ -106,30 +107,42 @@ const handleConfirmUnlink = () => {
                     label="COLABORADORES"
                     :value="department.empleadosCount"
                     subtext="Miembros adscritos"
-                    icon="fa-solid fa-users"
                     color="blue"
-                />
+                >
+                    <template #icon>
+                        <IconUsers :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="EQUIPOS ASIGNADOS"
                     :value="department.equiposCount"
                     subtext="Activos en uso"
-                    icon="fa-solid fa-laptop"
                     color="cyan"
-                />
+                >
+                    <template #icon>
+                        <IconDevices :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="ARTÍCULOS INVENTARIO"
                     :value="department.consumablesCount"
                     subtext="Materiales en stock"
-                    icon="fa-solid fa-boxes-stacked"
                     color="orange"
-                />
+                >
+                    <template #icon>
+                        <IconPackages :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="TICKETS REGISTRADOS"
                     :value="department.ticketsCount"
                     subtext="Casos generados"
-                    icon="fa-solid fa-ticket"
                     color="green"
-                />
+                >
+                    <template #icon>
+                        <IconTicket :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
             </section>
 
             <!-- Main Panel with Tabs -->

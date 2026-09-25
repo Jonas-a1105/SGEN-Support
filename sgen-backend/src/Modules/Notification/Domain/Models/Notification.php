@@ -35,23 +35,58 @@ final class Notification
             message: $message,
             link: $link,
             isRead: false,
-            createdAt: new \DateTimeImmutable()
+            createdAt: new \DateTimeImmutable
         );
     }
 
     public function markAsRead(): void
     {
         $this->isRead = true;
-        $this->readAt = new \DateTimeImmutable();
+        $this->readAt = new \DateTimeImmutable;
     }
 
-    public function id(): ?int { return $this->id; }
-    public function userId(): int { return $this->userId; }
-    public function type(): NotificationType { return $this->type; }
-    public function title(): string { return $this->title; }
-    public function message(): string { return $this->message; }
-    public function link(): ?string { return $this->link; }
-    public function isRead(): bool { return $this->isRead; }
-    public function createdAt(): ?\DateTimeImmutable { return $this->createdAt; }
-    public function readAt(): ?\DateTimeImmutable { return $this->readAt; }
+    public function id(): ?int
+    {
+        return $this->id;
+    }
+
+    public function userId(): int
+    {
+        return $this->userId;
+    }
+
+    public function type(): NotificationType
+    {
+        return $this->type;
+    }
+
+    public function title(): string
+    {
+        return $this->title;
+    }
+
+    public function message(): string
+    {
+        return $this->message;
+    }
+
+    public function link(): ?string
+    {
+        return $this->link;
+    }
+
+    public function isRead(): bool
+    {
+        return $this->isRead;
+    }
+
+    public function createdAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function readAt(): ?\DateTimeImmutable
+    {
+        return $this->readAt;
+    }
 }

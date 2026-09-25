@@ -11,6 +11,8 @@ export function useSupportFilters(tickets: Ref<TicketListItem[]> | { value: Tick
             ? 'pending'
             : queryEstado === 'resuelto' || queryEstado === 'resolved'
             ? 'resolved'
+            : queryEstado === 'cerrado' || queryEstado === 'closed'
+            ? 'closed'
             : queryEstado === 'en_espera' || queryEstado === 'waiting'
             ? 'waiting'
             : queryEstado)
@@ -32,6 +34,7 @@ export function useSupportFilters(tickets: Ref<TicketListItem[]> | { value: Tick
             if (currentFilter === 'process' && status !== 'process') return false;
             if (currentFilter === 'pending' && status !== 'pending') return false;
             if (currentFilter === 'resolved' && status !== 'resolved') return false;
+            if (currentFilter === 'closed' && status !== 'closed' && ticket.status !== 'cerrado') return false;
             if (currentFilter === 'my' && !ticket.is_mine) return false;
 
             // 2. Filtro de búsqueda en vivo

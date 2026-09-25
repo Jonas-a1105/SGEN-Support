@@ -20,8 +20,7 @@ final class EquipmentListItemDTO
         public readonly ?string $location = null,
         public readonly ?string $ipAddress = null,
         public readonly ?int $departmentId = null,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

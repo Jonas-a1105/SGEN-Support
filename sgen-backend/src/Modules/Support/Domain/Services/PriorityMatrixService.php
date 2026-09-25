@@ -15,9 +15,9 @@ final class PriorityMatrixService
     /**
      * Deriva la prioridad del ticket a partir de la matriz Impacto x Urgencia.
      *
-     * @param string $impacto 'bajo' | 'medio' | 'alto'
-     * @param string $urgencia 'baja' | 'media' | 'alta'
-     * @param bool $isVip Si el solicitante tiene condición VIP, la urgencia mínima se eleva a 'media'.
+     * @param  string  $impacto  'bajo' | 'medio' | 'alto'
+     * @param  string  $urgencia  'baja' | 'media' | 'alta'
+     * @param  bool  $isVip  Si el solicitante tiene condición VIP, la urgencia mínima se eleva a 'media'.
      */
     public static function derive(string $impacto, string $urgencia, bool $isVip = false): TicketPriority
     {

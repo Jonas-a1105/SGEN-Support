@@ -29,8 +29,7 @@ const isFontAwesome = (ic?: string): boolean => {
     <div class="base-empty-state">
         <div class="empty-icon-box">
             <slot name="icon">
-                <i v-if="isFontAwesome(icon)" :class="icon" aria-hidden="true" />
-                <svg v-else-if="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <svg v-if="icon && !isFontAwesome(icon)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path :d="icon" />
                 </svg>
                 <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

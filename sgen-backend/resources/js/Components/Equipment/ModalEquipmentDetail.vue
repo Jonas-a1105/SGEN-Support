@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseBadge from '@/Components/UI/BaseBadge.vue';
 import type { BadgeVariant } from '@/Utils/badgeVariants';
@@ -75,7 +76,10 @@ const badgeVariant = computed<BadgeVariant>(() => {
             </div>
 
             <div class="form-actions-row">
-                <button class="btn-submit" @click="emit('close')" type="button">Cerrar Ficha</button>
+                <button class="btn-cancel" @click="emit('close')" type="button">Cerrar</button>
+                <Link :href="`/equipos/${item.numericId}`" class="btn-submit">
+                    Ver Ficha Completa &rarr;
+                </Link>
             </div>
         </div>
     </BaseModal>

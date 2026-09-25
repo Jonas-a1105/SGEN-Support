@@ -24,7 +24,9 @@ final class MaintenanceLifecycleE2ETest extends TestCase
     use DatabaseTransactions;
 
     private User $adminUser;
+
     private int $equipmentId;
+
     private int $technicianId;
 
     protected function setUp(): void
@@ -48,7 +50,7 @@ final class MaintenanceLifecycleE2ETest extends TestCase
         ]);
 
         $this->technicianId = (int) DB::table('empleados')->insertGetId([
-            'cedula' => 'V-' . rand(10000000, 99999999),
+            'cedula' => 'V-'.rand(10000000, 99999999),
             'nombre' => 'Gabriel',
             'apellido' => 'Soporte',
             'email' => 'gabriel.maint@sgen.com',
@@ -59,8 +61,8 @@ final class MaintenanceLifecycleE2ETest extends TestCase
         ]);
 
         $this->equipmentId = (int) DB::table('equipos')->insertGetId([
-            'codigo_inventario' => 'SRV-E2E-' . rand(1000, 9999),
-            'numero_serie' => 'SN-SRV-' . uniqid(),
+            'codigo_inventario' => 'SRV-E2E-'.rand(1000, 9999),
+            'numero_serie' => 'SN-SRV-'.uniqid(),
             'tipo' => 'Servidor',
             'marca' => 'HPE',
             'modelo' => 'ProLiant DL380 Gen10',

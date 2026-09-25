@@ -55,7 +55,7 @@ const props = withDefaults(defineProps<Props>(), {
     emptyTitle: 'No se encontraron registros',
     emptySubtitle: '',
     emptyDescription: '',
-    emptyIcon: 'fa-solid fa-inbox',
+    emptyIcon: '',
     hoverable: true,
     striped: false,
 });

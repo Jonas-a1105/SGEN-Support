@@ -75,11 +75,19 @@ const handleSaveEquipment = (payload: Record<string, unknown>) => {
                 showFormModal.value = false;
                 editingEquipment.value = null;
             },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al actualizar el equipo. Verifique los datos.';
+                alert(firstErr);
+            },
         });
     } else {
         router.post('/equipos', payload, {
             onSuccess: () => {
                 showFormModal.value = false;
+            },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al registrar el equipo. Verifique los datos.';
+                alert(firstErr);
             },
         });
     }
@@ -92,6 +100,10 @@ const handleConfirmDelete = () => {
         onSuccess: () => {
             showDeleteModal.value = false;
             deletingEquipment.value = null;
+        },
+        onError: (errors) => {
+            const firstErr = Object.values(errors)[0] || 'Error al eliminar el equipo.';
+            alert(firstErr);
         },
     });
 };

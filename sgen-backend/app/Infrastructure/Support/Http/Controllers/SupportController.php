@@ -12,8 +12,12 @@ use App\Infrastructure\Support\Http\Requests\ReassignTechnicianRequest;
 use App\Infrastructure\Support\Http\Requests\ReopenTicketRequest;
 use App\Infrastructure\Support\Http\Requests\StoreTicketRequest;
 use App\Infrastructure\Support\Http\Requests\UpdateTicketRequest;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\Support\Application\DTOs\CreateTicketDTO;
@@ -35,9 +39,6 @@ use Modules\Support\Application\UseCases\ResumeTicketUseCase;
 use Modules\Support\Application\UseCases\SaveTicketSignatureUseCase;
 use Modules\Support\Application\UseCases\UpdateTicketUseCase;
 use Modules\Support\Application\UseCases\UploadTicketAttachmentUseCase;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -50,6 +51,7 @@ final class SupportController extends Controller
             $userId = $request->user()?->id;
 
             $data = $useCase->execute($filters, $userId);
+
             return Inertia::render('Support/Index', $data);
         } catch (\Exception $e) {
             return Inertia::render('Error', ['message' => $e->getMessage()]);
@@ -60,6 +62,7 @@ final class SupportController extends Controller
     {
         try {
             $data = $useCase->execute();
+
             return Inertia::render('Support/Create', $data);
         } catch (\Exception $e) {
             return Inertia::render('Error', ['message' => $e->getMessage()]);
@@ -91,7 +94,7 @@ final class SupportController extends Controller
 
             return redirect()->route('soportes.show', $ticketId)->with('success', 'Ticket creado correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al crear el ticket: ' . $e->getMessage());
+            return back()->with('error', 'Error al crear el ticket: '.$e->getMessage());
         }
     }
 
@@ -102,7 +105,7 @@ final class SupportController extends Controller
 
             return back()->with('success', 'Ticket actualizado correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al actualizar el ticket: ' . $e->getMessage());
+            return back()->with('error', 'Error al actualizar el ticket: '.$e->getMessage());
         }
     }
 
@@ -113,7 +116,7 @@ final class SupportController extends Controller
 
             return redirect()->route('soportes.index')->with('success', 'Ticket eliminado satisfactoriamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar el ticket: ' . $e->getMessage());
+            return back()->with('error', 'Error al eliminar el ticket: '.$e->getMessage());
         }
     }
 
@@ -124,35 +127,33 @@ final class SupportController extends Controller
 
             return back()->with('success', 'Técnico reasignado correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al reasignar técnico: ' . $e->getMessage());
+            return back()->with('error', 'Error al reasignar técnico: '.$e->getMessage());
         }
     }
 
     public function addComment(int|string $id, AddCommentRequest $request, AddTicketCommentUseCase $useCase): RedirectResponse
     {
         try {
-            $userId = $request->user()?->id ?? 1;
+            $userId = (int) $request->user()->id;
             $useCase->execute($this->parseTicketId($id), $userId, (string) $request->validated('comentario'), (bool) $request->validated('es_interno', false));
 
             return back()->with('success', 'Comentario añadido.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al añadir comentario: ' . $e->getMessage());
+            return back()->with('error', 'Error al añadir comentario: '.$e->getMessage());
         }
     }
 
     public function addMaterial(int|string $id, AddMaterialRequest $request, AddTicketMaterialUseCase $useCase): RedirectResponse
     {
         try {
-            $userId = $request->user()?->id ?? 1;
+            $userId = (int) $request->user()->id;
             $useCase->execute($this->parseTicketId($id), (int) $request->validated('item_id'), (int) $request->validated('cantidad'), $userId);
 
             return back()->with('success', 'Material registrado en el ticket.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al registrar material: ' . $e->getMessage());
+            return back()->with('error', 'Error al registrar material: '.$e->getMessage());
         }
     }
-
-    
 
     public function pause(int|string $id, Request $request, PauseTicketUseCase $useCase): RedirectResponse
     {
@@ -164,10 +165,10 @@ final class SupportController extends Controller
             $useCase->execute($this->parseTicketId($id), (string) $validated['motivo']);
 
             return back()->with('success', 'Ticket pausado. El tiempo de atención se detendrá.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->with('error', 'El motivo de pausa es obligatorio.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al pausar el ticket: ' . $e->getMessage());
+            return back()->with('error', 'Error al pausar el ticket: '.$e->getMessage());
         }
     }
 
@@ -178,7 +179,7 @@ final class SupportController extends Controller
 
             return back()->with('success', 'Ticket reanudado. El tiempo de atención ha continuado.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al reanudar el ticket: ' . $e->getMessage());
+            return back()->with('error', 'Error al reanudar el ticket: '.$e->getMessage());
         }
     }
 
@@ -191,7 +192,7 @@ final class SupportController extends Controller
 
             return back()->with('success', 'Ticket reabierto satisfactoriamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al reabrir el ticket: ' . $e->getMessage());
+            return back()->with('error', 'Error al reabrir el ticket: '.$e->getMessage());
         }
     }
 
@@ -203,7 +204,7 @@ final class SupportController extends Controller
 
             return back()->with('success', 'Fecha de cierre actualizada.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al actualizar la fecha de cierre: ' . $e->getMessage());
+            return back()->with('error', 'Error al actualizar la fecha de cierre: '.$e->getMessage());
         }
     }
 
@@ -235,7 +236,7 @@ final class SupportController extends Controller
 
         $checksum = hash_file('sha256', $file->getRealPath());
         $path = $file->store('ticket_attachments');
-        $userId = $request->user()?->id ?? 1;
+        $userId = (int) $request->user()->id;
 
         $attachmentId = $useCase->execute(
             $ticketId,
@@ -329,7 +330,7 @@ final class SupportController extends Controller
 
             return back()->with('success', 'Valoración guardada. ¡Gracias por tu opinión!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al guardar valoración: ' . $e->getMessage());
+            return back()->with('error', 'Error al guardar valoración: '.$e->getMessage());
         }
     }
 
@@ -344,7 +345,7 @@ final class SupportController extends Controller
 
             return back()->with('success', 'Firma registrada exitosamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al registrar la firma: ' . $e->getMessage());
+            return back()->with('error', 'Error al registrar la firma: '.$e->getMessage());
         }
     }
 
@@ -356,4 +357,3 @@ final class SupportController extends Controller
         return $useCase->execute($ticketId);
     }
 }
-    

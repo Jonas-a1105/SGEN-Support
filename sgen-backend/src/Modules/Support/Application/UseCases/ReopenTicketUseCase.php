@@ -14,8 +14,7 @@ final class ReopenTicketUseCase
     public function __construct(
         private readonly SupportRepositoryInterface $repository,
         private readonly CreateNotificationUseCase $notificationUseCase
-    ) {
-    }
+    ) {}
 
     public function execute(int $ticketId, string $motivo, ?int $userId = null): bool
     {

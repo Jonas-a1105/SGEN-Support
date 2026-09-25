@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 const statusBadgeVariant = computed<BadgeVariant>(() => {
     const raw = (props.ticket.status_variant || props.ticket.status || '').toLowerCase();
+    if (raw.includes('closed') || raw.includes('cerrado')) return 'neutral';
     if (raw.includes('resolved') || raw.includes('resuelto')) return 'success';
     if (raw.includes('progress') || raw.includes('proceso')) return 'info';
     if (raw.includes('pending') || raw.includes('pendiente')) return 'warning';

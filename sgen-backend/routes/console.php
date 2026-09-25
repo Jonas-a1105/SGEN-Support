@@ -1,9 +1,11 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Modules\Maintenance\Domain\Services\RecurrenceEngine;
+use Modules\Support\Domain\Enums\TicketStatus;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -11,10 +13,10 @@ Artisan::command('inspire', function () {
 
 Artisan::command('sla:verify', function () {
     $this->info('Verificando vencimientos de SLA de tickets...');
-    
+
     $now = Carbon::now();
     $tickets = DB::table('soportes')
-        ->where('estado', '!=', 'resuelto')
+        ->whereNotIn('estado', TicketStatus::finalValues())
         ->whereNotNull('fecha_vencimiento')
         ->where('fecha_vencimiento', '<=', $now)
         ->where('notificacion_vencimiento_enviada', false)
@@ -22,7 +24,7 @@ Artisan::command('sla:verify', function () {
 
     foreach ($tickets as $ticket) {
         $this->info("Ticket T-{$ticket->id} ha superado el tiempo de resolución SLA. Enviando alertas...");
-        
+
         // Registrar notificación en base de datos
         DB::table('notificaciones')->insert([
             'usuario_id' => $ticket->empleado_id ?? 38,
@@ -47,11 +49,10 @@ Artisan::command('sla:verify', function () {
     $this->info('Verificación completada.');
 })->purpose('Verifica los tiempos de SLA vencidos en tickets y genera notificaciones');
 
-
 Artisan::command('mantenimientos:materializar', function () {
     $this->info('Materializando �rdenes recurrentes faltantes...');
 
-    $engine = new \Modules\Maintenance\Domain\Services\RecurrenceEngine();
+    $engine = new RecurrenceEngine;
 
     $candidates = DB::table('mantenimientos')
         ->whereNotIn('estado', ['cancelado'])

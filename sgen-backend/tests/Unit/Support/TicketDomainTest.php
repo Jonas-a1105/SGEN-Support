@@ -96,10 +96,57 @@ final class TicketDomainTest extends TestCase
             priority: TicketPriority::ALTA
         );
 
+        // Un ticket resuelto no puede retroceder directamente a pendiente.
         $ticket->changeStatus(TicketStatus::RESUELTO);
 
         $this->expectException(InvalidTicketStatusTransitionException::class);
+        $ticket->changeStatus(TicketStatus::PENDIENTE);
+    }
+
+    public function test_closed_ticket_is_terminal_and_cannot_reopen(): void
+    {
+        $ticket = Ticket::create(
+            title: 'Incidencia de correo',
+            description: 'No envía correos a clientes',
+            priority: TicketPriority::ALTA
+        );
+
+        $ticket->changeStatus(TicketStatus::RESUELTO);
+        $ticket->close();
+        $this->assertSame(TicketStatus::CERRADO, $ticket->status());
+        $this->assertFalse($ticket->isEditable());
+
+        $this->expectException(InvalidTicketStatusTransitionException::class);
+        $ticket->reopen('La falla regresó una semana después del cierre.');
+    }
+
+    public function test_resolved_ticket_can_reopen_with_motive(): void
+    {
+        $ticket = Ticket::create(
+            title: 'Impresora atascada',
+            description: 'El rodillo se traba al imprimir',
+            priority: TicketPriority::MEDIA
+        );
+
         $ticket->changeStatus(TicketStatus::EN_PROCESO);
+        $ticket->changeStatus(TicketStatus::RESUELTO);
+        $ticket->reopen('La falla se volvió a presentar al día siguiente.');
+
+        $this->assertSame(TicketStatus::EN_PROCESO, $ticket->status());
+    }
+
+    public function test_reopen_requires_a_motive(): void
+    {
+        $ticket = Ticket::create(
+            title: 'Monitor parpadea',
+            description: 'La pantalla parpadea intermitentemente',
+            priority: TicketPriority::BAJA
+        );
+
+        $ticket->changeStatus(TicketStatus::RESUELTO);
+
+        $this->expectException(InvalidArgumentException::class);
+        $ticket->reopen('   ');
     }
 
     public function test_can_rate_ticket_with_valid_score(): void

@@ -17,7 +17,7 @@ interface EquipmentRepositoryInterface
     public function getKpis(): EquipmentKpisDTO;
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return EquipmentListItemDTO[]
      */
     public function list(array $filters = []): array;

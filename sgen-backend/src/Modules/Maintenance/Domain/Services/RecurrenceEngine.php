@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Maintenance\Domain\Services;
 
 use Carbon\Carbon;
-use Modules\Maintenance\Domain\Enums\MaintenanceFrequency;
 
 /**
  * Motor de recurrencia del CMMS:
@@ -33,6 +32,7 @@ final class RecurrenceEngine
 
         if ($calc->isPast()) {
             $now = Carbon::now();
+
             return match ($frecuencia) {
                 'mensual' => $now->copy()->addMonth(),
                 'trimestral' => $now->copy()->addMonths(3),

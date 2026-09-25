@@ -14,7 +14,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Equipment\Application\DTOs\CreateEquipmentDTO;
 use Modules\Equipment\Application\DTOs\UpdateEquipmentDTO;
 use Modules\Equipment\Application\UseCases\CreateEquipmentUseCase;
@@ -26,6 +25,7 @@ use Modules\Equipment\Application\UseCases\GetEquipmentDetailUseCase;
 use Modules\Equipment\Application\UseCases\RegisterEquipmentUseCase;
 use Modules\Equipment\Application\UseCases\TransferEquipmentUseCase;
 use Modules\Equipment\Application\UseCases\UpdateEquipmentUseCase;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class EquipmentController extends Controller
 {

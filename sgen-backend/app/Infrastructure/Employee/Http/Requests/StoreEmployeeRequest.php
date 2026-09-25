@@ -10,7 +10,9 @@ final class StoreEmployeeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user !== null && $user->can('personal.manage');
     }
 
     /**

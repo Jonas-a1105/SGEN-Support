@@ -12,6 +12,9 @@ use Modules\Support\Application\DTOs\TicketDetailDTO;
 use Modules\Support\Application\DTOs\UpdateTicketDTO;
 use Modules\Support\Application\Mappers\TicketDetailMapper;
 use Modules\Support\Application\Mappers\TicketListItemMapper;
+use Modules\Support\Domain\Enums\TicketStatus;
+use Modules\Support\Domain\Exceptions\InvalidTicketStatusTransitionException;
+use Modules\Support\Domain\Exceptions\TicketNotFoundException;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 
 final class EloquentSupportRepository implements SupportRepositoryInterface
@@ -20,7 +23,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
     {
         $criticalPending = (int) DB::table('soportes')
             ->where('prioridad', 'critica')
-            ->where('estado', '!=', 'resuelto')
+            ->whereNotIn('estado', TicketStatus::finalValues())
             ->count();
 
         $generalQueue = (int) DB::table('soportes')
@@ -32,7 +35,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             ->count();
 
         $resolvedTickets = (int) DB::table('soportes')
-            ->where('estado', 'resuelto')
+            ->whereIn('estado', TicketStatus::finalValues())
             ->count();
 
         $totalTickets = (int) DB::table('soportes')->count();
@@ -44,7 +47,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             if ($empId) {
                 $myAssignments = (int) DB::table('soportes')
                     ->where('empleado_id', $empId)
-                    ->where('estado', '!=', 'resuelto')
+                    ->whereNotIn('estado', TicketStatus::finalValues())
                     ->count();
             }
         }
@@ -97,12 +100,14 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 $query->where('soportes.estado', 'pendiente');
             } elseif ($estado === 'resuelto' || $estado === 'resolved') {
                 $query->where('soportes.estado', 'resuelto');
+            } elseif ($estado === 'cerrado' || $estado === 'closed') {
+                $query->where('soportes.estado', 'cerrado');
             } elseif ($estado === 'en_espera' || $estado === 'espera' || $estado === 'waiting') {
                 $query->where('soportes.estado', 'en_espera');
             } elseif ($estado === 'critica' || $estado === 'critical') {
                 $query->where(function ($q) {
                     $q->where('soportes.prioridad', 'critica')
-                      ->orWhere('soportes.estado', 'pendiente');
+                        ->orWhere('soportes.estado', 'pendiente');
                 });
             } else {
                 $query->where('soportes.estado', $estado);
@@ -111,16 +116,16 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
 
         // Búsqueda de texto
         if (! empty($filters['search'])) {
-            $search = '%' . trim((string) $filters['search']) . '%';
+            $search = '%'.trim((string) $filters['search']).'%';
             $query->where(function ($q) use ($search) {
                 $q->where('soportes.titulo', 'ILIKE', $search)
-                  ->orWhere('soportes.descripcion', 'ILIKE', $search)
-                  ->orWhere('tech.nombre', 'ILIKE', $search)
-                  ->orWhere('tech.apellido', 'ILIKE', $search)
-                  ->orWhere('requester.nombre', 'ILIKE', $search)
-                  ->orWhere('requester.apellido', 'ILIKE', $search)
-                  ->orWhere('equipos.numero_serie', 'ILIKE', $search)
-                  ->orWhere('departamentos.nombre', 'ILIKE', $search);
+                    ->orWhere('soportes.descripcion', 'ILIKE', $search)
+                    ->orWhere('tech.nombre', 'ILIKE', $search)
+                    ->orWhere('tech.apellido', 'ILIKE', $search)
+                    ->orWhere('requester.nombre', 'ILIKE', $search)
+                    ->orWhere('requester.apellido', 'ILIKE', $search)
+                    ->orWhere('equipos.numero_serie', 'ILIKE', $search)
+                    ->orWhere('departamentos.nombre', 'ILIKE', $search);
             });
         }
 
@@ -242,6 +247,18 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             $payload['prioridad'] = $dto->prioridad;
         }
         if ($dto->estado !== null) {
+            $currentRow = DB::table('soportes')->where('id', $id)->first(['id', 'estado']);
+            if ($currentRow === null) {
+                throw TicketNotFoundException::withId($id);
+            }
+
+            $current = TicketStatus::tryFromString((string) $currentRow->estado);
+            $target = TicketStatus::tryFromString((string) $dto->estado);
+
+            if (! $current->canTransitionTo($target)) {
+                throw InvalidTicketStatusTransitionException::from($current, $target);
+            }
+
             $payload['estado'] = $dto->estado;
             if ($dto->estado === 'resuelto') {
                 $now = Carbon::now();
@@ -256,9 +273,9 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                     $payload['tiempo_atencion_minutos'] = max(1, $elapsed - $paused);
                 }
 
-                if (!empty($dto->solucion)) {
+                if (! empty($dto->solucion)) {
                     $payload['solucion'] = $dto->solucion;
-                    $actingUserId = auth()->id() ?? (int) (DB::table('usuarios')->value('id') ?? 1);
+                    $actingUserId = (int) auth()->id();
                     DB::table('ticket_comentarios')->insert([
                         'ticket_id' => $id,
                         'usuario_id' => $actingUserId,
@@ -433,8 +450,23 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
     public function reopenTicket(int $ticketId, string $motivo, ?int $userId = null): bool
     {
         return DB::transaction(function () use ($ticketId, $motivo, $userId): bool {
+            $ticket = DB::table('soportes')->where('id', $ticketId)->first(['id', 'estado']);
+
+            if ($ticket === null) {
+                throw TicketNotFoundException::withId($ticketId);
+            }
+
+            // La legalidad de la transición la dicta la máquina de estados
+            // del dominio: un ticket CERRADO jamás puede reabrirse.
+            $current = TicketStatus::tryFromString((string) $ticket->estado);
+
+            if (! $current->canTransitionTo(TicketStatus::EN_PROCESO)) {
+                throw InvalidTicketStatusTransitionException::from($current, TicketStatus::EN_PROCESO);
+            }
+
             $updated = DB::table('soportes')->where('id', $ticketId)->update([
-                'estado' => 'en_proceso',
+                'estado' => TicketStatus::EN_PROCESO->value,
+                'fecha_cierre' => null,
                 'motivo_pausa' => null,
                 'updated_at' => Carbon::now(),
             ]) > 0;
@@ -442,7 +474,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             if ($updated) {
                 DB::table('ticket_comentarios')->insert([
                     'ticket_id' => $ticketId,
-                    'usuario_id' => $userId ?? auth()->id() ?? (int) (DB::table('usuarios')->value('id') ?? 1),
+                    'usuario_id' => (int) ($userId ?? auth()->id()),
                     'comentario' => "Ticket REABIERTO. Motivo: {$motivo}",
                     'es_interno' => false,
                     'fecha' => Carbon::now(),
@@ -461,11 +493,11 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             ->get()
             ->map(fn ($e) => [
                 'id' => $e->id,
-                'name' => trim($e->nombre . ' ' . ($e->apellido ?? '')),
+                'name' => trim($e->nombre.' '.($e->apellido ?? '')),
                 'email' => $e->email ?? '',
                 'initial' => strtoupper(substr($e->nombre, 0, 1)),
                 'specialty' => 'Soporte Técnico',
-                'active_tickets' => (int) DB::table('soportes')->where('empleado_id', $e->id)->where('estado', '!=', 'resuelto')->count(),
+                'active_tickets' => (int) DB::table('soportes')->where('empleado_id', $e->id)->whereNotIn('estado', TicketStatus::finalValues())->count(),
             ])
             ->all();
 
@@ -491,7 +523,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 'type' => ucfirst($eq->type),
                 'model' => $eq->model ?? 'Genérico',
                 'department' => $eq->department ?? 'Sin departamento',
-                'assigned_to' => trim(($eq->assigned_nombre ?? '') . ' ' . ($eq->assigned_apellido ?? '')) ?: 'Sin asignar',
+                'assigned_to' => trim(($eq->assigned_nombre ?? '').' '.($eq->assigned_apellido ?? '')) ?: 'Sin asignar',
             ])
             ->all();
 

@@ -41,7 +41,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return EquipmentListItemDTO[]
      */
     public function list(array $filters = []): array
@@ -58,24 +58,24 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             ->orderBy('equipos.id', 'desc');
 
         // Filtro por estado
-        if (!empty($filters['estado']) && $filters['estado'] !== 'all') {
+        if (! empty($filters['estado']) && $filters['estado'] !== 'all') {
             $statusEnum = EquipmentStatus::tryFrom($filters['estado']) ?? EquipmentStatus::fromLabel($filters['estado']);
             $query->where('equipos.estado', $statusEnum->value);
         }
 
         // Filtro por departamento
-        if (!empty($filters['departamento_id'])) {
+        if (! empty($filters['departamento_id'])) {
             $query->where('equipos.departamento_id', (int) $filters['departamento_id']);
         }
 
         // Filtro por tipo
-        if (!empty($filters['tipo'])) {
-            $query->where('equipos.tipo', 'ilike', '%' . $filters['tipo'] . '%');
+        if (! empty($filters['tipo'])) {
+            $query->where('equipos.tipo', 'ilike', '%'.$filters['tipo'].'%');
         }
 
         // Búsqueda general
-        if (!empty($filters['search'])) {
-            $term = '%' . trim((string) $filters['search']) . '%';
+        if (! empty($filters['search'])) {
+            $term = '%'.trim((string) $filters['search']).'%';
             $query->where(function ($q) use ($term) {
                 $q->where('equipos.codigo_inventario', 'ilike', $term)
                     ->orWhere('equipos.numero_serie', 'ilike', $term)
@@ -90,7 +90,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         }
 
         return $query->get()
-            ->map(fn($row) => EquipmentListItemMapper::fromRow($row))
+            ->map(fn ($row) => EquipmentListItemMapper::fromRow($row))
             ->all();
     }
 
@@ -138,7 +138,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         $warrantyStatus = 'expired';
         $warrantyRemaining = null;
 
-        if (!empty($row->fecha_compra) && !empty($row->garantia)) {
+        if (! empty($row->fecha_compra) && ! empty($row->garantia)) {
             $start = Carbon::parse($row->fecha_compra)->timestamp;
             $end = Carbon::parse($row->garantia)->timestamp;
             $now = Carbon::now()->timestamp;
@@ -151,8 +151,8 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
                     $warrantyStatus = $warrantyPercent > 33 ? 'active' : 'warning';
                     $daysRemaining = (int) ceil(($end - $now) / 86400);
                     $warrantyRemaining = $daysRemaining > 365
-                        ? round($daysRemaining / 365, 1) . ' años'
-                        : round($daysRemaining / 30) . ' meses';
+                        ? round($daysRemaining / 365, 1).' años'
+                        : round($daysRemaining / 30).' meses';
                 }
             }
         }
@@ -167,7 +167,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             ->map(function ($s) {
                 return [
                     'id' => (int) $s->id,
-                    'titulo' => (string) ($s->titulo ?? 'Ticket #' . $s->id),
+                    'titulo' => (string) ($s->titulo ?? 'Ticket #'.$s->id),
                     'descripcion' => (string) ($s->descripcion ?? ''),
                     'estado' => (string) ($s->estado ?? 'pendiente'),
                     'prioridad' => (string) ($s->prioridad ?? 'media'),
@@ -202,7 +202,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             ->select(['id', 'nombre'])
             ->orderBy('nombre')
             ->get()
-            ->map(fn($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
+            ->map(fn ($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
             ->all();
 
         // Employee options
@@ -211,9 +211,9 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             ->whereNull('deleted_at')
             ->orderBy('nombre')
             ->get()
-            ->map(fn($e) => [
+            ->map(fn ($e) => [
                 'id' => (int) $e->id,
-                'nombre' => trim($e->nombre . ' ' . ($e->apellido ?? '')),
+                'nombre' => trim($e->nombre.' '.($e->apellido ?? '')),
                 'cargo' => (string) ($e->cargo ?? 'Personal'),
             ])
             ->all();
@@ -273,7 +273,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         $duplicate = DB::table('equipos')
             ->where(function ($q) use ($code, $dto) {
                 $q->where('codigo_inventario', $code);
-                if (!empty($dto->serialNumber)) {
+                if (! empty($dto->serialNumber)) {
                     $q->orWhere('numero_serie', $dto->serialNumber);
                 }
             })
@@ -282,7 +282,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         if ($duplicate) {
             throw new \RuntimeException(
                 "Ya existe un equipo con el código '{$code}'"
-                . (!empty($dto->serialNumber) ? " o el serial '{$dto->serialNumber}'" : '') . '.'
+                .(! empty($dto->serialNumber) ? " o el serial '{$dto->serialNumber}'" : '').'.'
             );
         }
 
@@ -362,7 +362,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
     public function update(int $id, UpdateEquipmentDTO $dto): void
     {
         $exists = DB::table('equipos')->where('id', $id)->exists();
-        if (!$exists) {
+        if (! $exists) {
             throw EquipmentNotFoundException::withId($id);
         }
 
@@ -451,16 +451,16 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             ->select(['id', 'nombre'])
             ->orderBy('nombre')
             ->get()
-            ->map(fn($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
+            ->map(fn ($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
             ->all();
 
         $employees = DB::table('empleados')
             ->select(['id', 'nombre', 'apellido', 'cargo'])
             ->orderBy('nombre')
             ->get()
-            ->map(fn($e) => [
+            ->map(fn ($e) => [
                 'id' => (int) $e->id,
-                'nombre_completo' => trim($e->nombre . ' ' . ($e->apellido ?? '')),
+                'nombre_completo' => trim($e->nombre.' '.($e->apellido ?? '')),
                 'cargo' => $e->cargo,
             ])
             ->all();

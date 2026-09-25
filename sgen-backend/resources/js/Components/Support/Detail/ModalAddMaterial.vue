@@ -4,6 +4,7 @@ import { router } from '@inertiajs/vue3';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import type { InventoryItemOption } from '@/types/support';
+import { IconAlertTriangle } from '@tabler/icons-vue';
 
 interface Props {
     isOpen: boolean;
@@ -115,7 +116,8 @@ const handleSubmit = () => {
                     Stock en Bodega: <strong>{{ selectedItem.stock }} uds</strong>
                 </span>
                 <span v-if="selectedItem.stock <= 0" class="stock-alert">
-                    ⚠️ Sin existencias suficientes para consumir
+                    <IconAlertTriangle :size="14" stroke-width="2" class="alert-icon-inline" />
+                    <span>Sin existencias suficientes para consumir</span>
                 </span>
             </div>
 
@@ -232,6 +234,9 @@ const handleSubmit = () => {
     color: var(--danger);
 }
 .stock-alert {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     color: var(--danger);
     font-weight: 600;
 }

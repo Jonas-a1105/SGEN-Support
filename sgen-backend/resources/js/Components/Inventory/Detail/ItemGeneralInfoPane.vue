@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Product } from '@/Types/inventory';
 import BaseCard from '@/Components/UI/BaseCard.vue';
+import { IconPackage } from '@tabler/icons-vue';
 
 defineProps<{
     product: Product;
@@ -10,7 +11,7 @@ defineProps<{
 <template>
     <BaseCard padding="lg">
         <div class="panel-header-inline">
-            <span class="icon-specs-glyph">📦</span>
+            <IconPackage :size="18" stroke-width="1.8" class="icon-specs-glyph" />
             <h3 class="panel-title">Información General</h3>
         </div>
 

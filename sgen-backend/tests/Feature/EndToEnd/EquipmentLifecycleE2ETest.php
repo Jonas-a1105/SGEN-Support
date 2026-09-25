@@ -27,8 +27,11 @@ final class EquipmentLifecycleE2ETest extends TestCase
     use DatabaseTransactions;
 
     private User $adminUser;
+
     private int $deptAId;
+
     private int $deptBId;
+
     private int $employeeId;
 
     protected function setUp(): void
@@ -58,7 +61,7 @@ final class EquipmentLifecycleE2ETest extends TestCase
         ]);
 
         $this->employeeId = (int) DB::table('empleados')->insertGetId([
-            'cedula' => 'V-' . rand(10000000, 99999999),
+            'cedula' => 'V-'.rand(10000000, 99999999),
             'nombre' => 'Patricia',
             'apellido' => 'Sosa',
             'email' => 'patricia.e2e@sgen.com',
@@ -71,8 +74,8 @@ final class EquipmentLifecycleE2ETest extends TestCase
 
     public function test_complete_equipment_lifecycle(): void
     {
-        $code = 'EQ-E2E-PC-' . rand(1000, 9999);
-        $serial = 'SN-E2E-PC-' . uniqid();
+        $code = 'EQ-E2E-PC-'.rand(1000, 9999);
+        $serial = 'SN-E2E-PC-'.uniqid();
 
         // 1. Alta de equipo tecnológico
         $payload = [

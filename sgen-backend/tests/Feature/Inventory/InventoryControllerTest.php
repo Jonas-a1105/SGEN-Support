@@ -7,6 +7,7 @@ namespace Tests\Feature\Inventory;
 use App\Infrastructure\Inventory\Persistence\Eloquent\Models\EloquentProductModel;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -161,14 +162,14 @@ final class InventoryControllerTest extends TestCase
             'valor_compra' => 45.0,
         ]);
 
-        $dept1 = (int) \Illuminate\Support\Facades\DB::table('departamentos')->insertGetId([
-            'nombre' => 'Almacén Central ' . uniqid(),
+        $dept1 = (int) DB::table('departamentos')->insertGetId([
+            'nombre' => 'Almacén Central '.uniqid(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        $dept2 = (int) \Illuminate\Support\Facades\DB::table('departamentos')->insertGetId([
-            'nombre' => 'Taller TI ' . uniqid(),
+        $dept2 = (int) DB::table('departamentos')->insertGetId([
+            'nombre' => 'Taller TI '.uniqid(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

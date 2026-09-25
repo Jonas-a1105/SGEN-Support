@@ -7,6 +7,7 @@ namespace App\Infrastructure\Inventory\Persistence\Repositories;
 use App\Infrastructure\Inventory\Persistence\Eloquent\Models\EloquentProductModel;
 use App\Infrastructure\Inventory\Persistence\Eloquent\Models\EloquentStockMovementModel;
 use Illuminate\Support\Facades\DB;
+use Modules\Inventory\Application\DTOs\TransferStockDTO;
 use Modules\Inventory\Domain\Enums\ProductStatus;
 use Modules\Inventory\Domain\Models\Product;
 use Modules\Inventory\Domain\Ports\ProductRepositoryInterface;
@@ -189,7 +190,7 @@ final class PostgresProductRepository implements ProductRepositoryInterface
         ];
     }
 
-    public function transferStock(\Modules\Inventory\Application\DTOs\TransferStockDTO $dto, int $userId): void
+    public function transferStock(TransferStockDTO $dto, int $userId): void
     {
         DB::transaction(function () use ($dto, $userId): void {
             if ($dto->origenId !== null) {

@@ -15,9 +15,13 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
     use DatabaseTransactions;
 
     private User $user;
+
     private int $empleadoId;
+
     private int $techUserId;
+
     private int $requesterUserId;
+
     private int $equipmentId;
 
     protected function setUp(): void
@@ -35,7 +39,7 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
 
         // Crear departamento
         $deptId = (int) DB::table('departamentos')->insertGetId([
-            'nombre' => 'Tecnología e Infraestructura ' . uniqid(),
+            'nombre' => 'Tecnología e Infraestructura '.uniqid(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
@@ -44,8 +48,8 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
         $this->empleadoId = (int) DB::table('empleados')->insertGetId([
             'nombre' => 'Carlos',
             'apellido' => 'Técnico',
-            'email' => 'carlos.tech.' . uniqid() . '@empresa.com',
-            'cedula' => 'V-' . rand(10000000, 99999999),
+            'email' => 'carlos.tech.'.uniqid().'@empresa.com',
+            'cedula' => 'V-'.rand(10000000, 99999999),
             'cargo' => 'Técnico de Soporte',
             'departamento_id' => $deptId,
             'rol' => 'tecnico',
@@ -55,7 +59,7 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
 
         // Crear usuario vinculado al técnico
         $techUser = User::firstOrCreate(
-            ['username' => 'carlos_tech_' . uniqid()],
+            ['username' => 'carlos_tech_'.uniqid()],
             [
                 'password' => bcrypt('secret'),
                 'rol' => 'tecnico',
@@ -67,7 +71,7 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
 
         // Crear usuario solicitante
         $requesterUser = User::firstOrCreate(
-            ['username' => 'ana_solicitante_' . uniqid()],
+            ['username' => 'ana_solicitante_'.uniqid()],
             [
                 'password' => bcrypt('secret'),
                 'rol' => 'consultor',
@@ -82,8 +86,8 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
             $this->equipmentId = $equipment->id;
         } else {
             $this->equipmentId = (int) DB::table('equipos')->insertGetId([
-                'codigo_inventario' => 'EQ-TEST-' . uniqid(),
-                'numero_serie' => 'SN-' . uniqid(),
+                'codigo_inventario' => 'EQ-TEST-'.uniqid(),
+                'numero_serie' => 'SN-'.uniqid(),
                 'tipo' => 'computadora',
                 'modelo' => 'Dell Latitude',
                 'created_at' => Carbon::now(),

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import type { Product, StockLocation } from '@/Types/inventory';
 import { BaseBadge, BaseCard, BaseDataTable, type DataTableColumn } from '@/Components/UI';
+import { IconMapPin } from '@tabler/icons-vue';
 
 const props = withDefaults(
     defineProps<{
@@ -39,7 +40,7 @@ const tableItems = computed(() => {
     if (!term || 'almacén central (principal)'.includes(term)) {
         list.push({
             id: 'central',
-            ubicacion: '🏢 Almacén Central (Principal)',
+            ubicacion: 'Almacén Central (Principal)',
             tipo: 'Central',
             stock: props.item.current_stock,
             isPrimary: true,
@@ -68,7 +69,7 @@ const tableItems = computed(() => {
         <div class="distribution-header-wrap">
             <div>
                 <div class="panel-header-inline">
-                    <span class="icon-location-glyph">📍</span>
+                    <IconMapPin :size="18" stroke-width="1.8" class="icon-location-glyph" />
                     <h3 class="panel-title">Stock por Ubicación</h3>
                 </div>
                 <span class="distribution-header-sub">
@@ -81,7 +82,7 @@ const tableItems = computed(() => {
                     type="text"
                     class="form-input distribution-search-input"
                     id="searchDistributionInput"
-                    placeholder="🔍 Filtrar sede..."
+                    placeholder="Filtrar sede..."
                     @input="emit('update:search', ($event.target as HTMLInputElement).value)"
                 />
             </div>

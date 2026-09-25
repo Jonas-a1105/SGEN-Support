@@ -62,11 +62,19 @@ function handleSaveUser(payload: {
             onSuccess: () => {
                 activeView.value = 'directory';
             },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al actualizar el usuario.';
+                alert(firstErr);
+            },
         });
     } else {
         router.post('/usuarios', payload, {
             onSuccess: () => {
                 activeView.value = 'directory';
+            },
+            onError: (errors) => {
+                const firstErr = Object.values(errors)[0] || 'Error al registrar el usuario.';
+                alert(firstErr);
             },
         });
     }
@@ -76,6 +84,10 @@ function handleConfirmDelete(id: number) {
     router.delete(`/usuarios/${id}`, {
         onSuccess: () => {
             showDeleteModal.value = false;
+        },
+        onError: (errors) => {
+            const firstErr = Object.values(errors)[0] || 'Error al eliminar el usuario.';
+            alert(firstErr);
         },
     });
 }

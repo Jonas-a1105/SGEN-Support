@@ -15,6 +15,7 @@ final class MaintenanceControllerTest extends TestCase
     use DatabaseTransactions;
 
     private int $equipmentId;
+
     private int $technicianId;
 
     protected function setUp(): void
@@ -33,15 +34,15 @@ final class MaintenanceControllerTest extends TestCase
 
         // Crear departamento de prueba si no existe
         $deptId = DB::table('departamentos')->insertGetId([
-            'nombre' => 'Dpto Test Maint ' . uniqid(),
+            'nombre' => 'Dpto Test Maint '.uniqid(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         // Crear equipo de prueba
         $this->equipmentId = (int) DB::table('equipos')->insertGetId([
-            'codigo_inventario' => 'EQ-TEST-' . rand(1000, 9999),
-            'numero_serie' => 'SN-TEST-' . uniqid(),
+            'codigo_inventario' => 'EQ-TEST-'.rand(1000, 9999),
+            'numero_serie' => 'SN-TEST-'.uniqid(),
             'tipo' => 'computadora',
             'modelo' => 'Dell Optiplex 7090',
             'departamento_id' => $deptId,
@@ -54,7 +55,7 @@ final class MaintenanceControllerTest extends TestCase
         $this->technicianId = (int) DB::table('empleados')->insertGetId([
             'nombre' => 'Tecnico',
             'apellido' => 'Test',
-            'email' => 'tecnico.test' . rand(100, 999) . '@sgen.test',
+            'email' => 'tecnico.test'.rand(100, 999).'@sgen.test',
             'rol' => 'tecnico',
             'departamento_id' => $deptId,
             'created_at' => now(),
@@ -136,9 +137,9 @@ final class MaintenanceControllerTest extends TestCase
 
         if (! $this->checkMaintenanceCompleted($maintId)) {
             $this->fail(
-                'Complete failed. Session error: ' .
-                json_encode(session('error'), JSON_UNESCAPED_UNICODE) .
-                ' | Session success: ' .
+                'Complete failed. Session error: '.
+                json_encode(session('error'), JSON_UNESCAPED_UNICODE).
+                ' | Session success: '.
                 json_encode(session('success'), JSON_UNESCAPED_UNICODE)
             );
         }

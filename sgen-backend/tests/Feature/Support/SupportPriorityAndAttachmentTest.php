@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Support;
 
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +18,7 @@ final class SupportPriorityAndAttachmentTest extends TestCase
     use DatabaseTransactions;
 
     private User $user;
+
     private int $equipmentId;
 
     protected function setUp(): void
@@ -42,8 +42,8 @@ final class SupportPriorityAndAttachmentTest extends TestCase
             $this->equipmentId = $equipment->id;
         } else {
             $this->equipmentId = (int) DB::table('equipos')->insertGetId([
-                'codigo_inventario' => 'EQ-TEST-ATT-' . uniqid(),
-                'numero_serie' => 'SN-ATT-' . uniqid(),
+                'codigo_inventario' => 'EQ-TEST-ATT-'.uniqid(),
+                'numero_serie' => 'SN-ATT-'.uniqid(),
                 'tipo' => 'laptop',
                 'marca' => 'Dell',
                 'modelo' => 'Latitude 5420',

@@ -2,6 +2,7 @@
 import { onMounted } from 'vue';
 import { useTheme } from '@/Composables/useTheme';
 import NotificationBellDropdown from '@/Components/Notifications/NotificationBellDropdown.vue';
+import { IconSquare, IconPalette, IconSun, IconMoon } from '@tabler/icons-vue';
 
 defineProps<{ title?: string }>();
 
@@ -36,16 +37,16 @@ onMounted(() => {
                     <NotificationBellDropdown />
 
                     <button class="border-control hide-mobile" type="button" @click="toggleBorderWidth" :title="'Alternar grosor de bordes (' + borderWidth + ')'">
-                        <span class="tool-icon">⬚</span>
+                        <IconSquare :size="15" stroke-width="1.8" class="tool-icon" />
                         <span>Borde: {{ borderWidth }}</span>
                     </button>
                     <label class="color-control hide-mobile" title="Color de acento">
-                        <span class="tool-icon">●</span>
+                        <IconPalette :size="15" stroke-width="1.8" class="tool-icon" />
                         <span>Acento</span>
                         <input type="color" :value="accentColor" @input="onAccentInput" />
                     </label>
                     <button class="theme-toggle" type="button" @click="toggleTheme" :title="'Alternar modo'">
-                        <span class="tool-icon">{{ theme === 'dark' ? '☼' : '☾' }}</span>
+                        <component :is="theme === 'dark' ? IconSun : IconMoon" :size="15" stroke-width="1.8" class="tool-icon" />
                         <span>{{ theme === 'dark' ? 'Claro' : 'Oscuro' }}</span>
                     </button>
                 </div>

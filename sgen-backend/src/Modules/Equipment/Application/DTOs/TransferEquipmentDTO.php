@@ -14,11 +14,10 @@ final class TransferEquipmentDTO
         public readonly int $departamentoOrigenId,
         public readonly int $departamentoDestinoId,
         public readonly ?string $motivo = null,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {

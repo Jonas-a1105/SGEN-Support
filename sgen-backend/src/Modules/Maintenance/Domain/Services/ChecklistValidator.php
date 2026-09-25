@@ -11,7 +11,7 @@ namespace Modules\Maintenance\Domain\Services;
 final class ChecklistValidator
 {
     /**
-     * @param mixed $checklist Valor crudo de la columna checklist (JSON string o array ya decodificado).
+     * @param  mixed  $checklist  Valor crudo de la columna checklist (JSON string o array ya decodificado).
      * @return array<int, array{tarea: string, completada: bool, observacion: ?string}>
      */
     public function normalize(mixed $checklist): array
@@ -21,13 +21,13 @@ final class ChecklistValidator
             $checklist = is_array($decoded) ? $decoded : [];
         }
 
-        if (!is_array($checklist)) {
+        if (! is_array($checklist)) {
             return [];
         }
 
         $tasks = [];
         foreach ($checklist as $entry) {
-            if (!is_array($entry) || !isset($entry['tarea'])) {
+            if (! is_array($entry) || ! isset($entry['tarea'])) {
                 continue;
             }
 

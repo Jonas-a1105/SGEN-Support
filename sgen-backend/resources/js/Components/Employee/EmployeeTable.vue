@@ -67,11 +67,12 @@ const columns: DataTableColumn[] = [
             </template>
 
             <template #cell-actions="{ item }">
-                <div class="table-actions-group">
+                <div class="table-actions-group" @click.stop>
                     <Link
                         :href="`/personal/${item.numericId}`"
                         class="btn-mini-action view"
                         title="Ver perfil del colaborador"
+                        @click.stop
                     >
                         <svg viewBox="0 0 24 24">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -80,7 +81,7 @@ const columns: DataTableColumn[] = [
                     </Link>
                     <button
                         class="btn-mini-action edit"
-                        @click="emit('edit', item)"
+                        @click.stop="emit('edit', item)"
                         type="button"
                         title="Editar ficha"
                     >
@@ -91,7 +92,7 @@ const columns: DataTableColumn[] = [
                     </button>
                     <button
                         class="btn-mini-action delete"
-                        @click="emit('delete', item)"
+                        @click.stop="emit('delete', item)"
                         type="button"
                         title="Eliminar registro"
                     >

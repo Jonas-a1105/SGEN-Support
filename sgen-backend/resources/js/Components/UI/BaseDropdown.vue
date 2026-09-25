@@ -19,9 +19,14 @@ const emit = defineEmits<{
 
 const isOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
+let lastToggleTimestamp = 0;
 
 const toggle = () => {
     if (props.disabled) return;
+    const now = Date.now();
+    if (now - lastToggleTimestamp < 200) return;
+    lastToggleTimestamp = now;
+
     isOpen.value = !isOpen.value;
     if (isOpen.value) {
         emit('open');
@@ -74,7 +79,7 @@ defineExpose({
 <template>
     <div ref="dropdownRef" class="base-dropdown-container">
         <!-- Trigger slot -->
-        <div class="dropdown-trigger-wrap" @click="toggle">
+        <div class="dropdown-trigger-wrap" @click.stop="toggle">
             <slot name="trigger" :is-open="isOpen" :toggle="toggle" :close="close" />
         </div>
 

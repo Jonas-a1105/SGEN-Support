@@ -10,6 +10,7 @@ import TabEmployeeAssets from '@/Components/Employee/Detail/TabEmployeeAssets.vu
 import TabEmployeeTickets from '@/Components/Employee/Detail/TabEmployeeTickets.vue';
 import ModalEditEmployee from '@/Components/Employee/Detail/ModalEditEmployee.vue';
 import type { EmployeeDetail, EmployeeTabKey } from '@/Components/Employee/Detail/types';
+import { IconDevices, IconHeadset, IconCircleCheck, IconShieldCheck } from '@tabler/icons-vue';
 
 const props = defineProps<{
     employee: EmployeeDetail;
@@ -36,30 +37,42 @@ const isEditModalOpen = ref(false);
                     label="EQUIPOS EN CUSTODIA"
                     :value="employee.equiposCount"
                     subtext="Activos bajo su cargo"
-                    icon="fa-solid fa-laptop"
                     color="blue"
-                />
+                >
+                    <template #icon>
+                        <IconDevices :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="TICKETS REPORTADOS"
                     :value="employee.ticketsCount"
                     subtext="Incidencias generadas"
-                    icon="fa-solid fa-headset"
                     color="orange"
-                />
+                >
+                    <template #icon>
+                        <IconHeadset :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="INCIDENCIAS RESUELTAS"
                     :value="employee.resolvedTicketsCount"
                     subtext="Casos cerrados con éxito"
-                    icon="fa-solid fa-circle-check"
                     color="green"
-                />
+                >
+                    <template #icon>
+                        <IconCircleCheck :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="ROL EN SISTEMA"
                     :value="employee.rol.toUpperCase()"
                     :subtext="employee.username ? 'Usuario: @' + employee.username : 'Sin cuenta activa'"
-                    icon="fa-solid fa-shield-halved"
                     color="yellow"
-                />
+                >
+                    <template #icon>
+                        <IconShieldCheck :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
             </section>
 
             <!-- 2-Column Content Layout -->

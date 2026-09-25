@@ -10,7 +10,9 @@ final class UpdateSettingsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user !== null && $user->can('configuracion.manage');
     }
 
     /**

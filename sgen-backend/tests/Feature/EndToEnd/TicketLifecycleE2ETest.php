@@ -27,10 +27,15 @@ final class TicketLifecycleE2ETest extends TestCase
     use DatabaseTransactions;
 
     private User $adminUser;
+
     private int $equipmentId;
+
     private int $employeeId;
+
     private int $technicianId;
+
     private int $categoryId;
+
     private int $productId;
 
     protected function setUp(): void
@@ -56,7 +61,7 @@ final class TicketLifecycleE2ETest extends TestCase
 
         // Empleado solicitante
         $this->employeeId = (int) DB::table('empleados')->insertGetId([
-            'cedula' => 'V-' . rand(10000000, 99999999),
+            'cedula' => 'V-'.rand(10000000, 99999999),
             'nombre' => 'Mariana',
             'apellido' => 'Pérez',
             'email' => 'mariana.e2e@sgen.com',
@@ -68,7 +73,7 @@ final class TicketLifecycleE2ETest extends TestCase
 
         // Empleado técnico
         $this->technicianId = (int) DB::table('empleados')->insertGetId([
-            'cedula' => 'V-' . rand(10000000, 99999999),
+            'cedula' => 'V-'.rand(10000000, 99999999),
             'nombre' => 'Roberto',
             'apellido' => 'Técnico',
             'email' => 'roberto.tec@sgen.com',
@@ -80,8 +85,8 @@ final class TicketLifecycleE2ETest extends TestCase
 
         // Equipo informático
         $this->equipmentId = (int) DB::table('equipos')->insertGetId([
-            'codigo_inventario' => 'EQ-E2E-' . rand(1000, 9999),
-            'numero_serie' => 'SN-E2E-' . uniqid(),
+            'codigo_inventario' => 'EQ-E2E-'.rand(1000, 9999),
+            'numero_serie' => 'SN-E2E-'.uniqid(),
             'tipo' => 'Computadora',
             'marca' => 'Lenovo',
             'modelo' => 'ThinkCentre M720',
@@ -102,7 +107,7 @@ final class TicketLifecycleE2ETest extends TestCase
 
         // Insumo de inventario con stock
         $this->productId = (int) DB::table('inventario_items')->insertGetId([
-            'codigo' => 'PROD-E2E-' . rand(1000, 9999),
+            'codigo' => 'PROD-E2E-'.rand(1000, 9999),
             'nombre' => 'Memoria RAM 8GB DDR4',
             'categoria' => 'Hardware',
             'stock_actual' => 10,

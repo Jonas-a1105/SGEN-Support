@@ -10,11 +10,11 @@ use App\Infrastructure\Inventory\Http\Requests\StoreProductRequest;
 use App\Infrastructure\Inventory\Http\Requests\TransferStockRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\Inventory\Application\DTOs\CreateProductDTO;
 use Modules\Inventory\Application\DTOs\StockAdjustmentDTO;
-use Modules\Inventory\Application\Mappers\ProductDetailMapper;
 use Modules\Inventory\Application\UseCases\AdjustStockUseCase;
 use Modules\Inventory\Application\UseCases\CreateProductUseCase;
 use Modules\Inventory\Application\UseCases\GetInventoryDashboardUseCase;
@@ -50,7 +50,7 @@ class InventoryController extends Controller
 
     public function transferStock(TransferStockRequest $request, TransferStockUseCase $useCase): RedirectResponse
     {
-        $userId = (int) ($request->user()?->id ?? \Illuminate\Support\Facades\DB::table('usuarios')->orderBy('id')->value('id') ?? 1);
+        $userId = (int) ($request->user()?->id ?? DB::table('usuarios')->orderBy('id')->value('id') ?? 1);
         $useCase->execute($request->toDTO(), $userId);
 
         return back()->with('success', 'Transferencia de stock procesada con éxito.');
@@ -82,7 +82,7 @@ class InventoryController extends Controller
             'description' => ['nullable', 'string'],
         ]);
 
-        \Illuminate\Support\Facades\DB::table('inventario_items')->where('id', (int) $id)->update([
+        DB::table('inventario_items')->where('id', (int) $id)->update([
             'codigo' => $validated['sku'] ?? $product->sku()->value(),
             'nombre' => $validated['name'],
             'categoria' => $validated['category'],

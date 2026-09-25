@@ -18,6 +18,7 @@ const statusOptions: ComboboxOption[] = [
     { value: 'pendiente', label: 'Pendiente' },
     { value: 'en_proceso', label: 'En Proceso' },
     { value: 'resuelto', label: 'Resuelto', sublabel: 'Registra fecha y hora de cierre' },
+    { value: 'cerrado', label: 'Cerrado', sublabel: 'Cierre definitivo, no admite reapertura' },
 ];
 
 const form = reactive({

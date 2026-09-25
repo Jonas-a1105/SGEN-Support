@@ -17,8 +17,7 @@ final class AddTicketMaterialUseCase
 {
     public function __construct(
         private readonly SupportRepositoryInterface $supportRepository
-    ) {
-    }
+    ) {}
 
     public function execute(int $ticketId, int $itemId, int $quantity, int $userId): bool
     {

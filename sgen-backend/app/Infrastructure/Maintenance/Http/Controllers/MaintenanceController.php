@@ -14,6 +14,7 @@ use App\Infrastructure\Maintenance\Http\Requests\UpdateMaintenanceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\Maintenance\Application\UseCases\AddMaintenanceMaterialUseCase;
@@ -113,7 +114,7 @@ final class MaintenanceController extends Controller
     public function addMaterial(int $id, AddMaintenanceMaterialRequest $request, AddMaintenanceMaterialUseCase $useCase): RedirectResponse
     {
         try {
-            $userId = (int) ($request->user()?->id ?? \Illuminate\Support\Facades\DB::table('usuarios')->orderBy('id')->value('id') ?? 1);
+            $userId = (int) ($request->user()?->id ?? DB::table('usuarios')->orderBy('id')->value('id') ?? 1);
             $useCase->execute(
                 $id,
                 $request->itemId(),
@@ -149,7 +150,7 @@ final class MaintenanceController extends Controller
     public function bulkDelete(Request $request, MaintenanceRepositoryInterface $repository): JsonResponse
     {
         $ids = $request->input('ids', []);
-        if (!is_array($ids) || empty($ids)) {
+        if (! is_array($ids) || empty($ids)) {
             return response()->json(['success' => false, 'message' => 'No se proporcionaron IDs válidos.']);
         }
 

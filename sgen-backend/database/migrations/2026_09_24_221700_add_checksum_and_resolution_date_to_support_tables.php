@@ -10,7 +10,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('ticket_archivos')) {
             Schema::table('ticket_archivos', function (Blueprint $table) {
-                if (!Schema::hasColumn('ticket_archivos', 'checksum_sha256')) {
+                if (! Schema::hasColumn('ticket_archivos', 'checksum_sha256')) {
                     $table->string('checksum_sha256', 64)->nullable()->after('tamano_bytes');
                 }
             });
@@ -18,7 +18,7 @@ return new class extends Migration
 
         if (Schema::hasTable('soportes')) {
             Schema::table('soportes', function (Blueprint $table) {
-                if (!Schema::hasColumn('soportes', 'fecha_resolucion')) {
+                if (! Schema::hasColumn('soportes', 'fecha_resolucion')) {
                     $table->timestamp('fecha_resolucion')->nullable()->after('fecha_cierre');
                 }
             });

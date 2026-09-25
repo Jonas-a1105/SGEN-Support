@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Inventory\Application\DTOs;
 
+use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Domain\Enums\MovementType;
 
 final readonly class StockAdjustmentDTO
@@ -23,7 +24,7 @@ final readonly class StockAdjustmentDTO
     {
         return new self(
             productId: (int) $data['product_id'],
-            userId: (int) ($data['user_id'] ?? (function_exists('auth') ? auth()->id() : null) ?? (class_exists(\Illuminate\Support\Facades\DB::class) ? \Illuminate\Support\Facades\DB::table('usuarios')->orderBy('id')->value('id') : null) ?? 1),
+            userId: (int) ($data['user_id'] ?? (function_exists('auth') ? auth()->id() : null) ?? (class_exists(DB::class) ? DB::table('usuarios')->orderBy('id')->value('id') : null) ?? 1),
             type: MovementType::from((string) $data['type']),
             quantity: (int) $data['quantity'],
             reason: (string) ($data['reason'] ?? 'Ajuste de inventario manual')

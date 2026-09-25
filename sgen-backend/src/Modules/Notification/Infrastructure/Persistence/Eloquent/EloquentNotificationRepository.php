@@ -43,10 +43,11 @@ final class EloquentNotificationRepository implements NotificationRepositoryInte
             ->all();
     }
 
-    public function markAsRead(int $notificationId): bool
+    public function markAsRead(int $notificationId, int $userId): bool
     {
         return DB::table('notificaciones')
             ->where('id', $notificationId)
+            ->where('usuario_id', $userId)
             ->update(['leido' => true, 'read_at' => now()]) > 0;
     }
 
@@ -66,10 +67,11 @@ final class EloquentNotificationRepository implements NotificationRepositoryInte
             ->count();
     }
 
-    public function delete(int $notificationId): bool
+    public function delete(int $notificationId, int $userId): bool
     {
         return DB::table('notificaciones')
             ->where('id', $notificationId)
+            ->where('usuario_id', $userId)
             ->delete() > 0;
     }
 }

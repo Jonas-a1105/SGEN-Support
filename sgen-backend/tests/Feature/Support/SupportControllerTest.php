@@ -15,7 +15,9 @@ final class SupportControllerTest extends TestCase
     use DatabaseTransactions;
 
     private int $ticketId;
+
     private int $equipmentId;
+
     private int $employeeId;
 
     protected function setUp(): void
@@ -39,7 +41,7 @@ final class SupportControllerTest extends TestCase
         } else {
             $this->equipmentId = (int) DB::table('equipos')->insertGetId([
                 'codigo_inventario' => 'CPU-TEST-001',
-                'numero_serie' => 'SN-TEST-' . uniqid(),
+                'numero_serie' => 'SN-TEST-'.uniqid(),
                 'tipo' => 'Computadora',
                 'modelo' => 'Optiplex 7010',
                 'created_at' => now(),
@@ -53,7 +55,7 @@ final class SupportControllerTest extends TestCase
             $this->employeeId = $employee->id;
         } else {
             $this->employeeId = (int) DB::table('empleados')->insertGetId([
-                'cedula' => 'V-' . rand(1000000, 99999999),
+                'cedula' => 'V-'.rand(1000000, 99999999),
                 'nombre' => 'Alexis',
                 'apellido' => 'Datica',
                 'email' => 'alexis.test@sgen.com',
@@ -299,7 +301,7 @@ final class SupportControllerTest extends TestCase
     public function test_can_add_material_and_deduct_stock(): void
     {
         $itemId = (int) DB::table('inventario_items')->insertGetId([
-            'codigo' => 'MAT-TEST-' . uniqid(),
+            'codigo' => 'MAT-TEST-'.uniqid(),
             'nombre' => 'Cable HDMI 2.0',
             'categoria' => 'Cables',
             'stock_actual' => 15,

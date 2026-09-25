@@ -52,7 +52,7 @@ final class ReportsLifecycleE2ETest extends TestCase
         );
 
         // 2. Generar reporte PDF de Tickets con filtros de fecha
-        $ticketsPdfResponse = $this->get('/reportes/tickets/pdf?fecha_inicio=' . now()->subDays(30)->toDateString() . '&fecha_fin=' . now()->toDateString());
+        $ticketsPdfResponse = $this->get('/reportes/tickets/pdf?fecha_inicio='.now()->subDays(30)->toDateString().'&fecha_fin='.now()->toDateString());
         $ticketsPdfResponse->assertStatus(200);
         $this->assertStringContainsString('application/pdf', (string) $ticketsPdfResponse->headers->get('Content-Type'));
 

@@ -19,39 +19,36 @@ final class NotificationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user()?->id ?? 1;
-        $notifications = $this->repository->findByUser($userId);
+        $notifications = $this->repository->findByUser((int) $request->user()->id);
 
         return response()->json($notifications);
     }
 
     public function unread(Request $request): JsonResponse
     {
-        $userId = $request->user()?->id ?? 1;
-        $unread = $this->repository->findUnreadByUser($userId);
+        $unread = $this->repository->findUnreadByUser((int) $request->user()->id);
 
         return response()->json($unread);
     }
 
     public function markAsRead(int $id, Request $request): JsonResponse
     {
-        $this->repository->markAsRead($id);
+        // Alcance obligatorio: solo el dueño puede marcar su notificación.
+        $this->repository->markAsRead($id, (int) $request->user()->id);
 
         return response()->json(['success' => true]);
     }
 
     public function markAllAsRead(Request $request): JsonResponse
     {
-        $userId = $request->user()?->id ?? 1;
-        $this->repository->markAllAsRead($userId);
+        $this->repository->markAllAsRead((int) $request->user()->id);
 
         return response()->json(['success' => true]);
     }
 
     public function countUnread(Request $request): JsonResponse
     {
-        $userId = $request->user()?->id ?? 1;
-        $count = $this->repository->countUnread($userId);
+        $count = $this->repository->countUnread((int) $request->user()->id);
 
         return response()->json(['count' => $count]);
     }
@@ -77,9 +74,10 @@ final class NotificationController extends Controller
         return response()->json(['id' => $notificationId], 201);
     }
 
-    public function delete(int $id): JsonResponse
+    public function delete(int $id, Request $request): JsonResponse
     {
-        $this->repository->delete($id);
+        // Alcance obligatorio: solo el dueño puede eliminar su notificación.
+        $this->repository->delete($id, (int) $request->user()->id);
 
         return response()->json(['success' => true]);
     }

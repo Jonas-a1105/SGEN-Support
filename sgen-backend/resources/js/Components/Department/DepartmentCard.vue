@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import BaseDropdown from '@/Components/UI/BaseDropdown.vue';
 import type { DepartmentItem } from '@/Composables/useDepartmentFilters';
 
@@ -13,6 +13,10 @@ const emit = defineEmits<{
     (e: 'edit', department: DepartmentItem): void;
     (e: 'delete', department: DepartmentItem): void;
 }>();
+
+const navigateToDetail = () => {
+    router.visit(`/departamentos/${props.department.numericId}`);
+};
 
 // Deterministic color class
 const colorClass = computed(() => {
@@ -36,7 +40,14 @@ const progressWidthClass = computed(() => {
 </script>
 
 <template>
-    <article class="department-card" :class="[colorClass, { dense: isDense }]">
+    <article
+        class="department-card"
+        :class="[colorClass, { dense: isDense }]"
+        role="button"
+        tabindex="0"
+        @click="navigateToDetail"
+        @keydown.enter="navigateToDetail"
+    >
         <div class="card-top-accent-bar"></div>
 
         <div class="card-content-stack">
@@ -52,45 +63,47 @@ const progressWidthClass = computed(() => {
                     </svg>
                 </div>
 
-                <BaseDropdown align="right">
-                    <template #trigger="{ toggle }">
-                        <button
-                            class="btn-card-menu"
-                            @click="toggle"
-                            type="button"
-                            title="Opciones del departamento"
-                        >
-                            ···
-                        </button>
-                    </template>
-                    <template #content="{ close }">
-                        <Link :href="`/departamentos/${department.numericId}`" class="card-menu-item" @click="close">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            <span>Ver Detalle</span>
-                        </Link>
-                        <button class="card-menu-item" @click="() => { close(); emit('edit', department); }" type="button">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                            <span>Editar</span>
-                        </button>
-                        <button class="card-menu-item delete" @click="() => { close(); emit('delete', department); }" type="button">
-                            <svg viewBox="0 0 24 24">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                            <span>Eliminar</span>
-                        </button>
-                    </template>
-                </BaseDropdown>
+                <div class="dropdown-anchor" @click.stop>
+                    <BaseDropdown align="right">
+                        <template #trigger="{ toggle }">
+                            <button
+                                class="btn-card-menu"
+                                @click.stop="toggle"
+                                type="button"
+                                title="Opciones del departamento"
+                            >
+                                ···
+                            </button>
+                        </template>
+                        <template #content="{ close }">
+                            <Link :href="`/departamentos/${department.numericId}`" class="card-menu-item" @click.stop="close">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span>Ver Detalle</span>
+                            </Link>
+                            <button class="card-menu-item" @click.stop="() => { close(); emit('edit', department); }" type="button">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                                <span>Editar</span>
+                            </button>
+                            <button class="card-menu-item delete" @click.stop="() => { close(); emit('delete', department); }" type="button">
+                                <svg viewBox="0 0 24 24">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                <span>Eliminar</span>
+                            </button>
+                        </template>
+                    </BaseDropdown>
+                </div>
             </div>
 
             <div class="card-title-group">
-                <Link :href="`/departamentos/${department.numericId}`" class="dept-card-title-link">
+                <Link :href="`/departamentos/${department.numericId}`" class="dept-card-title-link" @click.stop>
                     <h2 class="dept-card-title">{{ department.name }}</h2>
                 </Link>
                 <span class="dept-card-code">{{ department.code }}</span>
@@ -149,6 +162,7 @@ const progressWidthClass = computed(() => {
     overflow: hidden;
     transition: border-color 0.2s ease, transform 0.2s ease;
     box-shadow: none !important;
+    cursor: pointer;
 }
 
 .department-card:hover {

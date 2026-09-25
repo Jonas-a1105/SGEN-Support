@@ -22,6 +22,7 @@ final class CreateNotificationUseCase
         ?string $link = null
     ): int {
         $notification = Notification::create($userId, $type, $title, $message, $link);
+
         return $this->repository->save($notification);
     }
 }

@@ -32,7 +32,7 @@ final class EquipmentControllerTest extends TestCase
 
         $this->equipmentId = (int) DB::table('equipos')->insertGetId([
             'codigo_inventario' => '00999',
-            'numero_serie' => 'SN-TEST-' . uniqid(),
+            'numero_serie' => 'SN-TEST-'.uniqid(),
             'tipo' => 'Computadora',
             'marca' => 'Intel',
             'modelo' => 'N5095',
@@ -47,7 +47,7 @@ final class EquipmentControllerTest extends TestCase
         $response = $this->get('/equipos');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Equipment/Index')
             ->has('kpis')
             ->has('equipos')
@@ -60,7 +60,7 @@ final class EquipmentControllerTest extends TestCase
         $response = $this->get("/equipos/{$this->equipmentId}");
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Equipment/Show')
             ->has('equipment')
             ->where('equipment.id', $this->equipmentId)
@@ -84,7 +84,7 @@ final class EquipmentControllerTest extends TestCase
     {
         $payload = [
             'codigo_inventario' => '00888',
-            'numero_serie' => 'SN-NEW-' . uniqid(),
+            'numero_serie' => 'SN-NEW-'.uniqid(),
             'tipo' => 'Impresora',
             'marca' => 'EPSON',
             'modelo' => 'L5590',
@@ -189,7 +189,7 @@ final class EquipmentControllerTest extends TestCase
 
     public function test_can_register_equipment_with_unique_code(): void
     {
-        $codigo = 'REG-' . strtoupper(uniqid());
+        $codigo = 'REG-'.strtoupper(uniqid());
 
         $response = $this->post('/equipos/registrar', [
             'codigo_inventario' => $codigo,
@@ -197,7 +197,7 @@ final class EquipmentControllerTest extends TestCase
             'marca' => 'TP-Link',
             'modelo' => 'TL-SG1008D',
             'estado' => 'disponible',
-            'numero_serie' => 'SN-REG-' . uniqid(),
+            'numero_serie' => 'SN-REG-'.uniqid(),
         ]);
 
         $response->assertRedirect('/equipos');

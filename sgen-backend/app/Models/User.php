@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -62,5 +63,32 @@ class User extends Authenticatable
     public function isTecnico(): bool
     {
         return in_array($this->rol, ['admin', 'tecnico'], true);
+    }
+
+    /**
+     * La columna legacy `rol` es la identidad; el rol Spatie es su reflejo.
+     * Cada guardado del usuario mantiene ambos consistentes para que el
+     * middleware permission:* siempre disponga del rol efectivo.
+     */
+    protected static function booted(): void
+    {
+        static::saved(static function (User $user): void {
+            $user->syncSpatieRoleFromColumn();
+        });
+    }
+
+    public function syncSpatieRoleFromColumn(): void
+    {
+        $roleName = trim((string) $this->rol);
+        if ($roleName === '') {
+            return;
+        }
+
+        $role = Role::findOrCreate($roleName, 'web');
+
+        // syncRoles solo toca la tabla pivote; no vuelve a guardar el modelo.
+        if (! $this->hasRole($role->name)) {
+            $this->syncRoles([$role]);
+        }
     }
 }

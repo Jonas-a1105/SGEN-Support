@@ -16,6 +16,8 @@ const getTicketStatusVariant = (st: string): 'warning' | 'info' | 'neutral' | 's
             return 'info';
         case 'resuelto':
             return 'success';
+        case 'cerrado':
+            return 'neutral';
         default:
             return 'neutral';
     }
@@ -76,11 +78,13 @@ const getTicketStatusVariant = (st: string): 'warning' | 'info' | 'neutral' | 's
             title="Sin tickets reportados"
             description="Este equipo opera con normalidad y no presenta incidencias de soporte registradas."
         >
-            <Link :href="`/soportes/crear?equipo_id=${equipmentId}`">
-                <BaseButton variant="primary" size="md">
-                    Crear Ticket para este Equipo
-                </BaseButton>
-            </Link>
+            <BaseButton
+                variant="primary"
+                size="md"
+                :href="`/soportes/crear?equipo_id=${equipmentId}`"
+            >
+                Crear Ticket para este Equipo
+            </BaseButton>
         </BaseEmptyState>
     </div>
 </template>

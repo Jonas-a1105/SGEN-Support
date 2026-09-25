@@ -11,7 +11,7 @@ use Modules\Equipment\Domain\Enums\EquipmentType;
 final class EquipmentListItemMapper
 {
     /**
-     * @param object|array<string, mixed> $row
+     * @param  object|array<string, mixed>  $row
      */
     public static function fromRow(object|array $row): EquipmentListItemDTO
     {
@@ -25,7 +25,7 @@ final class EquipmentListItemMapper
         $typeEnum = EquipmentType::fromString($rawType);
         $typeName = $typeEnum->normalized();
 
-        $name = trim(($data['marca'] ?? '') . ' ' . ($data['modelo'] ?? ''));
+        $name = trim(($data['marca'] ?? '').' '.($data['modelo'] ?? ''));
         if ($name === '') {
             $name = (string) ($data['nombre'] ?? $typeName);
         }
@@ -33,11 +33,11 @@ final class EquipmentListItemMapper
         $idFormatted = (string) ($data['codigo_inventario'] ?? sprintf('%05d', (int) ($data['id'] ?? 0)));
 
         $dept = (string) ($data['departamento_nombre'] ?? $data['ubicacion_fisica'] ?? 'Sin Departamento');
-        $deptShort = mb_strlen($dept) > 20 ? mb_substr($dept, 0, 18) . '...' : $dept;
+        $deptShort = mb_strlen($dept) > 20 ? mb_substr($dept, 0, 18).'...' : $dept;
 
         $assignedTo = null;
-        if (!empty($data['empleado_nombre'])) {
-            $assignedTo = trim($data['empleado_nombre'] . ' ' . ($data['empleado_apellido'] ?? ''));
+        if (! empty($data['empleado_nombre'])) {
+            $assignedTo = trim($data['empleado_nombre'].' '.($data['empleado_apellido'] ?? ''));
         }
 
         return new EquipmentListItemDTO(

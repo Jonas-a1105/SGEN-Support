@@ -29,8 +29,7 @@ final class UpdateEquipmentDTO
         public readonly ?float $purchaseValue = null,
         public readonly bool $hasDepartmentId = false,
         public readonly bool $hasEmployeeId = false,
-    ) {
-    }
+    ) {}
 
     public static function fromArray(array $data): self
     {

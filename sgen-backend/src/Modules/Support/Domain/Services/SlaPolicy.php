@@ -17,7 +17,7 @@ use Modules\Support\Domain\Enums\TicketPriority;
 final class SlaPolicy
 {
     /**
-     * @param array<string, int> $hoursByPriority Mapa prioridad => horas de resolución.
+     * @param  array<string, int>  $hoursByPriority  Mapa prioridad => horas de resolución.
      */
     public function __construct(
         private readonly array $hoursByPriority

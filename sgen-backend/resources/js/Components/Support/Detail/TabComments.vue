@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { BaseBadge, BaseButton, BaseAvatar } from '@/Components/UI';
 import type { TicketComment } from '@/types/support';
+import { IconLock, IconEye } from '@tabler/icons-vue';
 
 interface Props {
     ticketId: number;
@@ -89,7 +90,7 @@ const sendComment = () => {
                 ></textarea>
                 <div class="composer-footer">
                     <button class="visibility-toggle-btn" type="button" @click="toggleVisibility">
-                        <span>{{ isInternal ? '🔒' : '👁' }}</span>
+                        <component :is="isInternal ? IconLock : IconEye" :size="15" stroke-width="2" class="toggle-icon" />
                         <span>{{ isInternal ? 'Solo técnicos (Interno)' : 'Visible para todos' }}</span>
                     </button>
                     <BaseButton

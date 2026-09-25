@@ -80,4 +80,3 @@ final class ReportsControllerTest extends TestCase
         $this->assertStringContainsString('text/csv', (string) $response->headers->get('content-type'));
     }
 }
-

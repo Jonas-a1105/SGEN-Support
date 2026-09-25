@@ -4,6 +4,7 @@ import type { Product, Department, TransferStockPayload } from '@/Types/inventor
 import BaseCard from '@/Components/UI/BaseCard.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
+import { IconArrowDown, IconCheck } from '@tabler/icons-vue';
 
 const props = defineProps<{
     item: Product;
@@ -21,7 +22,7 @@ const quantity = ref(1);
 const reason = ref('');
 
 const originOptions = computed<ComboboxOption[]>(() => [
-    { value: '', label: '🏢 Almacén Central (Principal)' },
+    { value: '', label: 'Almacén Central (Principal)' },
     ...props.departments.map((d) => ({ value: d.id, label: d.nombre })),
 ]);
 
@@ -69,12 +70,14 @@ const handleSubmit = () => {
                 :searchable="true"
             />
 
-            <div class="arrow-down-divider">↓</div>
+            <div class="arrow-down-divider">
+                <IconArrowDown :size="16" stroke-width="2" />
+            </div>
 
             <BaseCombobox
                 v-model="destinationId"
                 label="DESTINO *"
-                placeholder="📍 Seleccione un destino..."
+                placeholder="Seleccione un destino..."
                 search-placeholder="Buscar destino..."
                 :options="destinationOptions"
                 :searchable="true"
@@ -116,7 +119,7 @@ const handleSubmit = () => {
                 :disabled="isSubmitting || !destinationId"
                 :loading="isSubmitting"
             >
-                <span>✔</span>
+                <IconCheck :size="16" stroke-width="2" />
                 <span>Confirmar Transferencia</span>
             </BaseButton>
         </form>

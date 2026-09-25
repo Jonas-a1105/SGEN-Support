@@ -57,14 +57,14 @@ final class Ticket
             equipmentId: $equipmentId,
             categoryId: $categoryId,
             creatorUserId: $creatorUserId,
-            createdAt: new DateTimeImmutable()
+            createdAt: new DateTimeImmutable
         );
     }
 
     public function reassignTechnician(int $newTechId): void
     {
-        if ($this->status === TicketStatus::RESUELTO) {
-            throw new DomainException('No se puede reasignar el técnico de un ticket que ya ha sido resuelto.');
+        if ($this->status->isFinal()) {
+            throw new DomainException('No se puede reasignar el técnico de un ticket que ya ha sido resuelto o cerrado.');
         }
 
         if ($newTechId <= 0) {
@@ -83,12 +83,46 @@ final class Ticket
         $this->status = $newStatus;
 
         if ($newStatus === TicketStatus::RESUELTO && $this->closedAt === null) {
-            $this->closedAt = new DateTimeImmutable();
+            $this->closedAt = new DateTimeImmutable;
             if ($this->attentionMinutes === null) {
                 $seconds = $this->closedAt->getTimestamp() - $this->createdAt->getTimestamp();
                 $this->attentionMinutes = max(1, (int) round($seconds / 60));
             }
         }
+    }
+
+    public function resolve(): void
+    {
+        $this->changeStatus(TicketStatus::RESUELTO);
+    }
+
+    /**
+     * Reapertura formal: solo es válida desde RESUELTO y exige un motivo
+     * justificado. La legalidad de la transición la garantiza la máquina
+     * de estados; un ticket CERRADO jamás puede reabrirse.
+     */
+    public function reopen(string $motivo): void
+    {
+        if (trim($motivo) === '') {
+            throw new InvalidArgumentException('La reapertura de un ticket requiere un motivo justificado.');
+        }
+
+        $this->changeStatus(TicketStatus::EN_PROCESO);
+    }
+
+    /**
+     * Cierre definitivo del ciclo de vida (manual o por autocierre programado).
+     * CERRADO es un estado terminal: la máquina de estados bloquea
+     * cualquier transición posterior.
+     */
+    public function close(): void
+    {
+        $this->changeStatus(TicketStatus::CERRADO);
+    }
+
+    public function isEditable(): bool
+    {
+        return $this->status !== TicketStatus::CERRADO;
     }
 
     public function rate(string $rating, ?string $comment = null): void
@@ -102,12 +136,12 @@ final class Ticket
 
         $this->rating = $cleanRating;
         $this->ratingComment = $comment !== null ? trim($comment) : null;
-        $this->ratingDate = new DateTimeImmutable();
+        $this->ratingDate = new DateTimeImmutable;
     }
 
     public function isSlaOnTime(?DateTimeInterface $referenceTime = null): bool
     {
-        $endTime = $this->closedAt ?? $referenceTime ?? new DateTimeImmutable();
+        $endTime = $this->closedAt ?? $referenceTime ?? new DateTimeImmutable;
         $diffSeconds = $endTime->getTimestamp() - $this->createdAt->getTimestamp();
         $diffHours = $diffSeconds / 3600;
 

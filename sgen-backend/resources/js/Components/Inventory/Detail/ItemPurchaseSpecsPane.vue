@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import type { Product } from '@/Types/inventory';
 import BaseCard from '@/Components/UI/BaseCard.vue';
+import {
+    IconReceipt,
+    IconCalendar,
+    IconBuildingStore,
+    IconCurrencyDollar,
+    IconShieldCheck,
+} from '@tabler/icons-vue';
 
 defineProps<{
     product: Product;
@@ -10,27 +17,33 @@ defineProps<{
 <template>
     <BaseCard padding="lg">
         <div class="panel-header-inline">
-            <span class="icon-specs-glyph">💲</span>
+            <IconReceipt :size="18" stroke-width="1.8" class="icon-specs-glyph" />
             <h3 class="panel-title">Detalles de Compra y Garantía</h3>
         </div>
 
         <div class="purchase-grid-cards">
             <div class="spec-block">
-                <div class="spec-icon-box">📅</div>
+                <div class="spec-icon-box">
+                    <IconCalendar :size="16" stroke-width="2" />
+                </div>
                 <div>
                     <span class="acq-field-label">Fecha Compra</span>
                     <strong class="spec-field-val">N/A</strong>
                 </div>
             </div>
             <div class="spec-block">
-                <div class="spec-icon-box">🏪</div>
+                <div class="spec-icon-box">
+                    <IconBuildingStore :size="16" stroke-width="2" />
+                </div>
                 <div>
                     <span class="acq-field-label">Proveedor</span>
                     <strong class="spec-field-val">--</strong>
                 </div>
             </div>
             <div class="spec-block">
-                <div class="spec-icon-box">💵</div>
+                <div class="spec-icon-box">
+                    <IconCurrencyDollar :size="16" stroke-width="2" />
+                </div>
                 <div>
                     <span class="acq-field-label">Costo</span>
                     <strong class="spec-field-val">
@@ -39,7 +52,9 @@ defineProps<{
                 </div>
             </div>
             <div class="spec-block">
-                <div class="spec-icon-box">🛡</div>
+                <div class="spec-icon-box">
+                    <IconShieldCheck :size="16" stroke-width="2" />
+                </div>
                 <div>
                     <span class="acq-field-label">Garantía</span>
                     <strong class="spec-field-val">No aplica</strong>

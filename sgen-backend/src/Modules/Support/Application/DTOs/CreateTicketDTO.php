@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Support\Application\DTOs;
 
+use Modules\Support\Domain\Services\PriorityMatrixService;
+
 final class CreateTicketDTO
 {
     public function __construct(
@@ -18,17 +20,16 @@ final class CreateTicketDTO
         public readonly ?string $departamento = null,
         public readonly ?string $impacto = null,
         public readonly ?string $urgencia = null
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
         $prioridad = (string) ($data['prioridad'] ?? $data['priority'] ?? '');
         if ($prioridad === '' && isset($data['impacto'], $data['urgencia'])) {
-            $prioridad = \Modules\Support\Domain\Services\PriorityMatrixService::derive(
+            $prioridad = PriorityMatrixService::derive(
                 (string) $data['impacto'],
                 (string) $data['urgencia'],
                 (bool) ($data['es_vip'] ?? false)

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Equipment } from '@/Types/inventory';
 import BaseCard from '@/Components/UI/BaseCard.vue';
+import { IconFileDescription } from '@tabler/icons-vue';
 
 defineProps<{
     equipment: Equipment;
@@ -10,7 +11,7 @@ defineProps<{
 <template>
     <BaseCard padding="lg" id="subpaneAcquisition">
         <div class="panel-header-inline">
-            <span class="icon-acq-glyph">📄</span>
+            <IconFileDescription :size="18" stroke-width="1.8" class="icon-acq-glyph" />
             <h3 class="panel-title">Adquisición y Garantía</h3>
         </div>
 

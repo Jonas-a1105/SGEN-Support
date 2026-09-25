@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Inventory\Domain\Ports;
 
+use Modules\Inventory\Application\DTOs\TransferStockDTO;
 use Modules\Inventory\Domain\Models\Product;
 
 interface ProductRepositoryInterface
@@ -45,5 +46,5 @@ interface ProductRepositoryInterface
      */
     public function getInventoryDashboardLookups(): array;
 
-    public function transferStock(\Modules\Inventory\Application\DTOs\TransferStockDTO $dto, int $userId): void;
+    public function transferStock(TransferStockDTO $dto, int $userId): void;
 }

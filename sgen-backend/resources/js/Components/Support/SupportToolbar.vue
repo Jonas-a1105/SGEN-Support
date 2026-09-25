@@ -34,6 +34,7 @@ const selectedFilter = computed(() => {
     if (f === 'pendiente') return 'pending';
     if (f === 'mis-tickets') return 'my';
     if (f === 'resuelto') return 'resolved';
+    if (f === 'cerrado') return 'closed';
     return f;
 });
 

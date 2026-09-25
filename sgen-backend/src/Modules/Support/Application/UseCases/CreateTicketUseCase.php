@@ -22,8 +22,7 @@ final class CreateTicketUseCase
     public function __construct(
         private readonly SupportRepositoryInterface $repository,
         private readonly SlaPolicy $slaPolicy
-    ) {
-    }
+    ) {}
 
     public function execute(CreateTicketDTO $dto, ?int $userId = null): int
     {

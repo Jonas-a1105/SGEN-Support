@@ -28,11 +28,10 @@ final class RegisterEquipmentDTO
         public readonly ?string $ubicacionFisica = null,
         public readonly ?float $valorCompra = null,
         public readonly ?string $proveedor = null,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {

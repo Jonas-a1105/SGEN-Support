@@ -13,6 +13,7 @@ import TabEquipmentTickets from '@/Components/Equipment/Detail/TabEquipmentTicke
 import TabEquipmentMaintenances from '@/Components/Equipment/Detail/TabEquipmentMaintenances.vue';
 import ModalReassignEquipment from '@/Components/Equipment/Detail/ModalReassignEquipment.vue';
 import ModalEditEquipment from '@/Components/Equipment/Detail/ModalEditEquipment.vue';
+import { IconActivity, IconTools, IconTicket, IconShieldCheck } from '@tabler/icons-vue';
 import type {
     EquipmentDetail,
     EquipmentTabKey,
@@ -77,30 +78,42 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
                     label="ESTADO OPERATIVO"
                     :value="equipment.status"
                     subtext="Condición del activo"
-                    icon="fa-solid fa-signal"
                     :color="kpiStatusColor"
-                />
+                >
+                    <template #icon>
+                        <IconActivity :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="MANTENIMIENTOS"
                     :value="equipment.maintenances.length"
                     subtext="Historial de servicios"
-                    icon="fa-solid fa-wrench"
                     color="yellow"
-                />
+                >
+                    <template #icon>
+                        <IconTools :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="TICKETS DE SOPORTE"
                     :value="equipment.tickets.length"
                     subtext="Reportes de incidencia"
-                    icon="fa-solid fa-ticket"
                     color="blue"
-                />
+                >
+                    <template #icon>
+                        <IconTicket :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
                 <BaseKpiCard
                     label="ESTADO DE GARANTÍA"
                     :value="equipment.warrantyRemaining || (equipment.warranty ? 'Activa' : 'Sin garantía')"
                     :subtext="equipment.purchaseValue ? formatCurrency(equipment.purchaseValue) : 'Sin costo reg.'"
-                    icon="fa-solid fa-shield-halved"
                     color="purple"
-                />
+                >
+                    <template #icon>
+                        <IconShieldCheck :size="22" stroke-width="2" />
+                    </template>
+                </BaseKpiCard>
             </section>
 
             <!-- Main 2-Column Layout -->

@@ -23,6 +23,7 @@ const estadoOptions: ComboboxOption[] = [
     { value: 'pendiente', label: 'Pendiente', badge: 'Pendiente', badgeVariant: 'warning' },
     { value: 'en_proceso', label: 'En Proceso', badge: 'En Proceso', badgeVariant: 'info' },
     { value: 'resuelto', label: 'Resuelto / Entregado', badge: 'Resuelto', badgeVariant: 'success' },
+    { value: 'cerrado', label: 'Cerrado', badge: 'Cerrado', badgeVariant: 'neutral' },
 ];
 
 const prioridadOptions: ComboboxOption[] = [
