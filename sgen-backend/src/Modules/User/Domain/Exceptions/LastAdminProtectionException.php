@@ -21,4 +21,9 @@ final class LastAdminProtectionException extends DomainException
     {
         return new self('Operación bloqueada: no se puede quitar el rol de administrador al último administrador activo del sistema.');
     }
+
+    public static function deactivating(): self
+    {
+        return new self('Operación bloqueada: no se puede desactivar al último administrador del sistema; la administración quedaría sin acceso.');
+    }
 }

@@ -41,7 +41,7 @@ final class EquipmentLifecycleE2ETest extends TestCase
         $this->adminUser = User::firstOrCreate(
             ['username' => 'admin_e2e_equip'],
             [
-                'password' => bcrypt('secret123'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret123'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -158,10 +158,29 @@ final class EquipmentLifecycleE2ETest extends TestCase
             ->has('equipment.maintenances')
         );
 
-        // 6. Eliminar activo
+        // 6. Custodia informal: el activo que caminó por custodias vive en la
+        //    cadena patrimonial — el borrado físico está bloqueado (regla
+        //    integral con mensaje, no 500 crudo); la vía correcta es la baja.
         $deleteResponse = $this->delete("/equipos/{$equipmentId}");
-        $deleteResponse->assertRedirect('/equipos');
+        $deleteResponse->assertRedirect();
+        $deleteResponse->assertSessionHas('error', fn (string $m) => str_contains($m, 'custodial'));
 
-        $this->assertDatabaseMissing('equipos', ['id' => $equipmentId]);
+        $this->assertDatabaseHas('equipos', ['id' => $equipmentId]);
+
+        // 7. Y el activo físico sin historia custodial sí puede retirarse.
+        $otroEquipoId = (int) DB::table('equipos')->insertGetId([
+            'codigo_inventario' => 'EQ-E2E-LIMPIO-'.uniqid(),
+            'numero_serie' => 'SN-'.uniqid(),
+            'tipo' => 'computadora',
+            'modelo' => 'Standalone',
+            'estado' => 'disponible',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $limpios = $this->delete("/equipos/{$otroEquipoId}");
+        $limpios->assertRedirect('/equipos');
+        // La papelera conserva la fila; la purga definitiva opera aparte.
+        $this->assertNotNull(DB::table('equipos')->where('id', $otroEquipoId)->value('deleted_at'));
     }
 }

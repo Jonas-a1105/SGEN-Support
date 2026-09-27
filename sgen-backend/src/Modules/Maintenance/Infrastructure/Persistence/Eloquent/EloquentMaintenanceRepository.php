@@ -55,7 +55,8 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
 
     public function listMaintenance(array $filters = []): array
     {
-        $query = DB::table('mantenimientos')
+        $query = \App\Support\Visibility\VisibilityScope::applyToDepartamentos(DB::table('mantenimientos'), 'equipos.departamento_id')
+            ->whereNull('mantenimientos.deleted_at')
             ->leftJoin('equipos', 'mantenimientos.equipo_id', '=', 'equipos.id')
             ->leftJoin('usuarios', 'mantenimientos.tecnico_id', '=', 'usuarios.id')
             ->select([
@@ -273,12 +274,16 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
 
     public function delete(int $id): bool
     {
-        return DB::table('mantenimientos')->where('id', $id)->delete() > 0;
+        return DB::table('mantenimientos')
+            ->where('id', $id)->whereNull('deleted_at')
+            ->update(['deleted_at' => Carbon::now(), 'updated_at' => Carbon::now()]) > 0;
     }
 
     public function deleteBulk(array $ids): int
     {
-        return DB::table('mantenimientos')->whereIn('id', $ids)->delete();
+        return DB::table('mantenimientos')
+            ->whereIn('id', $ids)->whereNull('deleted_at')
+            ->update(['deleted_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
     }
 
     public function complete(int $id, ?string $observations = null, ?float $cost = null, ?string $garantiaHasta = null): bool
@@ -332,7 +337,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
             ]) > 0;
     }
 
-    public function addMaterial(int $mantenimientoId, int $itemId, int $cantidad, int $userId): bool
+    public function addMaterial(int $mantenimientoId, int $itemId, float $cantidad, int $userId): bool
     {
         return (bool) DB::table('mantenimiento_materiales')->insert([
             'mantenimiento_id' => $mantenimientoId,

@@ -8,7 +8,7 @@ use DomainException;
 
 final class InsufficientStockException extends DomainException
 {
-    public static function forProduct(string $sku, int $currentStock, int $requestedStock): self
+    public static function forProduct(string $sku, float $currentStock, float $requestedStock): self
     {
         return new self(
             sprintf(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Application\UseCases;
 
+use Illuminate\Support\Facades\Hash;
 use Modules\User\Application\DTOs\UpdateUserDTO;
 use Modules\User\Domain\Enums\UserRole;
 use Modules\User\Domain\Exceptions\LastAdminProtectionException;
@@ -25,9 +26,10 @@ final readonly class UpdateUserUseCase
 
         $roleEnum = UserRole::tryFromString($dto->rol);
 
-        // Protección estructural: el último administrador no puede degradarse.
+        // ProtecciÃ³n estructural: el Ãºltimo administrador HABILITADO no
+        // puede degradarse (un admin inactivo ya no rescata el sistema).
         $eraAdmin = $user->role()->value === 'admin';
-        if ($eraAdmin && $roleEnum->value !== 'admin' && $this->repository->countAdmins() <= 1) {
+        if ($eraAdmin && $roleEnum->value !== 'admin' && $user->isActive() && $this->repository->countActiveAdmins() <= 1) {
             throw LastAdminProtectionException::demoting();
         }
 
@@ -42,7 +44,7 @@ final readonly class UpdateUserUseCase
         $this->repository->update($updated);
 
         if (! empty($dto->password)) {
-            $this->repository->updatePassword($id, bcrypt($dto->password), true) /* cambio obligado al siguiente ingreso */;
+            $this->repository->updatePassword($id, Hash::make($dto->password), true) /* cambio obligado al siguiente ingreso */;
         }
     }
 }

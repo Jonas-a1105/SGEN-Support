@@ -127,6 +127,11 @@ final class Ticket
 
     public function rate(string $rating, ?string $comment = null): void
     {
+        // La valoración es única e inmutable: un ticket calificado jamás se recalibra.
+        if ($this->rating !== null || $this->ratingDate !== null) {
+            throw new DomainException('Este ticket ya fue calificado; la valoración es única e inmutable.');
+        }
+
         $validRatings = ['excelente', 'bueno', 'regular', 'malo'];
         $cleanRating = strtolower(trim($rating));
 

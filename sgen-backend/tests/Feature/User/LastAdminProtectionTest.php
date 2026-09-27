@@ -27,7 +27,7 @@ final class LastAdminProtectionTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'last_admin_test'],
-            ['password' => bcrypt('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
     }
 
@@ -65,7 +65,7 @@ final class LastAdminProtectionTest extends TestCase
     {
         $segundo = User::create([
             'username' => 'admin_rescate_'.uniqid(),
-            'password' => bcrypt('Temporal.Segura2026#'),
+            'password' => \Illuminate\Support\Facades\Hash::make('Temporal.Segura2026#'),
             'rol' => 'admin',
             'tema' => 'light',
         ]);

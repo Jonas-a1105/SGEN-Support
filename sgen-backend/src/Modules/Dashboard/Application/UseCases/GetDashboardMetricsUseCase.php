@@ -14,7 +14,7 @@ final class GetDashboardMetricsUseCase
     ) {
     }
 
-    public function execute(int $year = 2025): DashboardMetricsDTO
+    public function execute(int $year = 2025, ?int $currentUserId = null): DashboardMetricsDTO
     {
         $kpis = $this->repository->getKpiMetrics();
         $ticketVolume = $this->repository->getTicketVolumeByYear($year);
@@ -23,6 +23,7 @@ final class GetDashboardMetricsUseCase
         $technicians = $this->repository->getTechnicianPerformance();
         $recentActivity = $this->repository->getRecentActivity(5);
         $ticketsByStatus = $this->repository->getTicketsByStatus();
+        $myWork = $currentUserId !== null ? $this->repository->getMyWork($currentUserId) : null;
 
         return new DashboardMetricsDTO(
             kpis: $kpis,
@@ -31,7 +32,8 @@ final class GetDashboardMetricsUseCase
             inventoryHealth: $inventoryHealth,
             technicians: $technicians,
             recentActivity: $recentActivity,
-            ticketsByStatus: $ticketsByStatus
+            ticketsByStatus: $ticketsByStatus,
+            myWork: $myWork
         );
     }
 }

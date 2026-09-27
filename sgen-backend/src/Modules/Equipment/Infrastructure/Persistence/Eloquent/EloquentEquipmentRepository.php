@@ -46,7 +46,12 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
      */
     public function list(array $filters = []): array
     {
+        // La papelera queda fuera del listado operativo (restauración vía /papelera).
         $query = DB::table('equipos')
+            ->whereNull('equipos.deleted_at');
+
+        // Visibilidad por rol: un operador solo lee su departamento; tech/admin/consultor global.
+        $query = \App\Support\Visibility\VisibilityScope::applyToDepartamentos($query, 'equipos.departamento_id')
             ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')
             ->leftJoin('empleados', 'equipos.empleado_id', '=', 'empleados.id')
             ->select([
@@ -99,11 +104,13 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         $row = DB::table('equipos')
             ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')
             ->leftJoin('empleados', 'equipos.empleado_id', '=', 'empleados.id')
+            ->leftJoin('usuarios', 'equipos.responsable_baja_id', '=', 'usuarios.id')
             ->select([
                 'equipos.*',
                 'departamentos.nombre as departamento_nombre',
                 'empleados.nombre as empleado_nombre',
                 'empleados.apellido as empleado_apellido',
+                'usuarios.username as responsable_nombre',
             ])
             ->where('equipos.id', $id)
             ->first();
@@ -118,6 +125,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
     public function getCompleteDetail(int $id): ?EquipmentDetailDTO
     {
         $row = DB::table('equipos')
+            ->leftJoin('usuarios', 'equipos.responsable_baja_id', '=', 'usuarios.id')
             ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')
             ->leftJoin('empleados', 'equipos.empleado_id', '=', 'empleados.id')
             ->select([
@@ -125,6 +133,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
                 'departamentos.nombre as departamento_nombre',
                 'empleados.nombre as empleado_nombre',
                 'empleados.apellido as empleado_apellido',
+                'usuarios.username as responsable_nombre',
             ])
             ->where('equipos.id', $id)
             ->first();
@@ -253,11 +262,17 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             maintenances: $maintenances,
             departamentos: $departamentos,
             empleados: $empleados,
+            custodiaActual: $this->currentCustody($id),
+            custodias: $this->custodyHistory($id),
         );
     }
 
     public function create(CreateEquipmentDTO $dto): int
     {
+        if ($dto->status === 'de_baja') {
+            throw new \DomainException('Un equipo no puede nacer dado de baja; regístelo y luego ejecute la baja formal.');
+        }
+
         $statusEnum = EquipmentStatus::tryFrom($dto->status) ?? EquipmentStatus::fromLabel($dto->status);
 
         $now = Carbon::now();
@@ -277,6 +292,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
                     $q->orWhere('numero_serie', $dto->serialNumber);
                 }
             })
+            ->where('estado', '!=', 'de_baja') // #3: la baja libera el código patrimonial
             ->exists();
 
         if ($duplicate) {
@@ -311,29 +327,12 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             'updated_at' => $now,
         ]);
 
-        return $id;
-    }
+        // Cadena custodial: si nace con custodio, arranca con eslabón formal.
+        if ($dto->employeeId !== null) {
+            $this->assignCustody($id, (int) $dto->employeeId, null, 'asignacion_inicial');
+        }
 
-    public function register(RegisterEquipmentDTO $dto): int
-    {
-        return $this->create(CreateEquipmentDTO::fromArray([
-            'codigo_inventario' => $dto->codigoInventario,
-            'tipo' => $dto->tipo,
-            'marca' => $dto->marca,
-            'modelo' => $dto->modelo,
-            'estado' => $dto->estado,
-            'numero_serie' => $dto->numeroSerie,
-            'procesador' => $dto->procesador,
-            'memoria_ram' => $dto->memoriaRam,
-            'almacenamiento' => $dto->almacenamiento,
-            'sistema_operativo' => $dto->sistemaOperativo,
-            'direccion_ip' => $dto->direccionIp,
-            'departamento_id' => $dto->departamentoId,
-            'empleado_id' => $dto->empleadoId,
-            'ubicacion_fisica' => $dto->ubicacionFisica,
-            'valor_compra' => $dto->valorCompra,
-            'proveedor' => $dto->proveedor,
-        ]));
+        return $id;
     }
 
     public function transfer(TransferEquipmentDTO $dto): void
@@ -361,8 +360,8 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
 
     public function update(int $id, UpdateEquipmentDTO $dto): void
     {
-        $exists = DB::table('equipos')->where('id', $id)->exists();
-        if (! $exists) {
+        $equipoActual = DB::table('equipos')->where('id', $id)->first(['id', 'empleado_id']);
+        if ($equipoActual === null) {
             throw EquipmentNotFoundException::withId($id);
         }
 
@@ -434,15 +433,209 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             $payload['valor_compra'] = $dto->purchaseValue;
         }
 
-        DB::table('equipos')->where('id', $id)->update($payload);
+        // #22 locking optimista: si el lector trajo versión, el UPDATE solo
+        // aplica si la fila sigue intacta desde entonces (y siempre sube).
+        $query = DB::table('equipos')->where('id', $id);
+        if ($dto->version !== null) {
+            $query->where('version', $dto->version);
+        }
+        $payload['version'] = DB::raw('version + 1');
+        $actualizadas = $query->update($payload);
+
+        if ($actualizadas === 0 && $dto->version !== null) {
+            throw \App\Exceptions\OptimisticLockException::forEntity('Equipo', $id);
+        }
+
+        // Cadena custodial: solo se rotulan eslabones cuando el custodio
+        // cambia de verdad (nunca dos activas; cierre y apertura atómicos).
+        if ($dto->hasEmployeeId) {
+            $nuevo = $dto->employeeId !== null ? (int) $dto->employeeId : null;
+            $actual = $equipoActual->empleado_id !== null ? (int) $equipoActual->empleado_id : null;
+
+            if ($nuevo !== $actual) {
+                $this->assignCustody($id, $nuevo, auth()->id() !== null ? (int) auth()->id() : null, 'reasignacion');
+            }
+        }
     }
 
     public function delete(int $id): void
     {
-        $deleted = DB::table('equipos')->where('id', $id)->delete();
+        // La cadena custodial convierte al equipo en historia patrimonial
+        // inmutable: borrado físico prohibido; la baja formal es su vía.
+        $custodias = (int) DB::table('custodias')->where('equipo_id', $id)->count();
+        if ($custodias > 0) {
+            throw new \DomainException(
+                "No se puede eliminar el equipo: tiene {$custodias} eslabón(es) de cadena custodial. "
+                .'Registre su baja formal en su lugar (conserva la trazabilidad patrimonial).'
+            );
+        }
+
+        // Ni un solo ticket ni una orden de mantenimiento deben desaparecer
+        // en cascada patrimonial: si existe historia operativa, el activo
+        // se preserva. Su baja pasa por el wizard formal (módulo 11).
+        $tickets = (int) DB::table('soportes')->where('equipo_id', $id)->count();
+        $mantenimientos = (int) DB::table('mantenimientos')->where('equipo_id', $id)->count();
+        if ($tickets > 0 || $mantenimientos > 0) {
+            $detalle = trim("{$tickets} ticket(s), {$mantenimientos} mantenimiento(s)", ', ');
+            throw new \DomainException(
+                "No se puede eliminar el equipo: conserva historia operativa ({$detalle}). "
+                .'La vía correcta es la baja formal con acta, no el borrado físico.'
+            );
+        }
+
+        // Retiro a papelera (restaurable), no destrucción: la evidencia se
+        // conserva y la ficha desaparece de la operación diaria.
+        $deleted = DB::table('equipos')
+            ->where('id', $id)
+            ->whereNull('deleted_at')
+            ->update(['deleted_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+
         if ($deleted === 0) {
             throw EquipmentNotFoundException::withId($id);
         }
+    }
+
+    // ── Cadena custodial (Módulo 12) ────────────────────────────────────
+
+    public function assignCustody(int $equipoId, ?int $empleadoId, ?int $actorUserId, ?string $motivo = null): void
+    {
+        DB::transaction(function () use ($equipoId, $empleadoId, $actorUserId, $motivo): void {
+            // Lock del equipo: dos reasignaciones concurrentes no pueden
+            // dejar dos custodias activas ni perder el eslabón intermedio.
+            $equipo = DB::table('equipos')->where('id', $equipoId)->lockForUpdate()
+                ->first(['id', 'empleado_id', 'estado']);
+
+            if ($equipo === null) {
+                throw EquipmentNotFoundException::withId($equipoId);
+            }
+
+            if ($equipo->estado === 'de_baja') {
+                throw new \DomainException('No se puede asignar custodia: el equipo está de baja; su historia se conserva, pero su ciclo patrimonial terminó.');
+            }
+
+            $now = Carbon::now();
+
+            // Cierra la custodia vigente (si la hay).
+            DB::table('custodias')
+                ->where('equipo_id', $equipoId)
+                ->whereNull('fecha_fin')
+                ->update(['fecha_fin' => $now, 'updated_at' => $now]);
+
+            // Abre la nueva custodia solo si hay custodio destino.
+            if ($empleadoId !== null) {
+                DB::table('custodias')->insert([
+                    'equipo_id' => $equipoId,
+                    'empleado_id' => $empleadoId,
+                    'asignado_por' => $actorUserId,
+                    'fecha_inicio' => $now,
+                    'fecha_fin' => null,
+                    'motivo' => $motivo ?? ($equipo->empleado_id !== null ? 'reasignacion' : 'asignacion_inicial'),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+        });
+    }
+
+    public function signCustody(int $equipoId, string $signatureData, string $ipAddress, ?string $userAgent): void
+    {
+        DB::transaction(function () use ($equipoId, $signatureData, $ipAddress, $userAgent): void {
+            $custodia = DB::table('custodias')
+                ->where('equipo_id', $equipoId)
+                ->whereNull('fecha_fin')
+                ->lockForUpdate()
+                ->first(['id', 'firma']);
+
+            if ($custodia === null) {
+                throw new \DomainException('El equipo no tiene una custodia vigente: asigne primero un custodio.');
+            }
+
+            // Firma única e inmutable (mismo discurso probatorio que tickets).
+            if ($custodia->firma !== null) {
+                throw new \DomainException('La custodia vigente ya está firmada; su evidencia probatoria es inmutable.');
+            }
+
+            DB::table('custodias')->where('id', $custodia->id)->update([
+                'firma' => $signatureData,
+                'firma_hash_sha256' => hash('sha256', $signatureData),
+                'firma_ip' => mb_substr($ipAddress, 0, 45),
+                'firma_user_agent' => $userAgent !== null ? mb_substr($userAgent, 0, 512) : null,
+                'firmado_en' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        });
+    }
+
+    public function currentCustody(int $equipoId): ?array
+    {
+        $row = DB::table('custodias')
+            ->leftJoin('empleados', 'custodias.empleado_id', '=', 'empleados.id')
+            ->leftJoin('usuarios', 'custodias.asignado_por', '=', 'usuarios.id')
+            ->where('custodias.equipo_id', $equipoId)
+            ->whereNull('custodias.fecha_fin')
+            ->select([
+                'custodias.id', 'custodias.empleado_id', 'custodias.motivo',
+                'custodias.fecha_inicio', 'custodias.firmado_en',
+                'custodias.firma_hash_sha256', 'custodias.firma_ip',
+                'empleados.nombre as empleado_nombre', 'empleados.apellido as empleado_apellido',
+                'usuarios.username as asignado_por_username',
+            ])
+            ->first();
+
+        return $row !== null ? $this->mapCustodyRow($row) : null;
+    }
+
+    public function custodyHistory(int $equipoId): array
+    {
+        return DB::table('custodias')
+            ->leftJoin('empleados', 'custodias.empleado_id', '=', 'empleados.id')
+            ->leftJoin('usuarios', 'custodias.asignado_por', '=', 'usuarios.id')
+            ->where('custodias.equipo_id', $equipoId)
+            ->orderByDesc('custodias.fecha_inicio')
+            ->orderByDesc('custodias.id') /* misma marca temporal: el más nuevo primero */
+            ->select([
+                'custodias.id', 'custodias.empleado_id', 'custodias.motivo',
+                'custodias.fecha_inicio', 'custodias.fecha_fin', 'custodias.firmado_en',
+                'custodias.firma_hash_sha256', 'custodias.firma_ip',
+                'empleados.nombre as empleado_nombre', 'empleados.apellido as empleado_apellido',
+                'usuarios.username as asignado_por_username',
+            ])
+            ->get()
+            ->map(fn ($row) => $this->mapCustodyRow($row))
+            ->all();
+    }
+
+    public function activeCustodyIdsOfEmployee(int $empleadoId): array
+    {
+        return DB::table('custodias')
+            ->where('empleado_id', $empleadoId)
+            ->whereNull('fecha_fin')
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function mapCustodyRow(object $row): array
+    {
+        $custodio = trim(($row->empleado_nombre ?? '').' '.($row->empleado_apellido ?? ''));
+
+        return [
+            'id' => (int) $row->id,
+            'empleado_id' => (int) $row->empleado_id,
+            'custodio' => $custodio !== '' ? $custodio : 'Sin nombre',
+            'motivo' => (string) ($row->motivo ?? 'asignacion'),
+            'fecha_inicio' => isset($row->fecha_inicio) ? Carbon::parse((string) $row->fecha_inicio)->format('d/m/Y H:i') : null,
+            'fecha_fin' => isset($row->fecha_fin) ? Carbon::parse((string) $row->fecha_fin)->format('d/m/Y H:i') : null,
+            'vigente' => ! isset($row->fecha_fin),
+            'firmada' => isset($row->firmado_en),
+            'firmado_en' => isset($row->firmado_en) ? Carbon::parse((string) $row->firmado_en)->format('d/m/Y H:i') : null,
+            'firma_hash' => isset($row->firma_hash_sha256) ? (string) $row->firma_hash_sha256 : null,
+            'firma_ip' => isset($row->firma_ip) ? (string) $row->firma_ip : null,
+            'asignado_por' => isset($row->asignado_por_username) ? (string) $row->asignado_por_username : 'Sistema',
+        ];
     }
 
     public function getFormOptions(): array
@@ -460,6 +653,8 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             ->get()
             ->map(fn ($e) => [
                 'id' => (int) $e->id,
+                'nombre' => (string) $e->nombre,
+                'apellido' => (string) ($e->apellido ?? ''),
                 'nombre_completo' => trim($e->nombre.' '.($e->apellido ?? '')),
                 'cargo' => $e->cargo,
             ])

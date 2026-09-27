@@ -1,8 +1,10 @@
 <script setup lang="ts">
-export type SettingsTabKey = 'general' | 'apariencia' | 'notificaciones' | 'seguridad' | 'cuenta';
+export type SettingsTabKey = 'general' | 'apariencia' | 'notificaciones' | 'seguridad' | 'cuenta' | 'sistema';
 
 defineProps<{
     modelValue: SettingsTabKey;
+    // Solo visible para administración (configuracion.manage).
+    puedeAdministrar?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -97,6 +99,23 @@ const emit = defineEmits<{
                     <span>Perfil y datos</span>
                 </div>
             </button>
+
+            <!-- Administración de plataforma: solo gestión global del sistema. -->
+            <button
+                v-if="puedeAdministrar"
+                class="config-tab-btn sistema-tab"
+                :class="{ active: modelValue === 'sistema' }"
+                type="button"
+                @click="emit('update:modelValue', 'sistema')"
+            >
+                <div class="tab-icon admin-badge">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l7 4v6c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z" /></svg>
+                </div>
+                <div class="config-tab-copy">
+                    <strong>Sistema</strong>
+                    <span>RBAC, papelera, claves globales</span>
+                </div>
+            </button>
         </div>
     </div>
 </template>
@@ -180,6 +199,18 @@ const emit = defineEmits<{
 .config-tab-btn.active {
     background: var(--bg-card);
     border-color: var(--stroke);
+}
+
+.config-tab-btn.sistema-tab .tab-icon {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+}
+
+.config-tab-btn.sistema-tab.active .tab-icon {
+    background: #f59e0b;
+    color: #1c1403;
+    border-color: #f59e0b;
 }
 
 .tab-icon {

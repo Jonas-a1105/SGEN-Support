@@ -23,7 +23,7 @@ final class LoginUsernameNormalizationTest extends TestCase
     {
         User::create([
             'username' => 'MezclaCase_'.uniqid(),
-            'password' => bcrypt('LaMisma.Clave2026'),
+            'password' => \Illuminate\Support\Facades\Hash::make('LaMisma.Clave2026'),
             'rol' => 'operador',
             'tema' => 'light',
         ]);

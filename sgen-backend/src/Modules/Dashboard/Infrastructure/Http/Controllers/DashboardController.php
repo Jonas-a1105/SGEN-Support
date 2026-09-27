@@ -14,10 +14,11 @@ class DashboardController extends Controller
 {
     public function index(Request $request, GetDashboardMetricsUseCase $useCase): Response
     {
-        $year = (int) $request->input('year', 2025);
+        $year = (int) $request->input('year', (int) date('Y'));
 
+        // Dashboard por rol: la vista personal además de la compilación global.
         return Inertia::render('Dashboard/Index', [
-            'metrics' => $useCase->execute($year)->toArray(),
+            'metrics' => $useCase->execute($year, $request->user()?->id)->toArray(),
         ]);
     }
 }

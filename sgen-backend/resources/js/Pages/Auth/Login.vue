@@ -42,8 +42,9 @@ const submit = () => {
                 </BaseButton>
 
                 <p class="auth-help">
-                    ¿Olvidaste tu contraseña? Solicita un restablecimiento al administrador del sistema:
-                    recibirás una clave temporal y deberás definir una nueva al ingresar.
+                    ¿Olvidaste tu contraseña?
+                    <a href="/forgot-password" class="auth-link">Recupérala solo por correo</a>
+                    (o pide una clave temporal al administrador del sistema).
                 </p>
             </form>
         </BaseCard>
@@ -122,6 +123,15 @@ const submit = () => {
     text-align: center;
     border-top: var(--stroke-w) solid var(--stroke-subtle);
     padding-top: 12px;
+}
+
+.auth-link {
+    color: var(--color-primary, #10b981);
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
 }
 
 .remember-label {

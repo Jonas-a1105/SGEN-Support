@@ -26,7 +26,10 @@ final class StoreUserRequest extends FormRequest
             'password' => ['required', 'string', Password::min(10)->mixedCase()->numbers()->uncompromised()],
             'rol' => ['required', 'string', 'in:admin,tecnico,consultor,operador'],
             'departamento_id' => ['nullable', 'integer', 'exists:departamentos,id'],
-            'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
+            // Sin email el self-service de recuperación no funciona: el dato
+            // maestro del empleado (o el puntual de la cuenta) es obligatorio.
+            'empleado_id' => ['nullable', 'integer', 'exists:empleados,id', 'required_without:email'],
+            'email' => ['nullable', 'email', 'max:150', 'unique:usuarios,email', 'required_without:empleado_id'],
         ];
     }
 }

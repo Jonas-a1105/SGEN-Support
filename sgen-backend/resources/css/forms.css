@@ -238,18 +238,17 @@
 }
 
 .btn-submit {
-    background: var(--blue, #2563eb);
-    border: var(--stroke-w, 2px) solid var(--blue, #2563eb);
+    background: var(--color-primary);
+    border: var(--stroke-w, 2px) solid var(--color-primary);
     color: #ffffff;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     padding: 8px 20px;
     border-radius: 10px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    box-shadow: none !important;
     transition: opacity 0.2s ease;
 }
 

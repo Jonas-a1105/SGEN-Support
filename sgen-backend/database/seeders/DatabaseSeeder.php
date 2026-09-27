@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             RbacAndUserSeeder::class,
             CoreCatalogSeeder::class,
+            GlobalConfigSeeder::class,
         ]);
     }
 }

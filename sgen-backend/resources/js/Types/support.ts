@@ -89,6 +89,8 @@ export interface LogEntry {
 export interface TicketDetailData {
     id: number;
     code: string;
+    /** #22 Locking optimista. */
+    version: number;
     title: string;
     description: string;
     status: string;

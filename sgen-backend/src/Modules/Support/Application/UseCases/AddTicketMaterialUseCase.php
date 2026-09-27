@@ -19,7 +19,7 @@ final class AddTicketMaterialUseCase
         private readonly SupportRepositoryInterface $supportRepository
     ) {}
 
-    public function execute(int $ticketId, int $itemId, int $quantity, int $userId): bool
+    public function execute(int $ticketId, int $itemId, float $quantity, int $userId): bool
     {
         if ($quantity <= 0) {
             throw new \InvalidArgumentException('La cantidad debe ser mayor a cero.');
@@ -57,6 +57,8 @@ final class AddTicketMaterialUseCase
                 'cantidad' => $quantity,
                 'motivo' => "Consumo en Ticket #{$ticketId}",
                 'referencia_id' => $ticketId,
+                // #15: el enlace del kardex siempre lleva tipo+id juntos.
+                'referencia_tipo' => 'soporte',
                 'fecha' => now(),
             ]);
 

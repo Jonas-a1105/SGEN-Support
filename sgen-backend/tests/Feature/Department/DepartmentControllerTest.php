@@ -23,7 +23,7 @@ final class DepartmentControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_dept_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -173,8 +173,7 @@ final class DepartmentControllerTest extends TestCase
         $response = $this->delete("/departamentos/{$this->departmentId}");
 
         $response->assertRedirect('/departamentos');
-        $this->assertDatabaseMissing('departamentos', [
-            'id' => $this->departmentId,
-        ]);
+        // La papelera conserva el registro (restricción de trazabilidad).
+        $this->assertNotNull(DB::table('departamentos')->where('id', $this->departmentId)->value('deleted_at'));
     }
 }

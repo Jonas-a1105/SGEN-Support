@@ -11,6 +11,7 @@ import TabEquipmentSpecs from '@/Components/Equipment/Detail/TabEquipmentSpecs.v
 import TabEquipmentPurchase from '@/Components/Equipment/Detail/TabEquipmentPurchase.vue';
 import TabEquipmentTickets from '@/Components/Equipment/Detail/TabEquipmentTickets.vue';
 import TabEquipmentMaintenances from '@/Components/Equipment/Detail/TabEquipmentMaintenances.vue';
+import TabEquipmentCustody from '@/Components/Equipment/Detail/TabEquipmentCustody.vue';
 import ModalReassignEquipment from '@/Components/Equipment/Detail/ModalReassignEquipment.vue';
 import ModalEditEquipment from '@/Components/Equipment/Detail/ModalEditEquipment.vue';
 import { IconActivity, IconTools, IconTicket, IconShieldCheck } from '@tabler/icons-vue';
@@ -38,9 +39,10 @@ const isEditModalOpen = ref(false);
 
 const tabs = computed<TabItem[]>(() => [
     { key: 'specs', label: 'Especificaciones' },
-    { key: 'purchase', label: 'Adquisición y Garantía' },
+    { key: 'purchase', label: 'AdquisiciÃ³n y GarantÃ­a' },
     { key: 'support', label: 'Soportes', count: props.equipment.tickets?.length },
     { key: 'maintenance', label: 'Mantenimiento', count: props.equipment.maintenances?.length },
+    { key: 'custody', label: 'Custodia', count: props.equipment.custodias?.length },
 ]);
 
 const setActiveTab = (tab: string) => {
@@ -157,6 +159,13 @@ const kpiStatusColor = computed<'green' | 'blue' | 'yellow' | 'red'>(() => {
                                 v-else-if="activeTab === 'maintenance'"
                                 :maintenances="equipment.maintenances"
                                 :equipment-id="equipment.id"
+                            />
+
+                            <TabEquipmentCustody
+                                v-else-if="activeTab === 'custody'"
+                                :equipment-id="equipment.id"
+                                :custodia-actual="equipment.custodiaActual"
+                                :custodias="equipment.custodias"
                             />
                         </div>
                     </div>

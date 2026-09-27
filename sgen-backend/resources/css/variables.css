@@ -19,6 +19,15 @@
     --text: #f4f4f6;
     --text-muted: #8e9199;
     --text-dim: #60636d;
+    --weight-normal: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    --text-xs: 12px;
+    --text-sm: 13px;
+    --text-base: 14px;
+    --text-lg: 18px;
+    --text-xl: 20px;
 
     /* Color de Acento Dinámico (Índigo de Mantenimientos #4f46e5) */
     --orange: #4f46e5;

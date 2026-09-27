@@ -6,12 +6,14 @@ namespace Modules\Notification\Infrastructure\Providers;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Modules\Notification\Application\Listeners\NotifyRequesterOnTicketCreated;
 use Modules\Notification\Application\Listeners\NotifyRequesterOnTicketResolved;
 use Modules\Notification\Application\Listeners\NotifyTechnicianOnTicketAssigned;
 use Modules\Notification\Application\Listeners\NotifyTechnicianOnTicketReopened;
 use Modules\Notification\Domain\Ports\NotificationRepositoryInterface;
 use Modules\Notification\Infrastructure\Persistence\Eloquent\EloquentNotificationRepository;
 use Modules\Support\Domain\Events\TicketAssigned;
+use Modules\Support\Domain\Events\TicketCreated;
 use Modules\Support\Domain\Events\TicketReopened;
 use Modules\Support\Domain\Events\TicketResolved;
 
@@ -32,5 +34,6 @@ final class NotificationModuleServiceProvider extends ServiceProvider
         Event::listen(TicketAssigned::class, NotifyTechnicianOnTicketAssigned::class);
         Event::listen(TicketResolved::class, NotifyRequesterOnTicketResolved::class);
         Event::listen(TicketReopened::class, NotifyTechnicianOnTicketReopened::class);
+        Event::listen(TicketCreated::class, NotifyRequesterOnTicketCreated::class);
     }
 }

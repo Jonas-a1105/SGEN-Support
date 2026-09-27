@@ -80,9 +80,22 @@ final class SupportController extends Controller
         }
     }
 
+    /**
+     * Acepta el id numérico, el prefijo legacy T-{id} y el código oficial
+     * TIC-AAAA-#####; el código se resuelve contra su columna única.
+     */
     private function parseTicketId(int|string $id): int
     {
-        return (int) str_ireplace('T-', '', (string) $id);
+        $raw = trim((string) $id);
+
+        if (stripos($raw, 'TIC-') === 0) {
+            $resuelto = DB::table('soportes')->where('codigo', strtoupper($raw))->value('id');
+            abort_if($resuelto === null, 404, 'Ticket no encontrado.');
+
+            return (int) $resuelto;
+        }
+
+        return (int) str_ireplace('T-', '', $raw);
     }
 
     public function show(int|string $id, Request $request, GetTicketDetailUseCase $useCase): Response
@@ -120,7 +133,10 @@ final class SupportController extends Controller
     public function update(int|string $id, UpdateTicketRequest $request, UpdateTicketUseCase $useCase): RedirectResponse
     {
         try {
-            $useCase->execute($this->parseTicketId($id), UpdateTicketDTO::fromArray($request->validated()));
+            $useCase->execute(
+                $this->parseTicketId($id),
+                UpdateTicketDTO::fromArray($request->validated(), $request->ip(), $request->userAgent())
+            );
 
             return back()->with('success', 'Ticket actualizado correctamente.');
         } catch (\DomainException $e) {
@@ -238,6 +254,8 @@ final class SupportController extends Controller
             $useCase->execute($ticketId, (string) $request->validated('motivo'), $userId);
 
             return back()->with('success', 'Ticket reabierto satisfactoriamente.');
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\DomainException $e) {
             return back()->with('error', $e->getMessage());
         } catch (\Throwable $e) {
@@ -380,7 +398,12 @@ final class SupportController extends Controller
     public function rate(int|string $id, RateTicketRequest $request, RateTicketUseCase $useCase): RedirectResponse
     {
         try {
-            $useCase->execute($this->parseTicketId($id), (string) $request->validated('rating'), $request->validated('comentario'));
+            $useCase->execute(
+                $this->parseTicketId($id),
+                (string) $request->validated('rating'),
+                $request->validated('comentario'),
+                (int) $request->user()->id
+            );
 
             return back()->with('success', 'Valoración guardada. ¡Gracias por tu opinión!');
         } catch (\DomainException $e) {
@@ -395,11 +418,18 @@ final class SupportController extends Controller
     public function saveSignature(int|string $id, Request $request, SaveTicketSignatureUseCase $useCase): RedirectResponse
     {
         try {
+            // Firma canvas: data URL de imagen emitida por BaseSignaturePad
+            // (al menos un trazo real; un data URL vacío mide ~22 caracteres).
             $validated = $request->validate([
-                'firma_base64' => ['required', 'string', 'max:1000000'],
+                'firma_base64' => ['required', 'string', 'starts_with:data:image/', 'min:100', 'max:1000000'],
             ]);
 
-            $useCase->execute($this->parseTicketId($id), (string) $validated['firma_base64']);
+            $useCase->execute(
+                $this->parseTicketId($id),
+                (string) $validated['firma_base64'],
+                (string) ($request->ip() ?? '0.0.0.0'),
+                $request->userAgent()
+            );
 
             return back()->with('success', 'Firma registrada exitosamente.');
         } catch (ValidationException $e) {

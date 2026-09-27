@@ -11,6 +11,7 @@ import UserTable from '@/Components/User/UserTable.vue';
 import UserCard from '@/Components/User/UserCard.vue';
 import UserFormView from '@/Components/User/UserFormView.vue';
 import ModalUserDelete from '@/Components/User/ModalUserDelete.vue';
+import ModalCredencialTemporal from '@/Components/User/ModalCredencialTemporal.vue';
 import type { DepartmentLookup, EmployeeLookup } from '@/Types';
 
 const props = defineProps<{
@@ -26,24 +27,32 @@ const props = defineProps<{
 
 const usersRef = toRef(props, 'users');
 const { search, selectedRole, viewMode, isDense, filteredUsers } = useUserFilters(usersRef);
-const { addToast } = useToast();
 const page = usePage();
+const { addToast } = useToast();
 
-// Credencial temporal tras restablecimiento: se muestra una sola vez.
+// Credencial temporal tras restablecimiento: caja persistente solamente (no
+// toast de corta vida; la misma escena IT debe verse mientras el admin la copia).
+const tempPassword = ref<{ user_id: number; password: string } | null>(null);
+
 watch(
     () => (page.props.flash as { temp_password?: { user_id: number; password: string } | null })?.temp_password,
     (payload) => {
         if (payload?.password) {
-            addToast({
-                type: 'warning',
-                title: 'Contraseña temporal generada',
-                message: `Entrégala al usuario (deberá cambiarla al ingresar): ${payload.password}`,
-                duration: 0,
-            });
+            tempPassword.value = payload;
         }
     },
     { immediate: true }
 );
+
+function cerrarCredencialTemporal(): void {
+    tempPassword.value = null;
+}
+
+function copiarCredencial(): void {
+    if (tempPassword.value?.password !== undefined) {
+        navigator.clipboard.writeText(tempPassword.value.password).catch(() => {});
+    }
+}
 
 // Subviews: 'directory' | 'form'
 const activeView = ref<'directory' | 'form'>('directory');
@@ -110,7 +119,14 @@ onError: () => addToast({ type: 'error', title: 'No se pudo eliminar el usuario.
 function handleResetPassword(user: UserItem) {
     router.post(`/usuarios/${user.id}/restablecer`, {}, {
         preserveScroll: true,
-        onError: () => addToast({ type: 'error', title: 'No se pudo restablecer la contraseña.' }),
+        onError: () => addToast({ type: 'error', title: 'No se pudo restablecer la contraseÃ±a.' }),
+    });
+}
+
+function handleToggleActive(user: UserItem) {
+    router.post(`/usuarios/${user.id}/alternar-estado`, {}, {
+        preserveScroll: true,
+        onError: () => addToast({ type: 'error', title: 'No se pudo cambiar el estado del usuario.' }),
     });
 }
 </script>
@@ -159,6 +175,7 @@ function handleResetPassword(user: UserItem) {
                     @edit="openEditForm"
                     @delete="openDeleteModal"
                     @reset-password="handleResetPassword"
+                    @toggle-active="handleToggleActive"
                 />
 
                 <!-- Cards View -->
@@ -170,6 +187,7 @@ function handleResetPassword(user: UserItem) {
                         @edit="openEditForm"
                         @delete="openDeleteModal"
                         @reset-password="handleResetPassword"
+                        @toggle-active="handleToggleActive"
                     />
                     <BaseEmptyState
                         v-if="filteredUsers.length === 0"
@@ -196,6 +214,13 @@ function handleResetPassword(user: UserItem) {
                 :user="deletingUser"
                 @close="showDeleteModal = false"
                 @confirm="handleConfirmDelete"
+            />
+
+            <!-- Credencial temporal tras restablecimiento: permanente, copiable; no desaparece sola -->
+            <ModalCredencialTemporal
+                :payload="tempPassword"
+                :username="deletingUser?.username ?? ''"
+                @close="cerrarCredencialTemporal"
             />
         </div>
     </AppLayout>

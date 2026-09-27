@@ -7,10 +7,12 @@ import EquipmentKpiRow from '@/Components/Equipment/EquipmentKpiRow.vue';
 import EquipmentToolbar from '@/Components/Equipment/EquipmentToolbar.vue';
 import EquipmentCard from '@/Components/Equipment/EquipmentCard.vue';
 import EquipmentTable from '@/Components/Equipment/EquipmentTable.vue';
-import ModalEquipmentForm from '@/Components/Equipment/ModalEquipmentForm.vue';
+import ViewEditEquipmentWizard from '@/Components/Inventory/ViewEditEquipmentWizard.vue';
 import ModalEquipmentDetail from '@/Components/Equipment/ModalEquipmentDetail.vue';
 import ModalEquipmentDelete from '@/Components/Equipment/ModalEquipmentDelete.vue';
+import ModalDecommissionEquipment from '@/Components/Equipment/Detail/ModalDecommissionEquipment.vue';
 import { useEquipmentFilters } from '@/Composables/useEquipmentFilters';
+import { usePermissions } from '@/Composables/usePermissions';
 import { useToast } from '@/Composables/useToast';
 import type { EquipmentItem, EquipmentKpis, DepartmentOption, EmployeeOption } from '@/Types';
 
@@ -39,9 +41,12 @@ const {
     toggleDense,
 } = useEquipmentFilters(rawEquipos);
 
-// Modales
-const showFormModal = ref(false);
+// Formulario canónico (wizard, mismo diseño de Inventario): vista a pantalla completa
+// en lugar de modal. Edición por id ligero: la ficha completa se carga desde el detalle.
+const showFormView = ref(false);
+const formEquipmentId = ref<number | null>(null);
 const { addToast } = useToast();
+const { can } = usePermissions();
 const editingEquipment = ref<EquipmentItem | null>(null);
 
 const showDetailModal = ref(false);
@@ -49,15 +54,26 @@ const detailEquipment = ref<EquipmentItem | null>(null);
 
 const showDeleteModal = ref(false);
 const deletingEquipment = ref<EquipmentItem | null>(null);
+// Baja patrimonial formal (modo legal, sustituye la eliminación para activos con historia).
+const showDecommissionModal = ref(false);
+const decommissioningEquipment = ref<EquipmentItem | null>(null);
 
 const openCreateModal = () => {
     editingEquipment.value = null;
-    showFormModal.value = true;
+    formEquipmentId.value = null;
+    showFormView.value = true;
 };
 
 const openEditModal = (item: EquipmentItem) => {
-    editingEquipment.value = item;
-    showFormModal.value = true;
+    editingEquipment.value = item; // contexto para el mensaje; la data llega vía detalle
+    formEquipmentId.value = item.numericId;
+    showFormView.value = true;
+};
+
+const closeFormView = () => {
+    showFormView.value = false;
+    formEquipmentId.value = null;
+    editingEquipment.value = null;
 };
 
 const openDetailModal = (item: EquipmentItem) => {
@@ -70,32 +86,12 @@ const openDeleteModal = (item: EquipmentItem) => {
     showDeleteModal.value = true;
 };
 
-const handleSaveEquipment = (payload: Record<string, unknown>) => {
-    // Inertia tipa sus payloads como Record<string, any>: casteo explícito en el límite de IO.
-    const body = payload as Record<string, any>;
-    if (editingEquipment.value) {
-        router.put(`/equipos/${editingEquipment.value.numericId}`, body, {
-            onSuccess: () => {
-                showFormModal.value = false;
-                editingEquipment.value = null;
-            },
-            onError: (errors) => {
-                const firstErr = Object.values(errors)[0] || 'Error al actualizar el equipo. Verifique los datos.';
-                addToast({ type: 'error', title: firstErr });
-            },
-        });
-    } else {
-        router.post('/equipos', body, {
-            onSuccess: () => {
-                showFormModal.value = false;
-            },
-            onError: (errors) => {
-                const firstErr = Object.values(errors)[0] || 'Error al registrar el equipo. Verifique los datos.';
-                addToast({ type: 'error', title: firstErr });
-            },
-        });
-    }
+const openDecommissionModal = (item: EquipmentItem) => {
+    decommissioningEquipment.value = item;
+    showDecommissionModal.value = true;
 };
+
+
 
 const handleConfirmDelete = () => {
     if (!deletingEquipment.value) return;
@@ -121,7 +117,17 @@ const handleExportExcel = () => {
     <AppLayout>
         <Head title="Gestión de Equipos Tecnológicos" />
 
-        <div class="equipment-module-page">
+        <ViewEditEquipmentWizard
+            v-if="showFormView"
+            :equipment="null"
+            :equipment-id="formEquipmentId"
+            :departamentos="options.departments"
+            :empleados="(options.employees as unknown as import('@/Types/inventory').Employee[])"
+            @back="closeFormView"
+            @saved="closeFormView"
+        />
+
+        <div v-else class="equipment-module-page">
             <!-- CABECERA DEL MÓDULO -->
             <BasePageHeader
                 title="Gestión de Equipos Tecnológicos"
@@ -136,7 +142,7 @@ const handleExportExcel = () => {
                 </template>
                 <template #actions>
                     <div class="equipment-header-actions">
-                        <BaseButton variant="secondary" @click="handleExportExcel">
+                        <BaseButton v-if="can('equipos.view')" variant="secondary" @click="handleExportExcel">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-btn-icon">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                 <polyline points="7 10 12 15 17 10" />
@@ -144,7 +150,7 @@ const handleExportExcel = () => {
                             </svg>
                             <span>Exportar Excel</span>
                         </BaseButton>
-                        <BaseButton variant="primary" @click="openCreateModal">
+                        <BaseButton v-if="can('equipos.manage')" variant="primary" @click="openCreateModal">
                             + Nuevo Equipo
                         </BaseButton>
                     </div>
@@ -183,6 +189,7 @@ const handleExportExcel = () => {
                     @view="openDetailModal"
                     @edit="openEditModal"
                     @delete="openDeleteModal"
+                    @decommission="openDecommissionModal"
                 />
             </section>
 
@@ -193,6 +200,7 @@ const handleExportExcel = () => {
                 @view="openDetailModal"
                 @edit="openEditModal"
                 @delete="openDeleteModal"
+                @decommission="openDecommissionModal"
             />
 
             <!-- EMPTY STATE -->
@@ -203,15 +211,6 @@ const handleExportExcel = () => {
             />
 
             <!-- MODALES -->
-            <ModalEquipmentForm
-                :show="showFormModal"
-                :edit-equipment="editingEquipment"
-                :departments="options.departments"
-                :employees="options.employees"
-                @close="showFormModal = false"
-                @save="handleSaveEquipment"
-            />
-
             <ModalEquipmentDetail
                 :show="showDetailModal"
                 :item="detailEquipment"
@@ -223,6 +222,16 @@ const handleExportExcel = () => {
                 :item="deletingEquipment"
                 @close="showDeleteModal = false"
                 @confirm="handleConfirmDelete"
+            />
+
+            <!-- Baja patrimonial formal: sustituye la eliminación para activos
+                 con historia custodial u operativa (acta con hash verificable). -->
+            <ModalDecommissionEquipment
+                v-if="decommissioningEquipment"
+                :is-open="showDecommissionModal"
+                :equipment-id="decommissioningEquipment.numericId"
+                :equipment-code="decommissioningEquipment.name"
+                @close="showDecommissionModal = false; decommissioningEquipment = null"
             />
         </div>
     </AppLayout>

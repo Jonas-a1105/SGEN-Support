@@ -23,7 +23,7 @@ final class CategoryControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_category_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -96,8 +96,7 @@ final class CategoryControllerTest extends TestCase
         $response = $this->delete("/categorias/{$this->categoryId}");
 
         $response->assertRedirect('/categorias');
-        $this->assertDatabaseMissing('categorias', [
-            'id' => $this->categoryId,
-        ]);
+        // La papelera conserva el registro: soft delete, purga manual aparte.
+        $this->assertNotNull(DB::table('categorias')->where('id', $this->categoryId)->value('deleted_at'));
     }
 }

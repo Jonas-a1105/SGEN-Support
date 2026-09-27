@@ -7,6 +7,25 @@ export interface NavItemConfig {
     href: string;
     icon: string;
     isActive: (url: string) => boolean;
+    /**
+     * Roles RBAC que ven la entrada. Ausente → la ven todos
+     * los roles autenticados. Fuente de verdad: PermissionCatalog (app).
+     *
+     * La ruta del servidor y el middleware homologan; esto es la expresión
+     * de la superficie visible, nunca la barrera de seguridad.
+     */
+    roles?: string[];
+}
+
+interface AuthUser {
+    id: number;
+    username: string;
+    rol?: string;
+    permissions?: string[];
+}
+
+interface AuthPageProps {
+    auth?: { user?: AuthUser | null };
 }
 
 export interface ComputedNavItem {
@@ -48,6 +67,7 @@ export const NAV_ITEMS_REGISTRY: NavItemConfig[] = [
     },
     {
         id: 'reportes',
+        roles: ['admin', 'tecnico', 'consultor'],
         label: 'Reportes',
         href: '/reportes',
         icon: 'M21.21 15.89A10 10 0 1 1 8 2.83 M22 12A10 10 0 0 0 12 2v10z',
@@ -62,6 +82,7 @@ export const NAV_ITEMS_REGISTRY: NavItemConfig[] = [
     },
     {
         id: 'departamentos',
+        roles: ['admin'],
         label: 'Departamentos',
         href: '/departamentos',
         icon: 'M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4',
@@ -69,6 +90,7 @@ export const NAV_ITEMS_REGISTRY: NavItemConfig[] = [
     },
     {
         id: 'personal',
+        roles: ['admin'],
         label: 'Personal',
         href: '/personal',
         icon: 'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z M12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7z',
@@ -76,6 +98,7 @@ export const NAV_ITEMS_REGISTRY: NavItemConfig[] = [
     },
     {
         id: 'categorias',
+        roles: ['admin'],
         label: 'Categorías',
         href: '/categorias',
         icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 0 1 0 2.828l-7 7a2 2 0 0 1-2.828 0l-7-7A1.994 1.994 0 0 1 3 12V7a4 4 0 0 1 4-4z',
@@ -83,6 +106,7 @@ export const NAV_ITEMS_REGISTRY: NavItemConfig[] = [
     },
     {
         id: 'usuarios',
+        roles: ['admin'],
         label: 'Usuarios',
         href: '/usuarios',
         icon: 'M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6 3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM7 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0z',
@@ -90,6 +114,7 @@ export const NAV_ITEMS_REGISTRY: NavItemConfig[] = [
     },
     {
         id: 'auditoria',
+        roles: ['admin'],
         label: 'Auditoría',
         href: '/auditoria',
         icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
@@ -98,6 +123,8 @@ export const NAV_ITEMS_REGISTRY: NavItemConfig[] = [
     {
         id: 'configuracion',
         label: 'Configuración',
+        // Todo autenticado puede ajustar sus preferencias/cuenta.
+        roles: ['admin', 'tecnico', 'consultor', 'operador'],
         href: '/configuracion',
         icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z',
         isActive: (url) => url.startsWith('/configuracion'),
@@ -116,14 +143,26 @@ export function useAppNavigation() {
 
     const currentUrl = computed(() => page.url);
 
+    // Rol del usuario (matriz PermissionCatalog está en el backend): la
+    // navegación solo ofrece lo que su rol permite ENTRAR (iva -> SOLO UI).
+    const rolDelUsuario = computed(() => {
+        // Cast en el límite de IO a la forma esperada desde Inertia (auth.user).
+        return ((page.props as unknown as AuthPageProps).auth?.user?.rol ?? '') as string;
+    });
+
+    const tieneAcceso = (roles?: string[]): boolean =>
+        roles === undefined || roles.length === 0 ? true : roles.includes(rolDelUsuario.value);
+
     const navItems = computed<ComputedNavItem[]>(() =>
-        NAV_ITEMS_REGISTRY.map((item) => ({
-            id: item.id,
-            label: item.label,
-            href: item.href,
-            icon: item.icon,
-            active: item.isActive(currentUrl.value),
-        }))
+        NAV_ITEMS_REGISTRY
+            .filter((item) => tieneAcceso(item.roles))
+            .map((item) => ({
+                id: item.id,
+                label: item.label,
+                href: item.href,
+                icon: item.icon,
+                active: item.isActive(currentUrl.value),
+            }))
     );
 
     const primaryMobileNav = computed<ComputedNavItem[]>(() => {

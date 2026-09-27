@@ -35,10 +35,24 @@ final class EquipmentDetailDTO
         public readonly int $warrantyPercent = 0,
         public readonly string $warrantyStatus = 'expired',
         public readonly ?string $warrantyRemaining = null,
+        /** @var list<array<string, mixed>> */
         public readonly array $tickets = [],
+        /** @var list<array<string, mixed>> */
         public readonly array $maintenances = [],
+        /** @var array<string, mixed>|null */
+        public readonly ?array $custodiaActual = null,
+        /** @var list<array<string, mixed>> */
+        public readonly array $custodias = [],
         public readonly array $departamentos = [],
         public readonly array $empleados = [],
+        // #22: versión vista por el lector; un 409 la protege de pisar cambios.
+        public readonly int $version = 1,
+        public readonly ?string $motivoBaja = null,
+        public readonly ?string $fechaBaja = null,
+        public readonly ?float $valorRecuperacion = null,
+        public readonly ?string $destinoBaja = null,
+        public readonly ?string $notaBaja = null,
+        public readonly ?string $responsableNombre = null,
     ) {
     }
 
@@ -46,6 +60,7 @@ final class EquipmentDetailDTO
     {
         return [
             'id' => $this->id,
+            'version' => $this->version,
             'inventoryCode' => $this->inventoryCode,
             'serialNumber' => $this->serialNumber,
             'name' => $this->name,
@@ -70,11 +85,19 @@ final class EquipmentDetailDTO
             'supplier' => $this->supplier,
             'warranty' => $this->warranty,
             'purchaseValue' => $this->purchaseValue,
+            'motivo_baja' => $this->motivoBaja,
+            'fecha_baja' => $this->fechaBaja,
+            'valor_recuperacion' => $this->valorRecuperacion,
+            'destino_baja' => $this->destinoBaja,
+            'nota_baja' => $this->notaBaja,
+            'responsable_nombre' => $this->responsableNombre,
             'warrantyPercent' => $this->warrantyPercent,
             'warrantyStatus' => $this->warrantyStatus,
             'warrantyRemaining' => $this->warrantyRemaining,
             'tickets' => $this->tickets,
             'maintenances' => $this->maintenances,
+            'custodiaActual' => $this->custodiaActual,
+            'custodias' => $this->custodias,
             'departamentos' => $this->departamentos,
             'empleados' => $this->empleados,
         ];

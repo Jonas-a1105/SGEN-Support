@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Support\Config\ConfiguracionGlobal;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ final class AutoCloseResolvedTicketsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'sgen:autocerrar-tickets {--dias=7 : Número de días en estado resuelto antes de autocierre}';
+    protected $signature = 'sgen:autocerrar-tickets {--dias= : Número de días en estado resuelto antes de autocierre (por defecto, configuración global)}';
 
     /**
      * The console command description.
@@ -31,7 +32,13 @@ final class AutoCloseResolvedTicketsCommand extends Command
      */
     public function handle(): int
     {
-        $dias = max(1, (int) $this->option('dias'));
+        // Ventana configurable por la administración: opción CLI o,
+        // en su defecto, la clave global persistida tickets.autocierre_dias.
+        $opcionDias = $this->option('dias');
+        $dias = $opcionDias !== null && (string) $opcionDias !== ''
+            ? max(1, (int) $opcionDias)
+            : max(1, ConfiguracionGlobal::entero('tickets.autocierre_dias', 7));
+
         $threshold = Carbon::now()->subDays($dias);
 
         $this->info("Buscando tickets resueltos antes del {$threshold->format('Y-m-d H:i:s')} ({$dias} días)...");

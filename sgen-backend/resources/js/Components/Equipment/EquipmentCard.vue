@@ -4,16 +4,20 @@ import { Link, router } from '@inertiajs/vue3';
 import { BaseBadge } from '@/Components/UI';
 import type { BadgeVariant } from '@/Utils/badgeVariants';
 import type { EquipmentItem } from '@/Composables/useEquipmentFilters';
+import { usePermissions } from '@/Composables/usePermissions';
 
 const props = defineProps<{
     item: EquipmentItem;
     isDense?: boolean;
 }>();
 
+const { can } = usePermissions();
+
 const emit = defineEmits<{
     (e: 'view', item: EquipmentItem): void;
     (e: 'edit', item: EquipmentItem): void;
     (e: 'delete', item: EquipmentItem): void;
+    (e: 'decommission', item: EquipmentItem): void;
 }>();
 
 const navigateToDetail = () => {
@@ -127,6 +131,7 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
                     </svg>
                 </button>
                 <button
+                    v-if="can('equipos.manage')"
                     class="action-mini-btn edit"
                     @click.stop="emit('edit', item)"
                     type="button"
@@ -138,6 +143,20 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
                     </svg>
                 </button>
                 <button
+                <button
+                    v-if="item.rawStatus !== 'de_baja' && can('equipos.manage')"
+                    class="action-mini-btn decommission"
+                    @click.stop="emit('decommission', item)"
+                    type="button"
+                    title="Baja patrimonial (conserva historia)"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                </button>
+                <button
+                    v-if="can('equipos.manage')"
                     class="action-mini-btn delete"
                     @click.stop="emit('delete', item)"
                     type="button"
@@ -343,5 +362,9 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
 .action-mini-btn.delete:hover {
     color: var(--red);
     border-color: var(--red);
+}
+.action-mini-btn.decommission:hover {
+    color: #f59e0b;
+    border-color: #f59e0b;
 }
 </style>

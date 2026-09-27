@@ -11,6 +11,7 @@ const emit = defineEmits<{
 (e: 'edit', user: UserItem): void;
 (e: 'delete', user: UserItem): void;
 (e: 'reset-password', user: UserItem): void;
+(e: 'toggle-active', user: UserItem): void;
 }>();
 
 const columns: DataTableColumn[] = [
@@ -62,10 +63,13 @@ function getRoleToneClass(rol: string): string {
                 </div>
             </template>
 
-            <template #cell-estado>
-                <span class="status-pill-active">
+            <template #cell-estado="{ item }">
+                <span v-if="item.is_active" class="status-pill-active">
                     <span class="status-pulse-dot"></span>
                     Activo
+                </span>
+                <span v-else class="status-pill-inactive">
+                    Inactivo
                 </span>
             </template>
 
@@ -76,6 +80,15 @@ function getRoleToneClass(rol: string): string {
                     </button>
                     <button class="btn-action reset" type="button" title="Restablecer contraseña" @click="emit('reset-password', item)">
                         <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
+                    </button>
+                    <button
+                        class="btn-action toggle"
+                        type="button"
+                        :title="item.is_active ? 'Desactivar acceso (conserva historial)' : 'Reactivar acceso'"
+                        @click="emit('toggle-active', item)"
+                    >
+                        <svg v-if="item.is_active" viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0" /><line x1="12" y1="2" x2="12" y2="12" /></svg>
+                        <svg v-else viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
                     </button>
                     <button class="btn-action delete" type="button" title="Eliminar usuario" @click="emit('delete', item)">
                         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
@@ -146,6 +159,21 @@ function getRoleToneClass(rol: string): string {
     color: #10b981;
     font-size: 11px;
     border: var(--stroke-w, 2px) solid rgba(16, 185, 129, 0.3);
+}
+.status-pill-inactive {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+    font-size: 11px;
+    border: var(--stroke-w, 2px) solid rgba(148, 163, 184, 0.3);
+}
+.btn-action.toggle:hover {
+    color: #f59e0b;
+    border-color: #f59e0b;
 }
 .status-pulse-dot {
     width: 6px;

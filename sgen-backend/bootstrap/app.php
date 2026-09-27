@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsureSessionIdle;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Console\Scheduling\Schedule;
@@ -18,8 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Cierre por inactividad antes de las reglas de cuenta; cabeceras
+        // de seguridad al final para firmar también los redirects.
         $middleware->web(append: [
             HandleInertiaRequests::class,
+            EnsureSessionIdle::class,
             SecurityHeaders::class,
             EnsurePasswordChanged::class,
         ]);
@@ -28,6 +32,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            // #21: replay de respuestas ante doble-submit (acciones críticas).
+            'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -29,7 +29,9 @@ final class StoreEquipmentRequest extends FormRequest
             'marca' => ['nullable', 'string', 'max:100'],
             'modelo' => ['nullable', 'string', 'max:100'],
             'nombre' => ['nullable', 'string', 'max:100'],
-            'estado' => ['nullable', 'string', 'max:50'],
+            // Estados formales del enum de la app + etiquetas legadas que el
+            // dominio normaliza vía EquipmentStatus::fromLabel().
+            'estado' => ['nullable', 'string', 'max:50', 'in:disponible,en_uso,en_reparacion,fuera_de_servicio,en_reserva,prestado,de_baja,perdido,nuevo,usado,Disponible,En Uso,En Reparación,Reparación,Fuera de Servicio,Baja,En Reserva'],
             'status' => ['nullable', 'string', 'max:50'],
             'departamento_id' => ['nullable', 'integer', 'exists:departamentos,id'],
             'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
@@ -38,12 +40,15 @@ final class StoreEquipmentRequest extends FormRequest
             'memoria_ram' => ['nullable', 'string', 'max:50'],
             'almacenamiento' => ['nullable', 'string', 'max:100'],
             'sistema_operativo' => ['nullable', 'string', 'max:100'],
-            'direccion_ip' => ['nullable', 'string', 'max:50'],
+            // #1: formato de IP válido — la unicidad la garantiza la BD.
+            'direccion_ip' => ['nullable', 'string', 'max:50', 'ip'],
             'driver' => ['nullable', 'string', 'max:150'],
             'toner' => ['nullable', 'string', 'max:100'],
             'fecha_compra' => ['nullable', 'date'],
+            // #14 coherencia temporal: la garantía jamás vence antes de la compra.
+            'garantia' => ['nullable', 'date', 'after_or_equal:fecha_compra'],
             'proveedor' => ['nullable', 'string', 'max:150'],
-            'garantia' => ['nullable', 'date'],
+
             'valor_compra' => ['nullable', 'numeric', 'min:0'],
         ];
     }

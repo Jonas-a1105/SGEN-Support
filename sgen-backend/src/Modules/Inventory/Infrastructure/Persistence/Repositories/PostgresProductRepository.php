@@ -33,7 +33,8 @@ final class PostgresProductRepository implements ProductRepositoryInterface
 
     public function paginate(array $filters = [], int $perPage = 15, int $page = 1): array
     {
-        $query = EloquentProductModel::query();
+        // Papelera fuera del catálogo activo.
+        $query = EloquentProductModel::query()->whereNull('deleted_at');
 
         if (! empty($filters['search'])) {
             $term = '%'.$filters['search'].'%';
@@ -92,7 +93,7 @@ final class PostgresProductRepository implements ProductRepositoryInterface
                     'item_id' => $model->id,
                     'usuario_id' => $movement->userId() > 0 ? $movement->userId() : 1,
                     'tipo_movimiento' => $movement->type()->value,
-                    'cantidad' => $movement->quantity()->value(),
+                    'cantidad' => (float) $movement->quantity()->value(),
                     'motivo' => $movement->reason(),
                     'fecha' => now(),
                 ]);
@@ -148,6 +149,12 @@ final class PostgresProductRepository implements ProductRepositoryInterface
             ->orderByDesc('inventario_movimientos.id')
             ->limit($limit)
             ->get()
+            ->map(static function ($row): object {
+                // #37: NUMERIC(15,3) llega como string; el panel lo muestra tipado.
+                $row->cantidad = (float) $row->cantidad;
+
+                return $row;
+            })
             ->all();
     }
 
@@ -192,8 +199,25 @@ final class PostgresProductRepository implements ProductRepositoryInterface
 
     public function transferStock(TransferStockDTO $dto, int $userId): void
     {
+        // Regla #15: una transferencia vacía (mismo almacén) es ruido operativo.
+        if ($dto->origenId !== null && $dto->origenId === $dto->destinoId) {
+            throw new \DomainException('El origen y el destino de la transferencia deben ser distintos.');
+        }
+
         DB::transaction(function () use ($dto, $userId): void {
             if ($dto->origenId !== null) {
+                // Lock + revalidación: la transferencia no puede dejar el
+                // saldo de la ubicación origen en negativo (#15 + CHECK BD).
+                $stockOrigen = (float) (DB::table('inventario_ubicaciones')
+                    ->where('item_id', $dto->itemId)
+                    ->where('departamento_id', $dto->origenId)
+                    ->lockForUpdate()
+                    ->value('cantidad') ?? 0);
+
+                if ($stockOrigen < $dto->cantidad) {
+                    throw new \DomainException("Stock insuficiente en origen: hay {$stockOrigen} y se intentan transferir {$dto->cantidad}.");
+                }
+
                 DB::table('inventario_ubicaciones')
                     ->where('item_id', $dto->itemId)
                     ->where('departamento_id', $dto->origenId)

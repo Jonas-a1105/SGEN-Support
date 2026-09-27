@@ -35,6 +35,13 @@ final class EquipmentDetailMapper
 
         return new EquipmentDetailDTO(
             id: (int) ($data['id'] ?? 0),
+            version: (int) ($data['version'] ?? 1),
+            motivoBaja: isset($data['motivo_baja']) ? (string) $data['motivo_baja'] : null,
+            fechaBaja: isset($data['fecha_baja']) ? (string) $data['fecha_baja'] : null,
+            valorRecuperacion: isset($data['valor_recuperacion']) ? (float) $data['valor_recuperacion'] : null,
+            destinoBaja: isset($data['destino_baja']) ? (string) $data['destino_baja'] : null,
+            notaBaja: isset($data['nota_baja']) ? (string) $data['nota_baja'] : null,
+            responsableNombre: isset($data['responsable_nombre']) ? (string) $data['responsable_nombre'] : null,
             inventoryCode: (string) ($data['codigo_inventario'] ?? sprintf('%05d', (int) ($data['id'] ?? 0))),
             serialNumber: (string) ($data['numero_serie'] ?? ''),
             name: $name,

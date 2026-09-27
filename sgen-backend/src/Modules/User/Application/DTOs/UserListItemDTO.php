@@ -17,7 +17,8 @@ final readonly class UserListItemDTO
         public ?string $empleadoNombre,
         public ?string $empleadoEmail,
         public string $avatarInitials,
-        public bool $isVerifiedEmployee
+        public bool $isVerifiedEmployee,
+        public bool $isActive = true
     ) {}
 
     /**
@@ -37,6 +38,7 @@ final readonly class UserListItemDTO
             'empleado_email' => $this->empleadoEmail,
             'avatar_initials' => $this->avatarInitials,
             'is_verified_employee' => $this->isVerifiedEmployee,
+            'is_active' => $this->isActive,
         ];
     }
 }

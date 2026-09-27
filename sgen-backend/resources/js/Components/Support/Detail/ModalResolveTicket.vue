@@ -8,6 +8,8 @@ import BaseSignaturePad from '@/Components/UI/BaseSignaturePad.vue';
 interface Props {
     isOpen: boolean;
     ticketId: number;
+    /** #22: versión vista en pantalla; el 409 protege resoluciones duplicadas. */
+    ticketVersion?: number | null;
 }
 
 const props = defineProps<Props>();
@@ -46,6 +48,7 @@ const handleSubmit = () => {
             estado: 'resuelto',
             solucion: form.solucion.trim(),
             firma_base64: form.firma_base64 || null,
+            version: props.ticketVersion ?? undefined,
         },
         {
             preserveScroll: true,

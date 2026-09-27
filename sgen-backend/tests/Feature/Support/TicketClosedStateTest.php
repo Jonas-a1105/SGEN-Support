@@ -31,7 +31,7 @@ final class TicketClosedStateTest extends TestCase
         $this->user = User::firstOrCreate(
             ['username' => 'admin_closed_state_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

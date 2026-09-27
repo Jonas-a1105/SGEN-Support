@@ -15,6 +15,7 @@ use Modules\User\Application\UseCases\CreateUserUseCase;
 use Modules\User\Application\UseCases\DeleteUserUseCase;
 use Modules\User\Application\UseCases\GetUserDirectoryUseCase;
 use Modules\User\Application\UseCases\ResetUserPasswordUseCase;
+use Modules\User\Application\UseCases\ToggleUserActiveUseCase;
 use Modules\User\Application\UseCases\UpdateUserUseCase;
 use Modules\User\Infrastructure\Http\Requests\StoreUserRequest;
 use Modules\User\Infrastructure\Http\Requests\UpdateUserRequest;
@@ -46,10 +47,28 @@ final class UserController extends Controller
         return back()->with('success', 'Usuario actualizado correctamente.');
     }
 
-    public function destroy(int $id, DeleteUserUseCase $useCase): RedirectResponse
+    /**
+     * Alterna el acceso de la cuenta sin destruir su trazabilidad.
+     * Las protecciones (último admin, tickets activos) son del caso de uso.
+     */
+    public function toggleActive(int $id, ToggleUserActiveUseCase $useCase, Request $request): RedirectResponse
     {
         try {
-            $useCase->execute($id);
+            $activo = $useCase->execute($id, (int) $request->user()->id);
+
+            return back()->with(
+                'success',
+                $activo ? 'Usuario reactivado; ya puede ingresar.' : 'Usuario desactivado; su historial se conserva.'
+            );
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function destroy(int $id, DeleteUserUseCase $useCase, Request $request): RedirectResponse
+    {
+        try {
+            $useCase->execute($id, (int) $request->user()->id);
         } catch (\DomainException $e) {
             return back()->with('error', $e->getMessage());
         }

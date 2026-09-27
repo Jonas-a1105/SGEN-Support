@@ -7,6 +7,7 @@ namespace Modules\Settings\Infrastructure\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\Settings\Application\DTOs\UpdatePasswordDTO;
@@ -25,6 +26,8 @@ final class SettingsController extends Controller
 
         return Inertia::render('Settings/Index', [
             'settings' => $useCase->execute($userId)->toArray(),
+            // La superficie "Sistema" es invisible para cualquiera sin el permiso.
+            'puede_administrar' => $request->user()?->can('configuracion.manage') ?? false,
         ]);
     }
 

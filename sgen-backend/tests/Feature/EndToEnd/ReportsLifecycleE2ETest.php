@@ -32,7 +32,7 @@ final class ReportsLifecycleE2ETest extends TestCase
         $this->adminUser = User::firstOrCreate(
             ['username' => 'admin_e2e_reports'],
             [
-                'password' => bcrypt('secret1234'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret1234'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

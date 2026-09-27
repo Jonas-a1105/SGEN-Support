@@ -10,6 +10,7 @@ const emit = defineEmits<{
 (e: 'edit', user: UserItem): void;
 (e: 'delete', user: UserItem): void;
 (e: 'reset-password', user: UserItem): void;
+(e: 'toggle-active', user: UserItem): void;
 }>();
 
 function getRoleToneClass(rol: string): string {
@@ -47,11 +48,20 @@ function getRoleToneClass(rol: string): string {
             </div>
 
             <div class="card-footer-row">
-                <span class="status-indicator">
+                <span class="status-indicator" :class="{ 'is-inactive': !user.is_active }">
                     <span class="status-dot"></span>
-                    Activo
+                    {{ user.is_active ? 'Activo' : 'Inactivo' }}
                 </span>
                 <div class="actions-group">
+                    <button
+                        class="btn-card-action toggle"
+                        type="button"
+                        :title="user.is_active ? 'Desactivar acceso' : 'Reactivar acceso'"
+                        @click="emit('toggle-active', user)"
+                    >
+                        <svg v-if="user.is_active" viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0" /><line x1="12" y1="2" x2="12" y2="12" /></svg>
+                        <svg v-else viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                    </button>
                     <button class="btn-card-action" type="button" title="Editar" @click="emit('edit', user)">
                         <svg viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
                     </button>
@@ -152,11 +162,21 @@ function getRoleToneClass(rol: string): string {
     font-size: 11px;
     color: #10b981;
 }
+.status-indicator.is-inactive {
+    color: #94a3b8;
+}
+.status-indicator.is-inactive .status-dot {
+    background: #94a3b8;
+}
 .status-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: #10b981;
+}
+.btn-card-action.toggle:hover {
+    color: #f59e0b;
+    border-color: #f59e0b;
 }
 
 .actions-group {

@@ -22,7 +22,8 @@ final class AddMaterialRequest extends FormRequest
     {
         return [
             'item_id' => ['required', 'integer', 'exists:inventario_items,id'],
-            'cantidad' => ['required', 'integer', 'min:1'],
+            // #37: cantidades fraccionales válidas (metros, rollos, litros…).
+            'cantidad' => ['required', 'numeric', 'gt:0', 'decimal:0,3'],
         ];
     }
 }

@@ -48,14 +48,20 @@ class HandleInertiaRequests extends Middleware
                     'must_change_password' => (bool) ($request->user()->must_change_password ?? false),
                     'empleado_id' => $request->user()->empleado_id,
                     'departamento_id' => $request->user()->departamento_id,
+                    // Conjunto de permisos efectivos (RBAC): la navegación se
+                    // corta a lo permitido en vez de declarar lo inaccessible.
+                    'permissions' => \App\Support\Rbac\PermissionCatalog::permissionsForRole((string) $request->user()->rol),
                 ] : null,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
                 'warning' => $request->session()->get('warning'),
-                // Contraseña temporal de restablecimiento: solo se muestra una vez.
-                'temp_password' => $request->session()->pull('temp_password'),
+                // Clave temporal de restablecimiento: se revela SOLO en la sección
+                // de usuarios (otro página no se suelta — no es un aviso global).
+                'temp_password' => $request->routeIs('usuarios.*')
+                    ? $request->session()->pull('temp_password')
+                    : null,
             ],
         ];
     }

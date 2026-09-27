@@ -60,7 +60,9 @@ final class DashboardMetricsDTO
         public readonly array $inventoryHealth,
         public readonly array $technicians,
         public readonly array $recentActivity,
-        public readonly array $ticketsByStatus
+        public readonly array $ticketsByStatus,
+        /** @var array<string, mixed>|null */
+        public readonly ?array $myWork = null
     ) {
     }
 
@@ -77,6 +79,7 @@ final class DashboardMetricsDTO
             'technicians' => $this->technicians,
             'recent_activity' => $this->recentActivity,
             'tickets_by_status' => $this->ticketsByStatus,
+            'my_work' => $this->myWork,
         ];
     }
 }

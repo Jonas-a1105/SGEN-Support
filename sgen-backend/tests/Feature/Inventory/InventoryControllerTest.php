@@ -22,7 +22,7 @@ final class InventoryControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -172,6 +172,13 @@ final class InventoryControllerTest extends TestCase
             'nombre' => 'Taller TI '.uniqid(),
             'created_at' => now(),
             'updated_at' => now(),
+        ]);
+
+        // El saldo vivo está por ubicación (regla #15 con lock): sembrar el origen.
+        DB::table('inventario_ubicaciones')->insert([
+            'item_id' => $product->id,
+            'departamento_id' => $dept1,
+            'cantidad' => 20,
         ]);
 
         $response = $this->post('/inventario/transferir', [

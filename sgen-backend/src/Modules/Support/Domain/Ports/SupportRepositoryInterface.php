@@ -59,17 +59,24 @@ interface SupportRepositoryInterface
     /**
      * Registra el consumo de un material/repuesto en el ticket.
      */
-    public function addMaterial(int $ticketId, int $itemId, int $quantity, int $userId): bool;
+    public function addMaterial(int $ticketId, int $itemId, float $quantity, int $userId): bool;
 
     /**
      * Registra la calificación y feedback del solicitante.
+     *
+     * La operación es atómica (transacción + lockForUpdate) y exige dos
+     * reglas de negocio: la calificación la registra únicamente el
+     * solicitante del ticket y solo puede registrarse una vez.
      */
-    public function rateTicket(int $ticketId, string $rating, ?string $comment = null): bool;
+    public function rateTicket(int $ticketId, string $rating, ?string $comment, int $actingUserId): bool;
 
     /**
-     * Guarda la firma digital (base64) del solicitante sobre el ticket resuelto.
+     * Guarda la firma digital (base64) del solicitante sobre el ticket resuelto
+     * con su evidencia probatoria: huella SHA-256 del trazo, IP y agente de
+     * usuario del firmante, y fecha/hora de captura. La firma es única e
+     * inmutable: si ya existe, lanza SignatureAlreadyRegisteredException.
      */
-    public function saveSignature(int $ticketId, string $signatureData): bool;
+    public function saveSignature(int $ticketId, string $signatureData, string $ipAddress, ?string $userAgent): bool;
 
     public function uploadAttachment(int $ticketId, string $filePath, string $originalName, string $mimeType, int $size, int $userId, ?string $checksumSha256 = null): int;
 

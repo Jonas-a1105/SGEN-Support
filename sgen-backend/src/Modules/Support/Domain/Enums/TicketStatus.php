@@ -13,6 +13,7 @@ enum TicketStatus: string
     case EN_ESPERA = 'en_espera';
     case RESUELTO = 'resuelto';
     case CERRADO = 'cerrado';
+    case CANCELADO = 'cancelado';
 
     public function label(): string
     {
@@ -22,6 +23,7 @@ enum TicketStatus: string
             self::EN_ESPERA => 'En espera',
             self::RESUELTO => 'Resuelto',
             self::CERRADO => 'Cerrado',
+            self::CANCELADO => 'Cancelado',
         };
     }
 
@@ -37,17 +39,19 @@ enum TicketStatus: string
             self::EN_ESPERA => 'waiting',
             self::RESUELTO => 'resolved',
             self::CERRADO => 'closed',
+            self::CANCELADO => 'cancelled',
         };
     }
 
     /**
      * Máquina de estados finita — única fuente de verdad del ciclo de vida.
      *
-     *   PENDIENTE  → EN_PROCESO | EN_ESPERA | RESUELTO
-     *   EN_PROCESO → EN_ESPERA | RESUELTO | PENDIENTE
-     *   EN_ESPERA  → EN_PROCESO | RESUELTO
+     *   PENDIENTE  → EN_PROCESO | EN_ESPERA | RESUELTO | CANCELADO
+     *   EN_PROCESO → EN_ESPERA | RESUELTO | PENDIENTE | CANCELADO
+     *   EN_ESPERA  → EN_PROCESO | RESUELTO | CANCELADO
      *   RESUELTO   → CERRADO (autocierre/cierre manual) | EN_PROCESO (reapertura justificada)
      *   CERRADO    → ∅ (estado terminal, inmutable)
+     *   CANCELADO  → ∅ (estado terminal: un ticket anulado jamás revive)
      */
     public function canTransitionTo(self $target): bool
     {
@@ -56,11 +60,12 @@ enum TicketStatus: string
         }
 
         return match ($this) {
-            self::PENDIENTE => in_array($target, [self::EN_PROCESO, self::EN_ESPERA, self::RESUELTO], true),
-            self::EN_PROCESO => in_array($target, [self::EN_ESPERA, self::RESUELTO, self::PENDIENTE], true),
-            self::EN_ESPERA => in_array($target, [self::EN_PROCESO, self::RESUELTO], true),
+            self::PENDIENTE => in_array($target, [self::EN_PROCESO, self::EN_ESPERA, self::RESUELTO, self::CANCELADO], true),
+            self::EN_PROCESO => in_array($target, [self::EN_ESPERA, self::RESUELTO, self::PENDIENTE, self::CANCELADO], true),
+            self::EN_ESPERA => in_array($target, [self::EN_PROCESO, self::RESUELTO, self::CANCELADO], true),
             self::RESUELTO => in_array($target, [self::CERRADO, self::EN_PROCESO], true),
             self::CERRADO => false,
+            self::CANCELADO => false,
         };
     }
 
@@ -75,7 +80,7 @@ enum TicketStatus: string
      */
     public function isFinal(): bool
     {
-        return in_array($this, [self::RESUELTO, self::CERRADO], true);
+        return in_array($this, [self::RESUELTO, self::CERRADO, self::CANCELADO], true);
     }
 
     /**
@@ -105,6 +110,7 @@ enum TicketStatus: string
             'en_espera', 'espera', 'waiting' => self::EN_ESPERA,
             'resuelto', 'resolved' => self::RESUELTO,
             'cerrado', 'closed' => self::CERRADO,
+            'cancelado', 'cancelled', 'anulado' => self::CANCELADO,
             default => throw new InvalidArgumentException(
                 "Estado de ticket desconocido en persistencia: [{$value}]."
             ),

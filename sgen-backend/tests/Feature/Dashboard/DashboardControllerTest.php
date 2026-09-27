@@ -20,7 +20,7 @@ final class DashboardControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_dash_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

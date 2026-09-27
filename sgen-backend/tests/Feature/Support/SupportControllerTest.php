@@ -27,7 +27,7 @@ final class SupportControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_support_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -181,7 +181,23 @@ final class SupportControllerTest extends TestCase
 
     public function test_can_rate_ticket(): void
     {
-        $response = $this->post("/soportes/{$this->ticketId}/calificar", [
+        // La calificación es única y solo la registra el solicitante:
+        // se crea un ticket propio (sin valorar) para calificarlo.
+        $requesterId = (int) auth()->id();
+        $ticketPropio = (int) DB::table('soportes')->insertGetId([
+            'titulo' => 'Ticket propio para calificar',
+            'descripcion' => 'Fixture de valoración por el solicitante',
+            'equipo_id' => $this->equipmentId,
+            'empleado_id' => $this->employeeId,
+            'usuario_creacion_id' => $requesterId,
+            'prioridad' => 'media',
+            'estado' => 'resuelto',
+            'fecha' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->post("/soportes/{$ticketPropio}/calificar", [
             'calificacion' => 5,
             'comentario' => 'Excelente servicio y soporte rápido',
         ]);
@@ -189,7 +205,7 @@ final class SupportControllerTest extends TestCase
         $response->assertRedirect();
 
         $this->assertDatabaseHas('soportes', [
-            'id' => $this->ticketId,
+            'id' => $ticketPropio,
             'valoracion' => 'excelente',
         ]);
     }
@@ -210,9 +226,7 @@ final class SupportControllerTest extends TestCase
         $response = $this->delete("/soportes/{$this->ticketId}");
 
         $response->assertRedirect('/soportes');
-        $this->assertDatabaseMissing('soportes', [
-            'id' => $this->ticketId,
-        ]);
+        $this->assertNotNull(DB::table('soportes')->where('id', $this->ticketId)->value('deleted_at'));
     }
 
     public function test_can_filter_support_tickets(): void

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Modules\Equipment\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Equipment\Infrastructure\Http\Requests\RegisterEquipmentRequest;
+
 use Modules\Equipment\Infrastructure\Http\Requests\StoreEquipmentRequest;
 use Modules\Equipment\Infrastructure\Http\Requests\TransferEquipmentRequest;
 use Modules\Equipment\Infrastructure\Http\Requests\UpdateEquipmentRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,12 +18,14 @@ use Inertia\Response;
 use Modules\Equipment\Application\DTOs\CreateEquipmentDTO;
 use Modules\Equipment\Application\DTOs\UpdateEquipmentDTO;
 use Modules\Equipment\Application\UseCases\CreateEquipmentUseCase;
+use Modules\Equipment\Application\UseCases\DecommissionEquipmentUseCase;
 use Modules\Equipment\Application\UseCases\DeleteEquipmentUseCase;
+use Modules\Equipment\Infrastructure\Http\Requests\DecommissionEquipmentRequest;
 use Modules\Equipment\Application\UseCases\ExportEquipmentExcelUseCase;
 use Modules\Equipment\Application\UseCases\GenerateCustodyActPdfUseCase;
 use Modules\Equipment\Application\UseCases\GetEquipmentDashboardDataUseCase;
 use Modules\Equipment\Application\UseCases\GetEquipmentDetailUseCase;
-use Modules\Equipment\Application\UseCases\RegisterEquipmentUseCase;
+
 use Modules\Equipment\Application\UseCases\TransferEquipmentUseCase;
 use Modules\Equipment\Application\UseCases\UpdateEquipmentUseCase;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -80,9 +83,103 @@ final class EquipmentController extends Controller
         return back()->with('success', 'Equipo actualizado correctamente.');
     }
 
+    /**
+     * Firma probatoria de la custodia vigente (jornada patrimonial).
+     */
+    public function signCustody(int $id, Request $request, \Modules\Equipment\Domain\Ports\EquipmentRepositoryInterface $repository): RedirectResponse
+    {
+        // Mismo contrato de trazo que los tickets: data URL de imagen real.
+        $validated = $request->validate([
+            'firma_base64' => ['required', 'string', 'starts_with:data:image/', 'min:100', 'max:1000000'],
+        ]);
+
+        try {
+            $repository->signCustody(
+                $id,
+                (string) $validated['firma_base64'],
+                (string) ($request->ip() ?? '0.0.0.0'),
+                $request->userAgent()
+            );
+
+            return back()->with('success', 'Custodia firmada con evidencia probatoria.');
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Baja patrimonial formal (Módulo 11): retiro con motivo legal, custodia
+     * y mantenimiento cerrados, y acta emitida con hash SHA-256.
+     * Acción irreversible; la historia completa permanece.
+     */
+    public function decommission(int $id, DecommissionEquipmentRequest $request, DecommissionEquipmentUseCase $useCase): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        try {
+            $useCase->execute(
+                $id,
+                (string) $validated['motivo'],
+                isset($validated['valor_recuperacion']) ? (float) $validated['valor_recuperacion'] : null,
+                $validated['destino'] ?? null,
+                $validated['nota'] ?? null,
+                (int) $request->user()->id,
+            );
+
+            return back()->with('success', 'Baja patrimonial registrada: el activo queda fuera del ciclo operativo con acta generada.');
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Acta formal de baja, probatoria (hash SHA-256 al pie + verificación).
+     */
+    public function decommissionAct(int $id, GetEquipmentDetailUseCase $detailUseCase): \Illuminate\Http\Response
+    {
+        $detail = $detailUseCase->execute($id);
+
+        abort_unless($detail && $detail->rawStatus === 'de_baja', 403, 'El acta de baja solo existe para activos oficialmente retirados.');
+
+        // La huella probatoria se compone de los datos del activo + la evidencia
+        // de baja: cualquier recómputo posterior debe igualarse byte a byte.
+        $dataActa = $detail->toArray();
+        $stringCore = json_encode([
+            'equipo' => [
+                'id' => $dataActa['id'],
+                'codigo' => $dataActa['inventoryCode'],
+                'marca' => $dataActa['brand'],
+                'modelo' => $dataActa['model'],
+            ],
+            'baja' => [
+                'motivo' => $dataActa['motivo_baja'] ?? null,
+                'fecha' => $dataActa['fecha_baja'] ?? null,
+                'valor' => $dataActa['valor_recuperacion'] ?? null,
+                'destino' => $dataActa['destino_baja'] ?? null,
+            ],
+        ]);
+        $hash = hash('sha256', (string) $stringCore);
+
+        // Inmutabilidad probatoria: el hash de emisión se graba una sola vez.
+        DB::table('equipos')->where('id', $id)->whereNull('acta_baja_hash')->update(['acta_baja_hash' => $hash]);
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('equipment.decommission-act-pdf', [
+            'equipment' => $dataActa,
+            'generada_en' => now(),
+            'hash_acta' => $hash,
+        ])
+            ->setPaper('a4', 'portrait')
+            ->download("Acta_Baja_{$detail->inventoryCode}.pdf");
+    }
+
     public function destroy(int $id, DeleteEquipmentUseCase $useCase): RedirectResponse
     {
-        $useCase->execute($id);
+        try {
+            $useCase->execute($id);
+        } catch (\DomainException $e) {
+            // Integridad patrimonial: el motivo llega al usuario, sin 500 crudo.
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('equipos.index')->with('success', 'Equipo eliminado satisfactoriamente.');
     }
@@ -93,22 +190,6 @@ final class EquipmentController extends Controller
             $useCase->execute($request->toDTO());
 
             return back()->with('success', 'Equipo trasladado correctamente.');
-        } catch (\DomainException $e) {
-            // Error de negocio con mensaje deliberado y seguro para el usuario.
-            return back()->with('error', $e->getMessage());
-        } catch (\Throwable $e) {
-            report($e);
-
-            return back()->with('error', 'Error al procesar el equipo. Inténtelo de nuevo.');
-        }
-    }
-
-    public function register(RegisterEquipmentRequest $request, RegisterEquipmentUseCase $useCase): RedirectResponse
-    {
-        try {
-            $useCase->execute($request->toDTO());
-
-            return redirect()->route('equipos.index')->with('success', 'Equipo registrado exitosamente.');
         } catch (\DomainException $e) {
             // Error de negocio con mensaje deliberado y seguro para el usuario.
             return back()->with('error', $e->getMessage());

@@ -13,8 +13,8 @@ final class RateTicketUseCase
     ) {
     }
 
-    public function execute(int $ticketId, string $rating, ?string $comment = null): bool
+    public function execute(int $ticketId, string $rating, ?string $comment, int $actingUserId): bool
     {
-        return $this->repository->rateTicket($ticketId, $rating, $comment);
+        return $this->repository->rateTicket($ticketId, $rating, $comment, $actingUserId);
     }
 }

@@ -17,7 +17,8 @@ final class SystemUser
         private string $theme,
         private ?int $employeeId,
         private ?int $departmentId,
-        private ?string $email = null
+        private ?string $email = null,
+        private bool $active = true
     ) {
         $trimmedUsername = trim($this->username);
         if ($trimmedUsername === '') {
@@ -33,9 +34,10 @@ final class SystemUser
         ?int $employeeId = null,
         ?int $departmentId = null,
         ?int $id = null,
-        ?string $email = null
+        ?string $email = null,
+        bool $active = true
     ): self {
-        return new self($id, $username, $password, $role, $theme, $employeeId, $departmentId, $email);
+        return new self($id, $username, $password, $role, $theme, $employeeId, $departmentId, $email, $active);
     }
 
     public function id(): ?int
@@ -76,6 +78,15 @@ final class SystemUser
     public function email(): ?string
     {
         return $this->email;
+    }
+
+    /**
+     * Cuenta habilitada: solo un usuario activo puede autenticarse
+     * o seguir operando; la identidad y su historial se conservan.
+     */
+    public function isActive(): bool
+    {
+        return $this->active;
     }
 
     public function update(

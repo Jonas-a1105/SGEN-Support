@@ -10,9 +10,10 @@ final class ReopenTicketRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $user = $this->user();
-
-        return $user !== null && $user->can('soportes.manage');
+        // Cualquier usuario autenticado puede pedir reapertura; la legitimidad
+        // (solicitante o personal operativo) y la ventana las aplica el
+        // dominio en una sola transacción con lock (regla #31).
+        return $this->user() !== null;
     }
 
     /**

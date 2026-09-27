@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { usePermissions } from '@/Composables/usePermissions';
 import TicketDetailHeader from '@/Components/Support/Detail/TicketDetailHeader.vue';
 import TicketDetailTabs, { type TabKey } from '@/Components/Support/Detail/TicketDetailTabs.vue';
 import TabGeneralInfo from '@/Components/Support/Detail/TabGeneralInfo.vue';
@@ -44,7 +45,9 @@ const isAssignTechOpen = ref(false);
 const isAddMaterialOpen = ref(false);
 const isEditFieldOpen = ref(false);
 const isPauseTicketOpen = ref(false);
-const isResolveTicketOpen = ref(false);
+    const { can } = usePermissions();
+
+    const isResolveTicketOpen = ref(false);
 const isReopenTicketOpen = ref(false);
 
 const handleStartTicket = () => {
@@ -163,6 +166,7 @@ const handleReopenTicket = () => {
         <ModalResolveTicket
             :is-open="isResolveTicketOpen"
             :ticket-id="ticket.id"
+            :ticket-version="ticket.version ?? null"
             @close="isResolveTicketOpen = false"
         />
 

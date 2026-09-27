@@ -36,7 +36,7 @@ final class DepartmentEmployeeLifecycleE2ETest extends TestCase
         $this->adminUser = User::firstOrCreate(
             ['username' => 'admin_e2e_dept_emp'],
             [
-                'password' => bcrypt('secret123'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret123'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

@@ -26,6 +26,39 @@ interface UserRepositoryInterface
     /** Cuenta de administradores activos (para la protección del último admin). */
     public function countAdmins(): int;
 
+    /**
+     * Administradores con cuenta habilitada: la única línea de rescate
+     * real del sistema. Las protecciones estructurales cuentan estos.
+     */
+    public function countActiveAdmins(): int;
+
+    /**
+     * IDs de los tickets activos (no resueltos ni cerrados) cuyo técnico
+     * responsable es el empleado vinculado a esta cuenta de usuario.
+     *
+     * Se consulta directamente contra la tabla de soportes porque es la
+     * fuente operativa del ciclo de vida; los estados finales provienen
+     * de la máquina de estados del dominio de Soporte (sin strings mágicos).
+     *
+     * @return list<int>
+     */
+    public function activeTicketIdsAssignedTo(int $userId): array;
+
+    /**
+     * Conteo de filas que SOLO admiten integridad estricta (FK RESTRICT):
+     * historial operativo del que la auditoría depende. Si algún conteo es
+     * mayor que cero, el usuario no puede eliminarse físicamente.
+     *
+     * @return array<string, int>  origen legible → filas vinculadas
+     */
+    public function operationalReferenceCounts(int $userId): array;
+
+    /**
+     * Activa o desactiva la cuenta. Al desactivar se revocan además las
+     * sesiones vivas: el acceso se pierde de inmediato, no al expirar.
+     */
+    public function setActive(int $id, bool $active): void;
+
     public function save(SystemUser $user): int;
 
     public function update(SystemUser $user): void;

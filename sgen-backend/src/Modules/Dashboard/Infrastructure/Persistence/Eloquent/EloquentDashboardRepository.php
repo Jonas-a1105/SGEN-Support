@@ -160,4 +160,61 @@ final class EloquentDashboardRepository implements DashboardRepositoryInterface
             'in_process' => $inProcess,
         ];
     }
+
+    public function getMyWork(int $userId): array
+    {
+        // Mi trabajo = lo que yo registré como solicitante, o lo que me asignaron
+        // como técnico responsable (mi empleado vinculado).
+        $miEmpleadoIdEarly = (int) (DB::table('usuarios')->where('id', $userId)->value('empleado_id') ?? 0);
+        if ($miEmpleadoIdEarly === 0) {
+            $miEmpleadoIdEarly = null;
+        }
+
+        $filas = DB::table('soportes')
+            ->select(['soportes.estado', DB::raw('COUNT(*) as total')])
+            ->where(function ($q) use ($userId, $miEmpleadoIdEarly) {
+                $q->where('soportes.usuario_creacion_id', $userId)
+                    ->when($miEmpleadoIdEarly !== null, fn ($qq) => $qq->orWhere('soportes.empleado_id', $miEmpleadoIdEarly));
+            })
+            ->groupBy('soportes.estado')
+            ->pluck('total', 'estado');
+
+        // Mis activos: custodia vigente asignada al empleado vinculado.
+        $miEmpleadoId = (int) (DB::table('usuarios')->where('id', $userId)->value('empleado_id') ?? 0);
+
+        $misEquipos = $miEmpleadoId > 0
+            ? DB::table('custodias')
+                ->leftJoin('equipos', 'custodias.equipo_id', '=', 'equipos.id')
+                ->where('custodias.empleado_id', $miEmpleadoId)
+                ->whereNull('custodias.fecha_fin')
+                ->select([
+                    'equipos.id',
+                    'equipos.codigo_inventario as codigo',
+                    DB::raw("trim(equipos.modelo || ' [' || equipos.numero_serie || ']') as nombre"),
+                ])
+                ->limit(5)
+                ->get()
+                ->map(static fn ($e) => [
+                    'id' => (int) $e->id,
+                    'codigo' => (string) $e->codigo,
+                    'nombre' => trim((string) $e->nombre),
+                ])
+                ->all()
+            : [];
+
+        // Órdenes laborales que veo: solo si soy técnico asignado a ellas.
+        $proximas = (int) DB::table('mantenimientos')
+            ->where('tecnico_id', $userId)
+            ->where('estado', '!=', 'completado')
+            ->where('fecha', '>=', Carbon::now()->toDateString())
+            ->count();
+
+        return [
+            'mis_pendientes' => (int) ($filas['pendiente'] ?? 0),
+            'mis_en_proceso' => (int) ($filas['en_proceso'] ?? 0),
+            'mis_resueltos_mes' => (int) ($filas['resuelto'] ?? 0) + (int) ($filas['cerrado'] ?? 0),
+            'mis_equipos' => $misEquipos,
+            'proximas_ordenes_mias' => $proximas,
+        ];
+    }
 }

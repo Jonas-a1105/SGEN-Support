@@ -24,13 +24,16 @@ final class UpdateTicketRequest extends FormRequest
             'titulo' => ['nullable', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string'],
             'prioridad' => ['nullable', 'string', 'in:baja,media,alta,critica'],
-            'estado' => ['nullable', 'string', 'in:pendiente,en_proceso,resuelto,cerrado'],
+            'estado' => ['nullable', 'string', 'in:pendiente,en_proceso,en_espera,resuelto,cerrado,cancelado'],
             'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
             'categoria_id' => ['nullable', 'integer', 'exists:categorias,id'],
             'fecha_cierre' => ['nullable', 'string'],
             'solucion' => ['nullable', 'string'],
             'tiempo_atencion_minutos' => ['nullable', 'integer'],
-            'firma_base64' => ['nullable', 'string', 'max:1000000'],
+            // Firma de conformidad en el mismo flujo: mismo rigor probatorio.
+            'firma_base64' => ['nullable', 'string', 'starts_with:data:image/', 'min:100', 'max:1000000'],
+            // #22: versionado optimista del ticket.
+            'version' => ['nullable', 'integer', 'min:1'],
             'firma' => ['nullable', 'string', 'max:1000000'],
         ];
     }

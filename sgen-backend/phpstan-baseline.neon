@@ -151,18 +151,6 @@ parameters:
 			path: src/Modules/Equipment/Application/DTOs/EquipmentDetailDTO.php
 
 		-
-			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentDetailDTO\:\:__construct\(\) has parameter \$maintenances with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Modules/Equipment/Application/DTOs/EquipmentDetailDTO.php
-
-		-
-			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentDetailDTO\:\:__construct\(\) has parameter \$tickets with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Modules/Equipment/Application/DTOs/EquipmentDetailDTO.php
-
-		-
 			message: '#^Method Modules\\Equipment\\Application\\DTOs\\EquipmentDetailDTO\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1

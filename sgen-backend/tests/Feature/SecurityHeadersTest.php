@@ -20,7 +20,7 @@ final class SecurityHeadersTest extends TestCase
     {
         $admin = User::firstOrCreate(
             ['username' => 'headers_test_'.uniqid()],
-            ['password' => bcrypt('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $this->actingAs($admin)->get('/dashboard')
@@ -30,11 +30,35 @@ final class SecurityHeadersTest extends TestCase
             ->assertHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
     }
 
+    public function test_csp_estricta_con_nonce_por_peticion(): void
+    {
+        $admin = User::firstOrCreate(
+            ['username' => 'headers_csp_'.uniqid()],
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+        );
+
+        $response = $this->actingAs($admin)->get('/dashboard');
+
+        $csp = (string) $response->headers->get('Content-Security-Policy');
+        $this->assertNotSame('', $csp, 'La respuesta debe anunciar una Content-Security-Policy.');
+
+        $this->assertStringContainsString("default-src 'self'", $csp);
+        $this->assertStringContainsString("script-src 'self' 'nonce-", $csp);
+        $this->assertStringContainsString("object-src 'none'", $csp);
+        $this->assertStringContainsString("frame-ancestors 'self'", $csp);
+        $this->assertStringNotContainsString("script-src 'self' 'unsafe-inline'", $csp);
+
+        // Los scripts en línea de la plantilla (Ziggy, tema) deben llevar el nonce.
+        preg_match("/'nonce-([^']+)'/", $csp, $coincidencia);
+        $this->assertNotEmpty($coincidencia[1] ?? null);
+        $response->assertSee('nonce="'.$coincidencia[1].'"', false);
+    }
+
     public function test_hsts_solo_se_anuncia_bajo_https(): void
     {
         $admin = User::firstOrCreate(
             ['username' => 'headers_https_'.uniqid()],
-            ['password' => bcrypt('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $this->actingAs($admin)->get('http://localhost/dashboard')

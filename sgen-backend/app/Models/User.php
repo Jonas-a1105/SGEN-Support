@@ -17,6 +17,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $password
  * @property string $rol
  * @property string $tema
+ * @property bool $activo
  * @property bool $must_change_password
  * @property int|null $empleado_id
  * @property int|null $departamento_id
@@ -36,6 +37,7 @@ class User extends Authenticatable
         'password',
         'rol',
         'tema',
+        'activo',
         'empleado_id',
         'departamento_id',
         'must_change_password',
@@ -56,6 +58,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'activo' => 'boolean',
             'must_change_password' => 'boolean',
         ];
     }

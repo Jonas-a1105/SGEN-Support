@@ -16,13 +16,16 @@ final class UpdateTicketDTO
         public readonly ?string $fechaCierre = null,
         public readonly ?string $solucion = null,
         public readonly ?int $tiempoAtencionMinutos = null,
-        public readonly ?string $firma = null
+        public readonly ?string $firma = null,
+        public readonly ?string $firmaIp = null,
+        public readonly ?string $firmaUserAgent = null,
+        public readonly ?int $version = null
     ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, ?string $firmaIp = null, ?string $firmaUserAgent = null): self
     {
         return new self(
             titulo: isset($data['titulo']) ? (string) $data['titulo'] : (isset($data['title']) ? (string) $data['title'] : null),
@@ -34,7 +37,10 @@ final class UpdateTicketDTO
             fechaCierre: isset($data['fecha_cierre']) ? (string) $data['fecha_cierre'] : null,
             solucion: isset($data['solucion']) ? (string) $data['solucion'] : null,
             tiempoAtencionMinutos: isset($data['tiempo_atencion_minutos']) ? (int) $data['tiempo_atencion_minutos'] : null,
-            firma: isset($data['firma_base64']) ? (string) $data['firma_base64'] : (isset($data['firma']) ? (string) $data['firma'] : null)
+            firma: isset($data['firma_base64']) ? (string) $data['firma_base64'] : (isset($data['firma']) ? (string) $data['firma'] : null),
+            firmaIp: $firmaIp,
+            firmaUserAgent: $firmaUserAgent,
+            version: isset($data['version']) ? (int) $data['version'] : null
         );
     }
 }

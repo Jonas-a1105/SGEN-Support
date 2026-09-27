@@ -30,7 +30,7 @@ final class SupportPriorityAndAttachmentTest extends TestCase
         $this->user = User::firstOrCreate(
             ['username' => 'admin_priority_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

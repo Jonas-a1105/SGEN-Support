@@ -22,7 +22,7 @@ final class SettingsControllerTest extends TestCase
         $this->user = User::firstOrCreate(
             ['username' => 'settings_tester'],
             [
-                'password' => bcrypt('old_password_123'),
+                'password' => \Illuminate\Support\Facades\Hash::make('old_password_123'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

@@ -13,6 +13,7 @@ import DashboardTechPerformanceCard from '@/Components/Dashboard/DashboardTechPe
 import DashboardOperationsDistributionCard from '@/Components/Dashboard/DashboardOperationsDistributionCard.vue';
 import DashboardRecentActivityCard from '@/Components/Dashboard/DashboardRecentActivityCard.vue';
 import DashboardAppearanceModal from '@/Components/Dashboard/DashboardAppearanceModal.vue';
+import DashboardMyWorkCard from '@/Components/Dashboard/DashboardMyWorkCard.vue';
 import type { DashboardMetrics } from '@/Types/DashboardMetrics';
 
 const props = defineProps<{
@@ -100,6 +101,12 @@ const handleViewLogs = () => {
         <div class="dashboard-wrapper">
             <!-- Barra de Bienvenida -->
             <DashboardWelcome @open-appearance="isAppearanceOpen = true" />
+
+            <!-- Vista personal del día: solo si hay algo concreto por hacer -->
+            <DashboardMyWorkCard
+                v-if="metrics.my_work"
+                :my-work="metrics.my_work"
+            />
 
             <!-- Rejilla de 4 KPIs -->
             <DashboardKpiGrid

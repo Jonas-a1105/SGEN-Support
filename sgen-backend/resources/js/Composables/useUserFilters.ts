@@ -12,6 +12,7 @@ export interface UserItem {
     empleado_email: string | null;
     avatar_initials: string;
     is_verified_employee: boolean;
+    is_active: boolean;
 }
 
 export function useUserFilters(users: Ref<UserItem[]>) {

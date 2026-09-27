@@ -28,7 +28,10 @@ final class UpdateUserRequest extends FormRequest
             'password' => ['nullable', 'string', Password::min(10)->mixedCase()->numbers()->uncompromised()],
             'rol' => ['required', 'string', 'in:admin,tecnico,consultor,operador'],
             'departamento_id' => ['nullable', 'integer', 'exists:departamentos,id'],
+            // Sin email no hay recuperación self-service: empleado con email válido
+            // o email directo de la cuenta sigue siendo pasaje obligatorio.
             'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
+            'email' => ['nullable', 'email', 'max:150', 'unique:usuarios,email,'.$userId],
         ];
     }
 }

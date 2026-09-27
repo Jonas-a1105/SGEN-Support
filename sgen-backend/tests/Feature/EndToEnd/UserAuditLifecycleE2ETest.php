@@ -35,7 +35,7 @@ final class UserAuditLifecycleE2ETest extends TestCase
         $this->adminUser = User::firstOrCreate(
             ['username' => 'super_admin_e2e'],
             [
-                'password' => bcrypt('secret1234'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret1234'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -52,6 +52,7 @@ final class UserAuditLifecycleE2ETest extends TestCase
             'username' => $uniqueUsername,
             'password' => 'Kx9#mQ2$vL8!zP4w',
             'rol' => 'tecnico',
+            'email' => $uniqueUsername.'@empresa.com',
         ];
 
         $createResponse = $this->post('/usuarios', $createPayload);

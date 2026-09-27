@@ -26,6 +26,7 @@ final class UserListItemMapper
         $empNom = is_object($row) ? ($row->empleado_nombre ?? null) : ($row['empleado_nombre'] ?? null);
         $empApe = is_object($row) ? ($row->empleado_apellido ?? null) : ($row['empleado_apellido'] ?? null);
         $empleadoEmail = is_object($row) ? ($row->empleado_email ?? null) : ($row['empleado_email'] ?? null);
+        $activo = is_object($row) ? (bool) ($row->activo ?? true) : (bool) ($row['activo'] ?? true);
 
         $empleadoNombre = null;
         if ($empNom !== null || $empApe !== null) {
@@ -51,7 +52,8 @@ final class UserListItemMapper
             empleadoNombre: $empleadoNombre,
             empleadoEmail: $empleadoEmail !== null ? (string) $empleadoEmail : null,
             avatarInitials: $avatarInitials,
-            isVerifiedEmployee: $empleadoId !== null
+            isVerifiedEmployee: $empleadoId !== null,
+            isActive: $activo
         );
     }
 }

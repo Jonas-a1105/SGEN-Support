@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Application\UseCases;
 
+use Illuminate\Support\Facades\Hash;
 use Modules\User\Application\DTOs\CreateUserDTO;
 use Modules\User\Domain\Enums\UserRole;
 use Modules\User\Domain\Models\SystemUser;
@@ -18,7 +19,7 @@ final readonly class CreateUserUseCase
     public function execute(CreateUserDTO $dto): int
     {
         $roleEnum = UserRole::tryFromString($dto->rol);
-        $hashedPassword = bcrypt($dto->password);
+        $hashedPassword = Hash::make($dto->password);
 
         $user = SystemUser::create(
             username: $dto->username,

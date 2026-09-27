@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import type { Equipment, Department, Employee } from '@/Types/inventory';
 import StepperIndicator from './Forms/StepperIndicator.vue';
@@ -13,6 +13,8 @@ import BaseButton from '@/Components/UI/BaseButton.vue';
 
 const props = defineProps<{
     equipment: Equipment | null;
+    /** Edición desde módulos con listado ligero: carga la ficha completa vía JSON. */
+    equipmentId?: number | null;
     departamentos: Department[];
     empleados: Employee[];
 }>();
@@ -20,9 +22,62 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: 'back'): void; (e: 'saved'): void }>();
 
 const wizardStep = ref(1);
+const isLoadingDetail = ref(false);
+
+// Datos efectivos de edición: prop directo (Inventario) o fetch del detalle.
+const editingId = computed(() => props.equipment?.id ?? props.equipmentId ?? null);
+
+// Estados del wizard son etiquetas visibles: normaliza el valor crudo de BD.
+const ESTADO_A_ETIQUETA: Record<string, string> = {
+    disponible: 'Disponible',
+    en_uso: 'En uso',
+    en_reparacion: 'Reparación',
+    fuera_de_servicio: 'Baja',
+    de_baja: 'Baja',
+    en_reserva: 'Disponible',
+    prestado: 'En uso',
+    perdido: 'Baja',
+};
+
+function hydrate(dto: Record<string, any>): void {
+    form.id = dto.id;
+    form.version = dto.version ?? null;
+    form.codigo_inventario = dto.inventoryCode ?? dto.codigo_inventario ?? '';
+    form.numero_serie = dto.serialNumber ?? dto.numero_serie ?? '';
+    form.tipo = dto.type ?? dto.tipo ?? 'Computadora';
+    form.estado = ESTADO_A_ETIQUETA[dto.rawStatus ?? dto.estado] ?? 'Disponible';
+    form.marca = dto.brand ?? dto.marca ?? '';
+    form.modelo = dto.model ?? dto.modelo ?? '';
+    form.procesador = dto.processor ?? dto.procesador ?? '';
+    form.memoria_ram = dto.ram ?? dto.memoria_ram ?? '';
+    form.almacenamiento = dto.storage ?? dto.almacenamiento ?? '';
+    form.sistema_operativo = dto.os ?? dto.sistema_operativo ?? '';
+    form.departamento_id = dto.departmentId ?? dto.departamento_id ?? null;
+    form.empleado_id = dto.employeeId ?? dto.empleado_id ?? null;
+    form.valor_compra = dto.purchaseValue ? String(dto.purchaseValue) : (dto.valor_compra ? String(dto.valor_compra) : '');
+    form.proveedor = dto.supplier ?? dto.proveedor ?? '';
+}
+
+onMounted(async () => {
+    if (props.equipmentId && !props.equipment) {
+        isLoadingDetail.value = true;
+        try {
+            const respuesta = await fetch(`/equipos/${props.equipmentId}`, {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+            if (respuesta.ok) {
+                hydrate(await respuesta.json());
+            }
+        } finally {
+            isLoadingDetail.value = false;
+        }
+    }
+});
 
 const form = useForm({
     id: props.equipment?.id || null,
+    version: null as number | null,
     codigo_inventario: props.equipment?.codigo_inventario || '',
     numero_serie: props.equipment?.numero_serie || '',
     tipo: props.equipment?.tipo_equipo || props.equipment?.tipo || 'Computadora',
@@ -78,7 +133,7 @@ const prevStep = () => {
 };
 
 const submit = () => {
-    const equipId = props.equipment?.id || form.id;
+    const equipId = editingId.value || form.id;
     if (equipId) {
         form.put(`/equipos/${equipId}`, {
             preserveScroll: true,
@@ -99,11 +154,13 @@ const submit = () => {
 };
 
 const stepHeaders = [
-    'Información Básica',
+    'InformaciÃ³n BÃ¡sica',
     'Especificaciones',
-    'Ubicación',
-    'Adquisición',
+    'UbicaciÃ³n',
+    'AdquisiciÃ³n',
 ];
+
+// Loader cuando la edición llega solo con id (Equipos → fetch del detalle).
 </script>
 
 <template>
@@ -131,7 +188,7 @@ const stepHeaders = [
                             </div>
                             <div>
                                 <h2 class="wizard-hero-title" id="wizardTitle">
-                                    {{ equipment?.id ? 'Editar Equipo' : 'Registrar Equipo' }}
+                                    {{ (equipment?.id ?? equipmentId) ? 'Editar Equipo' : 'Registrar Equipo' }}
                                 </h2>
                                 <span class="wizard-hero-subtitle">Complete los datos del activo.</span>
                             </div>
@@ -146,7 +203,10 @@ const stepHeaders = [
 
                 <!-- CONTENIDO DERECHO DEL ASISTENTE -->
                 <div class="wizard-body-panel">
-                    <div>
+                    <div v-if="isLoadingDetail" class="wizard-loading">
+                        Cargando ficha del equipo…
+                    </div>
+                    <div v-else>
                         <div class="wizard-body-header">
                             <h3 class="panel-title" id="wizardStepHeader">
                                 {{ stepHeaders[wizardStep - 1] }}
@@ -245,6 +305,22 @@ const stepHeaders = [
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+}
+
+.wizard-loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted, #8e9199);
+    font-size: 14px;
+}
+
+/* Vista standalone: el patrón legacy .detail-view-container la oculta por
+   defecto (display:none) salvo clase .active; este componente se autogestiona
+   con v-if, así que se fuerza su visibilidad sin depender de ese estado. */
+#viewEditEquipmentWizard.detail-view-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .wizard-back-btn {

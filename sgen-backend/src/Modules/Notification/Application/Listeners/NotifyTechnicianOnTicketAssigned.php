@@ -9,6 +9,7 @@ use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
 use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
 use Modules\Support\Domain\Events\TicketAssigned;
+use Modules\Notification\Application\Services\EmailThrottler;
 use Modules\User\Domain\Ports\UserRepositoryInterface;
 
 /**
@@ -42,7 +43,7 @@ final class NotifyTechnicianOnTicketAssigned
 
             // Canal correo: solo si el usuario técnico tiene email registrado.
             $email = $this->users->findById((int) $techUserId)?->email();
-            if ($email) {
+            if ($email && EmailThrottler::permitir((int) $techUserId, $email, 'ticket_asignado', 'Ticket asignado')) {
                 Mail::to($email)->send(new TicketNotificationMail(
                     'Ticket asignado',
                     "Se te ha asignado el ticket #{$event->ticketId}: {$event->ticketTitulo}",

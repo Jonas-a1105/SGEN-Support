@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use Modules\About\Infrastructure\Http\Controllers\AboutController;
 use Modules\Audit\Infrastructure\Http\Controllers\AuditController;
 use Modules\Auth\Infrastructure\Http\Controllers\AuthController;
+use Modules\Auth\Infrastructure\Http\Controllers\PasswordResetController;
 use Modules\Category\Infrastructure\Http\Controllers\CategoryController;
 use Modules\Dashboard\Infrastructure\Http\Controllers\DashboardController;
 use Modules\Department\Infrastructure\Http\Controllers\DepartmentController;
@@ -22,6 +23,12 @@ use Modules\User\Infrastructure\Http\Controllers\UserController;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+
+    // Recuperación self-service de contraseña (token firmado, 60 min, 1 uso).
+    Route::get('/forgot-password', [PasswordResetController::class, 'showRequest'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showReset'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 });
 
 // Rutas Protegidas (Autenticación Requerida)// Rutas Protegidas (Autenticación Requerida)
@@ -64,7 +71,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [EquipmentController::class, 'store'])->name('store');
             Route::post('/trasladar', [EquipmentController::class, 'transfer'])->name('transfer');
             Route::post('/reasignar', [EquipmentController::class, 'reassign'])->name('reassign');
-            Route::post('/registrar', [EquipmentController::class, 'register'])->name('register');
+            Route::post('/{id}/custodia/firmar', [EquipmentController::class, 'signCustody'])->name('custodia.firmar')->middleware('idempotency');
+            // Baja patrimonial irreversible (motivo legal, acta probatoria).
+            Route::post('/{id}/baja', [EquipmentController::class, 'decommission'])->name('baja');
+            Route::get('/{id}/acta-baja', [EquipmentController::class, 'decommissionAct'])->name('acta-baja');
             Route::match(['put', 'patch', 'post'], '/{id}', [EquipmentController::class, 'update'])->name('update');
             Route::delete('/{id}', [EquipmentController::class, 'destroy'])->name('destroy');
         });
@@ -100,12 +110,16 @@ Route::middleware('auth')->group(function () {
         // Lectura y acciones del solicitante: cualquier usuario autenticado.
         Route::get('/', [SupportController::class, 'index'])->name('index');
         Route::get('/crear', [SupportController::class, 'create'])->name('create');
-        Route::post('/', [SupportController::class, 'store'])->name('store');
+        // #21: crear ticket es la acción destructiva creativa por excelencia.
+        Route::post('/', [SupportController::class, 'store'])->name('store')->middleware('idempotency');
         Route::get('/{id}', [SupportController::class, 'show'])->name('show');
         Route::get('/{id}/pdf', [SupportController::class, 'generatePdf'])->name('pdf');
         Route::post('/{id}/comentarios', [SupportController::class, 'addComment'])->name('comment');
-        Route::post('/{id}/calificar', [SupportController::class, 'rate'])->name('rate');
-        Route::post('/{id}/firma', [SupportController::class, 'saveSignature'])->name('signature');
+        Route::post('/{id}/calificar', [SupportController::class, 'rate'])->name('rate')->middleware('idempotency');
+        Route::post('/{id}/firma', [SupportController::class, 'saveSignature'])->name('signature')->middleware('idempotency');
+        // Reapertura: el solicitante también la puede pedir sobre su ticket;
+        // actor legítimo y ventana de días los valida el dominio (regla #31).
+        Route::post('/{id}/reabrir', [SupportController::class, 'reopen'])->name('reopen');
         Route::get('/archivos/{attachmentId}/descargar', [SupportController::class, 'downloadAttachment'])->name('download-attachment');
 
         // Ciclo de vida operativo: admin y técnico.
@@ -113,10 +127,9 @@ Route::middleware('auth')->group(function () {
             Route::put('/{id}', [SupportController::class, 'update'])->name('update');
             Route::match(['post', 'put'], '/{id}/reasignar', [SupportController::class, 'reassign'])->name('reassign');
             Route::match(['post', 'put'], '/{id}/asignar-tecnico', [SupportController::class, 'reassign'])->name('assign-tech');
-            Route::post('/{id}/materiales', [SupportController::class, 'addMaterial'])->name('material');
+            Route::post('/{id}/materiales', [SupportController::class, 'addMaterial'])->name('material')->middleware('idempotency');
             Route::post('/{id}/pausar', [SupportController::class, 'pause'])->name('pause');
             Route::post('/{id}/reanudar', [SupportController::class, 'resume'])->name('resume');
-            Route::post('/{id}/reabrir', [SupportController::class, 'reopen'])->name('reopen');
             Route::post('/{id}/actualizar-fecha-cierre', [SupportController::class, 'updateCloseDate'])->name('update-close-date');
             Route::post('/{id}/archivos', [SupportController::class, 'uploadAttachment'])->name('upload-attachment');
             Route::delete('/archivos/{attachmentId}', [SupportController::class, 'deleteAttachment'])->name('delete-attachment');
@@ -144,6 +157,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::match(['put', 'patch'], '/{id}', [UserController::class, 'update'])->name('update');
         Route::post('/{id}/restablecer', [UserController::class, 'resetPassword'])->name('reset-password');
+        Route::post('/{id}/alternar-estado', [UserController::class, 'toggleActive'])->name('toggle-active');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
     });
 
@@ -154,14 +168,33 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}', [AuditController::class, 'show'])->name('show');
     });
 
+    // Papelera universal: restaurar o purgar, solo administración.
+    Route::middleware('permission:auditoria.view')->group(function () {
+        Route::get('/papelera', [\App\Http\Controllers\PapeleraController::class, 'index'])->name('papelera.index');
+        Route::post('/papelera/{entidad}/{id}/restaurar', [\App\Http\Controllers\PapeleraController::class, 'restore'])->name('papelera.restore');
+        Route::delete('/papelera/{entidad}/{id}', [\App\Http\Controllers\PapeleraController::class, 'destroyForever'])->name('papelera.purge');
+    });
+
     Route::prefix('configuracion')->name('configuracion.')->group(function () {
-        // Cambio de contraseña propia: cualquier usuario autenticado.
+        // Página de configuración personal: candado grande vacío de roles —
+        // ésta ya no es de admin; cualquier cuenta la utiliza.
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        Route::match(['put', 'patch', 'post'], '/', [SettingsController::class, 'update'])->name('update');
+
+        // Cambio de contraseña propia: todo autenticado.
         Route::post('/password', [SettingsController::class, 'updatePassword'])->name('password');
 
+        // Administración de plataforma, solo con entrada de sistema abierta.
         Route::middleware('permission:configuracion.manage')->group(function () {
-            Route::get('/', [SettingsController::class, 'index'])->name('index');
-            Route::match(['put', 'patch', 'post'], '/', [SettingsController::class, 'update'])->name('update');
+            Route::get('/sistema', [\App\Http\Controllers\ConfiguracionGlobalController::class, 'index'])->name('sistema.index');
+            Route::match(['put', 'patch', 'post'], '/sistema', [\App\Http\Controllers\ConfiguracionGlobalController::class, 'update'])->name('sistema.update');
         });
+    });
+
+    // Editor de roles con matriz de permisos (administración funcional).
+    Route::middleware('permission:usuarios.manage')->group(function () {
+        Route::get('/roles', [\App\Http\Controllers\RolesAdminController::class, 'index'])->name('roles.index');
+        Route::match(['put', 'patch', 'post'], '/roles/{role}', [\App\Http\Controllers\RolesAdminController::class, 'update'])->name('roles.update');
     });
 
     Route::get('/acerca', [AboutController::class, 'index'])->name('acerca.index');
@@ -190,7 +223,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:mantenimientos.manage')->group(function () {
             Route::post('/', [MaintenanceController::class, 'store'])->name('store');
             Route::match(['put', 'patch', 'post'], '/{id}', [MaintenanceController::class, 'update'])->name('update');
-            Route::post('/{id}/materiales', [MaintenanceController::class, 'addMaterial'])->name('add-material');
+            Route::post('/{id}/materiales', [MaintenanceController::class, 'addMaterial'])->name('add-material')->middleware('idempotency');
             Route::delete('/{id}', [MaintenanceController::class, 'destroy'])->name('destroy');
             Route::post('/{id}/completar', [MaintenanceController::class, 'complete'])->name('complete');
             Route::post('/{id}/posponer', [MaintenanceController::class, 'postpone'])->name('postpone');
@@ -209,3 +242,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'delete'])->name('destroy');
     });
 });
+
+// Módulo 03 / PASO 0 multicanal: seguimiento público del ticket con token.
+Route::get('/portal/ticket/{token}', [\App\Http\Controllers\PublicTicketPortalController::class, 'show'])->name('portal.ticket.status');

@@ -70,6 +70,8 @@ const openCreateEquipment = () => {
     currentView.value = 'edit-equipment';
 };
 
+
+
 const openAdjust = (item?: Product) => {
     selectedItem.value = item || null;
     isAdjustOpen.value = true;

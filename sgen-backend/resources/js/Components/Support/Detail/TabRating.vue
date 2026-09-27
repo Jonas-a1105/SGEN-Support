@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import type { TicketRating } from '@/Types/support';
+import { useIdempotencyKey } from '@/Composables/useIdempotencyKey';
 
 interface Props {
     ticketId: number;
@@ -15,6 +16,7 @@ const hoverScore = ref<number | null>(null);
 const feedback = ref(props.rating?.comment ?? '');
 const isSubmitting = ref(false);
 const hasRated = ref(!!props.rating?.score);
+const { idempotencyKey } = useIdempotencyKey();
 
 const labels: Record<number, string> = {
     1: '1 estrella — Muy Insatisfecho',
@@ -47,6 +49,8 @@ const submitRating = () => {
             comentario: feedback.value,
         },
         {
+            // #21: doble clic en "calificar" jamás guarda dos valoraciones.
+            headers: { 'Idempotency-Key': idempotencyKey.value },
             preserveScroll: true,
             onSuccess: () => {
                 isSubmitting.value = false;

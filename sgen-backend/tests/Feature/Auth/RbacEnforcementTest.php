@@ -79,7 +79,7 @@ final class RbacEnforcementTest extends TestCase
     {
         return User::firstOrCreate(
             ['username' => "rbac_{$rol}_".uniqid()],
-            ['password' => bcrypt('secret'), 'rol' => $rol, 'tema' => 'light']
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => $rol, 'tema' => 'light']
         );
     }
 
@@ -100,7 +100,11 @@ final class RbacEnforcementTest extends TestCase
     public function test_tecnico_no_puede_ver_auditoria_ni_configuracion(): void
     {
         $this->actingAs($this->tecnico)->get('/auditoria')->assertForbidden();
-        $this->actingAs($this->tecnico)->get('/configuracion')->assertForbidden();
+
+        // `/configuracion` es Mi Cuenta: la ve cualquier logueado; lo vedado
+        // es tablero del sistema (claves/administración):
+        $this->actingAs($this->tecnico)->get('/configuracion')->assertOk();
+        $this->actingAs($this->tecnico)->get('/configuracion/sistema')->assertForbidden();
     }
 
     public function test_admin_si_puede_gestionar_usuarios(): void
@@ -114,9 +118,17 @@ final class RbacEnforcementTest extends TestCase
             'motivo' => 'Intento de pausa por un usuario operador sin permiso.',
         ])->assertForbidden();
 
-        $this->actingAs($this->operador)->post("/soportes/{$this->ticketId}/reabrir", [
-            'motivo' => 'Intento de reapertura por un usuario operador sin permiso.',
+        // Regla #31: quien NO es solicitante ni personal operativo recibe
+        // 403 formal (la autorización vive en el dominio, dentro del lock).
+        $this->actingAs($this->terceroSinRelacion())->post("/soportes/{$this->ticketId}/reabrir", [
+            'motivo' => 'Intento de reapertura por alguien ajeno al ticket.',
         ])->assertForbidden();
+    }
+
+    private function terceroSinRelacion(): User
+    {
+        // Usuario operador DISTINTO del solicitante: sin vínculo con el ticket.
+        return $this->crearUsuario('operador');
     }
 
     public function test_operador_no_puede_ver_reportes(): void
@@ -137,8 +149,10 @@ final class RbacEnforcementTest extends TestCase
         $this->actingAs($this->tecnico)->delete("/soportes/{$this->ticketId}")->assertForbidden();
         $this->assertDatabaseHas('soportes', ['id' => $this->ticketId]);
 
+        // La eliminación cae en papelera (soft delete): desaparece de la bandeja,
+        // jamás de la evidencia.
         $this->actingAs($this->admin)->delete("/soportes/{$this->ticketId}")->assertRedirect();
-        $this->assertDatabaseMissing('soportes', ['id' => $this->ticketId]);
+        $this->assertNotNull(DB::table('soportes')->where('id', $this->ticketId)->value('deleted_at'));
     }
 
     public function test_consultor_puede_ver_reportes_pero_no_gestionar_catalogos(): void

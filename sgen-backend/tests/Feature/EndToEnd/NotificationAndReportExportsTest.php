@@ -22,7 +22,7 @@ final class NotificationAndReportExportsTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'notif_tester'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

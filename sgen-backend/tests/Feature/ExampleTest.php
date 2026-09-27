@@ -23,7 +23,7 @@ class ExampleTest extends TestCase
     {
         $user = User::firstOrCreate(
             ['username' => 'test_root_user'],
-            ['password' => bcrypt('password'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => \Illuminate\Support\Facades\Hash::make('password'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $response = $this->actingAs($user)->get('/');

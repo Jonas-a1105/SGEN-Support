@@ -34,11 +34,11 @@ final class TicketOwnershipScopeTest extends TestCase
 
         $this->operador = User::firstOrCreate(
             ['username' => 'operador_scope_'.uniqid()],
-            ['password' => bcrypt('secret'), 'rol' => 'operador', 'tema' => 'light']
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'operador', 'tema' => 'light']
         );
         $this->tecnico = User::firstOrCreate(
             ['username' => 'tecnico_scope_'.uniqid()],
-            ['password' => bcrypt('secret'), 'rol' => 'tecnico', 'tema' => 'light']
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light']
         );
 
         $equipmentId = (int) (DB::table('equipos')->value('id') ?? DB::table('equipos')->insertGetId([

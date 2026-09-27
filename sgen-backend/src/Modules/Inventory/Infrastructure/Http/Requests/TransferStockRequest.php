@@ -25,7 +25,8 @@ class TransferStockRequest extends FormRequest
             'item_id' => ['required', 'integer', 'exists:inventario_items,id'],
             'origen_id' => ['nullable', 'integer'],
             'destino_id' => ['required', 'integer'],
-            'cantidad' => ['required', 'integer', 'min:1'],
+            // #37
+            'cantidad' => ['required', 'numeric', 'gt:0', 'decimal:0,3'],
             'motivo' => ['nullable', 'string', 'max:255'],
         ];
     }

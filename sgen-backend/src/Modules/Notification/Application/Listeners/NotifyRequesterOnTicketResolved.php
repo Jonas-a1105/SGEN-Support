@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
 use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
+use Modules\Notification\Application\Services\EmailThrottler;
 use Modules\Support\Domain\Events\TicketResolved;
 use Modules\User\Domain\Ports\UserRepositoryInterface;
 
@@ -35,7 +36,7 @@ final class NotifyRequesterOnTicketResolved
 
             // Canal correo: solo si el solicitante tiene email registrado.
             $email = $this->users->findById($event->usuarioCreacionId)?->email();
-            if ($email) {
+            if ($email && EmailThrottler::permitir($event->usuarioCreacionId, $email, 'ticket_resuelto', 'Ticket resuelto')) {
                 Mail::to($email)->send(new TicketNotificationMail(
                     'Ticket resuelto',
                     "Tu ticket #{$event->ticketId} ({$event->ticketTitulo}) ha sido resuelto. Ya puedes calificar la atención recibida.",

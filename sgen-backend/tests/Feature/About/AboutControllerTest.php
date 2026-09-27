@@ -17,7 +17,7 @@ final class AboutControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'about_visitor'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

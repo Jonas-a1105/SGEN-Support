@@ -30,7 +30,7 @@ final class TicketAsignacionYBitacoraTest extends TestCase
 
         $tecnico = User::firstOrCreate(
             ['username' => 'tec_mia_'.uniqid()],
-            ['password' => bcrypt('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId]
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId]
         );
 
         $equipoId = (int) DB::table('equipos')->value('id');
@@ -59,7 +59,7 @@ final class TicketAsignacionYBitacoraTest extends TestCase
 
     public function test_la_bitacora_tecnica_expone_notas_internas_e_hitos(): void
     {
-        $user = User::firstOrCreate(['username' => 'autor_bit_'.uniqid()], ['password' => bcrypt('secret'), 'rol' => 'tecnico', 'tema' => 'light']);
+        $user = User::firstOrCreate(['username' => 'autor_bit_'.uniqid()], ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light']);
         $equipoId = (int) DB::table('equipos')->value('id');
 
         $ticketId = (int) DB::table('soportes')->insertGetId([

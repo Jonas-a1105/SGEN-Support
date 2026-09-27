@@ -24,7 +24,8 @@ final class StoreMaintenanceRequest extends FormRequest
             'tipo_mantenimiento' => 'required|in:preventivo,correctivo,predictivo',
             'descripcion' => 'required|string|max:1000',
             'frecuencia' => 'nullable|in:unica,mensual,trimestral,semestral,anual',
-            'proxima_fecha' => 'nullable|date',
+                        // #14: la próxima ejecución no puede ser anterior a la actual.
+                        'proxima_fecha' => 'nullable|date|after_or_equal:fecha',
             'costo' => 'nullable|numeric|min:0',
             'tecnico_id' => 'nullable|integer',
             'observaciones' => 'nullable|string|max:500',

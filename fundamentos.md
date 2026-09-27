@@ -1,6 +1,107 @@
 Documento Maestro de Producto: módulos, procesos, flujos, validaciones, notificaciones, automatización e innovación, de punta a punta
 Alcance: Este documento consolida y define TODO lo necesario para que la aplicación quede completa: 38 módulos, 6 journeys extremo a extremo, máquina de estados de 10 entidades, 120+ validaciones de negocio, matriz de 60+ notificaciones, motor de automatización, capa IA, capa de innovación diferencial, seguridad de punta a punta, API e integraciones. Cada módulo define: rutas, pantallas, flujo paso a paso, reglas, eventos y su enlace con el esquema PostgreSQL v2.0 (86 tablas) ya entregado.
 
+---
+
+# PARTE 0 — ESTADO DE IMPLEMENTACIÓN REAL
+> Verificado contra el código el **2026-09-26** (283/283 tests en verde). Leyenda:
+> ✅ implementado y probado · 🟡 parcial (existe base, falta alcance) · ❌ no implementado.
+> Referencias de evidencia como `archivo` o módulo. Suite: `sgen-backend/tests` (Feature + Unit + E2E Playwright).
+
+## 0.1 Resumen ejecutivo
+
+| Área | Estado | Detalle |
+|---|---|---|
+| Autenticación y cuentas | ✅ núcleo | Login insensible a mayúsculas, bloqueo configurable con alerta a admins, `intentos_login` forense, desactivación sin borrado, anti auto-bloqueo, RBAC por middleware |
+| Tickets (mesa de soporte) | 🟡 fuerte | Ciclo de vida FSM 6 estados + SLA básico + firma probatoria + calificación del solicitante |
+| Inventario/Mantenimiento/Activos | 🟡 | CRUDs operativos con transacciones atómicas y CHECK de stock; faltan módulos F2/F3 |
+| Seguridad de aplicación | 🟡 alto | CSP con nonce, headers, rate limit, RBAC, uploads seguros; falta 2FA/Argon2id/idle timeout |
+| Módulos F2–F4 (KB, RMA, OC, CMDB, IA…) | ❌ | No existen (~24 de 38 módulos sin implementar) |
+
+## 0.2 Estado por módulo (01–38)
+
+| # | Módulo | Estado | Hecho | Falta |
+|---|---|---|---|---|
+| 01 | Autenticación/Sesiones | ✅ núcleo | Login username case-insensitive; rate limit configurable + bloqueo temporal con alerta a admins; `intentos_login` forense; Argon2id con migración transparente; regeneración de sesión; **idle timeout configurable con motivo de cierre**; `sesiones_log` forense (IP/UA/duración/motivo); desactivar cuenta con revocación inmediata; recuperación por admin con clave temporal + cambio obligado | Recuperación self-service por email/token, 2FA, `/sesiones` (gestión en UI), kiosk, historial de contraseñas, SSO |
+| 02 | Dashboard | ✅ núcleo | KPIs globales + tar card personal del día (rol por rol): trabajo de solicitud/ técnica + equipos bajo custodia propia. Los KPIs siguen disponibles para admin/tech/analíticos | Refresh por Echo, guardia activa, incidente mayor |
+| 03 | Portal de autoservicio | ❌ | — | Todo (rol solicitante, mis-custodias, cartereo sin login, wizard de ticket) |
+| 04 | Mesa de soporte | 🟡 fuerte | **Numeración transaccional TIC-AAAA-#####** ✅; FSM completa 6 estados con terminalidad ✅; SLA por prioridad con extensión por pausas ✅; **reapertura con ventana configurable y actor legítimo** ✅; calificación única y solo del solicitante ✅; firma probatoria (hash+IP+UA+timestamp, inmutable) ✅; materiales con `lockForUpdate` ✅; adjuntos con checksum SHA-256 y whitelist MIME 25MB ✅; reasignación con evento/email ✅; autocierre programado ✅; PDF de acta ✅ | Watchers, merge, confidencial, horas técnicas, incidente mayor, enlace público, matriz impacto×urgencia, duplicados fuzzy, email-to-ticket, reincidencia 90d |
+| 05 | Catálogo y solicitudes | ❌ | — | Todo |
+| 06 | Base de conocimiento | ❌ | — | Todo |
+| 07 | Problemas | ❌ | — | Todo |
+| 08 | Cambios | ❌ | — | Todo |
+| 09 | SLA / Escalamiento | 🟡 | Horas por prioridad desde `config/sla.php` + claves globales; `fecha_vencimiento`; `sla:verify` cada 15 min con notificación | Calendarios laborales/feriados, umbrales 50/80/100/150 %, tablero de cumplimiento, primera respuesta |
+| 10 | Guardias/On-call | ❌ | — | Todo |
+| 11 | Equipos (Activos) | ✅ núcleo | CRUD, traslado/reasignación, acta de custodia PDF, export Excel, historial; **IP patrimonial vigente única (BD)**, **código vigente único**, estados finales formales (`de_baja`/`prestado`/`perdido`) y regla #30 en tickets | Custodias formales (tabla), baja con wizard certificado, QR etiqueta/scan, import CSV, CMDB, leasing |
+| 12 | Custodias y actas | ✅ núcleo | Cadena custodial formal (tabla, índice parcial por equipo, eslabones cerrados), firma probatoria inmutable, acta PDF, bloqueo de offboarding con custodia y de borrado del activo custodiado | `/verificar-acta/{codigo}` pública, acta_detalles multi-ítem, kits |
+| 13 | Cartereo digital | ❌ | — | Todo |
+| 14 | IPAM y red | ❌ | — | Todo |
+| 15 | Mini-CMDB | ❌ | — | Todo |
+| 30b | Administración operativa | ✅ núcleo | Editor de roles con matriz Spatie (rol admin bloqueado), panel global de configuración, papelera con restauración/purga, self-service de contraseña, límite de sesiones, SLA laboral | 2FA, verificación de email, backups continuos, Auditoría vista detallada configurable |
+| 16 | Licencias/SAM | ❌ | — | Todo |
+| 17 | Suscripciones SaaS | ❌ | — | Todo |
+| 18 | Préstamos | ❌ | — | Todo |
+| 19 | On/Offboarding | 🟡 | Desactivación de usuario con guardas y revocación de sesiones ✅ (base del offboarding) | Plantillas de checklist, bloqueo duro por custodias, tablero |
+| 20 | Mantenimiento (CMMS) | 🟡 | CRUD, completar/posponer/cancelar, recurrencia con materialización automática, materiales atómicos, dashboard, PDF de orden | Calendario drag&drop, garantía 90d con reincidencia, ICS, MTBF/MTTR en UI |
+| 21 | Inventario | 🟡 | Ajuste/transferencia/consumo atómicos con `lockForUpdate`; CHECK `stock>=0` en BD; kardex de movimientos; stock por ubicación (tabla) | Ubicación × condición, reservas, FEFO, decimales, costo promedio ponderado, `saldo_despues` por fila, compra sugerida, escaneo |
+| 22 | Toma física | ❌ | — | Todo |
+| 23 | RMA | ❌ | — | Todo |
+| 24 | Proveedores | ❌ | — | Todo |
+| 25 | Compras (OC) | ❌ | — | Todo |
+| 26 | Contratos | ❌ | — | Todo |
+| 27 | Sedes/ubicaciones | ❌ | — | Todo (hay `inventario_ubicaciones` plana, sin jerarquía) |
+| 28 | Departamentos | 🟡 | CRUD + asignación de empleados/equipos con permiso | Jerarquía `padre_id`, centro de costo, jefe autovalidado |
+| 29 | Personal | 🟡 | CRUD + soft delete; vínculo empleado↔usuario | Expediente, VIP, credencial QR, offboarding |
+| 30 | Usuarios y Roles | ✅ núcleo | RBAC Spatie (4 roles, 12 permisos, matriz `PermissionCatalog`); middleware en cada mutación protegida; activar/desactivar con protecciones duras (auto-bloqueo bloqueado, último admin activo, tickets activos, historial con FK estricta); recuperación por admin; **visibilidad por rol en listados y navegación (RBAC de lectura)** (visibility) | N roles por usuario, `iniciar sesión como`, reset 2FA, permiso `*` |
+| 31 | Automatización | ❌ | Eventos de dominio (base técnica) | Motor de reglas, dry-run, logs |
+| 32 | Tareas programadas | 🟡 | Scheduler: autocierre diario, `sla:verify` 15 min, materialización recurrente | UI de tareas, logs, toggle |
+| 33 | Notificaciones | 🟡 | In-app (`notificaciones` API), emails por eventos (asignado/reabierto/resuelto), alerta SLA y de seguridad a admins | Preferencias por tipo/canal, digest, cola con reintentos (`correos_enviados`), WebSocket |
+| 34 | Reportes | 🟡 | PDF/Excel de tickets, inventario, mantenimientos, rendimiento | Generador paramétrico, historial, programados, QR/hash verificable |
+| 35 | Auditoría forense | 🟡 | `sesiones_log` (IP/UA/duración), `bitacora_acciones` (diffs JSON, máquina/UA), `intentos_login`, export | Hash-chain + verificación diaria, diff visual en UI, retención/purga, bloqueo de IP |
+| 36 | Configuración | 🟡 | Preferencias por usuario (tema); **configuración global persistida** (`configuracion_global` + servicio cacheado; consumen: umbral de bloqueo, días de autocierre) | UI admin completa, política de contraseñas desde config, moneda/tasas, identidad |
+| 37 | QR y estatus | 🟡 | `/acerca` con info del sistema ✅ | `/scan/{codigo}`, `/estado` pública |
+| 38 | API e integraciones | ❌ | Sanctum instalado | `routes/api.php`, tokens con scopes, webhooks, OpenAPI |
+
+## 0.3 Journeys extremo a extremo
+
+| Journey | Estado | Nota |
+|---|---|---|
+| J1 Vida completa de un ticket | 🟡 | Ciclo operativo completo sin numeración TIC, sin IA/KB/RMA, sin QR de verificación |
+| J2 Onboarding | ❌ | |
+| J3 Offboarding | 🟡 | Solo el tramo "desactivar cuenta con protecciones" |
+| J4 Vida de un activo | 🟡 | Alta, custodia PDF, tickets y mantenimientos con costo; falta OC origen y baja certificada |
+| J5 Incidente mayor | ❌ | |
+| J6 Cartereo anual | ❌ | |
+
+## 0.4 Convenciones universales (PARTE I · punto 3)
+
+| Convención | Estado | Nota |
+|---|---|---|
+| Numeración legible transaccional (TIC-…) | ✅ | Tabla `correlativos` + `lockForUpdate` en alta; backfill por año; URL resuelve `TIC-…` |
+| Dinero en centavos BIGINT + monedas/tasas | ❌ | `decimal(10,2)` |
+| TIMESTAMPTZ UTC | ❌ | timestamps sin zona |
+| Soft delete universal + papelera | 🟡 | Solo `empleados` |
+| Auditoría hash-chain | ❌ | Bitácora existe (sin encadenamiento ni verificación) |
+| Archivos polimórficos con checksum | 🟡 | `ticket_archivos` con SHA-256 + MIME real; no polimórfica general |
+| Idempotency-Key | ❌ | |
+| Locking optimista (version + 409) | ❌ | |
+| Búsqueda global Ctrl+K / tsvector | ❌ | |
+| Tags libres | ❌ | |
+| i18n | ❌ | |
+| Filtros guardados | ❌ | |
+| Exportación universal CSV/XLSX | 🟡 | Tickets, inventario, mantenimientos, equipos |
+| Operaciones masivas | 🟡 | Borrado masivo de tickets y mantenimientos |
+
+## 0.5 Capa de innovación (PARTE VII)
+
+| # | Innovación | Estado | Nota |
+|---|---|---|---|
+| 5 | Firmas probatorias | 🟡 | Tickets: hash SHA-256 + IP + UA + timestamp ✅; falta `/verificar-acta/{codigo}` pública |
+| 1,2,3,4,6–16 | Cartereo, chargeback, IA, proyectos, kiosk, descubrimiento, forecast, gamificación, pulso, PWA, voz, QR credencial, carnet, estatus, incidente mayor | ❌ | No implementados |
+
+---
+
+
 PARTE I — FUNDAMENTOS
 1. Actores y Roles (RBAC editable, tabla roles + usuario_roles + rol_permisos)
 Rol	Definición operativa	Es sistema
@@ -320,11 +421,68 @@ API REST (Sanctum, /api/v1): tokens personales con scopes por módulo; recursos 
 
 PARTE VI — VALIDACIONES INTEGRALES (checklist maestro)
 6.1 Integridad de datos (BD, nivel motor)
-IP única entre activos vigentes (índice parcial) · 2. Serial único vigente (soft-delete aware) · 3. Código patrimonial único vigente · 4. Cédula y email de empleado únicos vigentes · 5. Email/username únicos (citext) · 6. Una custodia activa por equipo (índice parcial) · 7. Un préstamo activo por equipo · 8. Asientos de licencia no excedidos (índices parciales) · 9. Stock ≥ 0 (CHECK) · 10. Reserva ≤ stock (CHECK) · 11. Guardias sin solapamiento (EXCLUDE) · 12. Horas técnicas sin solapamiento (EXCLUDE) · 13. Ventanas de cambio fin>inicio y sin conflicto de equipos · 14. Fechas coherentes (salida≥ingreso, garantía≥compra, SLA fin>inicio) · 15. Movimientos: referencia tipo+id siempre juntos, transferencia con origen≠destino, cantidad>0 · 16. Consumos con exactamente un destino (ticket XOR mantenimiento) · 17. Cambio de compra: item apunta a inventario XOR equipo · 18. Tasa de cambio con origen≠destino · 19. Hash de firmas y archivos: formato SHA-256 (domain) · 20. JSONB válido (CHECK json_valid→jsonb nativo).
+1. ✅ **IP única entre activos vigentes** — índice parcial `(direccion_ip) WHERE NOT NULL AND estado <> 'de_baja'`; cadenas vacías saneadas a NULL; la baja libera la IP (`IdentifierIntegrityTest`).
+2. 🟡 Serial único vigente — `equipos.numero_serie` único ✅; semántica de soft-delete no aplica (equipos sin `deleted_at`).
+3. ✅ **Código patrimonial único vigente** — índice parcial; duplicados del legado saneados con sufijo determinista.
+4. ✅ **Cédula y email de empleado únicos vigentes** (cédula: índice parcial soft-delete aware; email: unique total).
+5. 🟡 Email/username únicos — `usuarios.username` y `usuarios.email` únicos ✅ (verificado); `citext` (insensibilidad a mayúsculas a nivel BD) ❌.
+6. ✅ **Una custodia activa por equipo** — índice parcial `custodias_activa_por_equipo_unique` + cierre/apertura atómicos en `assignCustody` (`CustodyChainTest`).
+7. ❌ Un préstamo activo por equipo — módulo de préstamos inexistente.
+8. ❌ Asientos de licencia no excedidos — módulo de licencias inexistente.
+9. ✅ **Stock ≥ 0 (CHECK)** — `chk_inventario_items_stock_actual_no_negativo` en PostgreSQL + `lockForUpdate` en casos de uso (test: `StockCheckConstraintTest`).
+10. ❌ Reserva ≤ stock — reservas inexistentes.
+11. ❌ Guardias sin solapamiento (EXCLUDE).
+12. ❌ Horas técnicas sin solapamiento (EXCLUDE) — tabla de horas inexistente.
+13. ❌ Ventanas de cambio fin>inicio sin conflicto — módulo de cambios inexistente.
+14. 🟡 Fechas coherentes: garantía ≥ compra (equipos) y próxima ≥ fecha (mantenimientos) ✅ vía FormRequest; horas técnicas/feriados del SLA aún no existen.
+15. ✅ **Movimientos integrales**: `cantidad > 0` (CHECK en movimientos y consumos), TRANSFERENCIA con origen≠destino (CHECK + regla app validada con `lockForUpdate`), referencia siempre tipo+id juntos (`referencia_tipo` nuevo), stock por ubicación jamás negativo (`chk_ubicaciones_cantidad_no_negativa`; `TransferIntegrityTest`).
+16. 🟡 Consumos con tipo de destino explícito en el kardex (soporte/mantenimiento); XOR estructural estricto a una sola tabla de destino queda para la consolidación F2 del esquema v2.0.
+17. ❌ Ítem de compra a inventario XOR equipo — compras inexistente.
+18. ❌ Tasa de cambio origen≠destino — monedas inexistente.
+19. 🟡 Hash SHA-256 de archivos ✅ (adjuntos de tickets), firmas de tickets ✅ y custodias ✅; domain CHECK de formato ❌.
+20. ❌ JSONB nativo validado.
 6.2 Reglas de aplicación (FormRequests + Servicios)
-Doble submit → idempotency key · 22. Locking optimista (409 con diff) · 23. Race de stock → lockForUpdate + revalidación server-side · 24. Numeración bajo transacción · 25. MIME real con finfo contra whitelist (jpg/png/pdf/xlsx/docx/mp4 limitado), máx 25MB, antivirus opcional · 26. Usuario inactivo o con tickets activos: no desactivar sin reasignar (mostrando la lista con 1 clic de reasignación masiva) · 27. Empleado con custodias: no desvincular sin offboarding · 28. Empleado↔Usuario biunívoco (BD) · 29. Custodio de departamento distinto al equipo → warning de confirmación explícita · 30. Tickets a equipos de_baja bloqueados · 31. Reapertura solo en ventana + solo solicitante/jefe (o admin) · 32. Calificación 1–5 única y solo del solicitante · 33. Firma canvas: no vacía (al menos 1 trazo), se guarda con hash+IP+UA+timestamp · 34. Checklist de mantenimiento: cierre bloqueado con tareas pendientes salvo omisión justificada · 35. Completar cambio: checklist implementación completo · 36. Horas: no futuro, fin>inicio, no solapadas (motor) · 37. Cantidades decimales precisión 3 dígitos · 38. Políticas de contraseña (config global) · 39. Toma física congela ítems (movimientos bloqueados en alcance) · 40. Contratos/OC: no recibir sin items, no cancelar con recepciones parciales sin confirmación · 41. Cartereo: token único, una respuesta por asignación · 42. Departamentos: jefe debe pertenecer al subárbol; centro de costo único · 43. Bajas de maestros bloqueadas con dependencias (RESTRICT traducido a "reasigna antes: N equipos, M empleados") · 44. Máscara en logs: nunca bitacorar password/secret/token/binarios (lista $ocultoAuditoria) · 45. Emails de sistema rate-limited.
+21. ✅ **Idempotency-Key**: middleware `idempotency` con replay de respuesta ante reintentos; aplicado a crear ticket, firma de custodia, calificación, firma de ticket y consumo de materiales (en ambos módulos) (`IdempotencyAndMaskingTest`).
+22. ✅ **Locking optimista**: columna `version` en `equipos`/`soportes`; UPDATE atómico por versión y conflicto 409 con mensaje (`TicketOptimisticLockTest`); envío de versión en ediciones críticas del FE.
+23. ✅ **Race de stock** → `lockForUpdate` + revalidación + `InsufficientStockException` (ajustes, transferencias, materiales de ticket y mantenimiento).
+24. ✅ **Numeración correlativa bajo transacción** — `correlativos` con `lockForUpdate` en la creación del ticket (`TIC-AAAA-#####`; `TicketCorrelativeCodeTest`).
+25. ✅ **MIME real contra whitelist, máx 25MB** + checksum SHA-256 en adjuntos (antivirus pendiente/opcional).
+26. ✅ **Usuario con tickets activos: no desactivar ni eliminar** (lista IDs en el error; `UserActiveTicketsProtectionTest`, `UserActivationTest`). UI de reasignación masiva pendiente.
+27. ✅ **Empleado con custodias: no desvincular** sin recuperarlas (regla dura de offboarding; mensaje accionable con lista).
+28. ✅ **Empleado↔Usuario biunívoco en BD** — índices parciales en ambas direcciones (`empleados.usuario_id`, `usuarios.empleado_id`).
+29. ❌ Custodio de departamento distinto → warning explícito.
+30. ✅ **Tickets a equipos `de_baja` bloqueados** en alta (regla de dominio; `fuera_de_servicio` solo advierte). Enum de estados ampliado con `de_baja`/`prestado`/`perdido`.
+31. ✅ **Reapertura con ventana y actor legítimo**: ventana desde `tickets.ventana_reapertura_dias` (config global), solo solicitante o personal operativo (403) — Estados: resuelto→en_proceso con motivo obligatorio; cerrado/cancelado terminales (`TicketReopenWindowTest`).
+32. ✅ **Calificación única y solo del solicitante** — atómica con `lockForUpdate` (`RatingNotAllowedException`; `TicketRatingRulesTest`).
+33. ✅ **Firma canvas probatoria** — no vacía, data URL real, hash SHA-256 + IP + UA + timestamp, inmutable (`TicketProbatorySignatureTest`).
+34. ✅ **Checklist de mantenimiento: cierre bloqueado salvo omisión justificada** — `ChecklistValidator` + flags `omitir_pendientes`/`justificacion_omision` en la orden.
+35. ❌ Completar cambio: checklist implementación completo.
+36. ❌ Horas: no futuro, fin>inicio, no solapadas.
+37. ✅ **Cantidades decimales precisión 3 dígitos** — `NUMERIC(15,3)` en items/ubicaciones/movimientos/consumos; validación `numeric|decimal:0,3` en consumos y transferencias.
+38. 🟡 Política de contraseñas fuerte hardcodeada (`min 10 + mixta + números + uncompromised`); desde config global ❌.
+39. ❌ Toma física congela ítems.
+40. ❌ Contratos/OC: reglas de recepción/cancelación.
+41. ❌ Cartereo: token único, una respuesta.
+42. ❌ Departamentos: jefe en subárbol; centro de costo único.
+43. ✅ **Bajas de maestros bloqueadas con dependencias** — usuarios con historial (FK RESTRICT) no se eliminan, con conteos en el mensaje; protección de último admin activo; anti auto-bloqueo (self-delete/self-deactivate prohibidos).
+44. ✅ **Máscara de secretos en bitácora**: `SensitiveDataMasker` recursivo (password/token/firma/base64/claves → `•••`) en el límite del dominio; además contenido binario largo nunca se persiste.
+45. ✅ **Emails de sistema rate-limited**: `EmailThrottler` por (tipo, destinatario) con cooldown configurable `notificaciones.email_cooldown_min` y registro forense en `correos_enviados` (`EmailThrottlerTest`).
 6.3 Seguridad de aplicación
-CSRF en todos los POST · 47. XSS: escape por defecto + CSP estricta · 48. SQLi: solo Query Builder/Eloquent + bindings · 49. Rate limit login (5/min por IP + por usuario) y API por token · 50. Sesión idle timeout + regeneración de ID en login/escalada · 51. 2FA TOTP + respaldo · 52. Password hashing Argon2id · 53. Verificación email de usuarios nuevos · 54. Cuenta bloqueo temporal tras N intentos + alerta · 55. Headers de seguridad (HSTS, X-Frame-Options DENY, etc.) · 56. Permisos verificados en Policy por endpoint + middleware por módulo · 57. Uploads fuera de webroot con nombres aleatorios · 58. Tokens públicos expirables y de un solo propósito · 59. "Iniciar sesión como" restringido + banner + auditoría reforzada · 60. Backups cifrados + prueba de restauración mensual programada.
+46. ✅ CSRF en todos los POST (middleware web de Laravel).
+47. ✅ **XSS: escape por defecto (Vue) + CSP estricta con nonce por petición** (`SecurityHeaders`; `object-src 'none'`, `frame-ancestors`, `base-uri`, `form-action`; origen Vite solo en dev; test en `SecurityHeadersTest`).
+48. ✅ SQLi: solo Query Builder/Eloquent con bindings (SP incluso para login case-insensitive).
+49. ✅ Rate limit login (umbral configurable en `configuracion_global`) + throttle con lockout. API por token: N/A (sin API aún).
+50. ✅ **Idle timeout + regeneración + cierre registrado**: `EnsureSessionIdle` con límite configurable (`seguridad.idle_minutos`), sesiones forenses con motivo `manual|inactividad` (`SessionIdleTimeoutTest`).
+51. ❌ 2FA TOTP + respaldo.
+52. ✅ **Argon2id** — driver oficial en `config/hashing.php`; migración transparente de hashes bcrypt en login (`Argon2idMigrationTest`).
+53. ❌ Verificación de email de usuarios nuevos.
+54. ✅ **Cuenta bloqueo temporal tras N intentos + alerta** (notificación una sola vez por ráfaga a administradores; `LoginAttemptsAuditTest`).
+55. ✅ Headers de seguridad (nosniff, SAMEORIGIN, HSTS bajo HTTPS, Referrer-Policy, Permissions-Policy, CSP).
+56. ✅ Permisos por endpoint con middleware `permission:` (matriz `PermissionCatalog` + `RolesAndPermissionsSeeder`; `RbacEnforcementTest`).
+57. ✅ Uploads fuera del webroot (`storage/app`) con nombres aleatorios y checksum.
+58. ❌ Tokens públicos expirables y de un solo propósito (cartereo/enlace público).
+59. ❌ "Iniciar sesión como" restringido + banner.
+60. ❌ Backups cifrados + prueba de restauración programada.
 PARTE VII — CAPA DE INNOVACIÓN ✨ (mecanismo de funcionamiento)
 #	Innovación	Cómo funciona
 1	Cartereo digital	Módulo 13 completo: campaña → tokens → confirmación con firma → actas masivas → reporte de discrepancias. Sustituye el inventario patrimonial anual en Excel.

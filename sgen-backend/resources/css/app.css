@@ -1,21 +1,19 @@
 @import './variables.css';
-@import './inventario-general.css';
 @import './forms.css';
-@import 'tailwindcss';
 
 @source '../views/**/*.blade.php';
 @source '../js/**/*.vue';
 @source '../js/**/*.ts';
 
-/* CERO SOMBRAS EN TODO EL SISTEMA & TIPOGRAFÍA GLOBAL */
+/* Reset base sin !important */
 *, *::before, *::after {
     box-sizing: border-box;
-    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
-    font-weight: 600 !important;
-    letter-spacing: normal;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    filter: none !important;
+}
+html {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 html, body {
@@ -24,11 +22,22 @@ html, body {
     min-height: 100%;
     background: var(--bg);
     color: var(--text);
-    font-size: 14px;
+    font-size: var(--text-base);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
 }
+
+/* Tipografía semántica */
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 0.5em;
+    line-height: 1.25;
+    font-weight: var(--weight-semibold);
+    color: var(--text);
+}
+h1 { font-size: var(--text-xl); }
+h2 { font-size: var(--text-lg); }
+h3 { font-size: var(--text-base); }
 
 body {
     height: 100vh;

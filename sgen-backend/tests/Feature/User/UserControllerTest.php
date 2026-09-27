@@ -23,7 +23,7 @@ final class UserControllerTest extends TestCase
         $admin = User::firstOrCreate(
             ['username' => 'super_admin_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -32,7 +32,7 @@ final class UserControllerTest extends TestCase
 
         $this->targetUserId = (int) DB::table('usuarios')->insertGetId([
             'username' => 'test_subject_user',
-            'password' => bcrypt('password123'),
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
             'rol' => 'consultor',
             'tema' => 'dark',
             'created_at' => now(),
@@ -60,6 +60,7 @@ final class UserControllerTest extends TestCase
             'username' => 'tech_new_guy',
             'password' => 'Soporte2026*sgen',
             'rol' => 'tecnico',
+            'email' => 'tech.new.guy@empresa.com', // email obligatorio (recuperación)
         ];
 
         $response = $this->post('/usuarios', $payload);

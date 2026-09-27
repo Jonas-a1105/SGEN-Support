@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
 use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
+use Modules\Notification\Application\Services\EmailThrottler;
 use Modules\Support\Domain\Events\TicketReopened;
 use Modules\User\Domain\Ports\UserRepositoryInterface;
 
@@ -41,7 +42,7 @@ final class NotifyTechnicianOnTicketReopened
 
             // Canal correo: solo si el técnico tiene email registrado.
             $email = $this->users->findById((int) $techUserId)?->email();
-            if ($email) {
+            if ($email && EmailThrottler::permitir((int) $techUserId, $email, 'ticket_reabierto', 'Ticket reabierto')) {
                 Mail::to($email)->send(new TicketNotificationMail(
                     'Ticket reabierto',
                     "El ticket #{$event->ticketId} ({$event->ticketTitulo}) fue reabierto. Motivo: {$event->motivo}",

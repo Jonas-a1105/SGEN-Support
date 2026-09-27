@@ -21,6 +21,7 @@ const statusOptions = [
 ];
 
 const editForm = ref({
+    version: props.equipment.version ?? null,
     marca: props.equipment.brand ?? '',
     modelo: props.equipment.model ?? '',
     tipo: props.equipment.type,
@@ -44,6 +45,7 @@ watch(
     (open) => {
         if (open) {
             editForm.value = {
+                version: props.equipment.version ?? null,
                 marca: props.equipment.brand ?? '',
                 modelo: props.equipment.model ?? '',
                 tipo: props.equipment.type,

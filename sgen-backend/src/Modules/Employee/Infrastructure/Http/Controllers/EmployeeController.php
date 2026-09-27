@@ -59,7 +59,11 @@ final class EmployeeController extends Controller
 
     public function destroy(int $id, DeleteEmployeeUseCase $useCase): RedirectResponse
     {
-        $useCase->execute($id);
+        try {
+            $useCase->execute($id);
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('personal.index')->with('success', 'Empleado retirado satisfactoriamente.');
     }

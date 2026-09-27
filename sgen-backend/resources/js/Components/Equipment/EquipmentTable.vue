@@ -2,15 +2,19 @@
 import { Link } from '@inertiajs/vue3';
 import { BaseDataTable, type DataTableColumn } from '@/Components/UI';
 import type { EquipmentItem } from '@/Composables/useEquipmentFilters';
+import { usePermissions } from '@/Composables/usePermissions';
 
 defineProps<{
     equipos: EquipmentItem[];
 }>();
 
+const { can } = usePermissions();
+
 const emit = defineEmits<{
-    (e: 'view', item: EquipmentItem): void;
-    (e: 'edit', item: EquipmentItem): void;
-    (e: 'delete', item: EquipmentItem): void;
+(e: 'view', item: EquipmentItem): void;
+(e: 'edit', item: EquipmentItem): void;
+(e: 'delete', item: EquipmentItem): void;
+(e: 'decommission', item: EquipmentItem): void;
 }>();
 
 const columns: DataTableColumn[] = [
@@ -96,7 +100,22 @@ const getStatusClass = (status: string) => {
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
                     </button>
+                    <!-- Baja patrimonial formal (antes de la eliminación bruta):
+                         activos con historia se retiran con acta legal. -->
                     <button
+                        v-if="item.rawStatus !== 'de_baja' && can('equipos.manage')"
+                        class="action-mini-btn decommission"
+                        @click.stop="emit('decommission', item)"
+                        type="button"
+                        title="Baja patrimonial (irreversible, conserva historia)"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button
+                        v-if="can('equipos.manage')"
                         class="action-mini-btn delete"
                         @click.stop="emit('delete', item)"
                         type="button"
@@ -238,5 +257,10 @@ const getStatusClass = (status: string) => {
 .action-mini-btn.delete:hover {
     color: var(--red);
     border-color: var(--red);
+}
+
+.action-mini-btn.decommission:hover {
+    color: #f59e0b;
+    border-color: #f59e0b;
 }
 </style>

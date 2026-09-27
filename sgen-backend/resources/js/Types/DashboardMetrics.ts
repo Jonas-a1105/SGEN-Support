@@ -52,6 +52,14 @@ export interface StatusTicketItem {
     created_at: string;
 }
 
+export interface MyWorkData {
+    mis_pendientes: number;
+    mis_en_proceso: number;
+    mis_resueltos_mes: number;
+    mis_equipos: { id: number; codigo: string; nombre: string }[];
+    proximas_ordenes_mias: number;
+}
+
 export interface DashboardMetrics {
     kpis: DashboardKpis;
     ticket_volume: TicketVolumeData;
@@ -63,4 +71,6 @@ export interface DashboardMetrics {
         pending: StatusTicketItem[];
         in_process: StatusTicketItem[];
     };
+    /** Vista por rol ("mi trabajo hoy): null para visitantes sin vínculo. */
+    my_work?: MyWorkData | null;
 }

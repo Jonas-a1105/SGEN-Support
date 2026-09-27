@@ -38,8 +38,10 @@ final class AuditLogEntry
             action: $action,
             entityType: $entityType,
             entityId: $entityId,
-            oldData: $oldData,
-            newData: $newData,
+            // #44: la máscara se aplica en el límite del dominio, antes de que
+            // cualquier persistencia toque el payload.
+            oldData: $oldData !== null ? \Modules\Audit\Domain\Services\SensitiveDataMasker::maskArray($oldData) : null,
+            newData: $newData !== null ? \Modules\Audit\Domain\Services\SensitiveDataMasker::maskArray($newData) : null,
             ipAddress: $ipAddress,
             machineName: $machineName,
             createdAt: new \DateTimeImmutable()

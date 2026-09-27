@@ -24,7 +24,7 @@ final class TicketMailNotificationTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::firstOrCreate(['username' => 'admin_mail_test'], ['password' => bcrypt('secret'), 'rol' => 'admin', 'tema' => 'light']);
+        $admin = User::firstOrCreate(['username' => 'admin_mail_test'], ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']);
 
         $empleadoId = (int) DB::table('empleados')->insertGetId([
             'nombre' => 'Tecnica', 'apellido' => 'Correo', 'email' => 'tec.correo.'.uniqid().'@empresa.test',
@@ -34,7 +34,7 @@ final class TicketMailNotificationTest extends TestCase
 
         $tecnico = User::firstOrCreate(
             ['username' => 'tec_mail_'.uniqid()],
-            ['password' => bcrypt('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId, 'email' => 'destino@empresa.test']
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId, 'email' => 'destino@empresa.test']
         );
 
         $ticketId = (int) DB::table('soportes')->insertGetId([
@@ -57,7 +57,7 @@ final class TicketMailNotificationTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::firstOrCreate(['username' => 'admin_mail_test'], ['password' => bcrypt('secret'), 'rol' => 'admin', 'tema' => 'light']);
+        $admin = User::firstOrCreate(['username' => 'admin_mail_test'], ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']);
 
         $empleadoId = (int) DB::table('empleados')->insertGetId([
             'nombre' => 'Tecnica', 'apellido' => 'SinMail', 'email' => 'sinmail.'.uniqid().'@empresa.test',
@@ -67,7 +67,7 @@ final class TicketMailNotificationTest extends TestCase
 
         $tecnico = User::firstOrCreate(
             ['username' => 'tec_sinmail_'.uniqid()],
-            ['password' => bcrypt('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId]
+            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId]
         );
 
         $ticketId = (int) DB::table('soportes')->insertGetId([

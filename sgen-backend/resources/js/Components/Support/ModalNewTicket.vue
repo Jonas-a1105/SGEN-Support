@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useIdempotencyKey } from '@/Composables/useIdempotencyKey';
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import BaseCombobox, { type ComboboxOption } from '@/Components/UI/BaseCombobox.vue';
@@ -10,6 +11,8 @@ interface Props {
     isOpen: boolean;
     options: SupportFormOptions;
 }
+
+const { idempotencyKey } = useIdempotencyKey();
 
 const props = defineProps<Props>();
 const emit = defineEmits<{ (e: 'close'): void }>();
@@ -97,6 +100,7 @@ const handleSubmit = () => {
         },
         {
             preserveScroll: true,
+            headers: { 'Idempotency-Key': idempotencyKey.value },
             onSuccess: () => {
                 form.isSubmitting = false;
                 emit('close');

@@ -38,7 +38,8 @@ final class TicketListItemMapper
         $commentsCount = (int) ($commentCounts[$row->id] ?? 0);
 
         return [
-            'id' => 'T-'.$row->id,
+            // Identificador legible: correlativo oficial, con respaldo legacy.
+            'id' => ! empty($row->codigo) ? (string) $row->codigo : 'T-'.$row->id,
             'raw_id' => (int) $row->id,
             'title' => $titulo,
             'category' => ! empty($row->categoria_nombre) ? strtoupper((string) $row->categoria_nombre) : 'GENERAL',

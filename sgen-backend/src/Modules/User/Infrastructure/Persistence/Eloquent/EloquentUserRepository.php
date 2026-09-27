@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\User\Infrastructure\Persistence\Eloquent;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Modules\Support\Domain\Enums\TicketStatus;
 use Modules\User\Domain\Enums\UserRole;
+use Modules\User\Domain\Exceptions\UserDeletionFailedException;
 use Modules\User\Domain\Models\SystemUser;
 use Modules\User\Domain\Ports\UserRepositoryInterface;
 
@@ -25,9 +28,10 @@ final class EloquentUserRepository implements UserRepositoryInterface
                 'usuarios.username',
                 'usuarios.rol',
                 'usuarios.tema',
-                'usuarios.departamento_id',
-                'departamentos.nombre as departamento_nombre',
-                'usuarios.empleado_id',
+            'usuarios.departamento_id',
+            'usuarios.activo',
+            'departamentos.nombre as departamento_nombre',
+            'usuarios.empleado_id',
                 'empleados.nombre as empleado_nombre',
                 'empleados.apellido as empleado_apellido',
                 'empleados.email as empleado_email'
@@ -65,7 +69,8 @@ final class EloquentUserRepository implements UserRepositoryInterface
             employeeId: $row->empleado_id !== null ? (int) $row->empleado_id : null,
             departmentId: $row->departamento_id !== null ? (int) $row->departamento_id : null,
             id: (int) $row->id,
-            email: $row->email ?? null
+            email: $row->email ?? null,
+            active: (bool) ($row->activo ?? true)
         );
     }
 
@@ -84,13 +89,39 @@ final class EloquentUserRepository implements UserRepositoryInterface
             employeeId: $row->empleado_id !== null ? (int) $row->empleado_id : null,
             departmentId: $row->departamento_id !== null ? (int) $row->departamento_id : null,
             id: (int) $row->id,
-            email: $row->email ?? null
+            email: $row->email ?? null,
+            active: (bool) ($row->activo ?? true)
         );
     }
 
     public function countAdmins(): int
     {
         return (int) DB::table('usuarios')->where('rol', 'admin')->count();
+    }
+
+    public function countActiveAdmins(): int
+    {
+        return (int) DB::table('usuarios')
+            ->where('rol', 'admin')
+            ->where('activo', true)
+            ->count();
+    }
+
+    public function activeTicketIdsAssignedTo(int $userId): array
+    {
+        $empleadoId = DB::table('usuarios')->where('id', $userId)->value('empleado_id');
+
+        if ($empleadoId === null) {
+            return [];
+        }
+
+        return DB::table('soportes')
+            ->where('empleado_id', (int) $empleadoId)
+            ->whereNotIn('estado', TicketStatus::finalValues())
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
     }
 
     public function save(SystemUser $user): int
@@ -131,7 +162,8 @@ final class EloquentUserRepository implements UserRepositoryInterface
             employeeId: $row->empleado_id !== null ? (int) $row->empleado_id : null,
             departmentId: $row->departamento_id !== null ? (int) $row->departamento_id : null,
             id: (int) $row->id,
-            email: $row->email ?? null
+            email: $row->email ?? null,
+            active: (bool) ($row->activo ?? true)
         );
     }
 
@@ -160,9 +192,45 @@ final class EloquentUserRepository implements UserRepositoryInterface
             ]);
     }
 
+    public function operationalReferenceCounts(int $userId): array
+    {
+        $conteos = [
+            'movimientos de inventario' => (int) DB::table('inventario_movimientos')->where('usuario_id', $userId)->count(),
+            'comentarios en tickets' => (int) DB::table('ticket_comentarios')->where('usuario_id', $userId)->count(),
+        ];
+
+        return array_filter($conteos, static fn (int $filas): bool => $filas > 0);
+    }
+
+    public function setActive(int $id, bool $active): void
+    {
+        DB::transaction(function () use ($id, $active): void {
+            DB::table('usuarios')
+                ->where('id', $id)
+                ->update(['activo' => $active, 'updated_at' => now()]);
+
+            if (! $active) {
+                // Revocación inmediata de sesiones vivas de la cuenta desactivada.
+                DB::table('sessions')->where('user_id', $id)->delete();
+            }
+        });
+    }
+
     public function delete(int $id): void
     {
-        DB::table('usuarios')->where('id', $id)->delete();
+        try {
+            DB::table('usuarios')->where('id', $id)->delete();
+        } catch (QueryException $e) {
+            // 23503: violación de llave foránea (algún residuo no cubierto por
+            // las validaciones de negocio). Se traduce a error de dominio.
+            if ($e->getCode() === '23503') {
+                throw UserDeletionFailedException::referenciasVinculadas(
+                    DB::table('usuarios')->where('id', $id)->value('username') ?? (string) $id
+                );
+            }
+
+            throw $e;
+        }
     }
 
     public function getKpis(): array

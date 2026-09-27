@@ -23,7 +23,7 @@ final class EmployeeControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_emp_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

@@ -11,6 +11,7 @@ import TicketIncidentFields from '@/Components/Support/Create/TicketIncidentFiel
 import TicketAssignmentFields from '@/Components/Support/Create/TicketAssignmentFields.vue';
 import ModalSelectEquipment from '@/Components/Support/Create/ModalSelectEquipment.vue';
 import { useTicketEquipmentSearch } from '@/Composables/useTicketEquipmentSearch';
+import { useIdempotencyKey } from '@/Composables/useIdempotencyKey';
 import type { FormEquipment, FormCategory, FormTechnician, TicketPriority } from '@/Components/Support/Create/types';
 
 interface Props {
@@ -36,6 +37,10 @@ const errorMessage = ref('');
 
 // Device search via composable (SRP)
 const equipmentsRef = computed(() => props.options.equipments);
+
+// #21: clave por instancia de formulario; un reintento jamás duplica el ticket.
+const { idempotencyKey } = useIdempotencyKey();
+
 const {
     deviceSearch,
     selectedEquipmentId,
@@ -97,6 +102,8 @@ function handleSubmit() {
             estado: 'pendiente',
         },
         {
+            // #21: doble clic / red reintentando jamás duplica el ticket.
+            headers: { 'Idempotency-Key': idempotencyKey.value },
             onError: (errors) => {
                 isSubmitting.value = false;
                 const first = Object.values(errors)[0];

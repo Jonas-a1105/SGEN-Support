@@ -151,3 +151,12 @@ simulate_client.bat
 estructura_proyecto.txt
 public/debug_*.php
 REFACTOR_COMPARISON.md
+
+# Playwright E2E
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+tests/e2e/*.png
+sgen-backend/tests/e2e/*.png
+

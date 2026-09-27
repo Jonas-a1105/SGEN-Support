@@ -10,7 +10,7 @@ final readonly class TransferStockDTO
         public int $itemId,
         public ?int $origenId,
         public int $destinoId,
-        public int $cantidad,
+        public float $cantidad,
         public ?string $motivo = null
     ) {}
 
@@ -23,7 +23,7 @@ final readonly class TransferStockDTO
             itemId: (int) $data['item_id'],
             origenId: ! empty($data['origen_id']) ? (int) $data['origen_id'] : null,
             destinoId: (int) $data['destino_id'],
-            cantidad: (int) $data['cantidad'],
+            cantidad: (float) $data['cantidad'],
             motivo: ! empty($data['motivo']) ? (string) $data['motivo'] : null
         );
     }

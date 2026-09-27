@@ -13,6 +13,9 @@ enum EquipmentStatus: string
     case EN_REPARACION = 'en_reparacion';
     case DISPONIBLE = 'disponible';
     case EN_RESERVA = 'en_reserva';
+    case PRESTADO = 'prestado';
+    case DE_BAJA = 'de_baja';
+    case PERDIDO = 'perdido';
 
     public function label(): string
     {
@@ -20,11 +23,23 @@ enum EquipmentStatus: string
             self::NUEVO => 'Nuevo',
             self::USADO => 'Usado',
             self::EN_USO => 'En Uso',
-            self::FUERA_DE_SERVICIO => 'Baja',
+            self::FUERA_DE_SERVICIO => 'Fuera de servicio',
             self::EN_REPARACION => 'Reparación',
             self::DISPONIBLE => 'Disponible',
             self::EN_RESERVA => 'En Reserva',
+            self::PRESTADO => 'Prestado',
+            self::DE_BAJA => 'De baja',
+            self::PERDIDO => 'Perdido',
         };
+    }
+
+    /**
+     * Regla #30: un equipo dado de baja jamás recibe tickets nuevos;
+     * "fuera_de_servicio" solo advierte (puede volver a operar).
+     */
+    public function aceptaTicketsNuevos(): bool
+    {
+        return $this !== self::DE_BAJA;
     }
 
     public static function fromLabel(string $label): self
@@ -34,6 +49,9 @@ enum EquipmentStatus: string
             'en uso', 'en_uso' => self::EN_USO,
             'reparación', 'reparacion', 'en reparacion', 'en_reparacion' => self::EN_REPARACION,
             'baja', 'fuera de servicio', 'fuera_de_servicio' => self::FUERA_DE_SERVICIO,
+            'de baja', 'de_baja', 'dado de baja' => self::DE_BAJA,
+            'prestado' => self::PRESTADO,
+            'perdido' => self::PERDIDO,
             'nuevo' => self::NUEVO,
             'usado' => self::USADO,
             'en reserva', 'en_reserva' => self::EN_RESERVA,

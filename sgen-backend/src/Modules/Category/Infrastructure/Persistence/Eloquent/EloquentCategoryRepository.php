@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Category\Infrastructure\Persistence\Eloquent;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Modules\Category\Domain\Models\Category;
 use Modules\Category\Domain\Ports\CategoryRepositoryInterface;
@@ -16,7 +17,7 @@ final class EloquentCategoryRepository implements CategoryRepositoryInterface
      */
     public function listWithStats(array $filters = []): array
     {
-        $query = DB::table('categorias')
+        $query = DB::table('categorias')->whereNull('categorias.deleted_at')
             ->leftJoin('soportes', 'categorias.id', '=', 'soportes.categoria_id')
             ->select(
                 'categorias.id',
@@ -91,7 +92,10 @@ final class EloquentCategoryRepository implements CategoryRepositoryInterface
 
     public function delete(int $id): void
     {
-        DB::table('categorias')->where('id', $id)->delete();
+        DB::table('categorias')
+            ->where('id', $id)
+            ->whereNull('deleted_at')
+            ->update(['deleted_at' => Carbon::now()]);
     }
 
     public function getKpis(): array

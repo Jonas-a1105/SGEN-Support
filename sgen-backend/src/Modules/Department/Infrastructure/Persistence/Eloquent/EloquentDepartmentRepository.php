@@ -23,7 +23,7 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
      */
     public function list(array $filters = []): array
     {
-        $query = DB::table('departamentos')
+        $query = DB::table('departamentos')->whereNull('departamentos.deleted_at')
             ->select([
                 'departamentos.*',
                 DB::raw('(SELECT COUNT(*) FROM equipos WHERE equipos.departamento_id = departamentos.id) as equipos_count'),
@@ -295,7 +295,12 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
         DB::table('equipos')->where('departamento_id', $id)->update(['departamento_id' => null]);
         DB::table('empleados')->where('departamento_id', $id)->update(['departamento_id' => null]);
 
-        $deleted = DB::table('departamentos')->where('id', $id)->delete();
+        // A la papelera (no destrucción): libera la matriz orgánica sin
+        // desaparecer la historia de pruebas/auditoría del organigrama.
+        $deleted = DB::table('departamentos')
+            ->where('id', $id)
+            ->whereNull('deleted_at')
+            ->update(['deleted_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
         if ($deleted === 0) {
             throw DepartmentNotFoundException::withId($id);
         }

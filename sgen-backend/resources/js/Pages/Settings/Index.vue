@@ -7,6 +7,7 @@ import TabApariencia from '@/Components/Settings/TabApariencia.vue';
 import TabNotificaciones from '@/Components/Settings/TabNotificaciones.vue';
 import TabSeguridad from '@/Components/Settings/TabSeguridad.vue';
 import TabMiCuenta from '@/Components/Settings/TabMiCuenta.vue';
+import TabSistema from '@/Components/Settings/TabSistema.vue';
 import SettingsNavSidebar, { type SettingsTabKey } from '@/Components/Settings/SettingsNavSidebar.vue';
 
 interface SettingsData {
@@ -23,6 +24,8 @@ interface SettingsData {
 
 const props = defineProps<{
     settings: SettingsData;
+    /** Solo administración ve el tab de plataforma. */
+    puede_administrar?: boolean;
 }>();
 
 const activeTab = ref<SettingsTabKey>('apariencia');
@@ -52,7 +55,7 @@ function handleUpdatePassword(payload: {
             <div class="config-layout-grid">
                 <!-- Left Nav Column -->
                 <div class="config-sidebar-col">
-                    <SettingsNavSidebar v-model="activeTab" />
+                    <SettingsNavSidebar v-model="activeTab" :puede-administrar="props.puede_administrar ?? false" />
 
                     <div class="system-version-tag">
                         Versión del Sistema v1.0.28
@@ -92,6 +95,10 @@ function handleUpdatePassword(payload: {
 
                     <TabMiCuenta
                         v-else-if="activeTab === 'cuenta'"
+                    />
+
+                    <TabSistema
+                        v-else-if="activeTab === 'sistema'"
                     />
                 </div>
             </div>

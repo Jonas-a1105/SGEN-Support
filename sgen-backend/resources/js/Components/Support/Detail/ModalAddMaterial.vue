@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { reactive, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useIdempotencyKey } from '@/Composables/useIdempotencyKey';
+
+// #21: una clave por instancia del modal — reintento jamás duplica consumo.
+const { idempotencyKey } = useIdempotencyKey();
 import BaseModal from '@/Components/UI/BaseModal.vue';
 import BaseButton from '@/Components/UI/BaseButton.vue';
 import type { InventoryItemOption } from '@/Types/support';
@@ -67,6 +71,7 @@ const handleSubmit = () => {
         },
         {
             preserveScroll: true,
+            headers: { 'Idempotency-Key': idempotencyKey.value },
             onSuccess: () => {
                 form.isSubmitting = false;
                 emit('close');

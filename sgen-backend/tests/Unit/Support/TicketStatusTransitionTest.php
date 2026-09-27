@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Cobertura combinatoria exhaustiva de la máquina de estados: las 25
- * transiciones posibles (5 estados × 5 estados) probadas una a una.
+ * Cobertura combinatoria exhaustiva de la máquina de estados: las 36
+ * transiciones posibles (6 estados × 6 estados) probadas una a una.
  * Si alguien edita la matriz, este test documenta y exige la intención.
  */
 final class TicketStatusTransitionTest extends TestCase
@@ -22,18 +22,21 @@ final class TicketStatusTransitionTest extends TestCase
         ['pendiente', 'en_espera', true],
         ['pendiente', 'resuelto', true],
         ['pendiente', 'cerrado', false],
+        ['pendiente', 'cancelado', true],
 
         ['en_proceso', 'pendiente', true],
         ['en_proceso', 'en_proceso', true],
         ['en_proceso', 'en_espera', true],
         ['en_proceso', 'resuelto', true],
         ['en_proceso', 'cerrado', false],
+        ['en_proceso', 'cancelado', true],
 
         ['en_espera', 'pendiente', false],
         ['en_espera', 'en_proceso', true],
         ['en_espera', 'en_espera', true],
         ['en_espera', 'resuelto', true],
         ['en_espera', 'cerrado', false],
+        ['en_espera', 'cancelado', true],
 
         // Reapertura formal solo a en_proceso; cierre definitivo a cerrado.
         ['resuelto', 'pendiente', false],
@@ -41,13 +44,22 @@ final class TicketStatusTransitionTest extends TestCase
         ['resuelto', 'en_espera', false],
         ['resuelto', 'resuelto', true],
         ['resuelto', 'cerrado', true],
+        ['resuelto', 'cancelado', false],
 
-        // Estado terminal: inmutable.
+        // Estados terminales: inmutables.
         ['cerrado', 'pendiente', false],
         ['cerrado', 'en_proceso', false],
         ['cerrado', 'en_espera', false],
         ['cerrado', 'resuelto', false],
         ['cerrado', 'cerrado', true],
+        ['cerrado', 'cancelado', false],
+
+        ['cancelado', 'pendiente', false],
+        ['cancelado', 'en_proceso', false],
+        ['cancelado', 'en_espera', false],
+        ['cancelado', 'resuelto', false],
+        ['cancelado', 'cerrado', false],
+        ['cancelado', 'cancelado', true],
     ];
 
     #[DataProvider('transiciones')]

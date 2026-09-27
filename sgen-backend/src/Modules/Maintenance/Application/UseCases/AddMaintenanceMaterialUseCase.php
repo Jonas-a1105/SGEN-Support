@@ -19,7 +19,7 @@ final class AddMaintenanceMaterialUseCase
         private readonly MaintenanceRepositoryInterface $repository
     ) {}
 
-    public function execute(int $mantenimientoId, int $itemId, int $cantidad, int $userId): bool
+    public function execute(int $mantenimientoId, int $itemId, float $cantidad, int $userId): bool
     {
         if ($cantidad <= 0) {
             throw new \InvalidArgumentException('La cantidad debe ser mayor a cero.');
@@ -45,7 +45,7 @@ final class AddMaintenanceMaterialUseCase
                 throw new \DomainException("El Ã­tem #{$itemId} no existe en inventario.");
             }
 
-            if ((int) $item->stock_actual < $cantidad) {
+            if ((float) $item->stock_actual < $cantidad) {
                 throw InsufficientStockException::forProduct(
                     $item->codigo,
                     (int) $item->stock_actual,
@@ -67,6 +67,8 @@ final class AddMaintenanceMaterialUseCase
                 'cantidad' => $cantidad,
                 'motivo' => "Consumo en Mantenimiento #{$mantenimientoId}",
                 'referencia_id' => $mantenimientoId,
+                // #15: el enlace del kardex siempre lleva tipo+id juntos.
+                'referencia_tipo' => 'mantenimiento',
                 'fecha' => now(),
             ]);
 

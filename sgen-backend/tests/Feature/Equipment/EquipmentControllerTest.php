@@ -23,7 +23,7 @@ final class EquipmentControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_equip_test'],
             [
-                'password' => bcrypt('secret'),
+                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -124,9 +124,8 @@ final class EquipmentControllerTest extends TestCase
         $response = $this->delete("/equipos/{$this->equipmentId}");
 
         $response->assertRedirect('/equipos');
-        $this->assertDatabaseMissing('equipos', [
-            'id' => $this->equipmentId,
-        ]);
+        // Soft delete: la papelera conserva el registro (ventana de seguridad).
+        $this->assertNotNull(DB::table('equipos')->where('id', $this->equipmentId)->value('deleted_at'));
     }
 
     public function test_can_transfer_equipment_between_departments(): void
@@ -191,7 +190,7 @@ final class EquipmentControllerTest extends TestCase
     {
         $codigo = 'REG-'.strtoupper(uniqid());
 
-        $response = $this->post('/equipos/registrar', [
+        $response = $this->post('/equipos', [
             'codigo_inventario' => $codigo,
             'tipo' => 'Switch',
             'marca' => 'TP-Link',
@@ -213,7 +212,7 @@ final class EquipmentControllerTest extends TestCase
             ->where('id', $this->equipmentId)
             ->value('codigo_inventario');
 
-        $response = $this->post('/equipos/registrar', [
+        $response = $this->post('/equipos', [
             'codigo_inventario' => $codigo,
             'tipo' => 'Switch',
             'marca' => 'TP-Link',

@@ -27,6 +27,7 @@ final class UpdateEquipmentDTO
         public readonly ?string $supplier = null,
         public readonly ?string $warranty = null,
         public readonly ?float $purchaseValue = null,
+        public readonly ?int $version = null,
         public readonly bool $hasDepartmentId = false,
         public readonly bool $hasEmployeeId = false,
     ) {}
@@ -54,6 +55,7 @@ final class UpdateEquipmentDTO
             supplier: isset($data['proveedor']) ? (string) $data['proveedor'] : null,
             warranty: isset($data['garantia']) ? (string) $data['garantia'] : null,
             purchaseValue: isset($data['valor_compra']) ? (float) $data['valor_compra'] : null,
+            version: isset($data['version']) ? (int) $data['version'] : null,
             hasDepartmentId: array_key_exists('departamento_id', $data),
             hasEmployeeId: array_key_exists('empleado_id', $data),
         );

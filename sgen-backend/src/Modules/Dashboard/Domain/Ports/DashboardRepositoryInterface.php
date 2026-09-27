@@ -78,4 +78,17 @@ interface DashboardRepositoryInterface
      * }
      */
     public function getTicketsByStatus(): array;
+
+    /**
+     * Vista personal del usuario (tablero por rol: mi trabajo hoy).
+     *
+     * @return array{
+     *     mis_pendientes: int,
+     *     mis_en_proceso: int,
+     *     mis_resueltos_mes: int,
+     *     mis_equipos: array<int, array{id: int, codigo: string, nombre: string}>,
+     *     proximas_ordenes_mias: int
+     * }
+     */
+    public function getMyWork(int $userId): array;
 }

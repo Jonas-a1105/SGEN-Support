@@ -126,7 +126,8 @@ final class TicketDetailMapper
         // 7. Ficha del Ticket
         $ticketData = [
             'id' => (int) $ticket->id,
-            'code' => '#T-'.$ticket->id,
+            'code' => ! empty($ticket->codigo) ? '#'.$ticket->codigo : '#T-'.$ticket->id,
+            'version' => (int) ($ticket->version ?? 1),
             'title' => $titulo,
             'description' => (string) ($ticket->descripcion ?? $titulo),
             'status' => $statusVariant,

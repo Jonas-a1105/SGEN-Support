@@ -62,6 +62,8 @@ export interface EquipmentKpis {
 
 export interface EquipmentDetail {
     id: number;
+    /** #22 Locking optimista: edición exige la versión vista por el lector. */
+    version: number;
     inventoryCode: string;
     serialNumber: string;
     name: string;
@@ -93,6 +95,26 @@ export interface EquipmentDetail {
     maintenances: EquipmentMaintenance[];
     departamentos: DepartmentOption[];
     empleados: EmployeeOption[];
+    /** Custodia vigente (si existe) con evidencia probatoria de firma. */
+    custodiaActual: EquipmentCustody | null;
+    /** Historial custodial completo, más reciente primero. */
+    custodias: EquipmentCustody[];
+}
+
+/** Eslabón de la cadena custodial patrimonial (Módulo 12). */
+export interface EquipmentCustody {
+    id: number;
+    empleado_id: number;
+    custodio: string;
+    motivo: string;
+    fecha_inicio: string | null;
+    fecha_fin: string | null;
+    vigente: boolean;
+    firmada: boolean;
+    firmado_en: string | null;
+    firma_hash: string | null;
+    firma_ip: string | null;
+    asignado_por: string;
 }
 
 export interface EquipmentFilterOptions {

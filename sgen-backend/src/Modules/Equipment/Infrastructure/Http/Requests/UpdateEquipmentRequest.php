@@ -42,8 +42,11 @@ final class UpdateEquipmentRequest extends FormRequest
             'driver' => ['nullable', 'string', 'max:150'],
             'toner' => ['nullable', 'string', 'max:100'],
             'fecha_compra' => ['nullable', 'date'],
+            // #14 coherencia temporal: la garantía jamás vence antes de la compra.
+            'garantia' => ['nullable', 'date', 'after_or_equal:fecha_compra'],
             'proveedor' => ['nullable', 'string', 'max:150'],
-            'garantia' => ['nullable', 'date'],
+            // #22: versión vista por el lector (si llega, el UPDATE es atómico).
+            'version' => ['nullable', 'integer', 'min:1'],
             'valor_compra' => ['nullable', 'numeric', 'min:0'],
         ];
     }
