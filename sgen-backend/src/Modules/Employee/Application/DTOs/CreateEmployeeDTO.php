@@ -15,8 +15,7 @@ final class CreateEmployeeDTO
         public readonly ?int $departamentoId = null,
         public readonly string $rol = 'consultor',
         public readonly ?int $usuarioId = null,
-    ) {
-    }
+    ) {}
 
     public static function fromArray(array $data): self
     {

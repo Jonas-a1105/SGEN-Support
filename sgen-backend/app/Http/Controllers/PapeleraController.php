@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Audit\Application\Services\BitacoraLogger;
 
 /**
  * Papelera universal (acción de restaurar o purga): ventana de seguridad
@@ -33,37 +36,95 @@ final class PapeleraController extends Controller
         ]);
     }
 
-    public function restore(Request $request, string $entidad, int $id): \Illuminate\Http\RedirectResponse
+    public function restore(Request $request, string $entidad, int $id, BitacoraLogger $bitacora): RedirectResponse
     {
         $meta = self::CATALOGOS[$entidad] ?? null;
         abort_unless($meta !== null, 404, 'Catálogo no recuperable por papelera.');
 
-        // Restauración: solo registra si fue a papelera; reingreso inmediato.
-        $restaurado = DB::table($entidad)
-            ->where('id', $id)
-            ->whereNotNull('deleted_at')
-            ->update(['deleted_at' => null, 'updated_at' => Carbon::now()]);
+        // Restauración: solo reingresa lo que está en papelera; la traza queda
+        // registrada en bitácora con el estado anterior.
+        $registro = DB::transaction(function () use ($entidad, $id) {
+            $enPapelera = DB::table($entidad)
+                ->where('id', $id)
+                ->whereNotNull('deleted_at')
+                ->lockForUpdate()
+                ->first();
 
-        return $restaurado > 0
-            ? back()->with('success', "{$meta['etiqueta']} #{$id} restaurado: ya está activo en su módulo.")
-            : back()->with('error', 'No se encontró el registro en papelera.');
+            if ($enPapelera === null) {
+                return null;
+            }
+
+            DB::table($entidad)
+                ->where('id', $id)
+                ->whereNotNull('deleted_at')
+                ->update(['deleted_at' => null, 'updated_at' => Carbon::now()]);
+
+            return $enPapelera;
+        });
+
+        if ($registro === null) {
+            return back()->with('error', 'No se encontró el registro en papelera.');
+        }
+
+        $bitacora->record(
+            accion: 'restaurar_registro',
+            entidad: $entidad,
+            entidadId: $id,
+            datosAnteriores: ['deleted_at' => (string) $registro->deleted_at],
+            datosNuevos: ['deleted_at' => null],
+            usuarioId: (int) $request->user()->id,
+            username: $request->user()->username,
+            ip: $request->ip() ?: '127.0.0.1',
+        );
+
+        return back()->with('success', "{$meta['etiqueta']} #{$id} restaurado: ya está activo en su módulo.");
     }
 
-    public function destroyForever(string $entidad, int $id): \Illuminate\Http\RedirectResponse
+    public function destroyForever(Request $request, string $entidad, int $id, BitacoraLogger $bitacora): RedirectResponse
     {
         $meta = self::CATALOGOS[$entidad] ?? null;
         abort_unless($meta !== null, 404);
 
-        // Purga definitiva: solo desde papelera y con ventana: la traza queda
-        // en bitácora vía el log de la aplicación que la acción invoca.
-        $query = DB::table($entidad)->where('id', $id);
-        $pendiente = DB::table($entidad)->where('id', $id)->whereNotNull('deleted_at')->exists();
+        // Purga definitiva: solo desde papelera y con ventana. El borrado y su
+        // traza son atómicos; la bitácora conserva el registro completo.
+        try {
+            $registro = DB::transaction(function () use ($entidad, $id) {
+                $enPapelera = DB::table($entidad)
+                    ->where('id', $id)
+                    ->whereNotNull('deleted_at')
+                    ->lockForUpdate()
+                    ->first();
 
-        if (! $pendiente) {
+                if ($enPapelera === null) {
+                    return null;
+                }
+
+                DB::table($entidad)
+                    ->where('id', $id)
+                    ->whereNotNull('deleted_at')
+                    ->delete();
+
+                return $enPapelera;
+            });
+        } catch (QueryException $e) {
+            report($e);
+
+            return back()->with('error', 'No se puede eliminar definitivamente: el registro tiene historial asociado.');
+        }
+
+        if ($registro === null) {
             return back()->with('error', 'Solo los registros en papelera pueden eliminarse definitivamente.');
         }
 
-        $query->delete();
+        $bitacora->record(
+            accion: 'purgar_registro',
+            entidad: $entidad,
+            entidadId: $id,
+            datosAnteriores: (array) $registro,
+            usuarioId: (int) $request->user()->id,
+            username: $request->user()->username,
+            ip: $request->ip() ?: '127.0.0.1',
+        );
 
         return back()->with('success', 'Registro eliminado de manera permanente.');
     }

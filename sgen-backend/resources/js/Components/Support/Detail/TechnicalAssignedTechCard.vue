@@ -47,9 +47,9 @@ const emit = defineEmits<{
 }
 .tech-card-header-label {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    text-transform: uppercase;
+
 }
 .tech-info-row {
     display: flex;
@@ -65,7 +65,7 @@ const emit = defineEmits<{
     display: grid;
     place-items: center;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     border: var(--stroke-w) solid rgba(59, 130, 246, 0.3);
     flex-shrink: 0;
 }

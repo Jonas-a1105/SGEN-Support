@@ -272,7 +272,7 @@ const closeDrawer = () => {
     display: grid;
     place-items: center;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text, #f4f4f6);
 }
 
@@ -311,9 +311,9 @@ const closeDrawer = () => {
 .drawer-section-title {
     display: block;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted, #8e9199);
-    text-transform: uppercase;
+
     letter-spacing: 0.05em;
     margin-bottom: 10px;
 }

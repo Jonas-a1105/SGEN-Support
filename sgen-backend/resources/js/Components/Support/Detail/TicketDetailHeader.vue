@@ -244,7 +244,7 @@ const handleGoBack = () => {
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
     text-decoration: none;
     transition: color 0.18s ease;
@@ -288,7 +288,7 @@ const handleGoBack = () => {
 .ticket-main-title {
     margin: 0;
     font-size: 17px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     letter-spacing: -0.015em;
     line-height: 1.25;
@@ -496,7 +496,7 @@ const handleGoBack = () => {
 
 .alert-text strong {
     color: #d97706;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 @media (max-width: 768px) {

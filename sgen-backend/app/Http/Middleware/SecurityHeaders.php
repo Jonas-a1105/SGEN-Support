@@ -37,6 +37,7 @@ final class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
         $response->headers->set('X-Permitted-Cross-Domain-Policies', 'none');
+
         $response->headers->set('Content-Security-Policy', $this->buildContentSecurityPolicy($nonce));
 
         if ($request->isSecure()) {
@@ -62,8 +63,8 @@ final class SecurityHeaders
 
         // Servidor de desarrollo de Vite (módulos ESM y WebSocket de HMR).
         if (Vite::isRunningHot()) {
-            $viteHttp = ['http://127.0.0.1:5173', 'http://[::1]:5173'];
-            $viteWs = ['ws://127.0.0.1:5173', 'ws://[::1]:5173'];
+            $viteHttp = ['http://127.0.0.1:5173', 'http://127.0.0.1:5174', 'http://localhost:5173', 'http://localhost:5174', 'http://[::1]:5173', 'http://[::1]:5174'];
+            $viteWs = ['ws://127.0.0.1:5173', 'ws://127.0.0.1:5174', 'ws://localhost:5173', 'ws://localhost:5174', 'ws://[::1]:5173', 'ws://[::1]:5174'];
             $scriptSrc = array_merge($scriptSrc, $viteHttp);
             $connectSrc = array_merge($connectSrc, $viteHttp, $viteWs);
             $styleSrc = array_merge($styleSrc, $viteHttp);

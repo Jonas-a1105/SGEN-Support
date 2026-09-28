@@ -91,7 +91,7 @@ function save() {
 }
 .section-title {
     font-size: 16px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 4px 0;
 }
@@ -172,7 +172,7 @@ function save() {
     border-radius: 10px;
     padding: 10px 20px;
     font-size: 13px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     cursor: pointer;
     box-shadow: none !important;
 }

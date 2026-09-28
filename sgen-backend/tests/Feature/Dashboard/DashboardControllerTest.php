@@ -6,6 +6,7 @@ namespace Tests\Feature\Dashboard;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -20,7 +21,7 @@ final class DashboardControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_dash_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

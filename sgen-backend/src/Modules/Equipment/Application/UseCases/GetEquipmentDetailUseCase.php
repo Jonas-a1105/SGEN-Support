@@ -11,8 +11,7 @@ final class GetEquipmentDetailUseCase
 {
     public function __construct(
         private readonly EquipmentRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $id): ?EquipmentDetailDTO
     {

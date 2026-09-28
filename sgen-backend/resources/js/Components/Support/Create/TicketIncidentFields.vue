@@ -66,11 +66,11 @@ const emit = defineEmits<{
     display: grid;
     place-items: center;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 .tf-section-title {
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0;
 }
@@ -82,9 +82,9 @@ const emit = defineEmits<{
 .tf-field-label {
     display: block;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted, #8e9199);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
     margin-bottom: 2px;
 }

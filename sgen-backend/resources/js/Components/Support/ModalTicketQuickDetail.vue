@@ -93,7 +93,7 @@ const goToFullDetail = () => {
 }
 .ticket-tag {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--primary);
     background: rgba(79, 70, 229, 0.12);
     padding: 3px 8px;
@@ -107,15 +107,15 @@ const goToFullDetail = () => {
 }
 .field-label {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
 }
 .field-title {
     margin: 0;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     line-height: 1.35;
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Auth\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Auth\Infrastructure\Http\Requests\LoginRequest;
 use App\Support\Config\ConfiguracionGlobal;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Auth\Infrastructure\Http\Requests\LoginRequest;
 
 class AuthController extends Controller
 {

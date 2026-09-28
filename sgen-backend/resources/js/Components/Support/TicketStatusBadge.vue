@@ -41,8 +41,8 @@ const matchStatus = (st: string) => {
     align-items: center;
     gap: 6px;
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: var(--weight-semibold);
+
     letter-spacing: 0.04em;
     padding: 3px 10px;
     border-radius: 999px;

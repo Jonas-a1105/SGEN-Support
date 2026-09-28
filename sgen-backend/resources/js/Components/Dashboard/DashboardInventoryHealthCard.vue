@@ -53,7 +53,7 @@ const emit = defineEmits<{
 
 .panel-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -86,7 +86,7 @@ const emit = defineEmits<{
 
 .inv-value {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 

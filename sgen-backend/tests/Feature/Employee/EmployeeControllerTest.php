@@ -7,6 +7,7 @@ namespace Tests\Feature\Employee;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -23,7 +24,7 @@ final class EmployeeControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_emp_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -33,7 +34,7 @@ final class EmployeeControllerTest extends TestCase
         $this->employeeId = (int) DB::table('empleados')->insertGetId([
             'nombre' => 'Test',
             'apellido' => 'Empleado',
-            'email' => 'test.empleado.' . uniqid() . '@empresa.com',
+            'email' => 'test.empleado.'.uniqid().'@empresa.com',
             'cedula' => 'V-99999999',
             'cargo' => 'Analista TI',
             'rol' => 'consultor',
@@ -47,7 +48,7 @@ final class EmployeeControllerTest extends TestCase
         $response = $this->get('/personal');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Employee/Index')
             ->has('kpis')
             ->has('empleados')
@@ -60,7 +61,7 @@ final class EmployeeControllerTest extends TestCase
         $response = $this->get("/personal/{$this->employeeId}");
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Employee/Show')
             ->has('employee')
             ->where('employee.id', $this->employeeId)
@@ -81,7 +82,7 @@ final class EmployeeControllerTest extends TestCase
 
     public function test_can_create_employee(): void
     {
-        $email = 'nuevo.emp.' . uniqid() . '@empresa.com';
+        $email = 'nuevo.emp.'.uniqid().'@empresa.com';
         $payload = [
             'nombre' => 'Carlos',
             'apellido' => 'Mendoza',

@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -23,7 +24,7 @@ class ExampleTest extends TestCase
     {
         $user = User::firstOrCreate(
             ['username' => 'test_root_user'],
-            ['password' => \Illuminate\Support\Facades\Hash::make('password'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('password'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $response = $this->actingAs($user)->get('/');

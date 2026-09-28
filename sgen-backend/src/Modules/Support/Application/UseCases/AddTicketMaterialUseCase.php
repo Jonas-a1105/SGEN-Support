@@ -35,10 +35,11 @@ final class AddTicketMaterialUseCase
                 throw new \DomainException("El Ã­tem #{$itemId} no existe en inventario.");
             }
 
-            if ((int) $item->stock_actual < $quantity) {
+            $stockActual = (float) $item->stock_actual;
+            if ($stockActual < $quantity) {
                 throw InsufficientStockException::forProduct(
                     $item->codigo,
-                    (int) $item->stock_actual,
+                    $stockActual,
                     $quantity
                 );
             }
@@ -46,7 +47,9 @@ final class AddTicketMaterialUseCase
             DB::table('inventario_items')
                 ->where('id', $itemId)
                 ->update([
-                    'stock_actual' => DB::raw("stock_actual - {$quantity}"),
+                    // Cast explícito a float: el valor entra al SQL como número,
+                    // nunca como texto interpolado.
+                    'stock_actual' => DB::raw('stock_actual - '.(float) $quantity),
                     'updated_at' => now(),
                 ]);
 

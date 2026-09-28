@@ -187,10 +187,10 @@ const handleConfirm = () => {
 
 .data-kicker {
     font-size: 11px;
-    text-transform: uppercase;
+
     letter-spacing: 0.05em;
     color: var(--text-muted);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .assign-item-sub {

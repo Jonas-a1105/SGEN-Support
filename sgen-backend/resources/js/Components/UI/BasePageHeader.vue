@@ -81,7 +81,7 @@ withDefaults(defineProps<Props>(), {
 .header-title {
     margin: 0;
     font-size: 20px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     line-height: 1.2;
     letter-spacing: -0.01em;

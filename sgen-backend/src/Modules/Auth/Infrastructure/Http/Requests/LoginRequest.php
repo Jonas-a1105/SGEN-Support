@@ -28,7 +28,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username' => ['required', 'string'],
+            'username' => ['required', 'string', 'max:50'],
             'password' => ['required', 'string'],
             'remember' => ['nullable', 'boolean'],
         ];
@@ -100,7 +100,12 @@ class LoginRequest extends FormRequest
 
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('username')).'|'.$this->ip());
+        // Misma normalización que authenticate() (trim + lower): sin ella,
+        // "admin", " admin " y "ADMIN" producían claves de throttle distintas,
+        // permitiendo eludir el bloqueo temporal y duplicando las alertas.
+        $username = trim((string) $this->input('username'));
+
+        return Str::transliterate(Str::lower($username).'|'.$this->ip());
     }
 
     /**

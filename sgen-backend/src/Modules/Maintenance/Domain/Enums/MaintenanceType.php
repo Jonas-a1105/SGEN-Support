@@ -12,7 +12,7 @@ enum MaintenanceType: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PREVENTIVO => 'Preventivo',
             self::CORRECTIVO => 'Correctivo',
             self::PREDICTIVO => 'Predictivo',
@@ -21,7 +21,7 @@ enum MaintenanceType: string
 
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PREVENTIVO => 'Mantenimiento programado para prevenir fallos',
             self::CORRECTIVO => 'Reparación después de un fallo',
             self::PREDICTIVO => 'Basado en análisis predictivo de condición',

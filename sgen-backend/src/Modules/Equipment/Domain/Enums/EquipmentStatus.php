@@ -44,18 +44,27 @@ enum EquipmentStatus: string
 
     public static function fromLabel(string $label): self
     {
+        return self::tryFromLabel($label) ?? self::DISPONIBLE;
+    }
+
+    /**
+     * Normaliza etiquetas legadas sin inventar un estado: null cuando la
+     * etiqueta no corresponde a ningún estado real.
+     */
+    public static function tryFromLabel(string $label): ?self
+    {
         return match (mb_strtolower(trim($label))) {
             'disponible' => self::DISPONIBLE,
             'en uso', 'en_uso' => self::EN_USO,
             'reparación', 'reparacion', 'en reparacion', 'en_reparacion' => self::EN_REPARACION,
-            'baja', 'fuera de servicio', 'fuera_de_servicio' => self::FUERA_DE_SERVICIO,
-            'de baja', 'de_baja', 'dado de baja' => self::DE_BAJA,
+            'fuera de servicio', 'fuera_de_servicio' => self::FUERA_DE_SERVICIO,
+            'baja', 'de baja', 'de_baja', 'dado de baja' => self::DE_BAJA,
             'prestado' => self::PRESTADO,
             'perdido' => self::PERDIDO,
             'nuevo' => self::NUEVO,
             'usado' => self::USADO,
             'en reserva', 'en_reserva' => self::EN_RESERVA,
-            default => self::DISPONIBLE,
+            default => null,
         };
     }
 }

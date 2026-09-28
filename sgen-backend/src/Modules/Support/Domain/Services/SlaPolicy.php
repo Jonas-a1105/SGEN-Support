@@ -102,6 +102,7 @@ final class SlaPolicy
         while (true) {
             if (! $this->esDiaLaboral($cursor)) {
                 $cursor = $this->siguienteDiaLaboral($cursor->startOfDay()->addDay());
+
                 continue;
             }
 
@@ -113,6 +114,7 @@ final class SlaPolicy
 
             if ($cursor->greaterThanOrEqualTo($finTurno)) {
                 $cursor = $this->siguienteDiaLaboral($cursor->startOfDay()->addDay());
+
                 continue;
             }
 

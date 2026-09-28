@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Support\Rbac\PermissionCatalog;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -50,7 +51,7 @@ class HandleInertiaRequests extends Middleware
                     'departamento_id' => $request->user()->departamento_id,
                     // Conjunto de permisos efectivos (RBAC): la navegación se
                     // corta a lo permitido en vez de declarar lo inaccessible.
-                    'permissions' => \App\Support\Rbac\PermissionCatalog::permissionsForRole((string) $request->user()->rol),
+                    'permissions' => PermissionCatalog::permissionsForRole((string) $request->user()->rol),
                 ] : null,
             ],
             'flash' => [

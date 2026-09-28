@@ -185,7 +185,7 @@ const {
 
 .table-item-title {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
@@ -255,7 +255,7 @@ const {
 
 .card-item-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }

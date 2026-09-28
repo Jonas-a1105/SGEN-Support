@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Modules\Support\Domain\Enums\TicketPriority;
 use Modules\Support\Domain\Services\PriorityMatrixService;
@@ -30,7 +31,7 @@ final class SupportPriorityAndAttachmentTest extends TestCase
         $this->user = User::firstOrCreate(
             ['username' => 'admin_priority_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

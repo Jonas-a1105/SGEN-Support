@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\ConfiguracionGlobalController;
+use App\Http\Controllers\PapeleraController;
+use App\Http\Controllers\PublicTicketPortalController;
+use App\Http\Controllers\RolesAdminController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Modules\About\Infrastructure\Http\Controllers\AboutController;
@@ -170,9 +174,9 @@ Route::middleware('auth')->group(function () {
 
     // Papelera universal: restaurar o purgar, solo administración.
     Route::middleware('permission:auditoria.view')->group(function () {
-        Route::get('/papelera', [\App\Http\Controllers\PapeleraController::class, 'index'])->name('papelera.index');
-        Route::post('/papelera/{entidad}/{id}/restaurar', [\App\Http\Controllers\PapeleraController::class, 'restore'])->name('papelera.restore');
-        Route::delete('/papelera/{entidad}/{id}', [\App\Http\Controllers\PapeleraController::class, 'destroyForever'])->name('papelera.purge');
+        Route::get('/papelera', [PapeleraController::class, 'index'])->name('papelera.index');
+        Route::post('/papelera/{entidad}/{id}/restaurar', [PapeleraController::class, 'restore'])->name('papelera.restore');
+        Route::delete('/papelera/{entidad}/{id}', [PapeleraController::class, 'destroyForever'])->name('papelera.purge');
     });
 
     Route::prefix('configuracion')->name('configuracion.')->group(function () {
@@ -186,15 +190,15 @@ Route::middleware('auth')->group(function () {
 
         // Administración de plataforma, solo con entrada de sistema abierta.
         Route::middleware('permission:configuracion.manage')->group(function () {
-            Route::get('/sistema', [\App\Http\Controllers\ConfiguracionGlobalController::class, 'index'])->name('sistema.index');
-            Route::match(['put', 'patch', 'post'], '/sistema', [\App\Http\Controllers\ConfiguracionGlobalController::class, 'update'])->name('sistema.update');
+            Route::get('/sistema', [ConfiguracionGlobalController::class, 'index'])->name('sistema.index');
+            Route::match(['put', 'patch', 'post'], '/sistema', [ConfiguracionGlobalController::class, 'update'])->name('sistema.update');
         });
     });
 
     // Editor de roles con matriz de permisos (administración funcional).
     Route::middleware('permission:usuarios.manage')->group(function () {
-        Route::get('/roles', [\App\Http\Controllers\RolesAdminController::class, 'index'])->name('roles.index');
-        Route::match(['put', 'patch', 'post'], '/roles/{role}', [\App\Http\Controllers\RolesAdminController::class, 'update'])->name('roles.update');
+        Route::get('/roles', [RolesAdminController::class, 'index'])->name('roles.index');
+        Route::match(['put', 'patch', 'post'], '/roles/{role}', [RolesAdminController::class, 'update'])->name('roles.update');
     });
 
     Route::get('/acerca', [AboutController::class, 'index'])->name('acerca.index');
@@ -244,4 +248,4 @@ Route::middleware('auth')->group(function () {
 });
 
 // Módulo 03 / PASO 0 multicanal: seguimiento público del ticket con token.
-Route::get('/portal/ticket/{token}', [\App\Http\Controllers\PublicTicketPortalController::class, 'show'])->name('portal.ticket.status');
+Route::get('/portal/ticket/{token}', [PublicTicketPortalController::class, 'show'])->name('portal.ticket.status');

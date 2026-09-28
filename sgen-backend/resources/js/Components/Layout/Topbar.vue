@@ -80,7 +80,7 @@ onMounted(() => {
 
 .dash-title {
     font-size: 16px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;

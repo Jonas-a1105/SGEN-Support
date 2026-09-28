@@ -137,7 +137,7 @@ const getRoleBadgeVariant = (rol: string): 'accent' | 'success' | 'info' | 'neut
     background: var(--blue, #3b82f6);
     color: #ffffff;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     display: grid;
     place-items: center;
     flex-shrink: 0;
@@ -158,7 +158,7 @@ const getRoleBadgeVariant = (rol: string): 'accent' | 'success' | 'info' | 'neut
 
 .emp-main-title {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
     letter-spacing: -0.02em;

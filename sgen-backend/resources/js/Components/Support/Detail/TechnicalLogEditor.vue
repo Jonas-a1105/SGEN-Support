@@ -159,7 +159,7 @@ const submitLog = () => {
 .panel-title {
     margin: 0;
     font-size: 14px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     letter-spacing: -0.01em;
 }

@@ -20,14 +20,14 @@ final class DepartmentListItemMapper
     ];
 
     /**
-     * @param object|array<string, mixed> $row
+     * @param  object|array<string, mixed>  $row
      */
     public static function fromRow(object|array $row): DepartmentListItemDTO
     {
         $data = (array) $row;
         $id = (int) ($data['id'] ?? 0);
 
-        $code = 'DEPT-' . sprintf('%02d', $id);
+        $code = 'DEPT-'.sprintf('%02d', $id);
         $name = (string) ($data['nombre'] ?? 'Sin Nombre');
         $location = (string) ($data['ubicacion'] ?? 'Edificio Central');
         $desc = (string) ($data['descripcion'] ?? "Gestión y administración del área de {$name}.");
@@ -44,13 +44,13 @@ final class DepartmentListItemMapper
         $color = self::COLORS[$id % count(self::COLORS)];
 
         $manager = null;
-        if (!empty($data['jefe_area_nombre'])) {
+        if (! empty($data['jefe_area_nombre'])) {
             $manager = (string) $data['jefe_area_nombre'];
         }
 
         return new DepartmentListItemDTO(
             numericId: $id,
-            id: 'dept_' . sprintf('%02d', $id),
+            id: 'dept_'.sprintf('%02d', $id),
             code: $code,
             name: $name,
             desc: $desc,

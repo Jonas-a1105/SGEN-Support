@@ -111,7 +111,7 @@ const getEquipmentBadgeVariant = (estado: string): 'success' | 'warning' | 'dang
 .detail-table th {
     padding: 12px 16px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
     background: var(--stroke-subtle);
     border-bottom: var(--stroke-w) solid var(--stroke);
@@ -146,7 +146,7 @@ const getEquipmentBadgeVariant = (estado: string): 'success' | 'warning' | 'dang
 }
 
 .mono-text {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-muted);
 }

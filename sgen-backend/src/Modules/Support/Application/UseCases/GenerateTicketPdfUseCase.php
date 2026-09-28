@@ -16,9 +16,10 @@ final class GenerateTicketPdfUseCase
         private TicketPdfDataAssembler $dataAssembler
     ) {}
 
-    public function execute(int $ticketId): Response
+    public function execute(int $ticketId, ?int $viewerUserId = null): Response
     {
-        $detail = $this->repository->findById($ticketId);
+        // El visor importa: el PDF no debe exponer notas internas al solicitante.
+        $detail = $this->repository->findById($ticketId, $viewerUserId);
 
         if ($detail === null) {
             throw new \DomainException("Ticket #{$ticketId} no encontrado.");

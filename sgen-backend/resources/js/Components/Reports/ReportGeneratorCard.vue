@@ -124,7 +124,7 @@ const emit = defineEmits<{
 
 .panel-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -158,7 +158,7 @@ const emit = defineEmits<{
     background: var(--orange);
     color: #ffffff;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     display: inline-flex;
     align-items: center;
     justify-content: center;

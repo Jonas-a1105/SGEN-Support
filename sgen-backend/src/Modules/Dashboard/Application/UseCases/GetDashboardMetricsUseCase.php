@@ -11,8 +11,7 @@ final class GetDashboardMetricsUseCase
 {
     public function __construct(
         private readonly DashboardRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $year = 2025, ?int $currentUserId = null): DashboardMetricsDTO
     {

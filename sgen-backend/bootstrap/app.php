@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsureSessionIdle;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\IdempotencyMiddleware;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -33,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             // #21: replay de respuestas ante doble-submit (acciones críticas).
-            'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
+            'idempotency' => IdempotencyMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -109,6 +109,7 @@ function getRoleToneClass(rol: string): string {
     font-size: 14px;
     color: var(--text, #f4f4f6);
     display: block;
+    font-weight: var(--weight-semibold);
 }
 .user-sub-desc {
     font-size: 11px;

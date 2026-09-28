@@ -21,6 +21,12 @@ interface DashboardRepositoryInterface
     public function getKpiMetrics(): array;
 
     /**
+     * Volumen de tickets por día para el año indicado.
+     *
+     * `months` contiene una etiqueta por día con formato `d/m`; `values` la
+     * cantidad de tickets de ese día. Si el año es el actual solo se generan
+     * los días transcurridos hasta hoy.
+     *
      * @return array{
      *     year: int,
      *     months: array<int, string>,

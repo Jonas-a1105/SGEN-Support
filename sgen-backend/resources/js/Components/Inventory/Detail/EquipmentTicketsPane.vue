@@ -64,7 +64,7 @@ const emit = defineEmits<{
 
 .empty-pane-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0 0 var(--space-2) 0;
 }

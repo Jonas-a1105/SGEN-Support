@@ -22,7 +22,7 @@ final class Category
         }
 
         $trimmedColor = trim($this->color);
-        if ($trimmedColor === '' || !preg_match('/^#[a-fA-F0-9]{3,8}$/', $trimmedColor)) {
+        if ($trimmedColor === '' || ! preg_match('/^#[a-fA-F0-9]{3,8}$/', $trimmedColor)) {
             $this->color = '#0d6efd';
         }
     }

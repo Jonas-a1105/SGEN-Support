@@ -68,7 +68,7 @@ const operatorName = computed(() => {
 
 .welcome-title {
     font-size: 18px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0 0 var(--space-1);
     letter-spacing: -0.01em;

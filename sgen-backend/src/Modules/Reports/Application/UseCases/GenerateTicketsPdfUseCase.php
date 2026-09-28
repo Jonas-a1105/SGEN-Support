@@ -24,6 +24,6 @@ final readonly class GenerateTicketsPdfUseCase
             'generatedAt' => now()->format('d/m/Y H:i'),
         ])->setPaper('a4', 'landscape');
 
-        return $pdf->stream('Reporte_Tickets_' . date('Y-m-d') . '.pdf');
+        return $pdf->stream('Reporte_Tickets_'.date('Y-m-d').'.pdf');
     }
 }

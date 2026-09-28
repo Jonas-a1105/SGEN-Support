@@ -18,13 +18,48 @@ final class SystemSettings
         private bool $emailWeeklyDigest = false
     ) {}
 
-    public function language(): string { return $this->language; }
-    public function timezone(): string { return $this->timezone; }
-    public function dateFormat(): string { return $this->dateFormat; }
-    public function theme(): string { return $this->theme; }
-    public function strokeWidth(): string { return $this->strokeWidth; }
-    public function accentColor(): string { return $this->accentColor; }
-    public function isPushEnabled(): bool { return $this->pushEnabled; }
-    public function isEmailTicketsEnabled(): bool { return $this->emailTicketsEnabled; }
-    public function isEmailWeeklyDigest(): bool { return $this->emailWeeklyDigest; }
+    public function language(): string
+    {
+        return $this->language;
+    }
+
+    public function timezone(): string
+    {
+        return $this->timezone;
+    }
+
+    public function dateFormat(): string
+    {
+        return $this->dateFormat;
+    }
+
+    public function theme(): string
+    {
+        return $this->theme;
+    }
+
+    public function strokeWidth(): string
+    {
+        return $this->strokeWidth;
+    }
+
+    public function accentColor(): string
+    {
+        return $this->accentColor;
+    }
+
+    public function isPushEnabled(): bool
+    {
+        return $this->pushEnabled;
+    }
+
+    public function isEmailTicketsEnabled(): bool
+    {
+        return $this->emailTicketsEnabled;
+    }
+
+    public function isEmailWeeklyDigest(): bool
+    {
+        return $this->emailWeeklyDigest;
+    }
 }

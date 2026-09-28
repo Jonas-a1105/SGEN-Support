@@ -117,7 +117,7 @@ const handleSubmit = () => {
     border: 1px solid var(--danger);
     color: var(--danger);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 .form-group {
     display: flex;
@@ -126,9 +126,9 @@ const handleSubmit = () => {
 }
 .form-label {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
 }
 .form-textarea {
@@ -149,7 +149,7 @@ const handleSubmit = () => {
 .field-hint {
     font-size: 12px;
     color: var(--warning);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 .modal-actions-bar {
     display: flex;

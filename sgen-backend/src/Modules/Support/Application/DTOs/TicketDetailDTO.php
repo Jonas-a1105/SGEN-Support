@@ -7,13 +7,13 @@ namespace Modules\Support\Application\DTOs;
 final class TicketDetailDTO
 {
     /**
-     * @param array<string, mixed> $ticket
-     * @param array<string, mixed> $asset
-     * @param array<int, array<string, mixed>> $comments
-     * @param array<int, array<string, mixed>> $attachments
-     * @param array<int, array<string, mixed>> $materials
-     * @param array<string, mixed> $rating
-     * @param array<int, array<string, mixed>> $logEntries
+     * @param  array<string, mixed>  $ticket
+     * @param  array<string, mixed>  $asset
+     * @param  array<int, array<string, mixed>>  $comments
+     * @param  array<int, array<string, mixed>>  $attachments
+     * @param  array<int, array<string, mixed>>  $materials
+     * @param  array<string, mixed>  $rating
+     * @param  array<int, array<string, mixed>>  $logEntries
      */
     public function __construct(
         public readonly array $ticket,
@@ -23,8 +23,7 @@ final class TicketDetailDTO
         public readonly array $materials,
         public readonly ?array $rating = null,
         public readonly array $logEntries = []
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>

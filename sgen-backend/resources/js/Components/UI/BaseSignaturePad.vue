@@ -270,10 +270,10 @@ watch(
 
 .guideline-text {
     font-size: 11px;
-    text-transform: uppercase;
+
     letter-spacing: 0.05em;
     color: #64748b;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .guideline-line {

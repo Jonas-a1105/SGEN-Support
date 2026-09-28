@@ -148,7 +148,7 @@ const emit = defineEmits<{
 
 .dept-main-title {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
     letter-spacing: -0.02em;

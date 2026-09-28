@@ -23,12 +23,12 @@ final class TicketId
 
     public function formatted(): string
     {
-        return 'T-' . $this->value;
+        return 'T-'.$this->value;
     }
 
     public function code(): string
     {
-        return '#T-' . $this->value;
+        return '#T-'.$this->value;
     }
 
     public static function fromRaw(int|string $raw): self

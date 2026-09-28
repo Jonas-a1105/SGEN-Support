@@ -15,7 +15,7 @@ final class GetMaintenanceDetailUseCase
     public function execute(int $id): ?array
     {
         $detail = $this->repository->findById($id);
-        
+
         if ($detail === null) {
             return null;
         }

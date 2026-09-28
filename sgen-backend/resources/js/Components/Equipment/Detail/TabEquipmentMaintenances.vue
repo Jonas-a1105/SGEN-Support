@@ -122,7 +122,7 @@ const props = defineProps<{
 }
 
 .maint-type-title {
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     text-transform: capitalize;
 }
@@ -160,7 +160,7 @@ const props = defineProps<{
 
 .maint-cost {
     font-family: var(--font-mono);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 </style>

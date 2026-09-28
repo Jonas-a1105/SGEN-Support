@@ -8,6 +8,7 @@ use DomainException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Modules\Equipment\Domain\Exceptions\EquipmentNotFoundException;
+use Modules\Support\Domain\Enums\TicketStatus;
 
 /**
  * Baja formal de activos (Módulo 11): precondiciones duras de throughput —
@@ -18,9 +19,7 @@ use Modules\Equipment\Domain\Exceptions\EquipmentNotFoundException;
  */
 final class DecommissionEquipmentUseCase
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function execute(
         int $equipoId,
@@ -66,7 +65,7 @@ final class DecommissionEquipmentUseCase
 
             $ticketsAbiertos = (int) DB::table('soportes')
                 ->where('equipo_id', $equipoId)
-                ->whereNotIn('estado', \Modules\Support\Domain\Enums\TicketStatus::finalValues())
+                ->whereNotIn('estado', TicketStatus::finalValues())
                 ->count();
 
             if ($ticketsAbiertos > 0) {

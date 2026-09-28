@@ -10,8 +10,7 @@ final class EmployeeKpisDTO
         public readonly int $totalEmp,
         public readonly int $activeUsers,
         public readonly int $noUsers,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

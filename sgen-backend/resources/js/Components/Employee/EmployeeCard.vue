@@ -199,7 +199,7 @@ const navigateToDetail = () => {
 
 .emp-name-text {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
     white-space: nowrap;
@@ -289,7 +289,7 @@ const navigateToDetail = () => {
 .access-tag-label {
     font-size: 10px;
     color: var(--text-dim);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     letter-spacing: 0.05em;
 }
 

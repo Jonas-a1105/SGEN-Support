@@ -49,7 +49,7 @@ defineProps<{
 
 .overview-subheading {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0 0 16px 0;
 }
@@ -74,7 +74,7 @@ defineProps<{
     font-size: 11px;
     font-weight: 600;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.05em;
 }
 
@@ -85,7 +85,7 @@ defineProps<{
 }
 
 .ov-value.mono {
-    font-family: monospace;
+    font-family: var(--font-mono);
     color: var(--blue, #3b82f6);
 }
 

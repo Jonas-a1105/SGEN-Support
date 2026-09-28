@@ -66,7 +66,7 @@ defineProps<{
 }
 .badge-preview-tag {
     font-size: 10px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     letter-spacing: 0.05em;
     color: #4f46e5;
     background: rgba(79, 70, 229, 0.15);
@@ -100,7 +100,7 @@ defineProps<{
     display: grid;
     place-items: center;
     font-size: 22px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     box-shadow: none !important;
 }
@@ -129,7 +129,7 @@ defineProps<{
 }
 .credential-user-name {
     font-size: 16px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0;
 }
@@ -151,7 +151,7 @@ defineProps<{
     color: #4f46e5;
     border: var(--stroke-w, 2px) solid rgba(79, 70, 229, 0.3);
     font-size: 10px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
 }
 .cred-dept-pill {
     padding: 3px 10px;

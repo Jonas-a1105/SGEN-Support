@@ -302,7 +302,7 @@ const toggleSidebar = (e: MouseEvent) => {
     display: grid;
     place-items: center;
     color: #ffffff;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     font-size: 12px;
     letter-spacing: 0.04em;
     margin-left: 3px;
@@ -330,7 +330,7 @@ const toggleSidebar = (e: MouseEvent) => {
 .profile-name {
     margin: 0;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     line-height: 1.2;
 }
@@ -386,7 +386,7 @@ const toggleSidebar = (e: MouseEvent) => {
 .nav-item.active {
     background: var(--stroke);
     color: var(--text);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     border: none !important;
 }
 

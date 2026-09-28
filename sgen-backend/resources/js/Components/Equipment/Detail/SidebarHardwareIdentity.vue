@@ -57,7 +57,7 @@ const props = defineProps<{
 
 .summary-val {
     color: var(--text);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .summary-val.mono {

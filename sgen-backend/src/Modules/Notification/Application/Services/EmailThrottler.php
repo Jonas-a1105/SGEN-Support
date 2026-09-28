@@ -13,16 +13,21 @@ use Illuminate\Support\Facades\DB;
  * minutos. Un stock bajo que arde 20 veces no genera 20 correos; un SLA
  * vencido que corre cada 15 min en el mismo turno tampoco.
  *
+ * Contrato en dos pasos: `canSend()` decide sin efectos secundarios y
+ * `markSent()` registra la salida SOLO cuando el envío ya fue aceptado.
+ * Así un fallo de envío no consume la ventana de cooldown y el intento
+ * puede reintentarse en la próxima ejecución.
+ *
  * (El "digest" agregado propiamente —correo resumen agrupado— se genera sobre
  * esta misma tabla programado en el scheduler; la puerta queda aquí.)
  */
 final class EmailThrottler
 {
     /**
-     * Devuelve true si debe enviarse el correo (y registra la salida);
-     * false si el destinatario sigue dentro del cooldown (suprimido con evidencia).
+     * Indica si el correo puede salir, sin registrar nada. false significa
+     * que el destinatario sigue dentro del cooldown (suprimido con evidencia).
      */
-    public static function permitir(?int $usuarioId, ?string $email, string $tipo, ?string $subject = null): bool
+    public static function canSend(?int $usuarioId, ?string $email, string $tipo): bool
     {
         $cooldown = max(1, ConfiguracionGlobal::entero('notificaciones.email_cooldown_min', 30));
 
@@ -37,10 +42,17 @@ final class EmailThrottler
             return true;
         }
 
-        $reciente = $consulta->where('created_at', '>=', now()->subMinutes($cooldown))->exists();
+        return ! $consulta->where('created_at', '>=', now()->subMinutes($cooldown))->exists();
+    }
 
-        if ($reciente) {
-            return false;
+    /**
+     * Registra una salida efectiva en `correos_enviados`. Debe invocarse
+     * únicamente después de que el envío (o su encolado) haya terminado bien.
+     */
+    public static function markSent(?int $usuarioId, ?string $email, string $tipo, ?string $subject = null): void
+    {
+        if ($usuarioId === null && ($email === null || $email === '')) {
+            return;
         }
 
         DB::table('correos_enviados')->insert([
@@ -50,7 +62,5 @@ final class EmailThrottler
             'subject' => $subject,
             'created_at' => now(),
         ]);
-
-        return true;
     }
 }

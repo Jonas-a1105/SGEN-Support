@@ -56,7 +56,7 @@ defineProps<{
 .stock-kpi-micro-label {
     font-size: 11px;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
     display: block;
     line-height: 1;
@@ -66,7 +66,7 @@ defineProps<{
 .stock-kpi-total-val {
     font-size: 18px;
     color: var(--text);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .stock-kpi-ref-box {

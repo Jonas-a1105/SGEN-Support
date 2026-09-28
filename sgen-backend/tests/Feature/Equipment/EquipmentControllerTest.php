@@ -7,6 +7,7 @@ namespace Tests\Feature\Equipment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -23,7 +24,7 @@ final class EquipmentControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_equip_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

@@ -28,7 +28,7 @@ final class PublicTicketPortalController extends Controller
             ->leftJoin('usuarios', 'ticket_comentarios.usuario_id', '=', 'usuarios.id')
             ->where('ticket_comentarios.ticket_id', (int) $ticket->id)
             ->where('ticket_comentarios.es_interno', false)
-                ->orderByDesc('ticket_comentarios.fecha')
+            ->orderByDesc('ticket_comentarios.fecha')
             ->limit(20)
             ->get(['ticket_comentarios.id', 'ticket_comentarios.comentario', 'usuarios.username', 'ticket_comentarios.fecha'])
             ->map(static fn ($c) => [

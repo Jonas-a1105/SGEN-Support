@@ -24,8 +24,8 @@ final class UpdateMaintenanceRequest extends FormRequest
             'estado' => 'nullable|in:pendiente,en_proceso,completado,pospuesto,cancelado',
             'descripcion' => 'nullable|string|max:1000',
             'frecuencia' => 'nullable|in:unica,mensual,trimestral,semestral,anual',
-                        // #14: la próxima ejecución no puede ser anterior a la actual.
-                        'proxima_fecha' => 'nullable|date|after_or_equal:fecha',
+            // #14: la próxima ejecución no puede ser anterior a la actual.
+            'proxima_fecha' => 'nullable|date|after_or_equal:fecha',
             'costo' => 'nullable|numeric|min:0',
             'tecnico_id' => 'nullable|integer',
             'observaciones' => 'nullable|string|max:500',

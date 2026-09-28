@@ -7,6 +7,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
@@ -28,12 +29,12 @@ final class LoginAttemptsAuditTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_login_audit_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         User::firstOrCreate(
             ['username' => 'usuario_objetivo_login'],
-            ['password' => \Illuminate\Support\Facades\Hash::make('clave-valida-123'), 'rol' => 'consultor', 'tema' => 'light']
+            ['password' => Hash::make('clave-valida-123'), 'rol' => 'consultor', 'tema' => 'light']
         );
     }
 

@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -20,7 +21,7 @@ final class SecurityHeadersTest extends TestCase
     {
         $admin = User::firstOrCreate(
             ['username' => 'headers_test_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $this->actingAs($admin)->get('/dashboard')
@@ -34,7 +35,7 @@ final class SecurityHeadersTest extends TestCase
     {
         $admin = User::firstOrCreate(
             ['username' => 'headers_csp_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $response = $this->actingAs($admin)->get('/dashboard');
@@ -58,7 +59,7 @@ final class SecurityHeadersTest extends TestCase
     {
         $admin = User::firstOrCreate(
             ['username' => 'headers_https_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $this->actingAs($admin)->get('http://localhost/dashboard')

@@ -66,7 +66,7 @@ const inputId = useId();
     font-size: 11px;
     font-weight: 600;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
 }
 

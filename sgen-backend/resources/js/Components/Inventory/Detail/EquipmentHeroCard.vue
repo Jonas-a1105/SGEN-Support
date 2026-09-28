@@ -112,7 +112,7 @@ defineProps<{
 
 .device-title {
     font-size: 18px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     line-height: 1.25;
     margin: 0 0 var(--space-1) 0;
     color: var(--text);

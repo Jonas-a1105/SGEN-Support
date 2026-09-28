@@ -85,7 +85,7 @@ const itemMovements = computed(() => {
 
 .item-hero-title {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -101,7 +101,7 @@ const itemMovements = computed(() => {
 
 .panel-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }

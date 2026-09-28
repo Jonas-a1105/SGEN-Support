@@ -154,7 +154,7 @@ const { toasts, removeToast } = useToast();
 
 .toast-title {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }

@@ -49,7 +49,7 @@ interface UserRepositoryInterface
      * historial operativo del que la auditoría depende. Si algún conteo es
      * mayor que cero, el usuario no puede eliminarse físicamente.
      *
-     * @return array<string, int>  origen legible → filas vinculadas
+     * @return array<string, int> origen legible → filas vinculadas
      */
     public function operationalReferenceCounts(int $userId): array;
 

@@ -10,8 +10,7 @@ final class RemoveEquipmentFromDepartmentUseCase
 {
     public function __construct(
         private readonly DepartmentRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $equipmentId): void
     {

@@ -19,8 +19,7 @@ final class DepartmentListItemDTO
         public readonly string $color,
         public readonly ?string $manager,
         public readonly ?int $managerId = null,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

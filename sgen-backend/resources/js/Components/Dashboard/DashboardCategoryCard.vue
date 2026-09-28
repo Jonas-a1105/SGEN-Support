@@ -56,7 +56,7 @@ defineProps<{
 
 .panel-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -79,7 +79,7 @@ defineProps<{
     align-items: center;
     gap: 6px;
     color: var(--text);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 
 .category-icon {

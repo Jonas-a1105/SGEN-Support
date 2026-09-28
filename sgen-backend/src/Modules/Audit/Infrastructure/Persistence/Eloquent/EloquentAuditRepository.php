@@ -18,12 +18,12 @@ final class EloquentAuditRepository implements AuditRepositoryInterface
     {
         $query = DB::table('sesiones_log');
 
-        if (!empty($filters['search'])) {
-            $search = '%' . trim((string) $filters['search']) . '%';
+        if (! empty($filters['search'])) {
+            $search = '%'.trim((string) $filters['search']).'%';
             $query->where('username', 'like', $search);
         }
 
-        if (!empty($filters['user_id'])) {
+        if (! empty($filters['user_id'])) {
             $query->where('usuario_id', (int) $filters['user_id']);
         }
 

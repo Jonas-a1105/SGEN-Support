@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Modules\Notification\Application\Listeners;
 
 use Illuminate\Support\Facades\Mail;
+use Modules\Notification\Application\Services\EmailThrottler;
 use Modules\Notification\Application\UseCases\CreateNotificationUseCase;
 use Modules\Notification\Domain\Enums\NotificationType;
 use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
-use Modules\Notification\Application\Services\EmailThrottler;
 use Modules\Support\Domain\Events\TicketReopened;
 use Modules\User\Domain\Ports\UserRepositoryInterface;
 
@@ -41,13 +41,15 @@ final class NotifyTechnicianOnTicketReopened
             );
 
             // Canal correo: solo si el técnico tiene email registrado.
+            // El cooldown se marca DESPUÉS del envío: un fallo SMTP no lo consume.
             $email = $this->users->findById((int) $techUserId)?->email();
-            if ($email && EmailThrottler::permitir((int) $techUserId, $email, 'ticket_reabierto', 'Ticket reabierto')) {
+            if ($email && EmailThrottler::canSend((int) $techUserId, $email, 'ticket_reabierto')) {
                 Mail::to($email)->send(new TicketNotificationMail(
                     'Ticket reabierto',
                     "El ticket #{$event->ticketId} ({$event->ticketTitulo}) fue reabierto. Motivo: {$event->motivo}",
                     "/soportes/{$event->ticketId}",
                 ));
+                EmailThrottler::markSent((int) $techUserId, $email, 'ticket_reabierto', 'Ticket reabierto');
             }
         } catch (\Throwable $e) {
             // La notificación no detiene la operación, pero jamás falla en silencio.

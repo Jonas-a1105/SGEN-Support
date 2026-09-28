@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 use Tests\TestCase;
 
@@ -31,7 +32,7 @@ final class TicketClosedStateTest extends TestCase
         $this->user = User::firstOrCreate(
             ['username' => 'admin_closed_state_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

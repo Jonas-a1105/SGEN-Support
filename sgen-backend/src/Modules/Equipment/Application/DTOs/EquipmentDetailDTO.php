@@ -53,8 +53,7 @@ final class EquipmentDetailDTO
         public readonly ?string $destinoBaja = null,
         public readonly ?string $notaBaja = null,
         public readonly ?string $responsableNombre = null,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

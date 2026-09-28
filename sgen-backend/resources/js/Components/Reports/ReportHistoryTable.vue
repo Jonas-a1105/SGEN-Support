@@ -122,7 +122,7 @@ const columns: DataTableColumn[] = [
 
 .panel-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -222,7 +222,7 @@ const columns: DataTableColumn[] = [
     padding: 3px 10px;
     border-radius: 8px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     display: inline-flex;
     align-items: center;
     gap: 5px;

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Modules\Employee\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Employee\Infrastructure\Http\Requests\StoreEmployeeRequest;
-use Modules\Employee\Infrastructure\Http\Requests\UpdateEmployeeRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +17,8 @@ use Modules\Employee\Application\UseCases\DeleteEmployeeUseCase;
 use Modules\Employee\Application\UseCases\GetEmployeeDetailUseCase;
 use Modules\Employee\Application\UseCases\GetEmployeeDirectoryUseCase;
 use Modules\Employee\Application\UseCases\UpdateEmployeeUseCase;
+use Modules\Employee\Infrastructure\Http\Requests\StoreEmployeeRequest;
+use Modules\Employee\Infrastructure\Http\Requests\UpdateEmployeeRequest;
 
 final class EmployeeController extends Controller
 {

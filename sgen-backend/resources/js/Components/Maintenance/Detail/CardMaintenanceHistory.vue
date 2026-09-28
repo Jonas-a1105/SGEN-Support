@@ -118,7 +118,7 @@ defineProps<{
 
 .maint-card-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -142,8 +142,8 @@ defineProps<{
 .maint-history-table th {
     padding: 10px 14px;
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: var(--weight-semibold);
+
     color: var(--text-muted);
     border-bottom: var(--stroke-w) solid var(--stroke);
     text-align: left;
@@ -165,7 +165,7 @@ defineProps<{
 }
 
 .font-mono {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-weight: 600;
 }
 

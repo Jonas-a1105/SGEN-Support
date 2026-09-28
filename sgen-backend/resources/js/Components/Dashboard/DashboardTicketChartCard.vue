@@ -25,7 +25,7 @@ const yearOptions = computed<ComboboxOption[]>(() =>
 <template>
     <BaseCard class="chart-card" padding="none">
         <div class="panel-head">
-            <h2 class="panel-title">Volumen de Tickets Mensual</h2>
+            <h2 class="panel-title">Volumen de Tickets Diario</h2>
             <div class="select-wrap">
                 <BaseCombobox
                     :model-value="data.year"
@@ -45,8 +45,8 @@ const yearOptions = computed<ComboboxOption[]>(() =>
         </div>
 
         <div class="chart-footer">
-            <span>Frecuencia mensual sincronizada</span>
-            <span class="chart-total">Total anual: {{ data.total }}</span>
+            <span>Frecuencia diaria sincronizada</span>
+            <span class="chart-total">Total del periodo: {{ data.total }}</span>
         </div>
     </BaseCard>
 </template>
@@ -68,7 +68,7 @@ const yearOptions = computed<ComboboxOption[]>(() =>
 
 .panel-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -96,6 +96,6 @@ const yearOptions = computed<ComboboxOption[]>(() =>
 .chart-total {
     color: var(--text);
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 </style>

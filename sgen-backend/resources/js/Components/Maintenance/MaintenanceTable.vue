@@ -125,8 +125,8 @@ const emit = defineEmits<{
 .custom-table th {
     padding: 14px 18px;
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: var(--weight-semibold);
+
     letter-spacing: 0.05em;
     color: var(--text-dim);
     border-bottom: var(--stroke-w) solid var(--stroke-subtle);
@@ -170,7 +170,7 @@ const emit = defineEmits<{
     padding: 3px 10px;
     border-radius: 12px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     display: inline-block;
     text-transform: capitalize;
 }
@@ -195,7 +195,7 @@ const emit = defineEmits<{
     padding: 3px 10px;
     border-radius: 12px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     display: inline-flex;
     align-items: center;
     gap: 6px;

@@ -15,7 +15,7 @@ final class RateTicketRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('calificacion') && !$this->has('rating')) {
+        if ($this->has('calificacion') && ! $this->has('rating')) {
             $val = (int) $this->input('calificacion');
             $rating = match ($val) {
                 5 => 'excelente',
@@ -26,7 +26,7 @@ final class RateTicketRequest extends FormRequest
             $this->merge(['rating' => $rating]);
         }
 
-        if ($this->has('comment') && !$this->has('comentario')) {
+        if ($this->has('comment') && ! $this->has('comentario')) {
             $this->merge(['comentario' => $this->input('comment')]);
         }
     }

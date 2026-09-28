@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use App\Support\Config\ConfiguracionGlobal;
 use Carbon\Carbon;
 use Closure;
@@ -25,6 +26,23 @@ final class EnsureSessionIdle
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check() && $request->hasSession()) {
+            $usuario = Auth::user();
+
+            // Una cuenta desactivada no debe seguir operando por la cookie de
+            // "recordarme": se fuerza el cierre en cada petición autenticada.
+            // Solo `false` explícito desactiva: NULL legacy equivale a activo.
+            if ($usuario instanceof User && $usuario->activo === false) {
+                $this->cerrarRegistroSesion($request, 'cuenta_desactivada');
+
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()
+                    ->route('login')
+                    ->with('error', 'Tu cuenta fue desactivada. Contacta a un administrador.');
+            }
+
             $ultima = $request->session()->get(self::SESSION_KEY);
 
             if ($ultima !== null) {

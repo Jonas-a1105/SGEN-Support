@@ -12,7 +12,7 @@ use Modules\Department\Application\DTOs\UpdateDepartmentDTO;
 interface DepartmentRepositoryInterface
 {
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return DepartmentListItemDTO[]
      */
     public function list(array $filters = []): array;
@@ -29,7 +29,7 @@ interface DepartmentRepositoryInterface
 
     public function assignEmployee(int $departmentId, int $employeeId): void;
 
-    public function removeEmployee(int $employeeId): void;
+    public function removeEmployee(int $departmentId, int $employeeId): void;
 
     public function assignEquipment(int $departmentId, int $equipmentId): void;
 

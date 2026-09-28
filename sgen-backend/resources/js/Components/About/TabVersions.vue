@@ -43,7 +43,7 @@ defineProps<{
 }
 .about-title {
     font-size: 18px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 6px 0;
 }
@@ -73,7 +73,7 @@ defineProps<{
 }
 .version-tag {
     font-size: 13px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: #2563eb;
     background: rgba(37, 99, 235, 0.12);
     border: var(--stroke-w, 2px) solid rgba(37, 99, 235, 0.3);

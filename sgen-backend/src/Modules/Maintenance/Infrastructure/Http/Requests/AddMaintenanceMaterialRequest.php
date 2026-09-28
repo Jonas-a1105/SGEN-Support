@@ -19,8 +19,7 @@ final class AddMaintenanceMaterialRequest extends FormRequest
     {
         return [
             'item_id' => ['required', 'integer', 'exists:inventario_items,id'],
-            // #37: cantidades fraccionarias válidas, tope razonable.
-            'cantidad' => ['required', 'numeric', 'gt:0', 'decimal:0,3', 'max:10000'],
+            'cantidad' => ['required', 'integer', 'min:1', 'max:10000'],
         ];
     }
 

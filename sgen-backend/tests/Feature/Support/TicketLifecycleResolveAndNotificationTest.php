@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 final class TicketLifecycleResolveAndNotificationTest extends TestCase
@@ -31,7 +32,7 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
         $this->user = User::firstOrCreate(
             ['username' => 'admin_lifecycle_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -61,7 +62,7 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
         $techUser = User::firstOrCreate(
             ['username' => 'carlos_tech_'.uniqid()],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'tecnico',
                 'empleado_id' => $this->empleadoId,
                 'tema' => 'dark',
@@ -73,7 +74,7 @@ final class TicketLifecycleResolveAndNotificationTest extends TestCase
         $requesterUser = User::firstOrCreate(
             ['username' => 'ana_solicitante_'.uniqid()],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'consultor',
                 'tema' => 'light',
             ]

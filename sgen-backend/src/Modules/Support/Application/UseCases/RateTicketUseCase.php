@@ -10,8 +10,7 @@ final class RateTicketUseCase
 {
     public function __construct(
         private readonly SupportRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $ticketId, string $rating, ?string $comment, int $actingUserId): bool
     {

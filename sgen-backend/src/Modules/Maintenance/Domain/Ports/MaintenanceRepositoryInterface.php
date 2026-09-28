@@ -30,7 +30,7 @@ interface MaintenanceRepositoryInterface
     /**
      * Agrega una pieza de inventario a la orden de trabajo.
      */
-    public function addMaterial(int $mantenimientoId, int $itemId, float $cantidad, int $userId): bool;
+    public function addMaterial(int $mantenimientoId, int $itemId, int $cantidad, int $userId): bool;
 
     /**
      * Lista las piezas consumidas por la orden.

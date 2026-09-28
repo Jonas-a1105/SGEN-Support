@@ -17,6 +17,7 @@ final class DashboardMetricsDTO
      *     cambio_proceso: string,
      *     cambio_resueltos: string
      * } $kpis
+     * `months` contiene etiquetas diarias (`d/m`) del volumen de tickets.
      * @param array{
      *     year: int,
      *     months: array<int, string>,
@@ -63,8 +64,7 @@ final class DashboardMetricsDTO
         public readonly array $ticketsByStatus,
         /** @var array<string, mixed>|null */
         public readonly ?array $myWork = null
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>

@@ -24,7 +24,7 @@ withDefaults(defineProps<Props>(), {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     line-height: 1;
     white-space: nowrap;
     border-radius: var(--radius-pill);

@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -27,7 +28,7 @@ final class UserOperationalHistoryProtectionTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_history_guard_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
     }
 
@@ -35,7 +36,7 @@ final class UserOperationalHistoryProtectionTest extends TestCase
     {
         $id = (int) DB::table('usuarios')->insertGetId([
             'username' => 'historial_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+            'password' => Hash::make('secret'),
             'rol' => $rol,
             'tema' => 'light',
             'created_at' => Carbon::now(),

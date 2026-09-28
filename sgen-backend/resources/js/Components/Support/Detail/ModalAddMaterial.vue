@@ -35,7 +35,7 @@ const selectedItem = computed(() => {
 });
 
 const maxAvailableStock = computed(() => {
-    return selectedItem.value ? selectedItem.value.stock : 999;
+    return selectedItem.value ? selectedItem.value.stock : 0;
 });
 
 const isStockInsufficient = computed(() => {
@@ -179,7 +179,7 @@ const handleSubmit = () => {
     border: 1px solid var(--danger);
     color: var(--danger);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 .form-group {
     display: flex;
@@ -188,9 +188,9 @@ const handleSubmit = () => {
 }
 .form-label {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
 }
 .form-select,
@@ -216,7 +216,7 @@ const handleSubmit = () => {
 .field-error {
     font-size: 12px;
     color: var(--danger);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 .stock-pill-row {
     display: flex;

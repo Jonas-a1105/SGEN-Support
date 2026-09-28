@@ -37,7 +37,7 @@ final class UserListItemMapper
         if ($empleadoNombre !== null && $empleadoNombre !== '') {
             $parts = explode(' ', $empleadoNombre);
             if (count($parts) >= 2) {
-                $avatarInitials = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+                $avatarInitials = strtoupper(substr($parts[0], 0, 1).substr($parts[1], 0, 1));
             }
         }
 

@@ -198,7 +198,7 @@ const navigateToDetail = () => {
 
 .ticket-code {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--orange);
     font-family: var(--font-mono);
 }
@@ -223,7 +223,7 @@ const navigateToDetail = () => {
 
 .ticket-title {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0 0 4px;
     cursor: pointer;
@@ -306,7 +306,7 @@ const navigateToDetail = () => {
 .tech-role {
     font-size: 10px;
     color: var(--text-dim);
-    text-transform: uppercase;
+
 }
 
 .ticket-date-col {

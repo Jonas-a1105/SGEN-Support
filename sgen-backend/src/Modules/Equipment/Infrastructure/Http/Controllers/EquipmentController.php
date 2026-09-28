@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Modules\Equipment\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-
-use Modules\Equipment\Infrastructure\Http\Requests\StoreEquipmentRequest;
-use Modules\Equipment\Infrastructure\Http\Requests\TransferEquipmentRequest;
-use Modules\Equipment\Infrastructure\Http\Requests\UpdateEquipmentRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\Equipment\Application\DTOs\CreateEquipmentDTO;
@@ -20,14 +17,17 @@ use Modules\Equipment\Application\DTOs\UpdateEquipmentDTO;
 use Modules\Equipment\Application\UseCases\CreateEquipmentUseCase;
 use Modules\Equipment\Application\UseCases\DecommissionEquipmentUseCase;
 use Modules\Equipment\Application\UseCases\DeleteEquipmentUseCase;
-use Modules\Equipment\Infrastructure\Http\Requests\DecommissionEquipmentRequest;
 use Modules\Equipment\Application\UseCases\ExportEquipmentExcelUseCase;
 use Modules\Equipment\Application\UseCases\GenerateCustodyActPdfUseCase;
 use Modules\Equipment\Application\UseCases\GetEquipmentDashboardDataUseCase;
 use Modules\Equipment\Application\UseCases\GetEquipmentDetailUseCase;
-
 use Modules\Equipment\Application\UseCases\TransferEquipmentUseCase;
 use Modules\Equipment\Application\UseCases\UpdateEquipmentUseCase;
+use Modules\Equipment\Domain\Ports\EquipmentRepositoryInterface;
+use Modules\Equipment\Infrastructure\Http\Requests\DecommissionEquipmentRequest;
+use Modules\Equipment\Infrastructure\Http\Requests\StoreEquipmentRequest;
+use Modules\Equipment\Infrastructure\Http\Requests\TransferEquipmentRequest;
+use Modules\Equipment\Infrastructure\Http\Requests\UpdateEquipmentRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class EquipmentController extends Controller
@@ -86,7 +86,7 @@ final class EquipmentController extends Controller
     /**
      * Firma probatoria de la custodia vigente (jornada patrimonial).
      */
-    public function signCustody(int $id, Request $request, \Modules\Equipment\Domain\Ports\EquipmentRepositoryInterface $repository): RedirectResponse
+    public function signCustody(int $id, Request $request, EquipmentRepositoryInterface $repository): RedirectResponse
     {
         // Mismo contrato de trazo que los tickets: data URL de imagen real.
         $validated = $request->validate([
@@ -163,7 +163,7 @@ final class EquipmentController extends Controller
         // Inmutabilidad probatoria: el hash de emisión se graba una sola vez.
         DB::table('equipos')->where('id', $id)->whereNull('acta_baja_hash')->update(['acta_baja_hash' => $hash]);
 
-        return \Barryvdh\DomPDF\Facade\Pdf::loadView('equipment.decommission-act-pdf', [
+        return Pdf::loadView('equipment.decommission-act-pdf', [
             'equipment' => $dataActa,
             'generada_en' => now(),
             'hash_acta' => $hash,

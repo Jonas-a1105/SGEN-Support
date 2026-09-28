@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Application\UseCases;
 
+use App\Support\Export\CsvSanitizer;
 use Modules\Reports\Domain\Ports\ReportsRepositoryInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -30,16 +31,16 @@ final readonly class ExportTicketsExcelUseCase
 
             foreach ($tickets as $ticket) {
                 fputcsv($output, [
-                    'T-'.$ticket->id,
-                    $ticket->titulo,
-                    $ticket->fecha,
-                    ucfirst(str_replace('_', ' ', (string) $ticket->estado)),
-                    ucfirst((string) $ticket->prioridad),
-                    $ticket->categoria_nombre ?? 'Sin categoría',
-                    trim(($ticket->tech_nombre ?? '').' '.($ticket->tech_apellido ?? '')) ?: 'Sin asignar',
-                    $ticket->depto_nombre ?? 'Sin departamento',
-                    $ticket->equipo_codigo ?? 'N/A',
-                    $ticket->fecha_cierre ?? 'Pendiente',
+                    CsvSanitizer::cell('T-'.$ticket->id),
+                    CsvSanitizer::cell($ticket->titulo),
+                    CsvSanitizer::cell($ticket->fecha),
+                    CsvSanitizer::cell(ucfirst(str_replace('_', ' ', (string) $ticket->estado))),
+                    CsvSanitizer::cell(ucfirst((string) $ticket->prioridad)),
+                    CsvSanitizer::cell($ticket->categoria_nombre ?? 'Sin categoría'),
+                    CsvSanitizer::cell(trim(($ticket->tech_nombre ?? '').' '.($ticket->tech_apellido ?? '')) ?: 'Sin asignar'),
+                    CsvSanitizer::cell($ticket->depto_nombre ?? 'Sin departamento'),
+                    CsvSanitizer::cell($ticket->equipo_codigo ?? 'N/A'),
+                    CsvSanitizer::cell($ticket->fecha_cierre ?? 'Pendiente'),
                 ]);
             }
 

@@ -150,7 +150,7 @@ const submit = () => {
 
 .product-summary-name {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     display: block;
     margin-bottom: var(--space-1);
@@ -173,7 +173,7 @@ const submit = () => {
 .form-label {
     font-size: 11px;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
     font-weight: 600;
 }

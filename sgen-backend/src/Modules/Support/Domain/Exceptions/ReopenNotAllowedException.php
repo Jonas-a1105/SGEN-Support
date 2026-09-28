@@ -20,5 +20,4 @@ final class ReopenNotAllowedException extends DomainException
             ."{$dias} días desde la resolución. Cree un ticket nuevo haciendo referencia a este."
         );
     }
-
 }

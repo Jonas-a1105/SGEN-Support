@@ -41,7 +41,7 @@ defineProps<{
     color: var(--text-muted);
 }
 .entry-author {
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 .entry-content {

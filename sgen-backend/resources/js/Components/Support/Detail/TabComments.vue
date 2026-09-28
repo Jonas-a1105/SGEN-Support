@@ -139,7 +139,7 @@ const sendComment = () => {
 .panel-title {
     margin: 0;
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     letter-spacing: -0.01em;
 }
@@ -243,7 +243,7 @@ const sendComment = () => {
     padding: 0 6px;
     font-size: 11px;
     color: var(--primary);
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
 }
 
 .composer-textarea {

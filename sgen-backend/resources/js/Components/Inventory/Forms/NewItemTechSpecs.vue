@@ -106,7 +106,7 @@ const unitOptions = [
 <style scoped>
 .form-section-title {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin-bottom: var(--space-3);
     display: block;
@@ -126,7 +126,7 @@ const unitOptions = [
 .form-label {
     font-size: 11px;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
     font-weight: 600;
 }

@@ -89,7 +89,7 @@ const emit = defineEmits<{
 .panel-title {
     margin: 0;
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     letter-spacing: -0.01em;
 }
@@ -195,6 +195,6 @@ const emit = defineEmits<{
     background: rgba(79, 70, 229, 0.12);
     color: var(--primary);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 </style>

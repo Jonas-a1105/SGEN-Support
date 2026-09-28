@@ -22,4 +22,13 @@ final class SelfAccountActionException extends DomainException
     {
         return new self('Operación bloqueada: no puedes eliminar tu propia cuenta en sesión. Pide a otro administrador que lo haga.');
     }
+
+    /**
+     * Cambiarse el propio rol permite auto-promoción o auto-degradación con
+     * el rol Spatie desincronizado; lo decide otro administrador.
+     */
+    public static function roleChange(): self
+    {
+        return new self('Operación bloqueada: no puedes cambiar tu propio rol en sesión. Pide a otro administrador que lo haga.');
+    }
 }

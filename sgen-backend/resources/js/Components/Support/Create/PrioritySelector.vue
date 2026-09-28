@@ -203,9 +203,9 @@ const setUrgency = (val: 'baja' | 'media' | 'alta') => {
 .tf-field-label {
     display: block;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted, #8e9199);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
     margin: 0;
 }
@@ -257,7 +257,7 @@ const setUrgency = (val: 'baja' | 'media' | 'alta') => {
 .matrix-axis-label {
     font-size: 11px;
     color: var(--text-muted, #8e9199);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 
 .matrix-pill-group {

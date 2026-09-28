@@ -94,7 +94,7 @@ const valuation = computed(() => {
 
 .gauge-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -106,7 +106,7 @@ const valuation = computed(() => {
 
 .gauge-big-num {
     font-size: 48px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     line-height: 1;
     color: var(--text);
     letter-spacing: -0.02em;
@@ -116,7 +116,7 @@ const valuation = computed(() => {
     display: block;
     font-size: 11px;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.06em;
     font-weight: 600;
     margin-top: var(--space-1);

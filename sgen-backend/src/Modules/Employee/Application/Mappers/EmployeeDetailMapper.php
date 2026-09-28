@@ -11,7 +11,7 @@ final class EmployeeDetailMapper
     private const TINTS = ['blue', 'green', 'purple', 'orange', 'amber'];
 
     /**
-     * @param object|array<string, mixed> $row
+     * @param  object|array<string, mixed>  $row
      */
     public static function fromRow(object|array $row): EmployeeDetailDTO
     {
@@ -20,17 +20,17 @@ final class EmployeeDetailMapper
 
         $nombre = trim((string) ($data['nombre'] ?? ''));
         $apellido = trim((string) ($data['apellido'] ?? ''));
-        $fullName = trim($nombre . ' ' . $apellido);
+        $fullName = trim($nombre.' '.$apellido);
 
         $initFirst = mb_substr($nombre, 0, 1);
         $initLast = mb_substr($apellido, 0, 1);
-        $initials = mb_strtoupper($initFirst . $initLast);
+        $initials = mb_strtoupper($initFirst.$initLast);
 
         $tint = self::TINTS[$id % count(self::TINTS)];
 
         return new EmployeeDetailDTO(
             id: $id,
-            formattedId: 'EMP-' . sprintf('%02d', $id),
+            formattedId: 'EMP-'.sprintf('%02d', $id),
             nombre: $nombre,
             apellido: $apellido,
             fullName: $fullName,

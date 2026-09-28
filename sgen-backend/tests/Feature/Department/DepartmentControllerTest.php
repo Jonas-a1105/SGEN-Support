@@ -7,6 +7,7 @@ namespace Tests\Feature\Department;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -23,7 +24,7 @@ final class DepartmentControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_dept_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -44,7 +45,7 @@ final class DepartmentControllerTest extends TestCase
         $response = $this->get('/departamentos');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Department/Index')
             ->has('departamentos')
             ->has('candidatos')
@@ -56,7 +57,7 @@ final class DepartmentControllerTest extends TestCase
         $response = $this->get("/departamentos/{$this->departmentId}");
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Department/Show')
             ->has('department')
             ->where('department.id', $this->departmentId)

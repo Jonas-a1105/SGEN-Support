@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Equipment\Application\UseCases;
 
+use App\Support\Export\CsvSanitizer;
 use Modules\Equipment\Domain\Ports\EquipmentRepositoryInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -46,16 +47,16 @@ final readonly class ExportEquipmentExcelUseCase
 
             foreach ($items as $item) {
                 fputcsv($output, [
-                    $item->numericId,
-                    $item->id,
-                    $item->type,
-                    $item->name,
-                    $item->serialNumber ?? 'S/N',
-                    $item->dept ?? 'No Asignado',
-                    $item->location ?? 'N/D',
-                    $item->assignedTo ?? 'Sin Asignar',
-                    $item->ipAddress ?? 'N/D',
-                    $item->status,
+                    CsvSanitizer::cell($item->numericId),
+                    CsvSanitizer::cell($item->id),
+                    CsvSanitizer::cell($item->type),
+                    CsvSanitizer::cell($item->name),
+                    CsvSanitizer::cell($item->serialNumber ?? 'S/N'),
+                    CsvSanitizer::cell($item->dept ?? 'No Asignado'),
+                    CsvSanitizer::cell($item->location ?? 'N/D'),
+                    CsvSanitizer::cell($item->assignedTo ?? 'Sin Asignar'),
+                    CsvSanitizer::cell($item->ipAddress ?? 'N/D'),
+                    CsvSanitizer::cell($item->status),
                 ]);
             }
 

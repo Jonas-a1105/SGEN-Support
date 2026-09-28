@@ -85,7 +85,7 @@ const dashOffset = computed(() => {
 
 .panel-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -158,7 +158,7 @@ const dashOffset = computed(() => {
 .percent-text {
     display: block;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     line-height: 1;
     color: var(--text);
 }

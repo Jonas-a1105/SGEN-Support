@@ -14,6 +14,9 @@ use Modules\Support\Domain\Events\TicketCreated;
  * Cuando se crea un ticket (por cualquier canal), el solicitante recibe un
  * enlace público personalizado de seguimiento sin necesitar cuenta. Ronda
  * anti-spam por EmailThrottler.
+ *
+ * El correo jamás bloquea la creación del ticket: cualquier fallo se reporta
+ * y la operación continúa (mismo contrato que los otros listeners).
  */
 final class NotifyRequesterOnTicketCreated
 {
@@ -23,29 +26,37 @@ final class NotifyRequesterOnTicketCreated
             return;
         }
 
-        $usuario = DB::table('usuarios')
-            ->leftJoin('empleados', 'usuarios.empleado_id', '=', 'empleados.id')
-            ->where('usuarios.id', $event->usuarioCreacionId)
-            ->select(['usuarios.email as usu_email', 'empleados.email as emp_email'])
-            ->first();
+        try {
+            $usuario = DB::table('usuarios')
+                ->leftJoin('empleados', 'usuarios.empleado_id', '=', 'empleados.id')
+                ->where('usuarios.id', $event->usuarioCreacionId)
+                ->select(['usuarios.email as usu_email', 'empleados.email as emp_email'])
+                ->first();
 
-        $destino = $usuario !== null ? (($usuario->usu_email !== null && $usuario->usu_email !== '') ? $usuario->usu_email : $usuario->emp_email) : null;
+            $destino = $usuario !== null ? (($usuario->usu_email !== null && $usuario->usu_email !== '') ? $usuario->usu_email : $usuario->emp_email) : null;
 
-        if ($destino === null || $destino === '') {
-            return;
+            if ($destino === null || $destino === '') {
+                return;
+            }
+
+            $url = url('/portal/ticket/'.$event->tokenPublico);
+
+            if (! EmailThrottler::canSend((int) $event->usuarioCreacionId, $destino, 'ticket_creado')) {
+                return;
+            }
+
+            Mail::to($destino)->send(new TicketPublicLinkMail(
+                codigo: $event->codigo,
+                titulo: $event->ticketTitulo,
+                urlPublica: $url,
+                prioridad: 'media'
+            ));
+
+            // Cooldown solo tras el envío aceptado: un fallo SMTP permite reintento.
+            EmailThrottler::markSent((int) $event->usuarioCreacionId, $destino, 'ticket_creado', ucfirst($event->ticketTitulo));
+        } catch (\Throwable $e) {
+            // La notificación no detiene la operación, pero jamás falla en silencio.
+            report($e);
         }
-
-        $url = url('/portal/ticket/'.$event->tokenPublico);
-
-        if (! EmailThrottler::permitir((int) $event->usuarioCreacionId, $destino, 'ticket_creado', ucfirst($event->ticketTitulo))) {
-            return;
-        }
-
-        Mail::to($destino)->send(new TicketPublicLinkMail(
-            codigo: $event->codigo,
-            titulo: $event->ticketTitulo,
-            urlPublica: $url,
-            prioridad: 'media'
-        ));
     }
 }

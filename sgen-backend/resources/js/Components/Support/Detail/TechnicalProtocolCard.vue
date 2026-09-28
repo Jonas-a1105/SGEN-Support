@@ -58,7 +58,7 @@
 .protocol-title {
     margin: 0 0 4px 0;
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
 }
 .protocol-desc {
     margin: 0;
@@ -86,7 +86,7 @@
     display: grid;
     place-items: center;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     flex-shrink: 0;
 }
 </style>

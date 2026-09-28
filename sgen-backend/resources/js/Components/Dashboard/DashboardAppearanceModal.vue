@@ -165,15 +165,15 @@ const onColorInput = (e: Event) => {
 .appearance-kicker {
     font-size: 11px;
     color: var(--orange);
-    text-transform: uppercase;
+
     letter-spacing: 0.06em;
     margin-bottom: 2px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .appearance-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -212,7 +212,7 @@ const onColorInput = (e: Event) => {
     color: var(--text-muted);
     margin-bottom: 10px;
     display: block;
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 
 .color-editor {
@@ -238,7 +238,7 @@ const onColorInput = (e: Event) => {
 .accent-hex {
     font-size: 13px;
     display: block;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     font-family: var(--font-mono);
 }

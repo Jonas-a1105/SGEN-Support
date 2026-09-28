@@ -71,7 +71,7 @@ const steps = [
     display: grid;
     place-items: center;
     font-size: 12px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
 }
 
 .step-item-btn.active .step-num-circle {

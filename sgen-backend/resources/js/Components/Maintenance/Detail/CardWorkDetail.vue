@@ -117,7 +117,7 @@ const normalizedChecklist = computed(() => {
 
 .maint-card-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -151,7 +151,7 @@ const normalizedChecklist = computed(() => {
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }

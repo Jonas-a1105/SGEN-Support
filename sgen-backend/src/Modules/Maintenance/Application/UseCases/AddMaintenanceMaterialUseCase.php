@@ -9,8 +9,8 @@ use Modules\Inventory\Domain\Exceptions\InsufficientStockException;
 use Modules\Maintenance\Domain\Ports\MaintenanceRepositoryInterface;
 
 /**
- * Registra una pieza usada en una orden de trabajo de forma ATÃ“MICA:
- * transacciÃ³n + lockForUpdate sobre inventario_items, descuenta stock real,
+ * Registra una pieza usada en una orden de trabajo de forma ATÓMICA:
+ * transacción + lockForUpdate sobre inventario_items, descuenta stock real,
  * deja fila espejo en inventario_movimientos y en mantenimiento_materiales.
  */
 final class AddMaintenanceMaterialUseCase
@@ -19,10 +19,10 @@ final class AddMaintenanceMaterialUseCase
         private readonly MaintenanceRepositoryInterface $repository
     ) {}
 
-    public function execute(int $mantenimientoId, int $itemId, float $cantidad, int $userId): bool
+    public function execute(int $mantenimientoId, int $itemId, int $cantidad, int $userId): bool
     {
-        if ($cantidad <= 0) {
-            throw new \InvalidArgumentException('La cantidad debe ser mayor a cero.');
+        if ($cantidad < 1) {
+            throw new \InvalidArgumentException('La cantidad debe ser al menos una unidad.');
         }
 
         return DB::transaction(function () use ($mantenimientoId, $itemId, $cantidad, $userId): bool {
@@ -42,10 +42,10 @@ final class AddMaintenanceMaterialUseCase
                 ->first();
 
             if ($item === null) {
-                throw new \DomainException("El Ã­tem #{$itemId} no existe en inventario.");
+                throw new \DomainException("El ítem #{$itemId} no existe en inventario.");
             }
 
-            if ((float) $item->stock_actual < $cantidad) {
+            if ((int) $item->stock_actual < $cantidad) {
                 throw InsufficientStockException::forProduct(
                     $item->codigo,
                     (int) $item->stock_actual,
@@ -67,7 +67,6 @@ final class AddMaintenanceMaterialUseCase
                 'cantidad' => $cantidad,
                 'motivo' => "Consumo en Mantenimiento #{$mantenimientoId}",
                 'referencia_id' => $mantenimientoId,
-                // #15: el enlace del kardex siempre lleva tipo+id juntos.
                 'referencia_tipo' => 'mantenimiento',
                 'fecha' => now(),
             ]);

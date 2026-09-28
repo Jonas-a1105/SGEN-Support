@@ -163,7 +163,7 @@ const emit = defineEmits<{
 
 .panel-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -269,7 +269,7 @@ const emit = defineEmits<{
 
 .predefined-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -307,7 +307,7 @@ const emit = defineEmits<{
 
 .predefined-action-link {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: #6366f1;
     display: inline-flex;
     align-items: center;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Maintenance\Application\Mappers;
 
 use Modules\Maintenance\Application\DTOs\MaintenanceListItemDTO;
-use stdClass;
 
 final class MaintenanceListItemMapper
 {

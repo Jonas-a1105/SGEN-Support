@@ -40,7 +40,7 @@
 
 .module-title {
     font-size: 18px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 2px 0;
 }
@@ -122,10 +122,9 @@
 }
 
 .form-label {
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted, #8e9199);
-    text-transform: uppercase;
     letter-spacing: 0.04em;
     display: flex;
     justify-content: space-between;
@@ -174,7 +173,7 @@
     border-radius: 10px;
     color: var(--text, #f4f4f6);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
     padding: 0 14px;
     outline: none;
     box-shadow: none !important;
@@ -201,7 +200,7 @@
 .form-input::placeholder,
 .form-textarea::placeholder {
     color: var(--text-dim, #60636d);
-    font-weight: 400;
+    font-weight: var(--weight-semibold);
 }
 
 /* ACCIONES DE FORMULARIO */

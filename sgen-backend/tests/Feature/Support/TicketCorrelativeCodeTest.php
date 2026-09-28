@@ -7,6 +7,7 @@ namespace Tests\Feature\Support;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -26,7 +27,7 @@ final class TicketCorrelativeCodeTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_codigo_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
     }
 

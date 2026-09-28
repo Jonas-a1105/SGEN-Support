@@ -112,14 +112,14 @@ const emit = defineEmits<{
 
 .custody-label {
     font-size: 10px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     letter-spacing: 0.04em;
     color: var(--text-dim);
 }
 
 .custody-link {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     text-decoration: none;
     transition: color var(--transition-fast);

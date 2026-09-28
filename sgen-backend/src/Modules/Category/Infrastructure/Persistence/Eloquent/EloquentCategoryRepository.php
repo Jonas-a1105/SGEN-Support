@@ -37,8 +37,8 @@ final class EloquentCategoryRepository implements CategoryRepositoryInterface
                 'categorias.activo'
             );
 
-        if (!empty($filters['search'])) {
-            $search = '%' . trim((string) $filters['search']) . '%';
+        if (! empty($filters['search'])) {
+            $search = '%'.trim((string) $filters['search']).'%';
             $query->where(function ($q) use ($search) {
                 $q->where('categorias.nombre', 'like', $search)
                     ->orWhere('categorias.descripcion', 'like', $search);

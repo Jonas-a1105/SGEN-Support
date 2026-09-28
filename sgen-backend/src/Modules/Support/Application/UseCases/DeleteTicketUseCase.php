@@ -10,8 +10,7 @@ final class DeleteTicketUseCase
 {
     public function __construct(
         private readonly SupportRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $id): bool
     {

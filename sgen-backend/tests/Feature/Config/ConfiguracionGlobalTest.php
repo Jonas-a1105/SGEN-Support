@@ -6,7 +6,6 @@ namespace Tests\Feature\Config;
 
 use App\Support\Config\ConfiguracionGlobal;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**

@@ -27,7 +27,9 @@ final class StoreTicketRequest extends FormRequest
             'prioridad' => ['required_without_all:impacto,urgencia', 'nullable', 'string', 'in:baja,media,alta,critica'],
             'impacto' => ['nullable', 'string', 'in:bajo,medio,alto'],
             'urgencia' => ['nullable', 'string', 'in:baja,media,alta'],
-            'estado' => ['sometimes', 'string', 'in:pendiente,en_proceso,resuelto'],
+            // Un ticket nace pendiente: crear ya resuelto/en proceso permitía
+            // saltarse el flujo completo (y falsear métricas de SLA).
+            'estado' => ['sometimes', 'string', 'in:pendiente'],
         ];
     }
 }

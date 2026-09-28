@@ -119,13 +119,15 @@ onError: () => addToast({ type: 'error', title: 'No se pudo eliminar el usuario.
 function handleResetPassword(user: UserItem) {
     router.post(`/usuarios/${user.id}/restablecer`, {}, {
         preserveScroll: true,
-        onError: () => addToast({ type: 'error', title: 'No se pudo restablecer la contraseÃ±a.' }),
+        onSuccess: () => addToast({ type: 'success', title: 'Contraseña restablecida' }),
+        onError: () => addToast({ type: 'error', title: 'No se pudo restablecer la contraseña.' }),
     });
 }
 
 function handleToggleActive(user: UserItem) {
     router.post(`/usuarios/${user.id}/alternar-estado`, {}, {
         preserveScroll: true,
+        onSuccess: () => addToast({ type: 'success', title: 'Estado actualizado' }),
         onError: () => addToast({ type: 'error', title: 'No se pudo cambiar el estado del usuario.' }),
     });
 }

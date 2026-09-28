@@ -111,7 +111,7 @@ function getRoleToneClass(rol: string): string {
 }
 .user-title {
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0;
     white-space: nowrap;

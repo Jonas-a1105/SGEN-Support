@@ -78,9 +78,13 @@ final class MaintenanceController extends Controller
 
     public function update(int $id, UpdateMaintenanceRequest $request, UpdateMaintenanceUseCase $useCase): RedirectResponse
     {
-        $useCase->execute($id, $request->toDTO());
+        try {
+            $useCase->execute($id, $request->toDTO());
 
-        return back()->with('success', 'Mantenimiento actualizado correctamente.');
+            return back()->with('success', 'Mantenimiento actualizado correctamente.');
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function destroy(int $id, DeleteMaintenanceUseCase $useCase): RedirectResponse
@@ -144,16 +148,24 @@ final class MaintenanceController extends Controller
 
     public function postpone(int $id, PostponeMaintenanceRequest $request, MaintenanceRepositoryInterface $repository): RedirectResponse
     {
-        $repository->postpone($id, (string) $request->input('nueva_fecha'));
+        try {
+            $repository->postpone($id, (string) $request->input('nueva_fecha'));
 
-        return back()->with('success', 'Mantenimiento pospuesto exitosamente.');
+            return back()->with('success', 'Mantenimiento pospuesto exitosamente.');
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function cancel(int $id, CancelMaintenanceRequest $request, MaintenanceRepositoryInterface $repository): RedirectResponse
     {
-        $repository->cancel($id, (string) $request->input('motivo'));
+        try {
+            $repository->cancel($id, (string) $request->input('motivo'));
 
-        return back()->with('success', 'Mantenimiento cancelado.');
+            return back()->with('success', 'Mantenimiento cancelado.');
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function bulkDelete(Request $request, MaintenanceRepositoryInterface $repository): JsonResponse

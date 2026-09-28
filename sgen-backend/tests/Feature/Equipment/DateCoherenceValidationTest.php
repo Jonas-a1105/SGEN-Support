@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Equipment;
 
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -29,7 +29,7 @@ final class DateCoherenceValidationTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_fechas_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
         $equipo = DB::table('equipos')->where('estado', '!=', 'de_baja')->first();
         $this->equipoId = (int) $equipo->id;

@@ -28,6 +28,13 @@ final readonly class UpdateCategoryUseCase
             color: $dto->color
         );
 
+        // El estado activo es parte del agregado: se proyecta con las
+        // transiciones del dominio. Si el payload no lo trae, se conserva
+        // el estado actual (actualización parcial).
+        if ($dto->activo !== null) {
+            $updated = $dto->activo ? $updated->activate() : $updated->deactivate();
+        }
+
         $this->repository->update($updated);
     }
 }

@@ -177,7 +177,7 @@ const handleDownloadActa = () => {
 
 .equip-main-title {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.02em;
     color: var(--text);
     margin: 0;

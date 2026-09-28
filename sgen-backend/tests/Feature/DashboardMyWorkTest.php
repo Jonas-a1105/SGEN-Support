@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -32,7 +33,7 @@ final class DashboardMyWorkTest extends TestCase
 
         $usuario = User::create([
             'username' => 'dashboard_my_work_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+            'password' => Hash::make('secret'),
             'rol' => 'operador',
             'tema' => 'light',
             'empleado_id' => $empleado,

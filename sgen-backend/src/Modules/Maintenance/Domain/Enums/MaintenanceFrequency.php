@@ -14,7 +14,7 @@ enum MaintenanceFrequency: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::UNICA => 'Única vez',
             self::MENSUAL => 'Mensual',
             self::TRIMESTRAL => 'Trimestral',
@@ -25,7 +25,7 @@ enum MaintenanceFrequency: string
 
     public function daysInterval(): int
     {
-        return match($this) {
+        return match ($this) {
             self::UNICA => 0,
             self::MENSUAL => 30,
             self::TRIMESTRAL => 90,
@@ -36,7 +36,7 @@ enum MaintenanceFrequency: string
 
     public function monthsInterval(): int
     {
-        return match($this) {
+        return match ($this) {
             self::UNICA => 0,
             self::MENSUAL => 1,
             self::TRIMESTRAL => 3,

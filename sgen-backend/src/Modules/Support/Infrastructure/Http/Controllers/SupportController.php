@@ -182,7 +182,16 @@ final class SupportController extends Controller
     {
         try {
             $userId = (int) $request->user()->id;
-            $useCase->execute($this->parseTicketId($id), $userId, (string) $request->validated('comentario'), (bool) $request->validated('es_interno', false));
+
+            // Solo el personal operativo puede marcar una nota como interna;
+            // para el resto se fuerza pública (no ocultar información sin potestad).
+            $esInterno = (bool) $request->validated('es_interno', false);
+            $rol = (string) ($request->user()->rol ?? '');
+            if ($esInterno && ! in_array($rol, ['admin', 'tecnico'], true)) {
+                $esInterno = false;
+            }
+
+            $useCase->execute($this->parseTicketId($id), $userId, (string) $request->validated('comentario'), $esInterno);
 
             return back()->with('success', 'Comentario añadido.');
         } catch (\DomainException $e) {
@@ -198,7 +207,9 @@ final class SupportController extends Controller
     {
         try {
             $userId = (int) $request->user()->id;
-            $useCase->execute($this->parseTicketId($id), (int) $request->validated('item_id'), (int) $request->validated('cantidad'), $userId);
+            // Cantidad decimal real (metros, litros…): castear a int truncaba
+            // 2.5 → 2 y descuadraba stock y kardex.
+            $useCase->execute($this->parseTicketId($id), (int) $request->validated('item_id'), (float) $request->validated('cantidad'), $userId);
 
             return back()->with('success', 'Material registrado en el ticket.');
         } catch (\DomainException $e) {
@@ -428,7 +439,8 @@ final class SupportController extends Controller
                 $this->parseTicketId($id),
                 (string) $validated['firma_base64'],
                 (string) ($request->ip() ?? '0.0.0.0'),
-                $request->userAgent()
+                $request->userAgent(),
+                (int) $request->user()->id
             );
 
             return back()->with('success', 'Firma registrada exitosamente.');
@@ -448,6 +460,6 @@ final class SupportController extends Controller
         $ticketId = $this->parseTicketId($id);
         abort_if($detailUseCase->execute($ticketId, $request->user()?->id) === null, 404, 'Ticket no encontrado.');
 
-        return $useCase->execute($ticketId);
+        return $useCase->execute($ticketId, $request->user()?->id);
     }
 }

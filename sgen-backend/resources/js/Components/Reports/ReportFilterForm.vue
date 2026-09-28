@@ -169,8 +169,8 @@ const updateFilter = <K extends keyof TicketsFilters>(key: K, val: TicketsFilter
 
 .form-field-kicker {
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: var(--weight-semibold);
+
     letter-spacing: 0.05em;
     color: var(--text-muted);
 }
@@ -219,7 +219,7 @@ const updateFilter = <K extends keyof TicketsFilters>(key: K, val: TicketsFilter
 
 .scope-info-title {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0 0 4px;
 }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Visibility;
 
+use App\Models\User;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Scope de lectura por rol (regla de visibilidad del negocio):
@@ -32,7 +34,7 @@ final class VisibilityScope
     ): Builder {
         $user = auth()->user();
 
-        if ($user === null || ! $user instanceof \App\Models\User) {
+        if ($user === null || ! $user instanceof User) {
             return $query;
         }
 
@@ -61,7 +63,7 @@ final class VisibilityScope
      *
      * @return list<int>
      */
-    private static function departamentosDelUsuario(\App\Models\User $user): array
+    private static function departamentosDelUsuario(User $user): array
     {
         $cohere = [];
 
@@ -70,7 +72,7 @@ final class VisibilityScope
         }
 
         if ($user->empleado_id !== null) {
-            $depto = \Illuminate\Support\Facades\DB::table('empleados')
+            $depto = DB::table('empleados')
                 ->where('id', (int) $user->empleado_id)
                 ->value('departamento_id');
 
@@ -81,5 +83,4 @@ final class VisibilityScope
 
         return array_values(array_unique($cohere));
     }
-
 }

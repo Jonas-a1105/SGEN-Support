@@ -91,7 +91,7 @@ withDefaults(defineProps<Props>(), {
 .product-title {
     margin: var(--space-2) 0;
     font-size: 18px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
 }
 
@@ -105,13 +105,13 @@ withDefaults(defineProps<Props>(), {
 .meta-item dt {
     font-size: 11px;
     font-weight: 600;
-    text-transform: uppercase;
+
     color: var(--text-muted);
 }
 
 .meta-item dd {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     margin: var(--space-1) 0 0 0;
     color: var(--text);
 }

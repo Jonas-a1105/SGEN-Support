@@ -35,7 +35,7 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return EmployeeListItemDTO[]
      */
     public function list(array $filters = []): array
@@ -52,15 +52,15 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
             ->orderBy('empleados.id', 'asc');
 
         // Filtro por departamento (nombre o id)
-        if (!empty($filters['departamento']) && $filters['departamento'] !== 'all') {
+        if (! empty($filters['departamento']) && $filters['departamento'] !== 'all') {
             $query->where('departamentos.nombre', $filters['departamento']);
         }
-        if (!empty($filters['departamento_id'])) {
+        if (! empty($filters['departamento_id'])) {
             $query->where('empleados.departamento_id', (int) $filters['departamento_id']);
         }
 
         // Filtro por KPI (active / inactive)
-        if (!empty($filters['kpi'])) {
+        if (! empty($filters['kpi'])) {
             if ($filters['kpi'] === 'active') {
                 $query->whereNotNull('empleados.usuario_id');
             } elseif ($filters['kpi'] === 'inactive') {
@@ -69,8 +69,8 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
         }
 
         // Búsqueda general
-        if (!empty($filters['search'])) {
-            $term = '%' . trim((string) $filters['search']) . '%';
+        if (! empty($filters['search'])) {
+            $term = '%'.trim((string) $filters['search']).'%';
             $query->where(function ($q) use ($term) {
                 $q->where('empleados.nombre', 'ilike', $term)
                     ->orWhere('empleados.apellido', 'ilike', $term)
@@ -83,7 +83,7 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
         }
 
         return $query->get()
-            ->map(fn($row) => EmployeeListItemMapper::fromRow($row))
+            ->map(fn ($row) => EmployeeListItemMapper::fromRow($row))
             ->all();
     }
 
@@ -137,7 +137,7 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
                     'id' => (int) $eq->id,
                     'codigo' => (string) $eq->codigo_inventario,
                     'numeroSerie' => (string) ($eq->numero_serie ?? ''),
-                    'nombre' => trim(($eq->tipo ?? 'Equipo') . ' ' . ($eq->marca ?? '') . ' ' . ($eq->modelo ?? '')),
+                    'nombre' => trim(($eq->tipo ?? 'Equipo').' '.($eq->marca ?? '').' '.($eq->modelo ?? '')),
                     'tipo' => (string) ($eq->tipo ?? 'Equipo'),
                     'marca' => (string) ($eq->marca ?? ''),
                     'modelo' => (string) ($eq->modelo ?? ''),
@@ -157,7 +157,7 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
             ->map(function ($s) {
                 return [
                     'id' => (int) $s->id,
-                    'titulo' => (string) ($s->titulo ?? 'Ticket #' . $s->id),
+                    'titulo' => (string) ($s->titulo ?? 'Ticket #'.$s->id),
                     'descripcion' => (string) ($s->descripcion ?? ''),
                     'estado' => (string) ($s->estado ?? 'pendiente'),
                     'prioridad' => (string) ($s->prioridad ?? 'media'),
@@ -171,7 +171,7 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
             ->select(['id', 'nombre'])
             ->orderBy('nombre')
             ->get()
-            ->map(fn($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
+            ->map(fn ($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
             ->all();
 
         $baseDto = EmployeeDetailMapper::fromRow($row);
@@ -241,7 +241,7 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
     public function update(int $id, UpdateEmployeeDTO $dto): void
     {
         $exists = DB::table('empleados')->where('id', $id)->whereNull('deleted_at')->exists();
-        if (!$exists) {
+        if (! $exists) {
             throw EmployeeNotFoundException::withId($id);
         }
 
@@ -304,16 +304,16 @@ final class EloquentEmployeeRepository implements EmployeeRepositoryInterface
             ->select(['id', 'nombre'])
             ->orderBy('nombre')
             ->get()
-            ->map(fn($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
+            ->map(fn ($d) => ['id' => (int) $d->id, 'nombre' => (string) $d->nombre])
             ->all();
 
         $users = DB::table('usuarios')
             ->select(['id', 'username', 'rol'])
             ->orderBy('username')
             ->get()
-            ->map(fn($u) => [
+            ->map(fn ($u) => [
                 'id' => (int) $u->id,
-                'username' => '@' . ltrim((string) $u->username, '@'),
+                'username' => '@'.ltrim((string) $u->username, '@'),
                 'rol' => (string) $u->rol,
             ])
             ->all();

@@ -10,11 +10,10 @@ final class GetEquipmentDashboardDataUseCase
 {
     public function __construct(
         private readonly EquipmentRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return array<string, mixed>
      */
     public function execute(array $filters = []): array
@@ -25,7 +24,7 @@ final class GetEquipmentDashboardDataUseCase
 
         return [
             'kpis' => $kpis->toArray(),
-            'equipos' => array_map(fn($item) => $item->toArray(), $equipos),
+            'equipos' => array_map(fn ($item) => $item->toArray(), $equipos),
             'options' => $options,
             'filters' => $filters,
         ];

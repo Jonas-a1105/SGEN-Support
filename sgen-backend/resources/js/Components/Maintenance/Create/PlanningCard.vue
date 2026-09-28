@@ -93,9 +93,9 @@ const frequencyOptions = [
     border-bottom: var(--stroke-w) solid var(--stroke-subtle);
     padding-bottom: 14px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
-    text-transform: uppercase;
+
     letter-spacing: 0.05em;
 }
 
@@ -115,9 +115,9 @@ const frequencyOptions = [
 
 .form-label {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
 }
 

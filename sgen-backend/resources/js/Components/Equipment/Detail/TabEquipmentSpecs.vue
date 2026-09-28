@@ -129,9 +129,9 @@ defineProps<{
 
 .spec-label {
     font-size: 11px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     color: var(--text-dim);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
 }
 
@@ -149,7 +149,7 @@ defineProps<{
 .section-subheading {
     margin: 0 0 var(--space-4) 0;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
@@ -172,7 +172,7 @@ defineProps<{
 .net-label {
     font-size: 11px;
     color: var(--text-dim);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .net-val {

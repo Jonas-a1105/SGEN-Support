@@ -61,7 +61,7 @@ const emit = defineEmits<{
 
 .panel-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -91,7 +91,7 @@ const emit = defineEmits<{
 .activity-name {
     font-size: 13px;
     color: var(--text);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 
 .subtle {
@@ -102,7 +102,7 @@ const emit = defineEmits<{
 
 .activity-badge {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--orange);
     padding: 3px 8px;
     border-radius: var(--radius-sm);

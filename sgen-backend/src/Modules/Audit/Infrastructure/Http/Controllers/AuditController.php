@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Audit\Application\Services\AuditCsvExporter;
 use Modules\Audit\Application\UseCases\GetAuditDashboardUseCase;
 use Modules\Audit\Application\UseCases\GetSessionDetailUseCase;
 use Modules\Audit\Domain\Ports\AuditLogRepositoryInterface;
@@ -42,8 +43,8 @@ final class AuditController extends Controller
         $data = $useCase->execute($request->only(['search', 'user_id']));
 
         return response()->streamDownload(
-            fn () => \Modules\Audit\Application\Services\AuditCsvExporter::write(fopen('php://output', 'w'), $data['sessions']),
-            'auditoria_sesiones_' . date('Y-m-d_His') . '.csv',
+            fn () => AuditCsvExporter::write(fopen('php://output', 'w'), $data['sessions']),
+            'auditoria_sesiones_'.date('Y-m-d_His').'.csv',
             ['Content-Type' => 'text/csv']
         );
     }
@@ -71,7 +72,7 @@ final class AuditController extends Controller
                 }
                 fclose($handle);
             },
-            'bitacora_movimientos_' . date('Y-m-d_His') . '.csv',
+            'bitacora_movimientos_'.date('Y-m-d_His').'.csv',
             ['Content-Type' => 'text/csv; charset=utf-8']
         );
     }

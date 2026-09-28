@@ -10,11 +10,10 @@ final class RemoveEmployeeFromDepartmentUseCase
 {
     public function __construct(
         private readonly DepartmentRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
-    public function execute(int $employeeId): void
+    public function execute(int $departmentId, int $employeeId): void
     {
-        $this->repository->removeEmployee($employeeId);
+        $this->repository->removeEmployee($departmentId, $employeeId);
     }
 }

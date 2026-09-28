@@ -27,14 +27,14 @@ final class UpdateTicketRequest extends FormRequest
             'estado' => ['nullable', 'string', 'in:pendiente,en_proceso,en_espera,resuelto,cerrado,cancelado'],
             'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
             'categoria_id' => ['nullable', 'integer', 'exists:categorias,id'],
-            'fecha_cierre' => ['nullable', 'string'],
-            'solucion' => ['nullable', 'string'],
-            'tiempo_atencion_minutos' => ['nullable', 'integer'],
+            'solucion' => ['nullable', 'string', 'max:5000'],
+            // `fecha_cierre` y `tiempo_atencion_minutos` NO se aceptan aquí:
+            // los calcula el servidor (anti-fraude de SLA). La fecha de cierre
+            // solo se toca por su endpoint dedicado.
             // Firma de conformidad en el mismo flujo: mismo rigor probatorio.
             'firma_base64' => ['nullable', 'string', 'starts_with:data:image/', 'min:100', 'max:1000000'],
             // #22: versionado optimista del ticket.
             'version' => ['nullable', 'integer', 'min:1'],
-            'firma' => ['nullable', 'string', 'max:1000000'],
         ];
     }
 }

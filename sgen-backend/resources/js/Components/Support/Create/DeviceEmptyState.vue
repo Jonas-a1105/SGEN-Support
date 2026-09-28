@@ -50,7 +50,7 @@
 
 .tf-empty-title {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text, #f4f4f6);
     margin: 0 0 4px 0;
 }

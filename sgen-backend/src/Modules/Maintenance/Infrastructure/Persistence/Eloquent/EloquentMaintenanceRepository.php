@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Maintenance\Infrastructure\Persistence\Eloquent;
 
+use App\Support\Visibility\VisibilityScope;
 use Carbon\Carbon;
+use DomainException;
 use Illuminate\Support\Facades\DB;
 use Modules\Maintenance\Application\DTOs\CreateMaintenanceDTO;
 use Modules\Maintenance\Application\DTOs\MaintenanceDetailDTO;
 use Modules\Maintenance\Application\DTOs\MaintenanceKpisDTO;
 use Modules\Maintenance\Application\DTOs\UpdateMaintenanceDTO;
 use Modules\Maintenance\Application\Mappers\MaintenanceListItemMapper;
+use Modules\Maintenance\Domain\Enums\MaintenanceStatus;
 use Modules\Maintenance\Domain\Ports\MaintenanceRepositoryInterface;
 
 final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterface
@@ -55,15 +58,21 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
 
     public function listMaintenance(array $filters = []): array
     {
-        $query = \App\Support\Visibility\VisibilityScope::applyToDepartamentos(DB::table('mantenimientos'), 'equipos.departamento_id')
+        $query = VisibilityScope::applyToDepartamentos(DB::table('mantenimientos'), 'equipos.departamento_id')
             ->whereNull('mantenimientos.deleted_at')
             ->leftJoin('equipos', 'mantenimientos.equipo_id', '=', 'equipos.id')
-            ->leftJoin('usuarios', 'mantenimientos.tecnico_id', '=', 'usuarios.id')
+            ->leftJoin('empleados as tecnico_directo', 'mantenimientos.tecnico_id', '=', 'tecnico_directo.id')
+            ->leftJoin('usuarios as tecnico_usuario', 'mantenimientos.tecnico_id', '=', 'tecnico_usuario.id')
+            ->leftJoin('empleados as tecnico_legado', 'tecnico_usuario.id', '=', 'tecnico_legado.usuario_id')
             ->select([
                 'mantenimientos.*',
                 'equipos.codigo_inventario as equipo_codigo',
                 'equipos.tipo as equipo_tipo',
-                'usuarios.username as tecnico_nombre',
+                DB::raw("COALESCE(
+                    NULLIF(TRIM(CONCAT(tecnico_directo.nombre, ' ', COALESCE(tecnico_directo.apellido, ''))), ''),
+                    NULLIF(TRIM(CONCAT(tecnico_legado.nombre, ' ', COALESCE(tecnico_legado.apellido, ''))), ''),
+                    tecnico_usuario.username
+                ) as tecnico_nombre"),
             ])
             ->orderByDesc('mantenimientos.fecha');
 
@@ -115,6 +124,8 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
                 DB::raw("TRIM(CONCAT(custodio.nombre, ' ', COALESCE(custodio.apellido, ''))) as equipo_custodio"),
                 'custodio.id as equipo_custodio_id',
                 'usuarios.username as tecnico_username',
+                'emp_direct.id as tecnico_directo_id',
+                'emp_user.id as tecnico_usuario_id',
                 DB::raw("COALESCE(
                     NULLIF(TRIM(CONCAT(emp_direct.nombre, ' ', COALESCE(emp_direct.apellido, ''))), ''),
                     NULLIF(TRIM(CONCAT(emp_user.nombre, ' ', COALESCE(emp_user.apellido, ''))), ''),
@@ -180,7 +191,9 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
             frecuencia: (string) $record->frecuencia,
             proximaFecha: $record->proxima_fecha,
             costo: $record->costo !== null ? (float) $record->costo : null,
-            tecnicoId: $record->tecnico_id ? (int) $record->tecnico_id : null,
+            tecnicoId: $record->tecnico_id
+                ? (int) ($record->tecnico_directo_id ?? $record->tecnico_usuario_id ?? $record->tecnico_id)
+                : null,
             tecnicoNombre: $record->tecnico_completo ?? $record->tecnico_username,
             realizadoPor: $record->realizado_por,
             observaciones: $record->observaciones,
@@ -230,7 +243,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
             'frecuencia' => $dto->frecuencia,
             'proxima_fecha' => $dto->proximaFecha,
             'costo' => $dto->costo ?? 0,
-            'tecnico_id' => $dto->tecnicoId ?? $userId,
+            'tecnico_id' => $dto->tecnicoId,
             'observaciones' => $observaciones,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
@@ -239,37 +252,52 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
 
     public function update(int $id, UpdateMaintenanceDTO $dto): bool
     {
-        $payload = ['updated_at' => Carbon::now()];
+        return DB::transaction(function () use ($id, $dto): bool {
+            $orden = $this->obtenerOrdenBloqueada($id);
+            $estadoActual = $this->estadoDeOrden($orden);
 
-        if ($dto->fecha !== null) {
-            $payload['fecha'] = $dto->fecha;
-        }
-        if ($dto->tipoMantenimiento !== null) {
-            $payload['tipo_mantenimiento'] = $dto->tipoMantenimiento;
-        }
-        if ($dto->estado !== null) {
-            $payload['estado'] = $dto->estado;
-        }
-        if ($dto->descripcion !== null) {
-            $payload['descripcion'] = $dto->descripcion;
-        }
-        if ($dto->frecuencia !== null) {
-            $payload['frecuencia'] = $dto->frecuencia;
-        }
-        if ($dto->proximaFecha !== null) {
-            $payload['proxima_fecha'] = $dto->proximaFecha;
-        }
-        if ($dto->costo !== null) {
-            $payload['costo'] = $dto->costo;
-        }
-        if ($dto->tecnicoId !== null) {
-            $payload['tecnico_id'] = $dto->tecnicoId;
-        }
-        if ($dto->observaciones !== null) {
-            $payload['observaciones'] = $dto->observaciones;
-        }
+            $payload = ['updated_at' => Carbon::now()];
 
-        return DB::table('mantenimientos')->where('id', $id)->update($payload) > 0;
+            if ($dto->fecha !== null) {
+                $payload['fecha'] = $dto->fecha;
+            }
+            if ($dto->tipoMantenimiento !== null) {
+                $payload['tipo_mantenimiento'] = $dto->tipoMantenimiento;
+            }
+            if ($dto->descripcion !== null) {
+                $payload['descripcion'] = $dto->descripcion;
+            }
+            if ($dto->frecuencia !== null) {
+                $payload['frecuencia'] = $dto->frecuencia;
+            }
+            if ($dto->proximaFecha !== null) {
+                $payload['proxima_fecha'] = $dto->proximaFecha;
+            }
+            if ($dto->costo !== null) {
+                $payload['costo'] = $dto->costo;
+            }
+            if ($dto->tecnicoId !== null) {
+                $payload['tecnico_id'] = $dto->tecnicoId;
+            }
+            if ($dto->observaciones !== null) {
+                $payload['observaciones'] = $dto->observaciones;
+            }
+
+            if ($dto->estado !== null && $dto->estado !== $estadoActual->value) {
+                $estadoDestino = MaintenanceStatus::tryFrom($dto->estado);
+
+                if ($estadoDestino === null) {
+                    throw new DomainException("El estado '{$dto->estado}' no es válido para una orden de mantenimiento.");
+                }
+
+                $this->asegurarTransicion($id, $estadoActual, $estadoDestino);
+                $payload['estado'] = $estadoDestino->value;
+            }
+
+            $this->actualizarConEstadoEsperado($id, $estadoActual->value, $payload);
+
+            return true;
+        });
     }
 
     public function delete(int $id): bool
@@ -288,56 +316,66 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
 
     public function complete(int $id, ?string $observations = null, ?float $cost = null, ?string $garantiaHasta = null): bool
     {
-        $maintenance = DB::table('mantenimientos')->where('id', $id)->first();
+        return DB::transaction(function () use ($id, $observations, $cost, $garantiaHasta): bool {
+            $maintenance = $this->obtenerOrdenBloqueada($id);
+            $estadoActual = $this->estadoDeOrden($maintenance);
 
-        if (! $maintenance) {
-            return false;
-        }
+            $this->asegurarTransicion($id, $estadoActual, MaintenanceStatus::COMPLETADO);
 
-        $payload = [
-            'estado' => 'completado',
-            'updated_at' => Carbon::now(),
-        ];
+            $payload = [
+                'estado' => MaintenanceStatus::COMPLETADO->value,
+                'updated_at' => Carbon::now(),
+            ];
 
-        if ($observations !== null) {
-            $payload['observaciones'] = $observations;
-        }
-        if ($cost !== null) {
-            $payload['costo'] = $cost;
-        }
-        if ($garantiaHasta !== null) {
-            $payload['garantia_hasta'] = $garantiaHasta;
-        }
-
-        if ($maintenance->frecuencia !== 'unica') {
-            $months = match ($maintenance->frecuencia) {
-                'mensual' => 1,
-                'trimestral' => 3,
-                'semestral' => 6,
-                'anual' => 12,
-                default => 0,
-            };
-
-            if ($months > 0) {
-                $payload['proxima_fecha'] = Carbon::now()->addMonths($months)->toDateString();
+            if ($observations !== null) {
+                $payload['observaciones'] = $observations;
             }
-        }
+            if ($cost !== null) {
+                $payload['costo'] = $cost;
+            }
+            if ($garantiaHasta !== null) {
+                $payload['garantia_hasta'] = $garantiaHasta;
+            }
 
-        return DB::table('mantenimientos')->where('id', $id)->update($payload) > 0;
+            if ($maintenance->frecuencia !== 'unica') {
+                $months = match ($maintenance->frecuencia) {
+                    'mensual' => 1,
+                    'trimestral' => 3,
+                    'semestral' => 6,
+                    'anual' => 12,
+                    default => 0,
+                };
+
+                if ($months > 0) {
+                    $payload['proxima_fecha'] = Carbon::now()->addMonths($months)->toDateString();
+                }
+            }
+
+            $this->actualizarConEstadoEsperado($id, $estadoActual->value, $payload);
+
+            return true;
+        });
     }
 
     public function postpone(int $id, string $newDate): bool
     {
-        return DB::table('mantenimientos')
-            ->where('id', $id)
-            ->update([
-                'estado' => 'pospuesto',
+        return DB::transaction(function () use ($id, $newDate): bool {
+            $orden = $this->obtenerOrdenBloqueada($id);
+            $estadoActual = $this->estadoDeOrden($orden);
+
+            $this->asegurarTransicion($id, $estadoActual, MaintenanceStatus::POSPUESTO);
+
+            $this->actualizarConEstadoEsperado($id, $estadoActual->value, [
+                'estado' => MaintenanceStatus::POSPUESTO->value,
                 'fecha' => $newDate,
                 'updated_at' => Carbon::now(),
-            ]) > 0;
+            ]);
+
+            return true;
+        });
     }
 
-    public function addMaterial(int $mantenimientoId, int $itemId, float $cantidad, int $userId): bool
+    public function addMaterial(int $mantenimientoId, int $itemId, int $cantidad, int $userId): bool
     {
         return (bool) DB::table('mantenimiento_materiales')->insert([
             'mantenimiento_id' => $mantenimientoId,
@@ -379,13 +417,25 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
 
     public function cancel(int $id, string $reason): bool
     {
-        return DB::table('mantenimientos')
-            ->where('id', $id)
-            ->update([
-                'estado' => 'cancelado',
-                'observaciones' => $reason,
+        return DB::transaction(function () use ($id, $reason): bool {
+            $orden = $this->obtenerOrdenBloqueada($id);
+            $estadoActual = $this->estadoDeOrden($orden);
+
+            $this->asegurarTransicion($id, $estadoActual, MaintenanceStatus::CANCELADO);
+
+            $nota = 'Cancelado ('.Carbon::now()->format('d/m/Y H:i').'): '.trim($reason);
+            $observaciones = trim((string) ($orden->observaciones ?? '')) !== ''
+                ? $orden->observaciones.' | '.$nota
+                : $nota;
+
+            $this->actualizarConEstadoEsperado($id, $estadoActual->value, [
+                'estado' => MaintenanceStatus::CANCELADO->value,
+                'observaciones' => $observaciones,
                 'updated_at' => Carbon::now(),
-            ]) > 0;
+            ]);
+
+            return true;
+        });
     }
 
     public function getUpcoming(int $days = 30): array
@@ -434,6 +484,7 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
         $technicians = DB::table('empleados')
             ->select('id', 'nombre', 'apellido', 'email')
             ->where('rol', 'tecnico')
+            ->whereNull('deleted_at')
             ->get()
             ->map(fn ($e) => [
                 'id' => $e->id,
@@ -474,5 +525,60 @@ final class EloquentMaintenanceRepository implements MaintenanceRepositoryInterf
                 ['value' => 'anual', 'label' => 'Anual'],
             ],
         ];
+    }
+
+    private function obtenerOrdenBloqueada(int $id): object
+    {
+        $orden = DB::table('mantenimientos')
+            ->where('id', $id)
+            ->whereNull('deleted_at')
+            ->lockForUpdate()
+            ->first();
+
+        if ($orden === null) {
+            throw new DomainException("La orden de mantenimiento #{$id} no existe o está en la papelera.");
+        }
+
+        return $orden;
+    }
+
+    private function estadoDeOrden(object $orden): MaintenanceStatus
+    {
+        $estado = MaintenanceStatus::tryFrom((string) $orden->estado);
+
+        if ($estado === null) {
+            throw new DomainException("La orden #{$orden->id} tiene un estado desconocido: '{$orden->estado}'.");
+        }
+
+        return $estado;
+    }
+
+    private function asegurarTransicion(int $id, MaintenanceStatus $desde, MaintenanceStatus $hacia): void
+    {
+        if ($desde->permiteTransicionA($hacia)) {
+            return;
+        }
+
+        throw new DomainException(
+            "Transición no permitida para la orden #{$id}: de '{$desde->label()}' a '{$hacia->label()}'."
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function actualizarConEstadoEsperado(int $id, string $estadoEsperado, array $payload): void
+    {
+        $actualizado = DB::table('mantenimientos')
+            ->where('id', $id)
+            ->where('estado', $estadoEsperado)
+            ->whereNull('deleted_at')
+            ->update($payload);
+
+        if ($actualizado === 0) {
+            throw new DomainException(
+                "La orden #{$id} cambió de estado durante la operación. Recargue e inténtelo de nuevo."
+            );
+        }
     }
 }

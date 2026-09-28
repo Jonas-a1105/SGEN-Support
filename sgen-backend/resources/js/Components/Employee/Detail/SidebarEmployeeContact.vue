@@ -123,7 +123,7 @@ defineProps<{
 
 .contact-label {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
     letter-spacing: 0.05em;
 }
@@ -131,7 +131,7 @@ defineProps<{
 .contact-val {
     font-size: 13px;
     color: var(--text);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 
 .contact-val.muted {
@@ -140,7 +140,7 @@ defineProps<{
 }
 
 .contact-val.mono {
-    font-family: monospace;
+    font-family: var(--font-mono);
     color: var(--blue, #3b82f6);
     font-weight: 600;
 }

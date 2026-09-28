@@ -7,6 +7,7 @@ namespace Tests\Feature\Maintenance;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -25,7 +26,7 @@ final class MaintenanceControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_maint_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

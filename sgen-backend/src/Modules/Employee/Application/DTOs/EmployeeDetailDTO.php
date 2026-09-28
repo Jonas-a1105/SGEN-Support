@@ -29,8 +29,7 @@ final class EmployeeDetailDTO
         public readonly int $equiposCount = 0,
         public readonly int $ticketsCount = 0,
         public readonly int $resolvedTicketsCount = 0,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

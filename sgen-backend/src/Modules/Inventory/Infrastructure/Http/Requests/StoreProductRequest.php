@@ -15,13 +15,22 @@ class StoreProductRequest extends FormRequest
         return $user !== null && $user->can('inventario.manage');
     }
 
+    protected function prepareForValidation(): void
+    {
+        $sku = $this->input('sku');
+
+        if (is_string($sku)) {
+            $this->merge(['sku' => mb_strtoupper(trim($sku))]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'sku' => ['required', 'string', 'max:50', 'unique:inventario_items,codigo'],
+            'sku' => ['required', 'string', 'min:2', 'max:50', 'unique:inventario_items,codigo'],
             'name' => ['required', 'string', 'max:100'],
             'category' => ['required', 'string', 'max:50'],
             'initial_stock' => ['required', 'integer', 'min:0'],

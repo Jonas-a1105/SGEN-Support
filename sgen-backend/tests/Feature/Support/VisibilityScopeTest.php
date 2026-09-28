@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -24,10 +25,15 @@ final class VisibilityScopeTest extends TestCase
     private User $admin;
 
     private int $deptA;
+
     private int $deptB;
+
     private int $equipoA;
+
     private int $equipoB;
+
     private int $ticketA;
+
     private int $ticketB;
 
     protected function setUp(): void
@@ -60,11 +66,11 @@ final class VisibilityScopeTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_scope_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
         $this->operador = User::firstOrCreate(
             ['username' => 'operador_scope_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'operador', 'empleado_id' => $empleadoA, 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'operador', 'empleado_id' => $empleadoA, 'tema' => 'light']
         );
 
         $this->ticketA = $this->crearTicket($this->equipoA, 'Ticket A');

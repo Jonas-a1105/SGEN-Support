@@ -47,7 +47,7 @@
 }
 .about-title {
     font-size: 18px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 6px 0;
 }
@@ -69,7 +69,7 @@
 }
 .credit-heading {
     font-size: 14px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 8px 0;
 }
@@ -108,7 +108,7 @@
     border: var(--stroke-w, 2px) solid rgba(37, 99, 235, 0.3);
     color: #2563eb;
     font-size: 11px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
 }
 .license-badge svg {
     width: 14px;

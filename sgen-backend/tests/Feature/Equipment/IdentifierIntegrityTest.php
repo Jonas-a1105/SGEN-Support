@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -75,7 +76,7 @@ final class IdentifierIntegrityTest extends TestCase
 
         DB::table('usuarios')->insert([
             'username' => 'vinculo1_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('x'),
+            'password' => Hash::make('x'),
             'rol' => 'tecnico',
             'tema' => 'light',
             'empleado_id' => $empleadoId,
@@ -86,7 +87,7 @@ final class IdentifierIntegrityTest extends TestCase
         $this->expectException(QueryException::class);
         DB::table('usuarios')->insert([
             'username' => 'vinculo2_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('x'),
+            'password' => Hash::make('x'),
             'rol' => 'tecnico',
             'tema' => 'light',
             'empleado_id' => $empleadoId, // ya ocupado por otro usuario

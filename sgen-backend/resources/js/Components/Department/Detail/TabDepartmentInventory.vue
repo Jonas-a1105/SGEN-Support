@@ -155,7 +155,7 @@ const columns: DataTableColumn[] = [
 }
 
 .currency-text {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-weight: 600;
     color: var(--text);
 }

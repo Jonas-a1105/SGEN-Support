@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Inventory\Domain\Models;
 
+use DomainException;
 use Modules\Inventory\Domain\Enums\MovementType;
 use Modules\Inventory\Domain\Enums\ProductStatus;
 use Modules\Inventory\Domain\Exceptions\InsufficientStockException;
@@ -68,7 +69,9 @@ final class Product
         int $userId,
         string $reason
     ): StockMovement {
-        if ($type->isReduction()) {
+        if ($type === MovementType::ENTRADA) {
+            $this->currentStock = $this->currentStock->add($delta);
+        } elseif ($type === MovementType::SALIDA) {
             if ($this->currentStock->isLessThan($delta)) {
                 throw InsufficientStockException::forProduct(
                     $this->sku->value(),
@@ -77,11 +80,16 @@ final class Product
                 );
             }
             $this->currentStock = $this->currentStock->subtract($delta);
-        } elseif ($type->isAddition()) {
-            $this->currentStock = $this->currentStock->add($delta);
-        } else {
-            // Caso AJUSTE arbitrario: delta es el nuevo stock objetivo
+        } elseif ($type === MovementType::AJUSTE) {
+            // Conteo físico: delta es el nuevo stock objetivo.
             $this->currentStock = $delta;
+        } else {
+            throw new DomainException(
+                sprintf(
+                    'El tipo de movimiento [%s] no admite ajustes manuales de stock; use el flujo correspondiente.',
+                    $type->value
+                )
+            );
         }
 
         $movement = StockMovement::create(

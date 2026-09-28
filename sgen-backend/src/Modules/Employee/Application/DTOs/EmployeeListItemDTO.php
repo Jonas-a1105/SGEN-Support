@@ -21,8 +21,7 @@ final class EmployeeListItemDTO
         public readonly string $initials,
         public readonly string $tint,
         public readonly string $role,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

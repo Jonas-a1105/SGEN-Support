@@ -105,3 +105,9 @@ Artisan::command('mantenimientos:materializar', function () {
 })->purpose('Job de seguridad: materializa órdenes recurrentes faltantes (7 días antes de la fecha)');
 
 Schedule::command('sgen:autocerrar-tickets')->dailyAt('00:05');
+
+// Verificación de SLA vencidos + notificaciones (cada 15 min).
+Schedule::command('sla:verify')->everyFifteenMinutes();
+
+// Job de seguridad: materializa órdenes de mantenimiento recurrentes faltantes.
+Schedule::command('mantenimientos:materializar')->daily();

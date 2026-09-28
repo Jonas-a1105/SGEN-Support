@@ -10,9 +10,11 @@ final class UpdateSettingsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $user = $this->user();
-
-        return $user !== null && $user->can('configuracion.manage');
+        // Esta ruta guarda las preferencias del propio usuario autenticado
+        // (SettingsController::update opera siempre con $request->user()->id),
+        // por lo que cualquier cuenta con sesión puede actualizarlas.
+        // `configuracion.manage` solo protege el tablero /configuracion/sistema.
+        return $this->user() !== null;
     }
 
     /**

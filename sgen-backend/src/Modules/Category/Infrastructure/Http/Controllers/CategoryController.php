@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Modules\Category\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Category\Infrastructure\Http\Requests\StoreCategoryRequest;
-use Modules\Category\Infrastructure\Http\Requests\UpdateCategoryRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,6 +15,8 @@ use Modules\Category\Application\UseCases\CreateCategoryUseCase;
 use Modules\Category\Application\UseCases\DeleteCategoryUseCase;
 use Modules\Category\Application\UseCases\GetCategoryListUseCase;
 use Modules\Category\Application\UseCases\UpdateCategoryUseCase;
+use Modules\Category\Infrastructure\Http\Requests\StoreCategoryRequest;
+use Modules\Category\Infrastructure\Http\Requests\UpdateCategoryRequest;
 
 final class CategoryController extends Controller
 {

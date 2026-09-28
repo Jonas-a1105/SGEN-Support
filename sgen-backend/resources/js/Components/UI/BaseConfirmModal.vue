@@ -179,7 +179,7 @@ const variantBgColor = computed(() => {
 
 .item-highlight {
     color: var(--text);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .confirm-submessage {

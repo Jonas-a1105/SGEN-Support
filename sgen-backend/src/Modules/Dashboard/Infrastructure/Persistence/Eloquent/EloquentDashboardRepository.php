@@ -31,24 +31,35 @@ final class EloquentDashboardRepository implements DashboardRepositoryInterface
 
     public function getTicketVolumeByYear(int $year): array
     {
-        $months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago'];
+        $start = Carbon::create($year, 1, 1)->startOfDay();
+        $end = $year === (int) date('Y')
+            ? Carbon::now()->endOfDay()
+            : Carbon::create($year, 12, 31)->endOfDay();
+
+        if ($end->lessThan($start)) {
+            $end = $start;
+        }
 
         $dbCounts = DB::table('soportes')
-            ->whereYear('fecha', $year)
-            ->selectRaw('EXTRACT(MONTH FROM fecha) as mes, count(*) as total')
-            ->groupBy('mes')
-            ->pluck('total', 'mes')
+            ->whereBetween('fecha', [$start, $end])
+            ->selectRaw('DATE(fecha) as dia, count(*) as total')
+            ->groupBy('dia')
+            ->pluck('total', 'dia')
             ->all();
 
+        $labels = [];
         $values = [];
-        foreach ($months as $idx => $m) {
-            $monthNum = $idx + 1;
-            $values[$idx] = isset($dbCounts[$monthNum]) ? (int) $dbCounts[$monthNum] : 0;
+        $cursor = $start->copy();
+        while ($cursor->lessThanOrEqualTo($end)) {
+            $key = $cursor->toDateString();
+            $labels[] = $cursor->format('d/m');
+            $values[] = isset($dbCounts[$key]) ? (int) $dbCounts[$key] : 0;
+            $cursor->addDay();
         }
 
         return [
             'year' => $year,
-            'months' => $months,
+            'months' => $labels,
             'values' => $values,
             'total' => array_sum($values),
             'available_years' => array_map(
@@ -65,17 +76,24 @@ final class EloquentDashboardRepository implements DashboardRepositoryInterface
 
     public function getTopCategory(): array
     {
-        $category = DB::table('categorias')
-            ->select('nombre')
-            ->orderBy('id')
+        $total = (int) DB::table('soportes')->whereNull('deleted_at')->count();
+
+        $top = DB::table('soportes')
+            ->join('categorias', 'soportes.categoria_id', '=', 'categorias.id')
+            ->whereNull('soportes.deleted_at')
+            ->select('categorias.nombre as nombre', DB::raw('COUNT(*) as cantidad'))
+            ->groupBy('categorias.id', 'categorias.nombre')
+            ->orderByDesc('cantidad')
+            ->orderBy('categorias.id')
+            ->limit(1)
             ->first();
 
-        $count = DB::table('soportes')->count();
+        $cantidad = $top !== null ? (int) $top->cantidad : 0;
 
         return [
-            'nombre' => $category ? $category->nombre : 'Sin categorías',
-            'cantidad' => $count,
-            'porcentaje' => $count > 0 ? 100 : 0,
+            'nombre' => $top !== null ? (string) $top->nombre : 'Sin categorías',
+            'cantidad' => $cantidad,
+            'porcentaje' => $total > 0 ? (int) round(($cantidad / $total) * 100) : 0,
         ];
     }
 
@@ -165,22 +183,18 @@ final class EloquentDashboardRepository implements DashboardRepositoryInterface
     {
         // Mi trabajo = lo que yo registré como solicitante, o lo que me asignaron
         // como técnico responsable (mi empleado vinculado).
-        $miEmpleadoIdEarly = (int) (DB::table('usuarios')->where('id', $userId)->value('empleado_id') ?? 0);
-        if ($miEmpleadoIdEarly === 0) {
-            $miEmpleadoIdEarly = null;
-        }
+        $miEmpleadoId = (int) (DB::table('usuarios')->where('id', $userId)->value('empleado_id') ?? 0);
 
         $filas = DB::table('soportes')
             ->select(['soportes.estado', DB::raw('COUNT(*) as total')])
-            ->where(function ($q) use ($userId, $miEmpleadoIdEarly) {
+            ->where(function ($q) use ($userId, $miEmpleadoId) {
                 $q->where('soportes.usuario_creacion_id', $userId)
-                    ->when($miEmpleadoIdEarly !== null, fn ($qq) => $qq->orWhere('soportes.empleado_id', $miEmpleadoIdEarly));
+                    ->when($miEmpleadoId > 0, fn ($qq) => $qq->orWhere('soportes.empleado_id', $miEmpleadoId));
             })
             ->groupBy('soportes.estado')
             ->pluck('total', 'estado');
 
         // Mis activos: custodia vigente asignada al empleado vinculado.
-        $miEmpleadoId = (int) (DB::table('usuarios')->where('id', $userId)->value('empleado_id') ?? 0);
 
         $misEquipos = $miEmpleadoId > 0
             ? DB::table('custodias')
@@ -202,12 +216,15 @@ final class EloquentDashboardRepository implements DashboardRepositoryInterface
                 ->all()
             : [];
 
-        // Órdenes laborales que veo: solo si soy técnico asignado a ellas.
-        $proximas = (int) DB::table('mantenimientos')
-            ->where('tecnico_id', $userId)
-            ->where('estado', '!=', 'completado')
-            ->where('fecha', '>=', Carbon::now()->toDateString())
-            ->count();
+        // Órdenes laborales que veo: solo si soy el empleado técnico asignado.
+        $proximas = $miEmpleadoId > 0
+            ? (int) DB::table('mantenimientos')
+                ->where('tecnico_id', $miEmpleadoId)
+                ->where('estado', '!=', 'completado')
+                ->whereNull('deleted_at')
+                ->where('fecha', '>=', Carbon::now()->toDateString())
+                ->count()
+            : 0;
 
         return [
             'mis_pendientes' => (int) ($filas['pendiente'] ?? 0),

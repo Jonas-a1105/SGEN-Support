@@ -37,7 +37,7 @@ final class EloquentAuditLogRepository implements AuditLogRepositoryInterface
             ->orderByDesc('created_at')
             ->limit(100)
             ->get()
-            ->map(fn($row) => [
+            ->map(fn ($row) => [
                 'id' => (int) $row->id,
                 'usuario_id' => (int) $row->usuario_id,
                 'username' => $row->username,
@@ -57,7 +57,7 @@ final class EloquentAuditLogRepository implements AuditLogRepositoryInterface
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get()
-            ->map(fn($row) => [
+            ->map(fn ($row) => [
                 'id' => (int) $row->id,
                 'usuario_id' => (int) $row->usuario_id,
                 'username' => $row->username,
@@ -75,7 +75,7 @@ final class EloquentAuditLogRepository implements AuditLogRepositoryInterface
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get()
-            ->map(fn($row) => [
+            ->map(fn ($row) => [
                 'id' => (int) $row->id,
                 'usuario_id' => (int) $row->usuario_id,
                 'username' => $row->username,
@@ -107,35 +107,35 @@ final class EloquentAuditLogRepository implements AuditLogRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return array<int, array<string, mixed>>
      */
     public function listActions(array $filters = [], int $limit = 100): array
     {
         $query = DB::table('bitacora_acciones');
 
-        if (!empty($filters['search'])) {
-            $search = '%' . trim((string) $filters['search']) . '%';
+        if (! empty($filters['search'])) {
+            $search = '%'.trim((string) $filters['search']).'%';
             $query->where(function ($q) use ($search) {
                 $q->where('username', 'like', $search)
-                  ->orWhere('accion', 'like', $search)
-                  ->orWhere('enlace_tipo', 'like', $search)
-                  ->orWhere('entidad', 'like', $search);
+                    ->orWhere('accion', 'like', $search)
+                    ->orWhere('enlace_tipo', 'like', $search)
+                    ->orWhere('entidad', 'like', $search);
             });
         }
 
-        if (!empty($filters['entity']) && $filters['entity'] !== 'all') {
+        if (! empty($filters['entity']) && $filters['entity'] !== 'all') {
             $entity = (string) $filters['entity'];
             $query->where(function ($q) use ($entity) {
                 $q->where('entidad', $entity)
-                  ->orWhere('enlace_tipo', $entity);
+                    ->orWhere('enlace_tipo', $entity);
             });
         }
 
         return $query->orderByDesc('id')
             ->limit($limit)
             ->get()
-            ->map(fn($row) => [
+            ->map(fn ($row) => [
                 'id' => (int) $row->id,
                 'usuario_id' => $row->usuario_id ? (int) $row->usuario_id : null,
                 'username' => $row->username ?? 'Sistema',

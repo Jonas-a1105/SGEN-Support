@@ -250,7 +250,7 @@ function handleSubmit() {
     width: 100px;
     text-align: center;
     font-family: var(--font-mono, monospace);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .native-color-picker {

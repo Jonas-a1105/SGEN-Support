@@ -82,7 +82,7 @@ defineProps<{
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -137,7 +137,7 @@ defineProps<{
 
 .timeline-label {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
     letter-spacing: 0.05em;
 }
@@ -177,7 +177,7 @@ defineProps<{
 }
 
 .field-badge-value {
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     padding: 2px 8px;
     border-radius: 4px;

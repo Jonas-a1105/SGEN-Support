@@ -46,7 +46,7 @@ defineProps<{
 }
 .about-title {
     font-size: 18px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 6px 0;
 }
@@ -82,7 +82,7 @@ defineProps<{
     color: var(--text, #f4f4f6);
 }
 .tech-val.code {
-    font-family: monospace;
+    font-family: var(--font-mono);
     background: var(--bg-card, #17181a);
     padding: 2px 8px;
     border-radius: 6px;

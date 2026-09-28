@@ -23,6 +23,6 @@ final readonly class GenerateInventoryPdfUseCase
             'generatedAt' => now()->format('d/m/Y H:i'),
         ])->setPaper('a4', 'landscape');
 
-        return $pdf->stream('Reporte_Inventario_' . date('Y-m-d') . '.pdf');
+        return $pdf->stream('Reporte_Inventario_'.date('Y-m-d').'.pdf');
     }
 }

@@ -138,7 +138,7 @@ const totalRegistros = () => props.catalogos_activos.reduce((acc, catalogo) => a
 .tabla-papelera { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tabla-papelera th { text-align: left; font-size: 11px; letter-spacing: 0.04em; color: var(--text-muted); padding: 8px 10px; border-bottom: var(--stroke-w, 2px) solid var(--stroke, #31343a); }
 .tabla-papelera td { padding: 9px 10px; border-bottom: 1px solid var(--stroke-subtle, #23252a); color: var(--text); }
-.tabla-papelera td.mono { font-family: monospace; font-size: 12px; }
+.tabla-papelera td.mono { font-family: var(--font-mono); font-size: 12px; }
 .tabla-papelera td.actions { display: flex; gap: 8px; justify-content: flex-end; }
 .papelera-vacia { padding: 60px 10px; text-align: center; color: var(--text-muted); border: 2px dashed var(--stroke-subtle); border-radius: 14px; }
 </style>

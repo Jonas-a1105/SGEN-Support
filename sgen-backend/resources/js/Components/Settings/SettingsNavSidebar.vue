@@ -160,7 +160,7 @@ const emit = defineEmits<{
 
 .config-title {
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     margin: 0;
 }

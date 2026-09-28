@@ -149,7 +149,7 @@ const filteredEmployees = computed(() => {
 .detail-table th {
     padding: 12px 16px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
     background: var(--stroke-subtle);
     border-bottom: var(--stroke-w) solid var(--stroke);
@@ -181,7 +181,7 @@ const filteredEmployees = computed(() => {
     color: var(--blue, #3b82f6);
     display: grid;
     place-items: center;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     font-size: 12px;
     flex-shrink: 0;
 }
@@ -203,7 +203,7 @@ const filteredEmployees = computed(() => {
 }
 
 .mono-code {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-muted);
 }

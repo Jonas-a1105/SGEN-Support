@@ -198,7 +198,7 @@ function selectTab(tab: TabKey) {
 
 .about-brand-copy b {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text, #f4f4f6);
     display: block;
 }

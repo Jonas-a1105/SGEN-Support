@@ -111,7 +111,7 @@ const cancelar = (): void => {
 .tabla-config th { text-align: left; font-size: 11px; letter-spacing: 0.04em; color: var(--text-muted); padding: 10px 12px; border-bottom: var(--stroke-w, 2px) solid var(--stroke, #31343a); }
 .tabla-config td { padding: 10px 12px; border-bottom: 1px solid var(--stroke-subtle, #23252a); color: var(--text); vertical-align: top; }
 .tabla-config td.clave-col { font-size: 12px; font-weight: 600; }
-.tabla-config td.mono { font-family: monospace; }
+.tabla-config td.mono { font-family: var(--font-mono); }
 .tabla-config td.desc-col { max-width: 260px; color: var(--text-muted); font-size: 12px; }
 .tabla-config td.actualizado-col { font-size: 11px; color: var(--text-muted); }
 .by-col { font-size: 10px; color: var(--text-dim); }

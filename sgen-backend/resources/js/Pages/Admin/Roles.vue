@@ -152,8 +152,8 @@ const guardar = (): void => {
 .matrix-head .card-title { margin: 0; }
 .matrix-warn { margin: 0 0 14px; font-size: 12.5px; color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: var(--stroke-w, 2px) solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 10px 12px; }
 .matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
-.modulo-block h4 { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--text-muted); text-transform: uppercase; }
+.modulo-block h4 { margin: 0 0 8px; font-size: 12px; font-weight: var(--weight-semibold); letter-spacing: 0.04em; color: var(--text-muted); }
 .permiso-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--text); margin-bottom: 6px; cursor: pointer; }
 .permiso-row input { margin-top: 2px; }
-.permiso-label { font-family: monospace; font-size: 11.5px; }
+.permiso-label { font-family: var(--font-mono); font-size: 11.5px; }
 </style>

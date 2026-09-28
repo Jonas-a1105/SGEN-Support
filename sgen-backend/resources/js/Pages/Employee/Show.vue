@@ -259,7 +259,7 @@ const isEditModalOpen = ref(false);
 
 .emp-tab-counter {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     padding: 1px 6px;
     border-radius: 10px;
     background: var(--stroke-subtle);

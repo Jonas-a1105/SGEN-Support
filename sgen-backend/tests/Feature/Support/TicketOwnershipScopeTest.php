@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -34,11 +35,11 @@ final class TicketOwnershipScopeTest extends TestCase
 
         $this->operador = User::firstOrCreate(
             ['username' => 'operador_scope_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'operador', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'operador', 'tema' => 'light']
         );
         $this->tecnico = User::firstOrCreate(
             ['username' => 'tecnico_scope_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light']
         );
 
         $equipmentId = (int) (DB::table('equipos')->value('id') ?? DB::table('equipos')->insertGetId([

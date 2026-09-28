@@ -84,7 +84,7 @@ const handleChange = (e: Event) => {
 
 .switch-label {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
 }
 

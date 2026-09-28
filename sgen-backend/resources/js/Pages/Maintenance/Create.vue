@@ -79,6 +79,7 @@ const handleSubmit = () => {
     router.post('/mantenimientos', payload, {
         onSuccess: () => {
             submitting.value = false;
+            router.visit('/mantenimientos');
         },
         onError: () => {
             submitting.value = false;

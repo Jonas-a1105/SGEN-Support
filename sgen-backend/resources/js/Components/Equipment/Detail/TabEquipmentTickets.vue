@@ -113,10 +113,10 @@ const getTicketStatusVariant = (st: string): 'warning' | 'info' | 'neutral' | 's
     background: var(--bg-sub);
     padding: var(--space-3) var(--space-4);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     color: var(--text-dim);
     letter-spacing: 0.04em;
-    text-transform: uppercase;
+
     border-bottom: 1px solid var(--stroke);
 }
 
@@ -145,7 +145,7 @@ const getTicketStatusVariant = (st: string): 'warning' | 'info' | 'neutral' | 's
 }
 
 .ticket-title {
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
@@ -160,9 +160,9 @@ const getTicketStatusVariant = (st: string): 'warning' | 'info' | 'neutral' | 's
 
 .priority-tag {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    text-transform: uppercase;
+
 }
 
 .action-btn-circle {

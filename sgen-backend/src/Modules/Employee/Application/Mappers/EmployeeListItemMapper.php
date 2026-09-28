@@ -11,7 +11,7 @@ final class EmployeeListItemMapper
     private const TINTS = ['blue', 'green', 'purple', 'orange', 'amber'];
 
     /**
-     * @param object|array<string, mixed> $row
+     * @param  object|array<string, mixed>  $row
      */
     public static function fromRow(object|array $row): EmployeeListItemDTO
     {
@@ -20,14 +20,14 @@ final class EmployeeListItemMapper
 
         $firstName = trim((string) ($data['nombre'] ?? ''));
         $lastName = trim((string) ($data['apellido'] ?? ''));
-        $fullName = trim($firstName . ' ' . $lastName);
+        $fullName = trim($firstName.' '.$lastName);
         if ($fullName === '') {
             $fullName = 'Sin Nombre';
         }
 
         $initFirst = mb_substr($firstName, 0, 1);
         $initLast = mb_substr($lastName, 0, 1);
-        $initials = mb_strtoupper($initFirst . $initLast);
+        $initials = mb_strtoupper($initFirst.$initLast);
         if ($initials === '') {
             $initials = 'EM';
         }
@@ -35,15 +35,15 @@ final class EmployeeListItemMapper
         $tint = self::TINTS[$id % count(self::TINTS)];
 
         $userAccount = null;
-        if (!empty($data['username'])) {
-            $userAccount = '@' . ltrim((string) $data['username'], '@');
+        if (! empty($data['username'])) {
+            $userAccount = '@'.ltrim((string) $data['username'], '@');
         }
 
         $idDoc = (string) ($data['cedula'] ?? 'Sin Cédula');
 
         return new EmployeeListItemDTO(
             numericId: $id,
-            id: 'EMP-' . sprintf('%02d', $id),
+            id: 'EMP-'.sprintf('%02d', $id),
             fullName: $fullName,
             firstName: $firstName,
             lastName: $lastName,

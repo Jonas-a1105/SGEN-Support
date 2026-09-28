@@ -66,7 +66,7 @@ const emit = defineEmits<{
 .form-label {
     font-size: 11px;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
     font-weight: 600;
 }

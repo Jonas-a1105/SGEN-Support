@@ -69,7 +69,7 @@ const displayInitials = computed(() => {
     justify-content: center;
     flex-shrink: 0;
     user-select: none;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     border: 1px solid var(--stroke);
     box-shadow: none !important;
 }

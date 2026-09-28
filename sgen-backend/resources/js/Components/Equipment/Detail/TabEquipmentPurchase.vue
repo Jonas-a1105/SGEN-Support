@@ -80,7 +80,7 @@ const getWarrantyProgressClass = (pct: number): string => {
 
 .purchase-label {
     font-size: 11px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     letter-spacing: 0.05em;
     color: var(--text-dim);
 }
@@ -94,7 +94,7 @@ const getWarrantyProgressClass = (pct: number): string => {
 .price-val {
     margin: var(--space-1) 0 0 0;
     font-size: 24px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     color: var(--brand);
     font-family: var(--font-mono);
 }
@@ -113,7 +113,7 @@ const getWarrantyProgressClass = (pct: number): string => {
 
 .warranty-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 

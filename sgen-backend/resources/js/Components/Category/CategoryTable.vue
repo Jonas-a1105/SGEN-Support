@@ -110,7 +110,7 @@ function getColorClass(color: string): string {
 .tone-purple { color: #8b5cf6; border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.08); }
 
 .cat-name-text {
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
 }
 .cat-desc-text {
@@ -124,7 +124,7 @@ function getColorClass(color: string): string {
     padding: 3px 8px;
     border-radius: 6px;
     font-size: 11px;
-    font-family: monospace;
+    font-family: var(--font-mono);
     border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
     box-shadow: none !important;
 }

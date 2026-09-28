@@ -89,7 +89,7 @@ const totalConsolidatedCost = computed(() => laborCost.value + materialsCost.val
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -114,14 +114,14 @@ const totalConsolidatedCost = computed(() => laborCost.value + materialsCost.val
     font-size: 11px;
     font-weight: 600;
     color: var(--text-muted);
-    text-transform: uppercase;
+
 }
 
 .cost-amount {
     font-size: 22px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     color: var(--text);
-    font-family: monospace;
+    font-family: var(--font-mono);
 }
 
 .cost-note {
@@ -152,7 +152,7 @@ const totalConsolidatedCost = computed(() => laborCost.value + materialsCost.val
 
 .cost-row-value {
     color: var(--text);
-    font-family: monospace;
+    font-family: var(--font-mono);
 }
 
 .audit-list {

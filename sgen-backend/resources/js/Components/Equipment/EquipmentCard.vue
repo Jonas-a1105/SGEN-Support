@@ -275,7 +275,7 @@ const isCamera = computed(() => props.item.type.toLowerCase() === 'cámara' || p
 
 .card-device-title {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
     white-space: nowrap;

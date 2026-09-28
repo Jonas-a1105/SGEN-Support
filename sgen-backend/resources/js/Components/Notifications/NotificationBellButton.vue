@@ -72,7 +72,7 @@ const emit = defineEmits<{
     background: var(--red);
     color: #ffffff;
     font-size: 10px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     min-width: 18px;
     height: 18px;
     padding: 0 4px;

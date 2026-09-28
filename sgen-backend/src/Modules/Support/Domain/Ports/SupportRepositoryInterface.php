@@ -28,7 +28,11 @@ interface SupportRepositoryInterface
     /**
      * Obtiene el detalle completo de un ticket con sus relaciones (activo, comentarios, archivos, materiales, etc.).
      */
-    public function findById(int $id): ?TicketDetailDTO;
+    /**
+     * @param  int|null  $viewerUserId  usuario que consulta; determina si las
+     *                                  notas internas son visibles (staff) o no.
+     */
+    public function findById(int $id, ?int $viewerUserId = null): ?TicketDetailDTO;
 
     /**
      * Crea un nuevo ticket y devuelve su ID.
@@ -76,7 +80,7 @@ interface SupportRepositoryInterface
      * usuario del firmante, y fecha/hora de captura. La firma es única e
      * inmutable: si ya existe, lanza SignatureAlreadyRegisteredException.
      */
-    public function saveSignature(int $ticketId, string $signatureData, string $ipAddress, ?string $userAgent): bool;
+    public function saveSignature(int $ticketId, string $signatureData, string $ipAddress, ?string $userAgent, ?int $actingUserId = null): bool;
 
     public function uploadAttachment(int $ticketId, string $filePath, string $originalName, string $mimeType, int $size, int $userId, ?string $checksumSha256 = null): int;
 

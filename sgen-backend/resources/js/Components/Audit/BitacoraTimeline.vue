@@ -141,10 +141,10 @@ function formatDateHeading(dateStr: string): string {
 
 .date-label-subtle {
     font-size: 10px;
-    text-transform: uppercase;
+
     letter-spacing: 0.08em;
     color: var(--text-dim, #60636d);
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
 }
 
 .date-badge-pill {
@@ -153,7 +153,7 @@ function formatDateHeading(dateStr: string): string {
     background: var(--bg-sub, #1e2024);
     border: var(--stroke-w, 2px) solid var(--stroke, #31343a);
     font-size: 12px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -204,7 +204,7 @@ function formatDateHeading(dateStr: string): string {
 
 .empty-title {
     font-size: 15px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0;
 }

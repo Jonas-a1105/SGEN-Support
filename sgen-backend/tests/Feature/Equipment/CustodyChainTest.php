@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Modules\Equipment\Domain\Ports\EquipmentRepositoryInterface;
 use Tests\TestCase;
 
@@ -116,7 +117,7 @@ final class CustodyChainTest extends TestCase
     {
         $admin = User::firstOrCreate(
             ['username' => 'admin_custodia_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $this->equipos->assignCustody($this->equipoId, $this->empleadoA, null);
@@ -144,7 +145,7 @@ final class CustodyChainTest extends TestCase
     {
         $admin = User::firstOrCreate(
             ['username' => 'admin_offboard_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $this->equipos->assignCustody($this->equipoId, $this->empleadoA, null);

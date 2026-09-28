@@ -7,11 +7,11 @@ namespace Modules\Department\Application\DTOs;
 final class DepartmentDetailDTO
 {
     /**
-     * @param array<int, array<string, mixed>> $empleados
-     * @param array<int, array<string, mixed>> $equipos
-     * @param array<int, array<string, mixed>> $consumibles
-     * @param array<int, array<string, mixed>> $candidatosEmpleados
-     * @param array<int, array<string, mixed>> $candidatosEquipos
+     * @param  array<int, array<string, mixed>>  $empleados
+     * @param  array<int, array<string, mixed>>  $equipos
+     * @param  array<int, array<string, mixed>>  $consumibles
+     * @param  array<int, array<string, mixed>>  $candidatosEmpleados
+     * @param  array<int, array<string, mixed>>  $candidatosEquipos
      */
     public function __construct(
         public readonly int $id,
@@ -38,8 +38,7 @@ final class DepartmentDetailDTO
         public readonly array $candidatosEmpleados = [],
         public readonly array $candidatosEquipos = [],
         public readonly ?string $createdAt = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>

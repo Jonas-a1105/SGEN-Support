@@ -242,7 +242,7 @@ const statusBadgeVariant = computed<BadgeVariant>(() => {
 .panel-title {
     margin: 0;
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     letter-spacing: -0.01em;
 }
@@ -287,9 +287,9 @@ const statusBadgeVariant = computed<BadgeVariant>(() => {
 
 .data-kicker {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    text-transform: uppercase;
+
     display: flex;
     align-items: center;
     gap: 6px;
@@ -338,9 +338,9 @@ const statusBadgeVariant = computed<BadgeVariant>(() => {
 
 .person-role-tag {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-dim);
-    text-transform: uppercase;
+
 }
 
 .person-name-row {

@@ -11,7 +11,7 @@ use Modules\Equipment\Domain\Enums\EquipmentType;
 final class EquipmentDetailMapper
 {
     /**
-     * @param object|array<string, mixed> $row
+     * @param  object|array<string, mixed>  $row
      */
     public static function fromRow(object|array $row): EquipmentDetailDTO
     {
@@ -23,14 +23,14 @@ final class EquipmentDetailMapper
         $rawType = (string) ($data['tipo'] ?? 'Computadora');
         $typeEnum = EquipmentType::fromString($rawType);
 
-        $name = trim(($data['marca'] ?? '') . ' ' . ($data['modelo'] ?? ''));
+        $name = trim(($data['marca'] ?? '').' '.($data['modelo'] ?? ''));
         if ($name === '') {
             $name = (string) ($data['nombre'] ?? $typeEnum->normalized());
         }
 
         $employeeName = null;
-        if (!empty($data['empleado_nombre'])) {
-            $employeeName = trim($data['empleado_nombre'] . ' ' . ($data['empleado_apellido'] ?? ''));
+        if (! empty($data['empleado_nombre'])) {
+            $employeeName = trim($data['empleado_nombre'].' '.($data['empleado_apellido'] ?? ''));
         }
 
         return new EquipmentDetailDTO(

@@ -109,7 +109,7 @@ const selectTab = (key: string) => {
     padding: 0 6px;
     border-radius: var(--radius-pill, 9999px);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     background: var(--stroke);
     color: var(--text);
     transition: all var(--transition-fast, 0.15s ease);

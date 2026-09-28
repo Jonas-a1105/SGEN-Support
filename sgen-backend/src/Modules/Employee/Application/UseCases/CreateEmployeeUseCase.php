@@ -11,8 +11,7 @@ final class CreateEmployeeUseCase
 {
     public function __construct(
         private readonly EmployeeRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(CreateEmployeeDTO $dto): int
     {

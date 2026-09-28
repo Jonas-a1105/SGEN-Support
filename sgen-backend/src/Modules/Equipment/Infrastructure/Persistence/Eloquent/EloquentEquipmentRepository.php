@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Equipment\Infrastructure\Persistence\Eloquent;
 
+use App\Exceptions\OptimisticLockException;
+use App\Support\Visibility\VisibilityScope;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Modules\Equipment\Application\DTOs\CreateEquipmentDTO;
 use Modules\Equipment\Application\DTOs\EquipmentDetailDTO;
 use Modules\Equipment\Application\DTOs\EquipmentKpisDTO;
 use Modules\Equipment\Application\DTOs\EquipmentListItemDTO;
-use Modules\Equipment\Application\DTOs\RegisterEquipmentDTO;
 use Modules\Equipment\Application\DTOs\TransferEquipmentDTO;
 use Modules\Equipment\Application\DTOs\UpdateEquipmentDTO;
 use Modules\Equipment\Application\Mappers\EquipmentDetailMapper;
@@ -23,20 +24,28 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
 {
     public function getKpis(): EquipmentKpisDTO
     {
-        $totalActivos = (int) DB::table('equipos')->count();
-        $enUso = (int) DB::table('equipos')->where('estado', 'en_uso')->count();
-        $disponibles = (int) DB::table('equipos')->whereIn('estado', ['disponible', 'nuevo', 'en_reserva'])->count();
-        $enReparacion = (int) DB::table('equipos')->where('estado', 'en_reparacion')->count();
-        $fueraServicio = (int) DB::table('equipos')->whereIn('estado', ['fuera_de_servicio', 'baja'])->count();
-        $operativos = max(0, $totalActivos - $enReparacion - $fueraServicio);
+        $stats = DB::table('equipos')
+            ->whereNull('deleted_at')
+            ->selectRaw("
+                COUNT(*) AS total_activos,
+                COUNT(CASE WHEN estado = 'en_uso' THEN 1 END) AS en_uso,
+                COUNT(CASE WHEN estado IN ('disponible', 'nuevo', 'en_reserva') THEN 1 END) AS disponibles,
+                COUNT(CASE WHEN estado = 'en_reparacion' THEN 1 END) AS en_reparacion,
+                COUNT(CASE WHEN estado IN ('fuera_de_servicio', 'de_baja') THEN 1 END) AS fuera_servicio
+            ")
+            ->first();
+
+        $totalActivos = (int) ($stats->total_activos ?? 0);
+        $enReparacion = (int) ($stats->en_reparacion ?? 0);
+        $fueraServicio = (int) ($stats->fuera_servicio ?? 0);
 
         return new EquipmentKpisDTO(
             totalActivos: $totalActivos,
-            operativos: $operativos,
+            operativos: max(0, $totalActivos - $enReparacion - $fueraServicio),
             enReparacion: $enReparacion,
             fueraServicio: $fueraServicio,
-            enUso: $enUso,
-            disponibles: $disponibles,
+            enUso: (int) ($stats->en_uso ?? 0),
+            disponibles: (int) ($stats->disponibles ?? 0),
         );
     }
 
@@ -51,7 +60,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             ->whereNull('equipos.deleted_at');
 
         // Visibilidad por rol: un operador solo lee su departamento; tech/admin/consultor global.
-        $query = \App\Support\Visibility\VisibilityScope::applyToDepartamentos($query, 'equipos.departamento_id')
+        $query = VisibilityScope::applyToDepartamentos($query, 'equipos.departamento_id')
             ->leftJoin('departamentos', 'equipos.departamento_id', '=', 'departamentos.id')
             ->leftJoin('empleados', 'equipos.empleado_id', '=', 'empleados.id')
             ->select([
@@ -360,7 +369,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
 
     public function update(int $id, UpdateEquipmentDTO $dto): void
     {
-        $equipoActual = DB::table('equipos')->where('id', $id)->first(['id', 'empleado_id']);
+        $equipoActual = DB::table('equipos')->where('id', $id)->first(['id', 'empleado_id', 'estado']);
         if ($equipoActual === null) {
             throw EquipmentNotFoundException::withId($id);
         }
@@ -383,8 +392,24 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
             $payload['modelo'] = $dto->model;
         }
         if ($dto->status !== null) {
-            $statusEnum = EquipmentStatus::tryFrom($dto->status) ?? EquipmentStatus::fromLabel($dto->status);
-            $payload['estado'] = $statusEnum->value;
+            $statusEnum = EquipmentStatus::tryFrom($dto->status) ?? EquipmentStatus::tryFromLabel($dto->status);
+
+            if ($statusEnum === null) {
+                throw new \DomainException(
+                    sprintf('El estado [%s] no corresponde a ningún estado válido de equipo.', $dto->status)
+                );
+            }
+
+            if ($statusEnum === EquipmentStatus::DE_BAJA) {
+                throw new \DomainException(
+                    'Un equipo no se da de baja por edición: registre la baja formal con motivo, acta y evidencia.'
+                );
+            }
+
+            // Un activo retirado conserva su estado: la edición no lo reactiva.
+            if ($equipoActual->estado !== EquipmentStatus::DE_BAJA->value) {
+                $payload['estado'] = $statusEnum->value;
+            }
         }
         if ($dto->hasDepartmentId) {
             $payload['departamento_id'] = $dto->departmentId;
@@ -443,7 +468,7 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         $actualizadas = $query->update($payload);
 
         if ($actualizadas === 0 && $dto->version !== null) {
-            throw \App\Exceptions\OptimisticLockException::forEntity('Equipo', $id);
+            throw OptimisticLockException::forEntity('Equipo', $id);
         }
 
         // Cadena custodial: solo se rotulan eslabones cuando el custodio

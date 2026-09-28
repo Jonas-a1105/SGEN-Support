@@ -11,9 +11,15 @@
 }
 html {
     font-family: var(--font-sans);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+}
+
+/* Tipografía unificada: Segoe UI Semibold 600 en toda la app */
+body, button, input, select, optgroup, textarea, code, kbd, samp, pre, small {
+    font-family: var(--font-sans);
+    font-weight: var(--weight-semibold);
 }
 
 html, body {
@@ -39,9 +45,18 @@ h1 { font-size: var(--text-xl); }
 h2 { font-size: var(--text-lg); }
 h3 { font-size: var(--text-base); }
 
+strong, b {
+    font-weight: var(--weight-semibold);
+}
+
 body {
     height: 100vh;
     overflow-y: hidden;
+}
+
+/* Fix gráficos de inventario que quedan con fondo negro tras quitar inventario-general.css */
+.inventory-wrapper canvas, .inventory-wrapper svg {
+  background: transparent !important;
 }
 
 /* Scrollbars Estilizadas */

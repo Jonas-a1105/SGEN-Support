@@ -7,6 +7,7 @@ namespace Tests\Feature\User;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -23,7 +24,7 @@ final class UserControllerTest extends TestCase
         $admin = User::firstOrCreate(
             ['username' => 'super_admin_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -32,7 +33,7 @@ final class UserControllerTest extends TestCase
 
         $this->targetUserId = (int) DB::table('usuarios')->insertGetId([
             'username' => 'test_subject_user',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'password' => Hash::make('password123'),
             'rol' => 'consultor',
             'tema' => 'dark',
             'created_at' => now(),

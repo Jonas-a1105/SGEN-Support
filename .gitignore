@@ -12,9 +12,14 @@
 *.key
 *.pem
 *.p12
-*password*
-*secret*
-*credentials*
+*.secret
+*.credentials
+*password*.txt
+*password*.json
+*secret*.txt
+*secret*.json
+*credentials*.txt
+*credentials*.json
 auth.json
 
 # ------------------------------------------------------------------------------

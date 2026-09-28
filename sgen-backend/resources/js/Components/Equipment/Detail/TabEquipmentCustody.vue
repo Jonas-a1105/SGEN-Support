@@ -186,7 +186,7 @@ function saveSignature(): void {
     color: var(--text-dim, #60636d);
 }
 .hash-chip {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     opacity: 0.85;
 }
@@ -212,7 +212,7 @@ tr.row-vigente td {
     background: rgba(59, 130, 246, 0.06);
 }
 .mono {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
 }
 .empty-cell {

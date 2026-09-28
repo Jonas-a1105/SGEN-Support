@@ -12,8 +12,7 @@ final class UpdateDepartmentDTO
         public readonly ?string $jefeAreaNombre = null,
         public readonly ?int $jefeAreaId = null,
         public readonly ?string $descripcion = null,
-    ) {
-    }
+    ) {}
 
     public static function fromArray(array $data): self
     {

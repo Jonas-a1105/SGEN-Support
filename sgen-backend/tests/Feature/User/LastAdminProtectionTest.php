@@ -7,6 +7,7 @@ namespace Tests\Feature\User;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Modules\User\Application\UseCases\DeleteUserUseCase;
 use Modules\User\Domain\Exceptions\LastAdminProtectionException;
 use Tests\TestCase;
@@ -27,7 +28,7 @@ final class LastAdminProtectionTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'last_admin_test'],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
     }
 
@@ -65,7 +66,7 @@ final class LastAdminProtectionTest extends TestCase
     {
         $segundo = User::create([
             'username' => 'admin_rescate_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('Temporal.Segura2026#'),
+            'password' => Hash::make('Temporal.Segura2026#'),
             'rol' => 'admin',
             'tema' => 'light',
         ]);

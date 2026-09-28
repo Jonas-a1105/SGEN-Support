@@ -95,8 +95,8 @@ const badgeVariant = computed<BadgeVariant>(() => {
 .detail-label {
     display: block;
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: var(--weight-semibold);
+
     letter-spacing: 0.04em;
     color: var(--text-muted);
     margin-bottom: 4px;
@@ -104,7 +104,7 @@ const badgeVariant = computed<BadgeVariant>(() => {
 
 .detail-name {
     font-size: 18px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }

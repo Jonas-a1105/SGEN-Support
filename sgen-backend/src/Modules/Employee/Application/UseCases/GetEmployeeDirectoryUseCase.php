@@ -10,11 +10,10 @@ final class GetEmployeeDirectoryUseCase
 {
     public function __construct(
         private readonly EmployeeRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return array<string, mixed>
      */
     public function execute(array $filters = []): array
@@ -25,7 +24,7 @@ final class GetEmployeeDirectoryUseCase
 
         return [
             'kpis' => $kpis->toArray(),
-            'empleados' => array_map(fn($item) => $item->toArray(), $empleados),
+            'empleados' => array_map(fn ($item) => $item->toArray(), $empleados),
             'options' => $options,
             'filters' => $filters,
         ];

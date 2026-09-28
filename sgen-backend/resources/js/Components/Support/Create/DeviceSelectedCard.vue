@@ -98,7 +98,7 @@ const emit = defineEmits<{
     align-items: center;
     gap: 6px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: #10b981;
 }
 
@@ -158,7 +158,7 @@ const emit = defineEmits<{
 
 .tf-device-name {
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 4px 0;
 }
@@ -208,7 +208,7 @@ const emit = defineEmits<{
     display: block;
     font-size: 10px;
     color: var(--text-dim, #60636d);
-    text-transform: uppercase;
+
 }
 
 .tf-device-detail-value {

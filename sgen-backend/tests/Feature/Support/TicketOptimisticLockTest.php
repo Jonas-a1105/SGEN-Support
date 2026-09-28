@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Support;
 
+use App\Exceptions\OptimisticLockException;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Modules\Support\Application\DTOs\UpdateTicketDTO;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 use Tests\TestCase;
@@ -30,7 +32,7 @@ final class TicketOptimisticLockTest extends TestCase
 
         $this->adminUser = User::firstOrCreate(
             ['username' => 'admin_lock_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $this->ticketId = (int) DB::table('soportes')->insertGetId([
@@ -69,7 +71,7 @@ final class TicketOptimisticLockTest extends TestCase
         try {
             $repo->updateTicket($this->ticketId, $segunda);
             $this->fail('Se esperaba OptimisticLockException (409).');
-        } catch (\App\Exceptions\OptimisticLockException $e) {
+        } catch (OptimisticLockException $e) {
             // OK: el segundo editor queda rechazado con conflicto.
         }
 

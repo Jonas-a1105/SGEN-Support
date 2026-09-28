@@ -167,7 +167,7 @@ const submitRating = () => {
 }
 .rating-title {
     font-size: 18px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     margin: 0;
 }
@@ -228,7 +228,7 @@ const submitRating = () => {
     border-radius: 12px;
     color: #ffffff;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition: opacity 0.2s ease;
 }

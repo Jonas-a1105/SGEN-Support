@@ -33,7 +33,7 @@ final class Employee
             throw new InvalidArgumentException('El apellido del empleado no puede estar vacío.');
         }
 
-        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidArgumentException("El correo electrónico [{$this->email}] no es válido.");
         }
     }
@@ -55,7 +55,7 @@ final class Employee
 
     public function fullName(): string
     {
-        return trim($this->nombre . ' ' . $this->apellido);
+        return trim($this->nombre.' '.$this->apellido);
     }
 
     public function email(): string

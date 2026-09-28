@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -29,7 +30,7 @@ final class UserActivationTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_activation_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
     }
 
@@ -37,7 +38,7 @@ final class UserActivationTest extends TestCase
     {
         $id = (int) DB::table('usuarios')->insertGetId([
             'username' => 'activacion_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('Clave-Valida-123'),
+            'password' => Hash::make('Clave-Valida-123'),
             'rol' => $rol,
             'tema' => 'light',
             'activo' => true,
@@ -154,7 +155,7 @@ final class UserActivationTest extends TestCase
 
         $usuarioId = (int) DB::table('usuarios')->insertGetId([
             'username' => 'tecnico_carga_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+            'password' => Hash::make('secret'),
             'rol' => 'tecnico',
             'tema' => 'light',
             'activo' => true,

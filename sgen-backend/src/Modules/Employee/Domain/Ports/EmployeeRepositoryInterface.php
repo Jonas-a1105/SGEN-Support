@@ -15,7 +15,7 @@ interface EmployeeRepositoryInterface
     public function getKpis(): EmployeeKpisDTO;
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return EmployeeListItemDTO[]
      */
     public function list(array $filters = []): array;

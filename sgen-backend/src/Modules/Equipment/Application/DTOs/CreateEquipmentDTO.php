@@ -27,14 +27,13 @@ final class CreateEquipmentDTO
         public readonly ?string $supplier = null,
         public readonly ?string $warranty = null,
         public readonly ?float $purchaseValue = null,
-    ) {
-    }
+    ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
             inventoryCode: (string) ($data['codigo_inventario'] ?? $data['id'] ?? ''),
-            serialNumber: (string) ($data['numero_serie'] ?? $data['serialNumber'] ?? ('SN-' . time() . '-' . rand(100, 999))),
+            serialNumber: (string) ($data['numero_serie'] ?? $data['serialNumber'] ?? ('SN-'.time().'-'.rand(100, 999))),
             type: (string) ($data['tipo'] ?? $data['type'] ?? 'Computadora'),
             brand: isset($data['marca']) ? (string) $data['marca'] : null,
             model: isset($data['modelo']) ? (string) $data['modelo'] : ($data['nombre'] ?? null),

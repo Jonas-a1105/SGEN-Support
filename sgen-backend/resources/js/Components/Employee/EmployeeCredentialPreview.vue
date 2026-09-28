@@ -76,7 +76,7 @@ defineProps<{
     background: var(--stroke-subtle);
     border: var(--stroke-w) solid var(--stroke);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
 }
 
@@ -106,7 +106,7 @@ defineProps<{
     display: grid;
     place-items: center;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: #3b82f6;
 }
 
@@ -134,7 +134,7 @@ defineProps<{
 
 .preview-name-display {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0 0 4px;
 }
@@ -152,7 +152,7 @@ defineProps<{
     background: var(--bg-sub);
     border: var(--stroke-w) solid var(--stroke);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     letter-spacing: 0.04em;
     margin-bottom: 16px;

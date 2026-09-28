@@ -24,6 +24,6 @@ final readonly class GeneratePerformancePdfUseCase
             'generatedAt' => now()->format('d/m/Y H:i'),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->stream('Reporte_Rendimiento_' . date('Y-m-d') . '.pdf');
+        return $pdf->stream('Reporte_Rendimiento_'.date('Y-m-d').'.pdf');
     }
 }

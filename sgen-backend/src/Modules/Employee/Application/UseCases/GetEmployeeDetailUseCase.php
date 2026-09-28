@@ -11,8 +11,7 @@ final class GetEmployeeDetailUseCase
 {
     public function __construct(
         private readonly EmployeeRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $id): ?EmployeeDetailDTO
     {

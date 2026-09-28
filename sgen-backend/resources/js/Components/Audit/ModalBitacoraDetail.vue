@@ -162,10 +162,10 @@ function formatJson(val: Record<string, unknown> | null): string {
 
 .meta-label {
     font-size: 11px;
-    text-transform: uppercase;
+
     letter-spacing: 0.05em;
     color: var(--text-dim);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .meta-val {
@@ -229,8 +229,8 @@ function formatJson(val: Record<string, unknown> | null): string {
 .diff-header {
     padding: 8px 12px;
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: var(--weight-semibold);
+
     letter-spacing: 0.05em;
     border-bottom: var(--stroke-w, 2px) solid var(--stroke-subtle);
 }
@@ -272,7 +272,7 @@ function formatJson(val: Record<string, unknown> | null): string {
     border: var(--stroke-w, 2px) solid var(--orange, #4f46e5);
     color: var(--orange, #4f46e5);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     padding: 8px 14px;
     border-radius: 10px;
     cursor: pointer;

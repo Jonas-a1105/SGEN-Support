@@ -162,7 +162,7 @@ const getQtyPrefix = (type?: string) => {
 
 .route-arrow {
     color: var(--orange);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .ref-badge {

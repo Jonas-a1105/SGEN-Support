@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Support\Infrastructure\Persistence\Eloquent;
 
+use App\Exceptions\OptimisticLockException;
+use App\Support\Config\ConfiguracionGlobal;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Modules\Support\Application\DTOs\CreateTicketDTO;
 use Modules\Support\Application\DTOs\SupportKpisDTO;
 use Modules\Support\Application\DTOs\TicketDetailDTO;
@@ -14,7 +17,6 @@ use Modules\Support\Application\DTOs\UpdateTicketDTO;
 use Modules\Support\Application\Mappers\TicketDetailMapper;
 use Modules\Support\Application\Mappers\TicketListItemMapper;
 use Modules\Support\Domain\Enums\TicketStatus;
-use App\Support\Config\ConfiguracionGlobal;
 use Modules\Support\Domain\Exceptions\InvalidTicketStatusTransitionException;
 use Modules\Support\Domain\Exceptions\RatingNotAllowedException;
 use Modules\Support\Domain\Exceptions\ReopenNotAllowedException;
@@ -41,8 +43,10 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             ->where('estado', 'en_proceso')
             ->count();
 
+        // "Resueltos" = resuelto + cerrado (autocierre). Un ticket cancelado
+        // nunca fue resuelto y no debe inflar el KPI.
         $resolvedTickets = (int) DB::table('soportes')->whereNull('deleted_at')
-            ->whereIn('estado', TicketStatus::finalValues())
+            ->whereIn('estado', [TicketStatus::RESUELTO->value, TicketStatus::CERRADO->value])
             ->count();
 
         $totalTickets = (int) DB::table('soportes')->whereNull('deleted_at')->count();
@@ -53,7 +57,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             $empId = DB::table('usuarios')->where('id', $currentUserId)->value('empleado_id');
             if ($empId) {
                 $myAssignments = (int) DB::table('soportes')
-            ->whereNull('deleted_at')
+                    ->whereNull('deleted_at')
                     ->where('empleado_id', $empId)
                     ->whereNotIn('estado', TicketStatus::finalValues())
                     ->count();
@@ -173,7 +177,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             ->all();
     }
 
-    public function findById(int $id): ?TicketDetailDTO
+    public function findById(int $id, ?int $viewerUserId = null): ?TicketDetailDTO
     {
         $ticket = DB::table('soportes')
             ->leftJoin('categorias', 'soportes.categoria_id', '=', 'categorias.id')
@@ -206,10 +210,28 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             return null;
         }
 
-        // Comentarios
-        $comments = DB::table('ticket_comentarios')
+        // Comentarios: las notas internas solo son visibles para personal
+        // operativo. El solicitante (operador) no debe verlas en el detalle.
+        if ($viewerUserId !== null) {
+            $viewerRole = (string) (DB::table('usuarios')->where('id', $viewerUserId)->value('rol') ?? '');
+        } else {
+            $viewer = auth()->user();
+            $viewerRole = $viewer !== null ? (string) ($viewer->rol ?? '') : '';
+        }
+        $canSeeInternal = in_array($viewerRole, ['admin', 'tecnico', 'consultor'], true);
+
+        $commentsQuery = DB::table('ticket_comentarios')
             ->leftJoin('usuarios', 'ticket_comentarios.usuario_id', '=', 'usuarios.id')
-            ->where('ticket_id', $id)
+            ->where('ticket_id', $id);
+
+        if (! $canSeeInternal) {
+            $commentsQuery->where(function ($q): void {
+                $q->where('ticket_comentarios.es_interno', false)
+                    ->orWhereNull('ticket_comentarios.es_interno');
+            });
+        }
+
+        $comments = $commentsQuery
             ->select([
                 'ticket_comentarios.id',
                 'ticket_comentarios.comentario',
@@ -263,7 +285,7 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 'titulo' => $dto->titulo,
                 'descripcion' => $dto->descripcion,
                 // Canal público: link de seguimiento aleatorio desde la creación.
-                'token_publico' => \Illuminate\Support\Str::random(40),
+                'token_publico' => Str::random(40),
                 'equipo_id' => $dto->equipoId,
                 'categoria_id' => $dto->categoriaId,
                 'empleado_id' => $dto->empleadoId,
@@ -309,102 +331,132 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
 
     public function updateTicket(int $id, UpdateTicketDTO $dto): bool
     {
-        $payload = ['updated_at' => Carbon::now()];
+        return DB::transaction(function () use ($id, $dto): bool {
+            // Lectura bloqueada: la transición, la firma y el versionado se
+            // evalúan sobre el mismo estado, sin TOCTOU entre leer y escribir.
+            $row = DB::table('soportes')
+                ->where('id', $id)
+                ->lockForUpdate()
+                ->first(['id', 'estado', 'firma', 'fecha', 'fecha_asignacion', 'tiempo_pausado_minutos', 'updated_at']);
 
-        if ($dto->titulo !== null) {
-            $payload['titulo'] = $dto->titulo;
-        }
-        if ($dto->descripcion !== null) {
-            $payload['descripcion'] = $dto->descripcion;
-        }
-        if ($dto->prioridad !== null) {
-            $payload['prioridad'] = $dto->prioridad;
-        }
-        if ($dto->estado !== null) {
-            $currentRow = DB::table('soportes')->where('id', $id)->first(['id', 'estado']);
-            if ($currentRow === null) {
+            if ($row === null) {
                 throw TicketNotFoundException::withId($id);
             }
 
-            $current = TicketStatus::tryFromString((string) $currentRow->estado);
-            $target = TicketStatus::tryFromString((string) $dto->estado);
-
-            if (! $current->canTransitionTo($target)) {
-                throw InvalidTicketStatusTransitionException::from($current, $target);
+            // Un ticket firmado es evidencia probatoria: no admite cambios.
+            if ($row->firma !== null) {
+                throw new \DomainException('El ticket ya está firmado: no admite modificaciones.');
             }
 
-            $payload['estado'] = $dto->estado;
-            if ($dto->estado === 'resuelto') {
-                $now = Carbon::now();
-                $payload['fecha_resolucion'] = $now;
-                $payload['fecha_cierre'] = $now;
+            $payload = ['updated_at' => Carbon::now()];
 
-                $ticket = DB::table('soportes')->where('id', $id)->first();
-                if ($ticket) {
-                    $start = $ticket->fecha_asignacion ? Carbon::parse($ticket->fecha_asignacion) : ($ticket->fecha ? Carbon::parse($ticket->fecha) : $now);
-                    $elapsed = max(1, (int) round(abs($now->diffInMinutes($start))));
-                    $paused = (int) ($ticket->tiempo_pausado_minutos ?? 0);
-                    $payload['tiempo_atencion_minutos'] = max(1, $elapsed - $paused);
+            if ($dto->titulo !== null) {
+                $payload['titulo'] = $dto->titulo;
+            }
+            if ($dto->descripcion !== null) {
+                $payload['descripcion'] = $dto->descripcion;
+            }
+            if ($dto->prioridad !== null) {
+                $payload['prioridad'] = $dto->prioridad;
+            }
+
+            if ($dto->estado !== null) {
+                $current = TicketStatus::tryFromString((string) $row->estado);
+                $target = TicketStatus::tryFromString((string) $dto->estado);
+
+                if (! $current->canTransitionTo($target)) {
+                    throw InvalidTicketStatusTransitionException::from($current, $target);
                 }
 
-                if (! empty($dto->solucion)) {
-                    $payload['solucion'] = $dto->solucion;
-                    $actingUserId = (int) auth()->id();
+                $payload['estado'] = $dto->estado;
+
+                if ($target === TicketStatus::RESUELTO) {
+                    // La resolución exige solución verificable: sin esto se
+                    // cierra un ticket sin dejar rastro técnico.
+                    $solucion = trim((string) ($dto->solucion ?? ''));
+                    if (mb_strlen($solucion) < 10) {
+                        throw new \DomainException('Para resolver un ticket debes registrar una solución de al menos 10 caracteres.');
+                    }
+
+                    $now = Carbon::now();
+                    $payload['fecha_resolucion'] = $now;
+                    $payload['fecha_cierre'] = $now;
+                    $payload['solucion'] = $solucion;
+
+                    $start = $row->fecha_asignacion ? Carbon::parse($row->fecha_asignacion) : ($row->fecha ? Carbon::parse($row->fecha) : $now);
+                    $elapsed = max(1, (int) round(abs($now->diffInMinutes($start))));
+                    $paused = (int) ($row->tiempo_pausado_minutos ?? 0);
+
+                    if ((string) $row->estado === TicketStatus::EN_ESPERA->value && $row->updated_at !== null) {
+                        // Resolver desde una pausa abierta: sus minutos también
+                        // se descuentan del tiempo de atención.
+                        $paused += max(0, (int) round(abs($now->diffInMinutes(Carbon::parse($row->updated_at)))));
+                    }
+
+                    $payload['tiempo_atencion_minutos'] = max(1, $elapsed - $paused);
+
                     DB::table('ticket_comentarios')->insert([
                         'ticket_id' => $id,
-                        'usuario_id' => $actingUserId,
-                        'comentario' => "Ticket RESUELTO. Solución técnica: {$dto->solucion}",
+                        'usuario_id' => (int) auth()->id(),
+                        'comentario' => "Ticket RESUELTO. Solución técnica: {$solucion}",
                         'es_interno' => false,
                         'fecha' => $now,
                     ]);
+                } elseif ($target === TicketStatus::CERRADO || $target === TicketStatus::CANCELADO) {
+                    // El ciclo de vida termina: cerrado por conclusión o cancelado por anulación.
+                    $payload['fecha_cierre'] = Carbon::now();
                 }
-            } elseif ($dto->estado === 'cerrado' || $dto->estado === 'cancelado') {
-                // El ciclo de vida termina: cerrado por conclusión o cancelado por anulación.
-                $payload['fecha_cierre'] = Carbon::now();
-            }
-        }
-        if ($dto->empleadoId !== null) {
-            $payload['empleado_id'] = $dto->empleadoId;
-        }
-        if ($dto->categoriaId !== null) {
-            $payload['categoria_id'] = $dto->categoriaId;
-        }
-        if ($dto->fechaCierre !== null) {
-            $payload['fecha_cierre'] = $dto->fechaCierre;
-        }
-        if ($dto->solucion !== null) {
-            $payload['solucion'] = $dto->solucion;
-        }
-        if ($dto->tiempoAtencionMinutos !== null) {
-            $payload['tiempo_atencion_minutos'] = $dto->tiempoAtencionMinutos;
-        }
-        if ($dto->firma !== null) {
-            // La firma también puede llegar dentro de la resolución del ticket;
-            // conserva la misma evidencia probatoria y la misma inmutabilidad.
-            $firmaActual = DB::table('soportes')->where('id', $id)->value('firma');
-            if ($firmaActual !== null) {
-                throw SignatureAlreadyRegisteredException::forTicket($id);
             }
 
-            $payload['firma'] = $dto->firma;
-            $payload += self::probatorySignaturePayload($dto->firma, $dto->firmaIp ?? '0.0.0.0', $dto->firmaUserAgent);
-        }
+            if ($dto->empleadoId !== null) {
+                $payload['empleado_id'] = $dto->empleadoId;
+            }
+            if ($dto->categoriaId !== null) {
+                $payload['categoria_id'] = $dto->categoriaId;
+            }
+            // `fecha_cierre` y `tiempo_atencion_minutos` ya no viajan en el
+            // update general (el request no los acepta): solo el flujo
+            // dedicado de fecha de cierre puede fijarlos.
+            if ($dto->fechaCierre !== null) {
+                $payload['fecha_cierre'] = $dto->fechaCierre;
+            }
+            if ($dto->solucion !== null && ! isset($payload['solucion'])) {
+                $payload['solucion'] = $dto->solucion;
+            }
+            if ($dto->tiempoAtencionMinutos !== null && ! isset($payload['tiempo_atencion_minutos'])) {
+                $payload['tiempo_atencion_minutos'] = $dto->tiempoAtencionMinutos;
+            }
+            if ($dto->firma !== null) {
+                // La firma dentro de la resolución conserva la misma evidencia
+                // probatoria; solo se firma al resolver o un ticket ya resuelto.
+                $target = $dto->estado !== null
+                    ? TicketStatus::tryFromString((string) $dto->estado)
+                    : TicketStatus::tryFromString((string) $row->estado);
 
-        // #22: versionado optimista del ticket. Si el editor traía una versión
-        // vista y ya cambió, se rechaza con 409 y no se pisa nada en silencio.
-        $payload['version'] = DB::raw('version + 1');
-        $query = DB::table('soportes')->where('id', $id);
-        if ($dto->version !== null) {
-            $query->where('version', $dto->version);
-        }
+                if (! in_array($target, [TicketStatus::RESUELTO, TicketStatus::CERRADO], true)) {
+                    throw new \DomainException('Solo se puede firmar un ticket resuelto o cerrado.');
+                }
 
-        $actualizadas = $query->update($payload);
-        if ($actualizadas === 0 && $dto->version !== null) {
-            // ¿Existe aún? Distingo "no hay versión" de "la fila desapareció".
-            throw \App\Exceptions\OptimisticLockException::forEntity('Ticket', $id);
-        }
+                $payload['firma'] = $dto->firma;
+                $payload += self::probatorySignaturePayload($dto->firma, $dto->firmaIp ?? '0.0.0.0', $dto->firmaUserAgent);
+            }
 
-        return $actualizadas > 0;
+            // #22: versionado optimista del ticket. Si el editor traía una versión
+            // vista y ya cambió, se rechaza con 409 y no se pisa nada en silencio.
+            $payload['version'] = DB::raw('version + 1');
+            $query = DB::table('soportes')->where('id', $id);
+            if ($dto->version !== null) {
+                $query->where('version', $dto->version);
+            }
+
+            $actualizadas = $query->update($payload);
+            if ($actualizadas === 0 && $dto->version !== null) {
+                // ¿Existe aún? Distingo "no hay versión" de "la fila desapareció".
+                throw OptimisticLockException::forEntity('Ticket', $id);
+            }
+
+            return $actualizadas > 0;
+        });
     }
 
     public function deleteTicket(int $id): bool
@@ -418,6 +470,35 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
 
     public function reassignTechnician(int $id, int $employeeId): bool
     {
+        // El técnico debe existir, estar vigente y ser personal operativo:
+        // asignar tickets a empleados de baja o consultores corrompe la bandeja.
+        $empleado = DB::table('empleados')
+            ->where('id', $employeeId)
+            ->whereNull('deleted_at')
+            ->first(['id', 'rol']);
+
+        if ($empleado === null) {
+            throw new \DomainException("El empleado #{$employeeId} no existe o está dado de baja.");
+        }
+
+        if ((string) $empleado->rol === 'consultor') {
+            throw new \DomainException('Solo personal técnico o administrador puede atender tickets.');
+        }
+
+        // Un ticket terminado no se reasigna: primero debe reabrirse.
+        $ticket = DB::table('soportes')
+            ->where('id', $id)
+            ->whereNull('deleted_at')
+            ->first(['id', 'estado']);
+
+        if ($ticket === null) {
+            throw TicketNotFoundException::withId($id);
+        }
+
+        if (TicketStatus::tryFromString((string) $ticket->estado)->isFinal()) {
+            throw new \DomainException('No se puede reasignar un ticket finalizado (resuelto, cerrado o cancelado).');
+        }
+
         return DB::table('soportes')->where('id', $id)->update([
             'empleado_id' => $employeeId,
             'fecha_asignacion' => Carbon::now(),
@@ -481,11 +562,30 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
 
     public function pauseTicket(int $ticketId, string $motivo, Carbon $pausedAt): bool
     {
-        return DB::table('soportes')->where('id', $ticketId)->update([
-            'estado' => 'en_espera',
-            'motivo_pausa' => $motivo,
-            'updated_at' => Carbon::now(),
-        ]) > 0;
+        return DB::transaction(function () use ($ticketId, $motivo, $pausedAt): bool {
+            $ticket = DB::table('soportes')
+                ->where('id', $ticketId)
+                ->lockForUpdate()
+                ->first(['id', 'estado']);
+
+            if ($ticket === null) {
+                throw TicketNotFoundException::withId($ticketId);
+            }
+
+            $current = TicketStatus::tryFromString((string) $ticket->estado);
+
+            // Solo se pausa trabajo en curso: pausar un estado terminal lo
+            // devolvería a EN_ESPERA resucitando el ciclo de vida.
+            if (! in_array($current, [TicketStatus::PENDIENTE, TicketStatus::EN_PROCESO], true)) {
+                throw InvalidTicketStatusTransitionException::from($current, TicketStatus::EN_ESPERA);
+            }
+
+            return DB::table('soportes')->where('id', $ticketId)->update([
+                'estado' => 'en_espera',
+                'motivo_pausa' => $motivo,
+                'updated_at' => $pausedAt,
+            ]) > 0;
+        });
     }
 
     public function resumeTicket(int $ticketId, ?Carbon $resumedAt = null): bool
@@ -502,29 +602,34 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 return false;
             }
 
+            $current = TicketStatus::tryFromString((string) $ticket->estado);
+
+            // Reanudar solo tiene sentido desde una pausa real: cualquier otro
+            // estado se rechaza en vez de forzar EN_PROCESO a ciegas.
+            if ($current !== TicketStatus::EN_ESPERA) {
+                throw InvalidTicketStatusTransitionException::from($current, TicketStatus::EN_PROCESO);
+            }
+
+            $lastUpdated = $ticket->updated_at ? Carbon::parse($ticket->updated_at) : $resumedAt;
+            $elapsedMinutes = max(0, (int) round(abs($resumedAt->diffInMinutes($lastUpdated))));
+
             $payload = [
                 'estado' => 'en_proceso',
                 'motivo_pausa' => null,
+                'tiempo_pausado_minutos' => (int) ($ticket->tiempo_pausado_minutos ?? 0) + $elapsedMinutes,
                 'updated_at' => $resumedAt,
             ];
 
-            if ($ticket->estado === 'en_espera') {
-                $lastUpdated = $ticket->updated_at ? Carbon::parse($ticket->updated_at) : $resumedAt;
-                $elapsedMinutes = max(0, (int) round(abs($resumedAt->diffInMinutes($lastUpdated))));
-                $pausedMinutes = (int) ($ticket->tiempo_pausado_minutos ?? 0) + $elapsedMinutes;
-                $payload['tiempo_pausado_minutos'] = $pausedMinutes;
-
-                if ($ticket->fecha_vencimiento !== null) {
-                    // Extensión de fecha de vencimiento en TIEMPO LABORAL real:
-                    // pausar sobre domingo/feriado no rellena horas inútiles.
-                    $payload['fecha_vencimiento'] = SlaPolicy::fromConfig()
-                        ->withFeriados(self::feriadosProximos())
-                        ->extendDueDateBusiness(
-                            CarbonImmutable::parse((string) $ticket->fecha_vencimiento),
-                            $elapsedMinutes
-                        )
-                        ->toDateTimeString();
-                }
+            if ($ticket->fecha_vencimiento !== null) {
+                // Extensión de fecha de vencimiento en TIEMPO LABORAL real:
+                // pausar sobre domingo/feriado no rellena horas inútiles.
+                $payload['fecha_vencimiento'] = SlaPolicy::fromConfig()
+                    ->withFeriados(self::feriadosProximos())
+                    ->extendDueDateBusiness(
+                        CarbonImmutable::parse((string) $ticket->fecha_vencimiento),
+                        $elapsedMinutes
+                    )
+                    ->toDateTimeString();
             }
 
             return DB::table('soportes')->where('id', $ticketId)->update($payload) > 0;
@@ -549,15 +654,15 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             ->update(['deleted_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
     }
 
-    public function saveSignature(int $ticketId, string $signatureData, string $ipAddress, ?string $userAgent): bool
+    public function saveSignature(int $ticketId, string $signatureData, string $ipAddress, ?string $userAgent, ?int $actingUserId = null): bool
     {
-        return DB::transaction(function () use ($ticketId, $signatureData, $ipAddress, $userAgent): bool {
+        return DB::transaction(function () use ($ticketId, $signatureData, $ipAddress, $userAgent, $actingUserId): bool {
             // Lock de fila: dos envíos simultáneos no pueden reescribir la
             // conformidad firmada ni dejarla a medias.
             $row = DB::table('soportes')
                 ->where('id', $ticketId)
                 ->lockForUpdate()
-                ->first(['id', 'firma']);
+                ->first(['id', 'firma', 'estado', 'usuario_creacion_id']);
 
             if ($row === null) {
                 throw TicketNotFoundException::withId($ticketId);
@@ -565,6 +670,26 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
 
             if ($row->firma !== null) {
                 throw SignatureAlreadyRegisteredException::forTicket($ticketId);
+            }
+
+            // La conformidad se firma sobre un ciclo cerrado, no sobre un
+            // ticket en curso (evita firmar preventivamente y bloquear cambios).
+            $estado = TicketStatus::tryFromString((string) $row->estado);
+            if (! in_array($estado, [TicketStatus::RESUELTO, TicketStatus::CERRADO], true)) {
+                throw new \DomainException("Solo se puede firmar un ticket resuelto o cerrado (estado actual: {$estado->label()}).");
+            }
+
+            // Firmante legítimo: el solicitante o personal operativo actuando
+            // en su nombre. Nunca un tercero ajeno al ticket.
+            if ($actingUserId !== null && $actingUserId > 0) {
+                $rol = DB::table('usuarios')->where('id', $actingUserId)->value('rol');
+                $esPersonal = in_array((string) $rol, ['admin', 'tecnico'], true);
+                $esSolicitante = $row->usuario_creacion_id !== null
+                    && (int) $row->usuario_creacion_id === $actingUserId;
+
+                if (! $esPersonal && ! $esSolicitante) {
+                    throw new AccessDeniedHttpException("Solo el solicitante o el personal operativo puede firmar el ticket #{$ticketId}.");
+                }
             }
 
             return DB::table('soportes')->where('id', $ticketId)->update([
@@ -629,16 +754,9 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 throw TicketNotFoundException::withId($ticketId);
             }
 
-            // La legalidad de la transición la dicta la máquina de estados
-            // del dominio: un ticket CERRADO jamás puede reabrirse.
-            $current = TicketStatus::tryFromString((string) $ticket->estado);
-
-            if (! $current->canTransitionTo(TicketStatus::EN_PROCESO)) {
-                throw InvalidTicketStatusTransitionException::from($current, TicketStatus::EN_PROCESO);
-            }
-
             // Regla #31 · actor legítimo: el solicitante, o personal operativo
-            // (técnico/administrador) actuando en su nombre.
+            // (técnico/administrador) actuando en su nombre. La autorización
+            // se valida PRIMERO para no exponer transiciones de estado a un intruso.
             $actingUserId = (int) ($userId ?? auth()->id());
             if ($actingUserId > 0) {
                 $rol = DB::table('usuarios')->where('id', $actingUserId)->value('rol');
@@ -652,8 +770,18 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
                 }
             }
 
+            // La legalidad de la transición la dicta la máquina de estados
+            // del dominio: un ticket CERRADO jamás puede reabrirse. Además la
+            // reapertura solo aplica a un ticket que estuvo resuelto: usarla
+            // sobre pendiente/en_proceso saltaría el flujo normal.
+            $current = TicketStatus::tryFromString((string) $ticket->estado);
+
+            if ($current !== TicketStatus::RESUELTO) {
+                throw InvalidTicketStatusTransitionException::from($current, TicketStatus::EN_PROCESO);
+            }
+
             // Regla #31 · ventana temporal desde la resolución real.
-            if ($current === TicketStatus::RESUELTO && $ticket->fecha_resolucion !== null) {
+            if ($ticket->fecha_resolucion !== null) {
                 $dias = max(1, ConfiguracionGlobal::entero('tickets.ventana_reapertura_dias', 7));
                 $limite = Carbon::parse($ticket->fecha_resolucion)->addDays($dias);
 
@@ -665,6 +793,9 @@ final class EloquentSupportRepository implements SupportRepositoryInterface
             $updated = DB::table('soportes')->where('id', $ticketId)->update([
                 'estado' => TicketStatus::EN_PROCESO->value,
                 'fecha_cierre' => null,
+                // Sin esto la ventana de reapertura seguía corriendo desde la
+                // resolución vieja y el segundo cierre quedaba mal fechado.
+                'fecha_resolucion' => null,
                 'motivo_pausa' => null,
                 'updated_at' => Carbon::now(),
             ]) > 0;

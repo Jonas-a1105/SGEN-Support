@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\About;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -17,7 +18,7 @@ final class AboutControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'about_visitor'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -30,7 +31,7 @@ final class AboutControllerTest extends TestCase
         $response = $this->get('/acerca');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('About/Index')
             ->has('about')
             ->where('about.app_name', 'SGEN-Support')

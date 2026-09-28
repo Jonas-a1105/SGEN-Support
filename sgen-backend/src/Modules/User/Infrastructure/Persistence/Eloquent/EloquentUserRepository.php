@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Infrastructure\Persistence\Eloquent;
 
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Modules\Support\Domain\Enums\TicketStatus;
@@ -28,10 +29,10 @@ final class EloquentUserRepository implements UserRepositoryInterface
                 'usuarios.username',
                 'usuarios.rol',
                 'usuarios.tema',
-            'usuarios.departamento_id',
-            'usuarios.activo',
-            'departamentos.nombre as departamento_nombre',
-            'usuarios.empleado_id',
+                'usuarios.departamento_id',
+                'usuarios.activo',
+                'departamentos.nombre as departamento_nombre',
+                'usuarios.empleado_id',
                 'empleados.nombre as empleado_nombre',
                 'empleados.apellido as empleado_apellido',
                 'empleados.email as empleado_email'
@@ -126,7 +127,7 @@ final class EloquentUserRepository implements UserRepositoryInterface
 
     public function save(SystemUser $user): int
     {
-        return (int) DB::table('usuarios')->insertGetId([
+        $id = (int) DB::table('usuarios')->insertGetId([
             'username' => $user->username(),
             'password' => $user->password(),
             'rol' => $user->role()->value,
@@ -139,6 +140,13 @@ final class EloquentUserRepository implements UserRepositoryInterface
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // La escritura va por Query Builder (no dispara eventos Eloquent):
+        // el rol Spatie se sincroniza aquí para que los permisos coincidan
+        // con la columna `rol` desde el primer login.
+        $this->syncSpatieRole($id);
+
+        return $id;
     }
 
     public function findByEmpleadoId(int $empleadoId): ?SystemUser
@@ -179,6 +187,10 @@ final class EloquentUserRepository implements UserRepositoryInterface
                 'email' => $user->email(),
                 'updated_at' => now(),
             ]);
+
+        // Sin esto, degradar un admin solo cambiaba la columna: el rol Spatie
+        // seguía otorgando permisos de administrador.
+        $this->syncSpatieRole($user->id());
     }
 
     public function updatePassword(int $id, string $hashedPassword, bool $mustChange = false): void
@@ -205,15 +217,39 @@ final class EloquentUserRepository implements UserRepositoryInterface
     public function setActive(int $id, bool $active): void
     {
         DB::transaction(function () use ($id, $active): void {
-            DB::table('usuarios')
-                ->where('id', $id)
-                ->update(['activo' => $active, 'updated_at' => now()]);
+            $changes = ['activo' => $active, 'updated_at' => now()];
+
+            if (! $active) {
+                // Sin "recordarme": la cookie de recuerdo no debe resucitar
+                // una cuenta desactivada en la siguiente petición.
+                $changes['remember_token'] = null;
+            }
+
+            DB::table('usuarios')->where('id', $id)->update($changes);
 
             if (! $active) {
                 // Revocación inmediata de sesiones vivas de la cuenta desactivada.
                 DB::table('sessions')->where('user_id', $id)->delete();
+                $this->closeOpenSessionLogs($id, 'desactivacion');
             }
         });
+    }
+
+    /**
+     * Cierra los registros forenses de sesión que quedaron abiertos para que
+     * la auditoría no siga mostrando sesiones "activas" de una cuenta revocada.
+     */
+    private function closeOpenSessionLogs(int $userId, string $motivo): void
+    {
+        DB::table('sesiones_log')
+            ->where('usuario_id', $userId)
+            ->whereNull('fecha_fin')
+            ->update(['fecha_fin' => now(), 'motivo_cierre' => $motivo]);
+    }
+
+    private function syncSpatieRole(int $id): void
+    {
+        User::query()->find($id)?->syncSpatieRoleFromColumn();
     }
 
     public function delete(int $id): void

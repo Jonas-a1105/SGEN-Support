@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Application\UseCases;
 
+use App\Support\Export\CsvSanitizer;
 use Modules\Reports\Domain\Ports\ReportsRepositoryInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -48,17 +49,17 @@ final readonly class ExportInventoryExcelUseCase
                 $estadoStock = $stockActual <= $stockMinimo ? 'Bajo Stock' : 'Óptimo';
 
                 fputcsv($output, [
-                    $item->id,
-                    $item->codigo,
-                    $item->nombre,
-                    $item->categoria_nombre ?? $item->categoria ?? 'General',
-                    $stockActual,
-                    $stockMinimo,
-                    $item->unidad_medida ?? 'uds',
-                    number_format($precioCompra, 2, '.', ''),
-                    number_format($valuacion, 2, '.', ''),
-                    $item->ubicacion ?? 'Almacén Central',
-                    $estadoStock,
+                    CsvSanitizer::cell($item->id),
+                    CsvSanitizer::cell($item->codigo),
+                    CsvSanitizer::cell($item->nombre),
+                    CsvSanitizer::cell($item->categoria_nombre ?? $item->categoria ?? 'General'),
+                    CsvSanitizer::cell($stockActual),
+                    CsvSanitizer::cell($stockMinimo),
+                    CsvSanitizer::cell($item->unidad_medida ?? 'uds'),
+                    CsvSanitizer::cell(number_format($precioCompra, 2, '.', '')),
+                    CsvSanitizer::cell(number_format($valuacion, 2, '.', '')),
+                    CsvSanitizer::cell($item->ubicacion ?? 'Almacén Central'),
+                    CsvSanitizer::cell($estadoStock),
                 ]);
             }
 

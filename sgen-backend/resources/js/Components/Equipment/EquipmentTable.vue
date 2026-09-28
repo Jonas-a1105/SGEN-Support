@@ -140,7 +140,7 @@ const getStatusClass = (status: string) => {
     background: var(--stroke-subtle);
     border: var(--stroke-w) solid var(--stroke);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
 }
 

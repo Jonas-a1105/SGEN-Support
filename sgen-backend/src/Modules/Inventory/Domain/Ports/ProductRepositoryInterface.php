@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Inventory\Domain\Ports;
 
 use Modules\Inventory\Application\DTOs\TransferStockDTO;
+use Modules\Inventory\Domain\Enums\MovementType;
 use Modules\Inventory\Domain\Models\Product;
 
 interface ProductRepositoryInterface
@@ -12,6 +13,13 @@ interface ProductRepositoryInterface
     public function findById(int $id): ?Product;
 
     public function findBySku(string $sku): ?Product;
+
+    /**
+     * Ajuste de stock atómico: bloquea el ítem (lockForUpdate), recalcula el
+     * saldo sobre el valor vigente e inserta stock y movimiento en una única
+     * transacción. El delta de AJUSTE es el stock objetivo.
+     */
+    public function adjustStock(int $productId, MovementType $type, int $quantity, int $userId, string $reason): Product;
 
     /**
      * @param  array<string, mixed>  $filters

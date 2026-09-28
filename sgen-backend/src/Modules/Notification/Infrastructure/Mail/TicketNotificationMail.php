@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Notification\Infrastructure\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -13,8 +14,11 @@ use Illuminate\Queue\SerializesModels;
 /**
  * Correo transaccional del ciclo de vida del ticket. Diseño deliberadamente
  * simple: texto plano HTML básico con el enlace al ticket.
+ *
+ * Se entrega por cola: el envío SMTP nunca bloquea (ni tumba) la operación
+ * que originó el correo.
  */
-final class TicketNotificationMail extends Mailable
+final class TicketNotificationMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

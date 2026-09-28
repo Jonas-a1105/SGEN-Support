@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Application\UseCases;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Modules\User\Application\DTOs\CreateUserDTO;
 use Modules\User\Domain\Enums\UserRole;
@@ -28,9 +29,24 @@ final readonly class CreateUserUseCase
             theme: 'light',
             employeeId: $dto->empleadoId,
             departmentId: $dto->departamentoId,
-            email: $dto->email
+            email: $dto->email ?? $this->employeeEmail($dto->empleadoId)
         );
 
         return $this->repository->save($user);
+    }
+
+    /**
+     * Hereda el correo del empleado vinculado cuando la cuenta no recibe uno
+     * directo: sin email no existe recuperación de contraseña self-service.
+     */
+    private function employeeEmail(?int $empleadoId): ?string
+    {
+        if ($empleadoId === null) {
+            return null;
+        }
+
+        $email = DB::table('empleados')->where('id', $empleadoId)->value('email');
+
+        return $email !== null && $email !== '' ? (string) $email : null;
     }
 }

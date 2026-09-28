@@ -7,6 +7,7 @@ namespace Tests\Feature\EndToEnd;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -36,7 +37,7 @@ final class DepartmentEmployeeLifecycleE2ETest extends TestCase
         $this->adminUser = User::firstOrCreate(
             ['username' => 'admin_e2e_dept_emp'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret123'),
+                'password' => Hash::make('secret123'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

@@ -355,7 +355,7 @@ const stepHeaders = [
 
 .wizard-hero-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
     line-height: 1.2;
@@ -383,7 +383,7 @@ const stepHeaders = [
 
 .panel-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }

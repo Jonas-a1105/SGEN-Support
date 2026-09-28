@@ -13,8 +13,7 @@ final class SupportKpisDTO
         public readonly int $myAssignments = 0,
         public readonly int $totalTickets = 0,
         public readonly int $resolvedTickets = 0
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, int>

@@ -92,11 +92,11 @@ const technicianOptions = computed(() =>
     display: grid;
     place-items: center;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 .tf-section-title {
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0;
 }
@@ -117,8 +117,8 @@ const technicianOptions = computed(() =>
 }
 .tf-field-label {
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: var(--weight-semibold);
+
     letter-spacing: 0.04em;
     color: var(--text-muted, #8e9199);
 }

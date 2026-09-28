@@ -96,7 +96,7 @@ const isFontAwesome = (ic?: string): boolean => {
 .empty-title {
     margin: 0 0 6px 0;
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
 }
 

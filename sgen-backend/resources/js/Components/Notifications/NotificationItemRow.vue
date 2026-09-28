@@ -159,6 +159,6 @@ const getIconClass = (tipo?: string): string => {
 .notif-date {
     font-size: 10px;
     color: var(--text-dim);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 </style>

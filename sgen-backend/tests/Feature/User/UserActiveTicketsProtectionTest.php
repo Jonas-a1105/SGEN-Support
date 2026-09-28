@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -29,7 +30,7 @@ final class UserActiveTicketsProtectionTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_tickets_guard_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $equipo = DB::table('equipos')->first();
@@ -62,7 +63,7 @@ final class UserActiveTicketsProtectionTest extends TestCase
 
         $usuarioId = (int) DB::table('usuarios')->insertGetId([
             'username' => 'tecnico_guard_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+            'password' => Hash::make('secret'),
             'rol' => 'tecnico',
             'tema' => 'light',
             'empleado_id' => $empleadoId,

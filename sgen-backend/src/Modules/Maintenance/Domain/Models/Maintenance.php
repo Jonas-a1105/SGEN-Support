@@ -48,8 +48,8 @@ final class Maintenance
         ?float $cost = null
     ): self {
         $status = self::determineInitialStatus($scheduledDate);
-        
-        $nextDate = $frequency->isRecurring() 
+
+        $nextDate = $frequency->isRecurring()
             ? self::calculateNextDate($scheduledDate, $frequency)
             : null;
 
@@ -69,17 +69,19 @@ final class Maintenance
 
     private static function determineInitialStatus(DateTimeImmutable $scheduledDate): MaintenanceStatus
     {
-        $now = new DateTimeImmutable();
-        return $scheduledDate <= $now 
-            ? MaintenanceStatus::EN_PROCESO 
+        $now = new DateTimeImmutable;
+
+        return $scheduledDate <= $now
+            ? MaintenanceStatus::EN_PROCESO
             : MaintenanceStatus::PENDIENTE;
     }
 
     private static function calculateNextDate(
-        DateTimeImmutable $fromDate, 
+        DateTimeImmutable $fromDate,
         MaintenanceFrequency $frequency
     ): DateTimeImmutable {
         $months = $frequency->monthsInterval();
+
         return $fromDate->modify("+{$months} months");
     }
 
@@ -98,31 +100,31 @@ final class Maintenance
         }
 
         $this->status = MaintenanceStatus::COMPLETADO;
-        
+
         if ($observations !== null) {
             $this->observations = trim($observations);
         }
-        
+
         if ($finalCost !== null) {
             $this->cost = $finalCost;
         }
-        
+
         if ($performedBy !== null) {
             $this->performedBy = trim($performedBy);
         }
-        
+
         if ($durationMinutes !== null) {
             $this->durationMinutes = $durationMinutes;
         }
 
         if ($this->frequency->isRecurring()) {
-            $this->nextDate = self::calculateNextDate(new DateTimeImmutable(), $this->frequency);
+            $this->nextDate = self::calculateNextDate(new DateTimeImmutable, $this->frequency);
         }
     }
 
     public function postpone(DateTimeImmutable $newDate): void
     {
-        if (!$this->status->isActive()) {
+        if (! $this->status->isActive()) {
             throw new DomainException('Solo se puede posponer un mantenimiento pendiente o en proceso.');
         }
 
@@ -163,13 +165,13 @@ final class Maintenance
 
     public function isDueWithin(int $days, DateTimeInterface $referenceTime): bool
     {
-        if (!$this->status->isActive() || $this->nextDate === null) {
+        if (! $this->status->isActive() || $this->nextDate === null) {
             return false;
         }
 
-        $threshold = (new DateTimeImmutable('@' . $referenceTime->getTimestamp()))
+        $threshold = (new DateTimeImmutable('@'.$referenceTime->getTimestamp()))
             ->modify("+{$days} days");
-        
+
         return $this->nextDate <= $threshold;
     }
 

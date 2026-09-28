@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Application\UseCases;
 
+use App\Support\Export\CsvSanitizer;
 use Modules\Reports\Domain\Ports\ReportsRepositoryInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -42,17 +43,17 @@ final readonly class ExportMaintenanceExcelUseCase
 
             foreach ($orders as $order) {
                 fputcsv($output, [
-                    '#M-'.$order->id,
-                    $order->equipo_codigo ?? 'N/A',
-                    ucfirst((string) ($order->equipo_tipo ?? 'Genérico')),
-                    ucfirst((string) ($order->tipo_mantenimiento ?? 'Preventivo')),
-                    ucfirst(str_replace('_', ' ', (string) ($order->estado ?? 'Pendiente'))),
-                    ucfirst((string) ($order->frecuencia ?? 'Única')),
-                    $order->fecha ?? 'Sin fecha',
-                    $order->proxima_fecha ?? 'N/A',
-                    $order->tecnico_nombre ?? 'Sin asignar',
-                    number_format((float) ($order->costo ?? 0), 2, '.', ''),
-                    $order->descripcion ?? '',
+                    CsvSanitizer::cell('#M-'.$order->id),
+                    CsvSanitizer::cell($order->equipo_codigo ?? 'N/A'),
+                    CsvSanitizer::cell(ucfirst((string) ($order->equipo_tipo ?? 'Genérico'))),
+                    CsvSanitizer::cell(ucfirst((string) ($order->tipo_mantenimiento ?? 'Preventivo'))),
+                    CsvSanitizer::cell(ucfirst(str_replace('_', ' ', (string) ($order->estado ?? 'Pendiente')))),
+                    CsvSanitizer::cell(ucfirst((string) ($order->frecuencia ?? 'Única'))),
+                    CsvSanitizer::cell($order->fecha ?? 'Sin fecha'),
+                    CsvSanitizer::cell($order->proxima_fecha ?? 'N/A'),
+                    CsvSanitizer::cell($order->tecnico_nombre ?? 'Sin asignar'),
+                    CsvSanitizer::cell(number_format((float) ($order->costo ?? 0), 2, '.', '')),
+                    CsvSanitizer::cell($order->descripcion ?? ''),
                 ]);
             }
 

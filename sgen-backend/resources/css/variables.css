@@ -14,15 +14,15 @@
     --stroke-hover: #454952;
 
     /* Tipografía y Textos */
-    --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-    --font-mono: "JetBrains Mono", monospace;
+    --font-sans: "Segoe UI Semibold", "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    --font-mono: "Segoe UI Semibold", "Segoe UI", monospace;
     --text: #f4f4f6;
     --text-muted: #8e9199;
     --text-dim: #60636d;
-    --weight-normal: 400;
-    --weight-medium: 500;
+    --weight-normal: 600;
+    --weight-medium: 600;
     --weight-semibold: 600;
-    --weight-bold: 700;
+    --weight-bold: 600;
     --text-xs: 12px;
     --text-sm: 13px;
     --text-base: 14px;

@@ -11,8 +11,7 @@ final class CreateDepartmentUseCase
 {
     public function __construct(
         private readonly DepartmentRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(CreateDepartmentDTO $dto): int
     {

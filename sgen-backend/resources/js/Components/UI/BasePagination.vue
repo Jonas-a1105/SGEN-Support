@@ -197,7 +197,7 @@ function handlePerPageChange(pp: number) {
 
 .pagination-info strong {
     color: var(--text);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .per-page-control {
@@ -280,7 +280,7 @@ function handlePerPageChange(pp: number) {
     background: var(--orange);
     border-color: var(--orange);
     color: #ffffff;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .nav-btn svg {

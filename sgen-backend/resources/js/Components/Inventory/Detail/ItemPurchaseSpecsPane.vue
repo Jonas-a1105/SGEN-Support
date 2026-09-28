@@ -78,7 +78,7 @@ defineProps<{
 
 .panel-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -113,7 +113,7 @@ defineProps<{
 .acq-field-label {
     font-size: 11px;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
     display: block;
     margin-bottom: 2px;

@@ -23,6 +23,6 @@ final readonly class GenerateMaintenancePdfUseCase
             'generatedAt' => now()->format('d/m/Y H:i'),
         ])->setPaper('a4', 'landscape');
 
-        return $pdf->stream('Reporte_Mantenimientos_' . date('Y-m-d') . '.pdf');
+        return $pdf->stream('Reporte_Mantenimientos_'.date('Y-m-d').'.pdf');
     }
 }

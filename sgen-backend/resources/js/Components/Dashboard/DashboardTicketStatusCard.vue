@@ -108,7 +108,7 @@ const emptyMessage = computed(() => {
 
 .panel-title {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -241,7 +241,7 @@ const emptyMessage = computed(() => {
 .ticket-id {
     font-size: 12px;
     color: var(--orange);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .ticket-name {

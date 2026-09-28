@@ -20,6 +20,14 @@ final class UpdateEquipmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $estadosValidos = [
+            'disponible', 'en_uso', 'en_reparacion', 'fuera_de_servicio',
+            'en_reserva', 'prestado', 'perdido', 'nuevo', 'usado',
+            'Disponible', 'En uso', 'En Uso', 'Reparación', 'Reparacion',
+            'En Reparación', 'Fuera de Servicio', 'Fuera de servicio',
+            'En Reserva', 'Prestado', 'Perdido', 'Nuevo', 'Usado',
+        ];
+
         return [
             'codigo_inventario' => ['nullable', 'string', 'max:50'],
             'id' => ['nullable', 'string', 'max:50'],
@@ -29,8 +37,11 @@ final class UpdateEquipmentRequest extends FormRequest
             'marca' => ['nullable', 'string', 'max:100'],
             'modelo' => ['nullable', 'string', 'max:100'],
             'nombre' => ['nullable', 'string', 'max:100'],
-            'estado' => ['nullable', 'string', 'max:50'],
-            'status' => ['nullable', 'string', 'max:50'],
+            // La baja patrimonial no se escribe por edición: exige el flujo
+            // formal (motivo, acta y evidencia). El alias `status` se valida
+            // igual porque el DTO lo acepta como sinónimo de `estado`.
+            'estado' => ['nullable', 'string', 'max:50', 'in:'.implode(',', $estadosValidos)],
+            'status' => ['nullable', 'string', 'max:50', 'in:'.implode(',', $estadosValidos)],
             'departamento_id' => ['nullable', 'integer', 'exists:departamentos,id'],
             'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
             'ubicacion_fisica' => ['nullable', 'string', 'max:255'],
@@ -48,6 +59,17 @@ final class UpdateEquipmentRequest extends FormRequest
             // #22: versión vista por el lector (si llega, el UPDATE es atómico).
             'version' => ['nullable', 'integer', 'min:1'],
             'valor_compra' => ['nullable', 'numeric', 'min:0'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'estado.in' => 'El estado seleccionado no es válido para edición. La baja oficial se registra únicamente desde el proceso de baja formal.',
+            'status.in' => 'El estado seleccionado no es válido para edición. La baja oficial se registra únicamente desde el proceso de baja formal.',
         ];
     }
 }

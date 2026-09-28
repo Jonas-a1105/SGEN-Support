@@ -114,7 +114,7 @@ const completionRate = computed(() => {
 
 .dashboard-title {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -146,7 +146,7 @@ const completionRate = computed(() => {
 
 .kpi-percent {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: #ffffff;
 }
 
@@ -187,7 +187,7 @@ const completionRate = computed(() => {
 
 .kpi-card .kpi-value {
     font-size: 28px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
@@ -250,14 +250,14 @@ const completionRate = computed(() => {
 
 .date-day {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--orange);
 }
 
 .date-month {
     font-size: 11px;
     color: var(--text-muted);
-    text-transform: uppercase;
+
 }
 
 .upcoming-info {

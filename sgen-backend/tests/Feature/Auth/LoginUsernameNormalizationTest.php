@@ -7,6 +7,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -23,7 +24,7 @@ final class LoginUsernameNormalizationTest extends TestCase
     {
         User::create([
             'username' => 'MezclaCase_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('LaMisma.Clave2026'),
+            'password' => Hash::make('LaMisma.Clave2026'),
             'rol' => 'operador',
             'tema' => 'light',
         ]);

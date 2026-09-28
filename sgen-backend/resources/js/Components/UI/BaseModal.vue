@@ -80,7 +80,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px 22px; border-bottom: var(--stroke-w) solid var(--stroke-subtle);
 }
-.base-modal-title { margin: 0; font-size: 15px !important; font-weight: 700 !important; color: var(--text); }
+.base-modal-title { margin: 0; font-size: 15px !important; font-weight: var(--weight-semibold) !important; color: var(--text); }
 .base-modal-close-btn {
     background: transparent; border: 1px solid var(--stroke); color: var(--text-muted);
     cursor: pointer; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;

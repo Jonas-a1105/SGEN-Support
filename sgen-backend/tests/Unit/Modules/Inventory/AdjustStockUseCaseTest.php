@@ -45,6 +45,19 @@ final class AdjustStockUseCaseTest extends TestCase
                 return $this->prod;
             }
 
+            public function adjustStock(int $productId, MovementType $type, int $quantity, int $userId, string $reason): Product
+            {
+                $this->prod->adjustStock(
+                    delta: Quantity::fromInteger($quantity),
+                    type: $type,
+                    userId: $userId,
+                    reason: $reason
+                );
+                $this->saved = $this->prod;
+
+                return $this->prod;
+            }
+
             public function findBySku(string $sku): ?Product
             {
                 return null;

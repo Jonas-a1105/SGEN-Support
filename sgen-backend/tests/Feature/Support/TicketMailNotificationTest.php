@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Modules\Notification\Infrastructure\Mail\TicketNotificationMail;
 use Tests\TestCase;
@@ -24,7 +25,7 @@ final class TicketMailNotificationTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::firstOrCreate(['username' => 'admin_mail_test'], ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']);
+        $admin = User::firstOrCreate(['username' => 'admin_mail_test'], ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']);
 
         $empleadoId = (int) DB::table('empleados')->insertGetId([
             'nombre' => 'Tecnica', 'apellido' => 'Correo', 'email' => 'tec.correo.'.uniqid().'@empresa.test',
@@ -34,7 +35,7 @@ final class TicketMailNotificationTest extends TestCase
 
         $tecnico = User::firstOrCreate(
             ['username' => 'tec_mail_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId, 'email' => 'destino@empresa.test']
+            ['password' => Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId, 'email' => 'destino@empresa.test']
         );
 
         $ticketId = (int) DB::table('soportes')->insertGetId([
@@ -49,7 +50,7 @@ final class TicketMailNotificationTest extends TestCase
 
         $this->actingAs($admin)->post("/soportes/{$ticketId}/reasignar", ['empleado_id' => $empleadoId])->assertRedirect();
 
-        Mail::assertSent(TicketNotificationMail::class, fn ($mail) => $mail->hasTo('destino@empresa.test'));
+        Mail::assertQueued(TicketNotificationMail::class, fn ($mail) => $mail->hasTo('destino@empresa.test'));
         $this->assertDatabaseHas('notificaciones', ['usuario_id' => $tecnico->id, 'tipo' => 'ticket_asignado']);
     }
 
@@ -57,7 +58,7 @@ final class TicketMailNotificationTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::firstOrCreate(['username' => 'admin_mail_test'], ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']);
+        $admin = User::firstOrCreate(['username' => 'admin_mail_test'], ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']);
 
         $empleadoId = (int) DB::table('empleados')->insertGetId([
             'nombre' => 'Tecnica', 'apellido' => 'SinMail', 'email' => 'sinmail.'.uniqid().'@empresa.test',
@@ -67,7 +68,7 @@ final class TicketMailNotificationTest extends TestCase
 
         $tecnico = User::firstOrCreate(
             ['username' => 'tec_sinmail_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId]
+            ['password' => Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light', 'empleado_id' => $empleadoId]
         );
 
         $ticketId = (int) DB::table('soportes')->insertGetId([
@@ -79,7 +80,7 @@ final class TicketMailNotificationTest extends TestCase
 
         $this->actingAs($admin)->post("/soportes/{$ticketId}/reasignar", ['empleado_id' => $empleadoId])->assertRedirect();
 
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
         $this->assertDatabaseHas('notificaciones', ['usuario_id' => $tecnico->id, 'tipo' => 'ticket_asignado']);
     }
 }

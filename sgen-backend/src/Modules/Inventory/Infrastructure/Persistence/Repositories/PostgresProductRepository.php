@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\Inventory\Infrastructure\Persistence\Repositories;
 
-use Modules\Inventory\Infrastructure\Persistence\Eloquent\Models\EloquentProductModel;
-use Modules\Inventory\Infrastructure\Persistence\Eloquent\Models\EloquentStockMovementModel;
 use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Application\DTOs\TransferStockDTO;
+use Modules\Inventory\Domain\Enums\MovementType;
 use Modules\Inventory\Domain\Enums\ProductStatus;
+use Modules\Inventory\Domain\Exceptions\ProductNotFoundException;
 use Modules\Inventory\Domain\Models\Product;
+use Modules\Inventory\Domain\Models\StockMovement;
 use Modules\Inventory\Domain\Ports\ProductRepositoryInterface;
 use Modules\Inventory\Domain\ValueObjects\Money;
 use Modules\Inventory\Domain\ValueObjects\Quantity;
 use Modules\Inventory\Domain\ValueObjects\Sku;
+use Modules\Inventory\Infrastructure\Persistence\Eloquent\Models\EloquentProductModel;
+use Modules\Inventory\Infrastructure\Persistence\Eloquent\Models\EloquentStockMovementModel;
 
 final class PostgresProductRepository implements ProductRepositoryInterface
 {
@@ -22,6 +25,40 @@ final class PostgresProductRepository implements ProductRepositoryInterface
         $model = EloquentProductModel::find($id);
 
         return $model ? $this->toDomain($model) : null;
+    }
+
+    public function adjustStock(int $productId, MovementType $type, int $quantity, int $userId, string $reason): Product
+    {
+        return DB::transaction(function () use ($productId, $type, $quantity, $userId, $reason): Product {
+            // El lock serializa movimientos concurrentes sobre el mismo ítem:
+            // el saldo se recalcula desde el valor bloqueado, nunca desde una
+            // lectura previa que otro movimiento ya pudo dejar obsoleta.
+            $model = EloquentProductModel::query()
+                ->whereKey($productId)
+                ->lockForUpdate()
+                ->first();
+
+            if ($model === null) {
+                throw ProductNotFoundException::withId($productId);
+            }
+
+            $product = $this->toDomain($model);
+            $product->adjustStock(
+                delta: Quantity::fromInteger($quantity),
+                type: $type,
+                userId: $userId,
+                reason: $reason
+            );
+
+            $model->update([
+                'stock_actual' => $product->currentStock()->value(),
+                'updated_at' => now(),
+            ]);
+
+            $this->recordMovements((int) $model->id, $product->pullRecordedMovements());
+
+            return $this->toDomain($model->refresh());
+        });
     }
 
     public function findBySku(string $sku): ?Product
@@ -49,7 +86,9 @@ final class PostgresProductRepository implements ProductRepositoryInterface
             $query->where('categoria', $filters['categoria']);
         }
 
-        if (! empty($filters['low_stock']) && $filters['low_stock'] === true) {
+        // El query string llega como 'true'/'1'; normalizarlo evita que el
+        // filtro quede desactivado en silencio.
+        if (filter_var($filters['low_stock'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
             $query->whereColumn('stock_actual', '<=', 'stock_minimo');
         }
 
@@ -88,16 +127,7 @@ final class PostgresProductRepository implements ProductRepositoryInterface
                 $model = EloquentProductModel::create($attributes);
             }
 
-            foreach ($product->pullRecordedMovements() as $movement) {
-                EloquentStockMovementModel::create([
-                    'item_id' => $model->id,
-                    'usuario_id' => $movement->userId() > 0 ? $movement->userId() : 1,
-                    'tipo_movimiento' => $movement->type()->value,
-                    'cantidad' => (float) $movement->quantity()->value(),
-                    'motivo' => $movement->reason(),
-                    'fecha' => now(),
-                ]);
-            }
+            $this->recordMovements((int) $model->id, $product->pullRecordedMovements());
 
             return $this->toDomain($model);
         });
@@ -253,6 +283,23 @@ final class PostgresProductRepository implements ProductRepositoryInterface
                 'fecha' => now(),
             ]);
         });
+    }
+
+    /**
+     * @param  array<StockMovement>  $movements
+     */
+    private function recordMovements(int $productId, array $movements): void
+    {
+        foreach ($movements as $movement) {
+            EloquentStockMovementModel::create([
+                'item_id' => $productId,
+                'usuario_id' => $movement->userId() > 0 ? $movement->userId() : 1,
+                'tipo_movimiento' => $movement->type()->value,
+                'cantidad' => (float) $movement->quantity()->value(),
+                'motivo' => $movement->reason(),
+                'fecha' => now(),
+            ]);
+        }
     }
 
     private function toDomain(EloquentProductModel $model): Product

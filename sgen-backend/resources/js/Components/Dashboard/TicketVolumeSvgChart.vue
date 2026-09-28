@@ -20,14 +20,40 @@ interface ChartPoint {
 
 const hoveredIndex = ref<number | null>(null);
 
-const maxVal = 40;
 const baseY = 165;
 const topY = 20;
 const chartHeight = baseY - topY;
 const plotLeft = 60;
 const plotRight = 680;
 const plotWidth = plotRight - plotLeft;
-const barWidth = 32;
+
+const maxVal = computed(() => {
+    const max = Math.max(0, ...(props.data.values || []));
+    if (max <= 0) return 10;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(max)));
+    return Math.ceil(max / magnitude) * magnitude;
+});
+
+const barWidth = computed(() => {
+    const len = (props.data.values || []).length || 1;
+    return Math.max(2, Math.min(32, (plotWidth / len) * 0.6));
+});
+
+const gridLines = computed(() => {
+    const max = maxVal.value;
+    return [1, 0.75, 0.5, 0.25, 0].map((ratio) => {
+        const value = Math.round(max * ratio);
+        return {
+            y: baseY - ratio * chartHeight,
+            label: String(value),
+        };
+    });
+});
+
+const labelStep = computed(() => {
+    const len = (props.data.values || []).length;
+    return len > 12 ? Math.ceil(len / 12) : 1;
+});
 
 const chartPoints = computed<ChartPoint[]>(() => {
     const values = props.data.values || [];
@@ -39,8 +65,8 @@ const chartPoints = computed<ChartPoint[]>(() => {
 
     return values.map((val, idx) => {
         const x = plotLeft + idx * step;
-        const normalizedVal = Math.min(Math.max(val, 0), maxVal);
-        const barHeight = (normalizedVal / maxVal) * chartHeight;
+        const normalizedVal = Math.min(Math.max(val, 0), maxVal.value);
+        const barHeight = (normalizedVal / maxVal.value) * chartHeight;
         const y = baseY - barHeight;
         return {
             x,
@@ -92,17 +118,16 @@ const onPointClick = (pt: ChartPoint) => {
         >
             <!-- Líneas de rejilla -->
             <g class="chart-grid">
-                <line class="grid-line" x1="40" y1="20" x2="700" y2="20" />
-                <line class="grid-line" x1="40" y1="56" x2="700" y2="56" />
-                <line class="grid-line" x1="40" y1="92" x2="700" y2="92" />
-                <line class="grid-line" x1="40" y1="128" x2="700" y2="128" />
-                <line class="baseline" x1="40" y1="165" x2="700" y2="165" />
-
-                <text class="axis-text" x="12" y="24">40</text>
-                <text class="axis-text" x="12" y="60">30</text>
-                <text class="axis-text" x="12" y="96">20</text>
-                <text class="axis-text" x="12" y="132">10</text>
-                <text class="axis-text" x="16" y="169">0</text>
+                <template v-for="(grid, idx) in gridLines" :key="'grid-' + idx">
+                    <line
+                        :class="idx === gridLines.length - 1 ? 'baseline' : 'grid-line'"
+                        x1="40"
+                        :y1="grid.y"
+                        x2="700"
+                        :y2="grid.y"
+                    />
+                    <text class="axis-text" x="12" :y="grid.y + 4">{{ grid.label }}</text>
+                </template>
             </g>
 
             <!-- Capa de barras -->
@@ -161,18 +186,19 @@ const onPointClick = (pt: ChartPoint) => {
                 />
             </g>
 
-            <!-- Etiquetas del eje X -->
+            <!-- Etiquetas del eje X (se muestra una de cada N para no solapar) -->
             <g class="labels-layer">
-                <text
-                    v-for="(pt, idx) in chartPoints"
-                    :key="'label-' + idx"
-                    class="axis-text"
-                    :x="pt.x"
-                    y="192"
-                    text-anchor="middle"
-                >
-                    {{ pt.month }}
-                </text>
+                <template v-for="(pt, idx) in chartPoints" :key="'label-' + idx">
+                    <text
+                        v-if="idx % labelStep === 0"
+                        class="axis-text"
+                        :x="pt.x"
+                        y="192"
+                        text-anchor="middle"
+                    >
+                        {{ pt.month }}
+                    </text>
+                </template>
             </g>
 
             <!-- Tooltip en SVG sin estilos inline -->
@@ -288,7 +314,7 @@ const onPointClick = (pt: ChartPoint) => {
 .tooltip-month {
     fill: var(--text);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     font-family: var(--font-sans);
 }
 

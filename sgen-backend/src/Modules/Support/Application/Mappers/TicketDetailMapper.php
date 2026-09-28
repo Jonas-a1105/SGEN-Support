@@ -82,7 +82,8 @@ final class TicketDetailMapper
             'id' => (int) $m->id,
             'item_name' => (string) ($m->item_nombre ?? 'Ítem'),
             'code' => (string) ($m->item_codigo ?? 'S/C'),
-            'quantity' => (int) $m->cantidad,
+            // Decimal real (metros, litros…): el (int) truncaba el consumo mostrado.
+            'quantity' => (float) $m->cantidad,
             'date' => Carbon::parse($m->fecha)->format('d/m/Y'),
         ])->all();
 
@@ -146,7 +147,10 @@ final class TicketDetailMapper
             'report_date' => Carbon::parse($ticket->fecha)->format('d/m/Y h:i A'),
             'close_date' => $ticket->fecha_cierre ? Carbon::parse($ticket->fecha_cierre)->format('d/m/Y h:i A') : 'En atención',
             'attention_time' => $ticket->tiempo_atencion_minutos ? $ticket->tiempo_atencion_minutos.' minutos' : '0 minutos',
-            'sla_on_time' => false,
+            // Cumplimiento SLA real: resuelto dentro del vencimiento calculado.
+            'sla_on_time' => ($ticket->fecha_vencimiento ?? null) !== null
+                && ($ticket->fecha_resolucion ?? null) !== null
+                && Carbon::parse($ticket->fecha_resolucion)->lessThanOrEqualTo(Carbon::parse($ticket->fecha_vencimiento)),
             'solution' => isset($ticket->solucion) && $ticket->solucion !== '' ? (string) $ticket->solucion : null,
             'firma' => isset($ticket->firma) && $ticket->firma !== '' ? (string) $ticket->firma : null,
         ];

@@ -138,7 +138,7 @@ const getProgressWidthClass = (percent: number): string => {
     color: var(--blue, #3b82f6);
     display: grid;
     place-items: center;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     font-size: 16px;
     border: var(--stroke-w) solid rgba(37, 99, 235, 0.25);
     flex-shrink: 0;
@@ -152,7 +152,7 @@ const getProgressWidthClass = (percent: number): string => {
 
 .manager-name {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -214,7 +214,7 @@ const getProgressWidthClass = (percent: number): string => {
 
 .unassigned-title {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
 }
@@ -239,7 +239,7 @@ const getProgressWidthClass = (percent: number): string => {
 
 .detail-label {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
     letter-spacing: 0.05em;
 }
@@ -294,9 +294,9 @@ const getProgressWidthClass = (percent: number): string => {
 
 .progress-pct-text {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    font-family: monospace;
+    font-family: var(--font-mono);
 }
 
 .progress-pct-0 { width: 0%; }

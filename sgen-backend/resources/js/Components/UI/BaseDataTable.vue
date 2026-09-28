@@ -378,7 +378,7 @@ const effectiveDescription = computed(() => {
     background: var(--bg-sub);
     padding: var(--space-3, 12px) var(--space-4, 16px);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     color: var(--text-dim);
     letter-spacing: 0.04em;
     text-transform: uppercase;

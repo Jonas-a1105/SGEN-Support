@@ -6,6 +6,7 @@ namespace Tests\Feature\Settings;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -22,7 +23,7 @@ final class SettingsControllerTest extends TestCase
         $this->user = User::firstOrCreate(
             ['username' => 'settings_tester'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('old_password_123'),
+                'password' => Hash::make('old_password_123'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -35,7 +36,7 @@ final class SettingsControllerTest extends TestCase
         $response = $this->get('/configuracion');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Settings/Index')
             ->has('settings')
         );

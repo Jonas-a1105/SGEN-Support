@@ -11,8 +11,7 @@ final class UpdateDepartmentUseCase
 {
     public function __construct(
         private readonly DepartmentRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $id, UpdateDepartmentDTO $dto): void
     {

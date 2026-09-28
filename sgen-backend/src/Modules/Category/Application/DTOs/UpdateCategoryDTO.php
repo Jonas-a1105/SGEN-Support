@@ -11,7 +11,7 @@ final readonly class UpdateCategoryDTO
         public ?string $descripcion,
         public string $icono,
         public string $color,
-        public bool $activo = true
+        public ?bool $activo = null
     ) {}
 
     /**
@@ -24,7 +24,7 @@ final readonly class UpdateCategoryDTO
             descripcion: isset($data['descripcion']) ? (string) $data['descripcion'] : null,
             icono: (string) ($data['icono'] ?? 'hardware'),
             color: (string) ($data['color'] ?? '#0d6efd'),
-            activo: (bool) ($data['activo'] ?? true)
+            activo: array_key_exists('activo', $data) ? (bool) $data['activo'] : null
         );
     }
 }

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Support\Application\UseCases;
 
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Modules\Support\Application\DTOs\CreateTicketDTO;
 use Modules\Support\Domain\Enums\TicketPriority;
 use Modules\Support\Domain\Events\TicketCreated;
 use Modules\Support\Domain\Ports\DomainEventDispatcher;
 use Modules\Support\Domain\Ports\SupportRepositoryInterface;
 use Modules\Support\Domain\Services\SlaPolicy;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Crea un ticket aplicando la política de SLA del dominio:
@@ -25,7 +26,7 @@ final class CreateTicketUseCase
     public function __construct(
         private readonly SupportRepositoryInterface $repository,
         private readonly SlaPolicy $slaPolicy,
-        private readonly \Modules\Support\Domain\Ports\DomainEventDispatcher $domainEvents
+        private readonly DomainEventDispatcher $domainEvents
     ) {}
 
     public function execute(CreateTicketDTO $dto, ?int $userId = null): int
@@ -60,9 +61,9 @@ final class CreateTicketUseCase
     /** @return array<string> Días feriados 'Y-m-d' desde la tabla configurada. */
     private function feriados(): array
     {
-        return \Illuminate\Support\Facades\DB::table('feriados')
+        return DB::table('feriados')
             ->pluck('fecha')
-            ->map(static fn ($f) => \Carbon\CarbonImmutable::parse((string) $f)->format('Y-m-d'))
+            ->map(static fn ($f) => CarbonImmutable::parse((string) $f)->format('Y-m-d'))
             ->all();
     }
 }

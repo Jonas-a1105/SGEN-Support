@@ -186,7 +186,7 @@ const entityBadgeVariant = computed<BadgeVariant>(() => {
     align-items: flex-start;
     justify-content: center;
     font-size: 13px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     line-height: 1.15;
     flex-shrink: 0;
@@ -330,7 +330,7 @@ const entityBadgeVariant = computed<BadgeVariant>(() => {
 
 .timeline-event-title strong {
     color: var(--orange, #4f46e5);
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
 }
 
 .timeline-event-meta {

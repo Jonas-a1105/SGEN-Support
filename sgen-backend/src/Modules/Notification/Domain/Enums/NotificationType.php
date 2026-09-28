@@ -9,6 +9,7 @@ enum NotificationType: string
     case TICKET_ASIGNADO = 'ticket_asignado';
     case TICKET_VENCIMIENTO = 'ticket_vencimiento';
     case TICKET_ESTADO_CAMBIADO = 'ticket_estado_cambiado';
+    case TICKET_AUTOCIERRE = 'ticket_autocierre';
     case MANTENIMIENTO_PROXIMO = 'mantenimiento_proximo';
     case INVENTARIO_BAJO_STOCK = 'inventario_bajo_stock';
     case SISTEMA_GENERAL = 'sistema_general';
@@ -19,6 +20,7 @@ enum NotificationType: string
             self::TICKET_ASIGNADO => 'Ticket Asignado',
             self::TICKET_VENCIMIENTO => 'Ticket por Vencer',
             self::TICKET_ESTADO_CAMBIADO => 'Cambio de Estado',
+            self::TICKET_AUTOCIERRE => 'Cierre Automático',
             self::MANTENIMIENTO_PROXIMO => 'Mantenimiento Próximo',
             self::INVENTARIO_BAJO_STOCK => 'Inventario Bajo Stock',
             self::SISTEMA_GENERAL => 'Notificación del Sistema',

@@ -39,7 +39,11 @@ final class UserController extends Controller
     public function update(int $id, UpdateUserRequest $request, UpdateUserUseCase $useCase): RedirectResponse
     {
         try {
-            $useCase->execute($id, UpdateUserDTO::fromArray($request->validated()));
+            $useCase->execute(
+                $id,
+                UpdateUserDTO::fromArray($request->validated()),
+                (int) $request->user()->id
+            );
         } catch (\DomainException $e) {
             return back()->with('error', $e->getMessage());
         }

@@ -12,8 +12,8 @@ final class SaveTicketSignatureUseCase
         private SupportRepositoryInterface $repository
     ) {}
 
-    public function execute(int $ticketId, string $signatureData, string $ipAddress, ?string $userAgent): bool
+    public function execute(int $ticketId, string $signatureData, string $ipAddress, ?string $userAgent, ?int $actingUserId = null): bool
     {
-        return $this->repository->saveSignature($ticketId, $signatureData, $ipAddress, $userAgent);
+        return $this->repository->saveSignature($ticketId, $signatureData, $ipAddress, $userAgent, $actingUserId);
     }
 }

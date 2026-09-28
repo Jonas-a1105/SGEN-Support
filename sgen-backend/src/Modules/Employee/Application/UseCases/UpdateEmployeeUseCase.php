@@ -11,8 +11,7 @@ final class UpdateEmployeeUseCase
 {
     public function __construct(
         private readonly EmployeeRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $id, UpdateEmployeeDTO $dto): void
     {

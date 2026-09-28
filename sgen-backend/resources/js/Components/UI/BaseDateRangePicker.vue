@@ -213,9 +213,9 @@ const clearRange = () => {
 
 .field-label {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
 }
 
@@ -333,6 +333,6 @@ const clearRange = () => {
 .field-error-msg {
     font-size: 11px;
     color: var(--red);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 </style>

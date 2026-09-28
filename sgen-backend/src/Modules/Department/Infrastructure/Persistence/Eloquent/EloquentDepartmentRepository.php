@@ -13,12 +13,13 @@ use Modules\Department\Application\DTOs\UpdateDepartmentDTO;
 use Modules\Department\Application\Mappers\DepartmentDetailMapper;
 use Modules\Department\Application\Mappers\DepartmentListItemMapper;
 use Modules\Department\Domain\Exceptions\DepartmentNotFoundException;
+use Modules\Department\Domain\Exceptions\EmployeeNotAssignedToDepartmentException;
 use Modules\Department\Domain\Ports\DepartmentRepositoryInterface;
 
 final class EloquentDepartmentRepository implements DepartmentRepositoryInterface
 {
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return DepartmentListItemDTO[]
      */
     public function list(array $filters = []): array
@@ -31,8 +32,8 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
             ])
             ->orderBy('departamentos.id', 'asc');
 
-        if (!empty($filters['search'])) {
-            $term = '%' . trim((string) $filters['search']) . '%';
+        if (! empty($filters['search'])) {
+            $term = '%'.trim((string) $filters['search']).'%';
             $query->where(function ($q) use ($term) {
                 $q->where('departamentos.nombre', 'ilike', $term)
                     ->orWhere('departamentos.ubicacion', 'ilike', $term)
@@ -42,7 +43,7 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
         }
 
         return $query->get()
-            ->map(fn($row) => DepartmentListItemMapper::fromRow($row))
+            ->map(fn ($row) => DepartmentListItemMapper::fromRow($row))
             ->all();
     }
 
@@ -77,17 +78,17 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
         $jefeCargo = null;
         $jefeInitials = '--';
 
-        if (!empty($row->jefe_area_id)) {
+        if (! empty($row->jefe_area_id)) {
             $jefe = DB::table('empleados')->where('id', $row->jefe_area_id)->first();
             if ($jefe !== null) {
                 $jefeEmail = $jefe->email ?? null;
                 $jefeTelefono = $jefe->telefono ?? null;
                 $jefeCargo = $jefe->cargo ?? 'Jefe de Departamento';
-                $jefeInitials = mb_strtoupper(mb_substr($jefe->nombre, 0, 1) . mb_substr($jefe->apellido ?? '', 0, 1));
+                $jefeInitials = mb_strtoupper(mb_substr($jefe->nombre, 0, 1).mb_substr($jefe->apellido ?? '', 0, 1));
             }
-        } elseif (!empty($row->jefe_area_nombre)) {
+        } elseif (! empty($row->jefe_area_nombre)) {
             $parts = explode(' ', trim((string) $row->jefe_area_nombre));
-            $jefeInitials = mb_strtoupper(mb_substr($parts[0], 0, 1) . (isset($parts[1]) ? mb_substr($parts[1], 0, 1) : ''));
+            $jefeInitials = mb_strtoupper(mb_substr($parts[0], 0, 1).(isset($parts[1]) ? mb_substr($parts[1], 0, 1) : ''));
         }
 
         // Empleados asignados al departamento
@@ -97,8 +98,9 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
             ->orderBy('nombre')
             ->get()
             ->map(function ($e) {
-                $fn = trim($e->nombre . ' ' . ($e->apellido ?? ''));
-                $init = mb_strtoupper(mb_substr($e->nombre, 0, 1) . mb_substr($e->apellido ?? '', 0, 1));
+                $fn = trim($e->nombre.' '.($e->apellido ?? ''));
+                $init = mb_strtoupper(mb_substr($e->nombre, 0, 1).mb_substr($e->apellido ?? '', 0, 1));
+
                 return [
                     'id' => (int) $e->id,
                     'nombre' => (string) $e->nombre,
@@ -126,8 +128,9 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
             ->get()
             ->map(function ($eq) {
                 $custodio = $eq->empleado_nombre
-                    ? trim($eq->empleado_nombre . ' ' . ($eq->empleado_apellido ?? ''))
+                    ? trim($eq->empleado_nombre.' '.($eq->empleado_apellido ?? ''))
                     : 'Sin asignar';
+
                 return [
                     'id' => (int) $eq->id,
                     'codigo' => (string) $eq->codigo_inventario,
@@ -146,7 +149,7 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
             ->whereIn('estado', ['pendiente', 'en_proceso'])
             ->where(function ($q) use ($id) {
                 $q->whereIn('equipo_id', DB::table('equipos')->select('id')->where('departamento_id', $id))
-                  ->orWhereIn('empleado_id', DB::table('empleados')->select('id')->where('departamento_id', $id));
+                    ->orWhereIn('empleado_id', DB::table('empleados')->select('id')->where('departamento_id', $id));
             })
             ->count();
 
@@ -169,6 +172,7 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
                 $qty = (int) $it->stock_departamento;
                 $min = (int) ($it->stock_minimo ?? 0);
                 $unitVal = (float) ($it->valor_compra ?? 0);
+
                 return [
                     'id' => (int) $it->id,
                     'codigo' => (string) $it->codigo,
@@ -195,9 +199,9 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
             })
             ->orderBy('nombre')
             ->get()
-            ->map(fn($e) => [
+            ->map(fn ($e) => [
                 'id' => (int) $e->id,
-                'nombre' => trim($e->nombre . ' ' . ($e->apellido ?? '')),
+                'nombre' => trim($e->nombre.' '.($e->apellido ?? '')),
                 'cargo' => (string) ($e->cargo ?? 'Personal'),
                 'departamento_id' => $e->departamento_id ? (int) $e->departamento_id : null,
             ])->all();
@@ -210,10 +214,10 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
             })
             ->orderBy('codigo_inventario')
             ->get()
-            ->map(fn($eq) => [
+            ->map(fn ($eq) => [
                 'id' => (int) $eq->id,
                 'codigo' => (string) $eq->codigo_inventario,
-                'nombre' => trim(($eq->tipo ?? 'Equipo') . ' ' . ($eq->marca ?? '') . ' ' . ($eq->modelo ?? '')),
+                'nombre' => trim(($eq->tipo ?? 'Equipo').' '.($eq->marca ?? '').' '.($eq->modelo ?? '')),
                 'estado' => (string) ($eq->estado ?? 'disponible'),
             ])->all();
 
@@ -221,7 +225,7 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
 
         return new DepartmentDetailDTO(
             id: $id,
-            code: 'DEPT-' . sprintf('%02d', $id),
+            code: 'DEPT-'.sprintf('%02d', $id),
             nombre: (string) $row->nombre,
             ubicacion: $row->ubicacion ?? null,
             jefeAreaNombre: $row->jefe_area_nombre ?? null,
@@ -265,7 +269,7 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
     public function update(int $id, UpdateDepartmentDTO $dto): void
     {
         $exists = DB::table('departamentos')->where('id', $id)->exists();
-        if (!$exists) {
+        if (! $exists) {
             throw DepartmentNotFoundException::withId($id);
         }
 
@@ -292,18 +296,22 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
 
     public function delete(int $id): void
     {
-        DB::table('equipos')->where('departamento_id', $id)->update(['departamento_id' => null]);
-        DB::table('empleados')->where('departamento_id', $id)->update(['departamento_id' => null]);
+        // Desvinculación + baja lógica en una sola unidad atómica: si la baja
+        // falla, la matriz orgánica no queda alterada a medias.
+        DB::transaction(function () use ($id): void {
+            DB::table('equipos')->where('departamento_id', $id)->update(['departamento_id' => null]);
+            DB::table('empleados')->where('departamento_id', $id)->update(['departamento_id' => null]);
 
-        // A la papelera (no destrucción): libera la matriz orgánica sin
-        // desaparecer la historia de pruebas/auditoría del organigrama.
-        $deleted = DB::table('departamentos')
-            ->where('id', $id)
-            ->whereNull('deleted_at')
-            ->update(['deleted_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
-        if ($deleted === 0) {
-            throw DepartmentNotFoundException::withId($id);
-        }
+            // A la papelera (no destrucción): libera la matriz orgánica sin
+            // desaparecer la historia de pruebas/auditoría del organigrama.
+            $deleted = DB::table('departamentos')
+                ->where('id', $id)
+                ->whereNull('deleted_at')
+                ->update(['deleted_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+            if ($deleted === 0) {
+                throw DepartmentNotFoundException::withId($id);
+            }
+        });
     }
 
     public function assignEmployee(int $departmentId, int $employeeId): void
@@ -314,12 +322,23 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
         ]);
     }
 
-    public function removeEmployee(int $employeeId): void
+    public function removeEmployee(int $departmentId, int $employeeId): void
     {
-        DB::table('empleados')->where('id', $employeeId)->update([
-            'departamento_id' => null,
-            'updated_at' => Carbon::now(),
-        ]);
+        // El vínculo se rompe solo si el empleado pertenece AL departamento de
+        // la ruta: el WHERE compuesto evita desvincular a un empleado ajeno
+        // (y la condición se evalúa de forma atómica, sin ventana TOCTOU).
+        $detached = DB::table('empleados')
+            ->where('id', $employeeId)
+            ->where('departamento_id', $departmentId)
+            ->whereNull('deleted_at')
+            ->update([
+                'departamento_id' => null,
+                'updated_at' => Carbon::now(),
+            ]);
+
+        if ($detached === 0) {
+            throw EmployeeNotAssignedToDepartmentException::forIds($departmentId, $employeeId);
+        }
     }
 
     public function assignEquipment(int $departmentId, int $equipmentId): void
@@ -348,8 +367,8 @@ final class EloquentDepartmentRepository implements DepartmentRepositoryInterfac
             ->map(function ($e) {
                 $firstName = trim((string) $e->nombre);
                 $lastName = trim((string) ($e->apellido ?? ''));
-                $fullName = trim($firstName . ' ' . $lastName);
-                $init = mb_strtoupper(mb_substr($firstName, 0, 1) . mb_substr($lastName, 0, 1));
+                $fullName = trim($firstName.' '.$lastName);
+                $init = mb_strtoupper(mb_substr($firstName, 0, 1).mb_substr($lastName, 0, 1));
 
                 return [
                     'id' => (int) $e->id,

@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -32,11 +33,11 @@ final class TicketReopenWindowTest extends TestCase
 
         $this->solicitante = User::firstOrCreate(
             ['username' => 'reopen_solicitante_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'consultor', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'consultor', 'tema' => 'light']
         );
         $this->tercero = User::firstOrCreate(
             ['username' => 'reopen_tercero_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'operador', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'operador', 'tema' => 'light']
         );
 
         $equipo = DB::table('equipos')->first();
@@ -98,7 +99,7 @@ final class TicketReopenWindowTest extends TestCase
     {
         $tecnico = User::firstOrCreate(
             ['username' => 'reopen_tecnico_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light']
         );
         $ticketId = $this->crearTicketResuelto(Carbon::now()->subDay());
 

@@ -61,13 +61,13 @@ defineProps<{ myWork: MyWorkData }>();
 .sub { font-size: 12px; color: var(--text-muted); }
 .chips-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
 .chip { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 11px; text-align: center; font-size: 11px; }
-.chip-numero { font-size: 20px; font-weight: 700; }
+.chip-numero { font-size: 20px; font-weight: var(--weight-semibold); }
 .chip-pendiente { background: rgba(245, 158, 11, 0.1); color: #b45309; }
 .chip_proceso { background: rgba(59, 130, 246, 0.1); color: var(--blue, #2563eb); }
 .chip_resueltos { background: rgba(16, 185, 129, 0.1); color: #059669; }
 .chip_proximas { background: rgba(217, 70, 239, 0.08); color: #a21caf; }
-.equipos-linea h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+.equipos-linea h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: 0.05em; color: var(--text-muted); }
 .equipo-fila { display: flex; gap: 12px; align-items: center; font-size: 12.5px; padding: 7px 10px; border-radius: 9px; background: var(--bg-sub); margin-bottom: 4px; }
-.equipo-fila code { font-family: monospace; color: var(--orange); font-size: 12px; }
+.equipo-fila code { font-family: var(--font-mono); color: var(--orange); font-size: 12px; }
 .ver-ficha { margin-left: auto; font-size: 11.5px; color: var(--color-primary, #10b981); text-decoration: none; }
 </style>

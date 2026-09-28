@@ -102,7 +102,7 @@ function save() {
 
 .section-title {
     font-size: 16px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     margin: 0 0 4px 0;
 }

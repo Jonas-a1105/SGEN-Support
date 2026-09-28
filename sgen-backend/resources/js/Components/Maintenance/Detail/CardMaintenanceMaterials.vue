@@ -170,7 +170,7 @@ const totalUnits = computed(() => {
 .materials-title {
     margin: 0;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
@@ -202,7 +202,7 @@ const totalUnits = computed(() => {
 }
 
 .text-mono {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
 }
 
@@ -238,7 +238,7 @@ const totalUnits = computed(() => {
 
 .stat-value {
     color: var(--text);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .stat-value.highlight {

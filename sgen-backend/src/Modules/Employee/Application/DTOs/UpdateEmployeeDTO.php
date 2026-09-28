@@ -15,8 +15,7 @@ final class UpdateEmployeeDTO
         public readonly ?int $departamentoId = null,
         public readonly ?string $rol = null,
         public readonly ?int $usuarioId = null,
-    ) {
-    }
+    ) {}
 
     public static function fromArray(array $data): self
     {

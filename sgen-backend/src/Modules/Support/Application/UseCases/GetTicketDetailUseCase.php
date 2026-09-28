@@ -27,7 +27,7 @@ final class GetTicketDetailUseCase
             return null;
         }
 
-        $dto = $this->repository->findById($id);
+        $dto = $this->repository->findById($id, $forUserId);
         if ($dto === null) {
             return null;
         }

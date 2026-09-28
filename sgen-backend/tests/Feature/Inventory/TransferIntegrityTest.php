@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Modules\Inventory\Application\DTOs\TransferStockDTO;
 use Modules\Inventory\Domain\Ports\ProductRepositoryInterface;
 use Tests\TestCase;
@@ -74,7 +75,7 @@ final class TransferIntegrityTest extends TestCase
     {
         return (int) User::firstOrCreate(
             ['username' => 'admin_transfer_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         )->id;
     }
 

@@ -11,7 +11,7 @@ final class SettingsDomainTest extends TestCase
 {
     public function test_can_instantiate_default_settings(): void
     {
-        $settings = new SystemSettings();
+        $settings = new SystemSettings;
 
         $this->assertSame('es', $settings->language());
         $this->assertSame('America/Caracas', $settings->timezone());

@@ -7,6 +7,7 @@ namespace Tests\Feature\EndToEnd;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 final class NotificationAndReportExportsTest extends TestCase
@@ -22,7 +23,7 @@ final class NotificationAndReportExportsTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'notif_tester'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]

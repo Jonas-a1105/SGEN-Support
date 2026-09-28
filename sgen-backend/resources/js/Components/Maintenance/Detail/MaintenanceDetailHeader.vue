@@ -217,7 +217,7 @@ const triggerPrint = () => {
 .maint-alert-title {
     color: #ef4444;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .maint-alert-desc {
@@ -269,7 +269,7 @@ const triggerPrint = () => {
 
 .maint-main-title {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
     text-transform: capitalize;
@@ -301,8 +301,8 @@ const triggerPrint = () => {
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
-    font-weight: 700;
-    font-family: monospace;
+    font-weight: var(--weight-semibold);
+    font-family: var(--font-mono);
     border: var(--stroke-w) solid transparent;
 }
 

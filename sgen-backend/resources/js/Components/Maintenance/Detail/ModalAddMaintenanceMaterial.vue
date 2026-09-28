@@ -232,7 +232,7 @@ const handleSubmit = () => {
     border: var(--stroke-w) solid rgba(239, 68, 68, 0.25);
     border-radius: var(--radius-md);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
 }
 
 .no-items-warning {

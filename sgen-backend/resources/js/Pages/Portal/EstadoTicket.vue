@@ -111,12 +111,12 @@ const etiquetaPrioridad: Record<string, string> = {
 .portal-hero .sub { margin: 0; color: #7b8398; font-size: 13px; }
 .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 14px; }
 .info-elem { display: flex; flex-direction: column; gap: 4px; }
-.info-label { font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: #8b93a7; }
+.info-label { font-size: 11px; letter-spacing: 0.05em; color: #8b93a7; }
 .info-value { font-size: 14px; color: #e3e7ee; font-weight: 600; }
 .solucion-spot { margin: 14px 0; padding: 12px 14px; border-radius: 12px; background: rgba(16, 185, 129, 0.09); border: 1px solid rgba(16, 185, 129, 0.22); }
 .solucion-spot h4 { margin: 0 0 6px; font-size: 13px; color: #34d399; }
 .solucion-spot p { margin: 0; font-size: 13px; color: #d7d9e0; line-height: 1.6; }
-.comentarios-trail h4 { margin: 10px 0 8px; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: #8b93a7; }
+.comentarios-trail h4 { margin: 10px 0 8px; font-size: 12px; letter-spacing: 0.05em; color: #8b93a7; }
 .trail-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .trail-item { padding: 10px 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); }
 .trail-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }

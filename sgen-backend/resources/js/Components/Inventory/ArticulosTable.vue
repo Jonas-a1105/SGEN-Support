@@ -177,7 +177,7 @@ const columns: DataTableColumn[] = [
 
 .table-item-title {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
@@ -224,7 +224,7 @@ const columns: DataTableColumn[] = [
 .card-item-title {
     margin: 0;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 

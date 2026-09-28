@@ -75,7 +75,7 @@ const user = page.props.auth?.user;
 }
 .section-title {
     font-size: 16px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 4px 0;
 }
@@ -108,7 +108,7 @@ const user = page.props.auth?.user;
     place-items: center;
     color: #ffffff;
     font-size: 22px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     box-shadow: none !important;
 }
 .account-fields-grid {

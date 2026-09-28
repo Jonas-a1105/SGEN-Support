@@ -14,7 +14,7 @@ enum MaintenanceStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDIENTE => 'Pendiente',
             self::EN_PROCESO => 'En Proceso',
             self::COMPLETADO => 'Completado',
@@ -25,7 +25,7 @@ enum MaintenanceStatus: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDIENTE => 'orange',
             self::EN_PROCESO => 'blue',
             self::COMPLETADO => 'green',
@@ -42,5 +42,26 @@ enum MaintenanceStatus: string
     public function isCompleted(): bool
     {
         return $this === self::COMPLETADO;
+    }
+
+    /**
+     * Transiciones legales de la máquina de estados de una orden de trabajo.
+     * Completado y cancelado son terminales.
+     *
+     * @return array<int, self>
+     */
+    public function transicionesPermitidas(): array
+    {
+        return match ($this) {
+            self::PENDIENTE => [self::EN_PROCESO, self::COMPLETADO, self::POSPUESTO, self::CANCELADO],
+            self::EN_PROCESO => [self::COMPLETADO, self::POSPUESTO, self::CANCELADO],
+            self::POSPUESTO => [self::COMPLETADO, self::CANCELADO],
+            self::COMPLETADO, self::CANCELADO => [],
+        };
+    }
+
+    public function permiteTransicionA(self $destino): bool
+    {
+        return in_array($destino, $this->transicionesPermitidas(), true);
     }
 }

@@ -219,7 +219,7 @@ const progressWidthClass = computed(() => {
     border: var(--stroke-w) solid transparent;
     color: var(--text-muted);
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     display: grid;
     place-items: center;
     cursor: pointer;
@@ -289,7 +289,7 @@ const progressWidthClass = computed(() => {
 
 .dept-card-title {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     margin: 0;
     white-space: nowrap;
@@ -300,7 +300,7 @@ const progressWidthClass = computed(() => {
 .dept-card-code {
     font-size: 11px;
     color: var(--text-muted);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .dept-card-desc {
@@ -335,7 +335,7 @@ const progressWidthClass = computed(() => {
     align-items: center;
     gap: 5px;
     font-size: 10px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-dim);
     letter-spacing: 0.04em;
 }
@@ -350,7 +350,7 @@ const progressWidthClass = computed(() => {
 
 .metric-badge-value {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
@@ -369,7 +369,7 @@ const progressWidthClass = computed(() => {
 }
 
 .progress-legend-percent {
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
 }
 

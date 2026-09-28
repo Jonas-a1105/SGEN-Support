@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Modules\Department\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Department\Infrastructure\Http\Requests\StoreDepartmentRequest;
-use Modules\Department\Infrastructure\Http\Requests\UpdateDepartmentRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +21,8 @@ use Modules\Department\Application\UseCases\GetDepartmentListUseCase;
 use Modules\Department\Application\UseCases\RemoveEmployeeFromDepartmentUseCase;
 use Modules\Department\Application\UseCases\RemoveEquipmentFromDepartmentUseCase;
 use Modules\Department\Application\UseCases\UpdateDepartmentUseCase;
+use Modules\Department\Infrastructure\Http\Requests\StoreDepartmentRequest;
+use Modules\Department\Infrastructure\Http\Requests\UpdateDepartmentRequest;
 
 final class DepartmentController extends Controller
 {
@@ -78,7 +78,11 @@ final class DepartmentController extends Controller
 
     public function removeEmployee(int $id, int $employeeId, RemoveEmployeeFromDepartmentUseCase $useCase): RedirectResponse
     {
-        $useCase->execute($employeeId);
+        try {
+            $useCase->execute($id, $employeeId);
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'Empleado desvinculado del departamento.');
     }

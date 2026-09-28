@@ -21,6 +21,7 @@ use Modules\Inventory\Domain\Ports\ProductRepositoryInterface;
 use Modules\Inventory\Infrastructure\Http\Requests\AdjustStockRequest;
 use Modules\Inventory\Infrastructure\Http\Requests\StoreProductRequest;
 use Modules\Inventory\Infrastructure\Http\Requests\TransferStockRequest;
+use Modules\Inventory\Infrastructure\Http\Requests\UpdateProductRequest;
 
 class InventoryController extends Controller
 {
@@ -34,7 +35,11 @@ class InventoryController extends Controller
 
     public function store(StoreProductRequest $request, CreateProductUseCase $useCase): RedirectResponse
     {
-        $useCase->execute(CreateProductDTO::fromArray($request->validated()));
+        try {
+            $useCase->execute(CreateProductDTO::fromArray($request->validated()));
+        } catch (\DomainException|\InvalidArgumentException $e) {
+            return back()->withInput()->withErrors(['sku' => $e->getMessage()]);
+        }
 
         return redirect()->route('inventario.index')->with('success', 'Producto creado exitosamente.');
     }
@@ -43,7 +48,12 @@ class InventoryController extends Controller
     {
         $data = $request->validated();
         $data['user_id'] = $request->user()?->id;
-        $useCase->execute(StockAdjustmentDTO::fromArray($data));
+
+        try {
+            $useCase->execute(StockAdjustmentDTO::fromArray($data));
+        } catch (\DomainException $e) {
+            return back()->withInput()->withErrors(['quantity' => $e->getMessage()]);
+        }
 
         return back()->with('success', 'Ajuste de existencias procesado con éxito.');
     }
@@ -51,7 +61,12 @@ class InventoryController extends Controller
     public function transferStock(TransferStockRequest $request, TransferStockUseCase $useCase): RedirectResponse
     {
         $userId = (int) $request->user()->id;
-        $useCase->execute($request->toDTO(), $userId);
+
+        try {
+            $useCase->execute($request->toDTO(), $userId);
+        } catch (\DomainException $e) {
+            return back()->withInput()->withErrors(['cantidad' => $e->getMessage()]);
+        }
 
         return back()->with('success', 'Transferencia de stock procesada con éxito.');
     }
@@ -64,23 +79,12 @@ class InventoryController extends Controller
         return Inertia::render('Inventory/Show', $data);
     }
 
-    public function update(int|string $id, Request $request, ProductRepositoryInterface $repository): RedirectResponse
+    public function update(int|string $id, UpdateProductRequest $request, ProductRepositoryInterface $repository): RedirectResponse
     {
         $product = $repository->findById((int) $id);
         abort_if($product === null, 404, 'Producto no encontrado');
 
-        $validated = $request->validate([
-            'sku' => ['nullable', 'string', 'max:50'],
-            'name' => ['required', 'string', 'max:150'],
-            'category' => ['required', 'string', 'max:100'],
-            'unit_of_measure' => ['nullable', 'string', 'max:50'],
-            'brand' => ['nullable', 'string', 'max:100'],
-            'model' => ['nullable', 'string', 'max:100'],
-            'minimum_stock' => ['nullable', 'integer', 'min:0'],
-            'purchase_price' => ['nullable', 'numeric', 'min:0'],
-            'location' => ['nullable', 'string', 'max:150'],
-            'description' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         DB::table('inventario_items')->where('id', (int) $id)->update([
             'codigo' => $validated['sku'] ?? $product->sku()->value(),

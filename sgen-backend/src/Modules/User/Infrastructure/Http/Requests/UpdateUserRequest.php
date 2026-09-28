@@ -28,10 +28,35 @@ final class UpdateUserRequest extends FormRequest
             'password' => ['nullable', 'string', Password::min(10)->mixedCase()->numbers()->uncompromised()],
             'rol' => ['required', 'string', 'in:admin,tecnico,consultor,operador'],
             'departamento_id' => ['nullable', 'integer', 'exists:departamentos,id'],
-            // Sin email no hay recuperación self-service: empleado con email válido
-            // o email directo de la cuenta sigue siendo pasaje obligatorio.
+            // Los campos omitidos se preservan en el caso de uso; lo que no se
+            // permite es vaciar el email sin dejar empleado vinculado, porque
+            // la cuenta perdería toda vía de recuperación de contraseña.
             'empleado_id' => ['nullable', 'integer', 'exists:empleados,id'],
             'email' => ['nullable', 'email', 'max:150', 'unique:usuarios,email,'.$userId],
+        ];
+    }
+
+    /**
+     * @return array<callable>
+     */
+    public function after(): array
+    {
+        return [
+            function ($validator): void {
+                if (! $this->has('email')) {
+                    return;
+                }
+
+                $email = $this->input('email');
+                $empleado = $this->input('empleado_id');
+
+                if (($email === null || $email === '') && ($empleado === null || $empleado === '')) {
+                    $validator->errors()->add(
+                        'email',
+                        'La cuenta necesita un email o un empleado vinculado para la recuperación de contraseña.'
+                    );
+                }
+            },
         ];
     }
 }

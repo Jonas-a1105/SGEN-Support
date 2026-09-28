@@ -7,6 +7,7 @@ namespace Tests\Feature\Audit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -15,6 +16,7 @@ final class AuditControllerTest extends TestCase
     use DatabaseTransactions;
 
     private int $sessionId;
+
     private int $userId;
 
     protected function setUp(): void
@@ -24,7 +26,7 @@ final class AuditControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_audit_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -47,7 +49,7 @@ final class AuditControllerTest extends TestCase
         $response = $this->get('/auditoria');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Audit/Index')
             ->has('sessions')
             ->has('kpis')
@@ -88,7 +90,7 @@ final class AuditControllerTest extends TestCase
         $response = $this->get('/auditoria?tab=bitacora');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Audit/Index')
             ->has('actions')
             ->has('sessions')

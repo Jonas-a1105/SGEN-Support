@@ -9,7 +9,7 @@ use Modules\Department\Application\DTOs\DepartmentDetailDTO;
 final class DepartmentDetailMapper
 {
     private const COLORS = [
-        '#4f46e5', '#f97316', '#ec4899', '#10b981', '#06b6d4', '#8b5cf6', '#f59e0b', '#f43f5e'
+        '#4f46e5', '#f97316', '#ec4899', '#10b981', '#06b6d4', '#8b5cf6', '#f59e0b', '#f43f5e',
     ];
 
     public static function getColorForId(int $id): string
@@ -18,7 +18,7 @@ final class DepartmentDetailMapper
     }
 
     /**
-     * @param object|array<string, mixed> $row
+     * @param  object|array<string, mixed>  $row
      */
     public static function fromRow(object|array $row): DepartmentDetailDTO
     {
@@ -33,7 +33,7 @@ final class DepartmentDetailMapper
 
         return new DepartmentDetailDTO(
             id: $id,
-            code: 'DEPT-' . sprintf('%02d', $id),
+            code: 'DEPT-'.sprintf('%02d', $id),
             nombre: $name,
             ubicacion: $data['ubicacion'] ?? null,
             jefeAreaNombre: $data['jefe_area_nombre'] ?? null,

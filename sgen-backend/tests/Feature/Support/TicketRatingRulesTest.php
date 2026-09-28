@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -31,11 +32,11 @@ final class TicketRatingRulesTest extends TestCase
 
         $this->solicitante = User::firstOrCreate(
             ['username' => 'rating_solicitante_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'consultor', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'consultor', 'tema' => 'light']
         );
         $this->intruso = User::firstOrCreate(
             ['username' => 'rating_intruso_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'tecnico', 'tema' => 'light']
         );
 
         $equipo = DB::table('equipos')->first();

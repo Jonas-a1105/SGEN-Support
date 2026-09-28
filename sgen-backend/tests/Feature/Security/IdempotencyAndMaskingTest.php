@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Security;
 
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Modules\Audit\Application\Services\BitacoraLogger;
-use Modules\Audit\Domain\Ports\AuditLogRepositoryInterface;
+use Illuminate\Support\Facades\Hash;
 use Modules\Audit\Domain\Models\AuditLogEntry;
+use Modules\Audit\Domain\Ports\AuditLogRepositoryInterface;
 use Tests\TestCase;
 
 /**
@@ -31,7 +30,7 @@ final class IdempotencyAndMaskingTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_idemp_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
 
         $equipo = DB::table('equipos')->where('estado', '!=', 'de_baja')->first();

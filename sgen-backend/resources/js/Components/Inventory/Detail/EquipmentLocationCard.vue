@@ -82,8 +82,8 @@ const emit = defineEmits<{
     align-items: center;
     gap: var(--space-2);
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: var(--weight-semibold);
+
     letter-spacing: 0.06em;
     color: var(--text-muted);
     margin-bottom: var(--space-4);
@@ -138,14 +138,14 @@ const emit = defineEmits<{
 .device-sublabel {
     font-size: 11px;
     color: var(--text-muted);
-    text-transform: uppercase;
+
     letter-spacing: 0.04em;
     margin-bottom: 2px;
 }
 
 .device-strong-text {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text);
     line-height: 1.2;
 }

@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
@@ -30,12 +31,12 @@ final class AdminResetFlowTest extends TestCase
     {
         $admin = User::firstOrCreate(
             ['username' => 'admin_reset_flow_user'],
-            ['password' => \Illuminate\Support\Facades\Hash::make('Clave-87?Star'), 'rol' => 'admin', 'tema' => 'light', 'activo' => true]
+            ['password' => Hash::make('Clave-87?Star'), 'rol' => 'admin', 'tema' => 'light', 'activo' => true]
         );
 
         $tecnicoId = (int) DB::table('usuarios')->insertGetId([
             'username' => 'tecnico_reset_'.uniqid(),
-            'password' => \Illuminate\Support\Facades\Hash::make('Una112!@#Vieja'),
+            'password' => Hash::make('Una112!@#Vieja'),
             'rol' => 'tecnico',
             'tema' => 'light',
             'activo' => true,
@@ -74,6 +75,7 @@ final class AdminResetFlowTest extends TestCase
             $this->assertArrayHasKey('user_id', $payload);
             $this->assertArrayHasKey('password', $payload);
         }
+
         return $payload;
     }
 }

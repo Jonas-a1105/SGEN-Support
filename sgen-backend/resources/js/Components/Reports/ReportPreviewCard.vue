@@ -41,7 +41,7 @@ defineProps<{
 
 .preview-summary-text .kicker {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     letter-spacing: 0.06em;
     color: var(--orange);
 }

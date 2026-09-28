@@ -6,9 +6,7 @@
         <title inertia>{{ config('app.name', 'SGEN Support') }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+        <!-- Google Fonts removed: unified to Segoe UI Semibold 600 -->
 
         <!-- Scripts & Styles (CSP: solo scripts con el nonce por petición) -->
         @routes(null, $cspNonce ?? null)

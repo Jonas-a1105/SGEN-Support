@@ -104,6 +104,9 @@ function handleSubmit() {
         {
             // #21: doble clic / red reintentando jamás duplica el ticket.
             headers: { 'Idempotency-Key': idempotencyKey.value },
+            onSuccess: () => {
+                router.visit('/soportes');
+            },
             onError: (errors) => {
                 isSubmitting.value = false;
                 const first = Object.values(errors)[0];
@@ -318,12 +321,12 @@ function handleSubmit() {
     display: grid;
     place-items: center;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .tf-section-title {
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0;
 }

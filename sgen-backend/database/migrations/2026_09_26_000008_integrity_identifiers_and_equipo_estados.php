@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * Integridad de identificadores operativos (checklist 6.1 · #1, #3, #4, #28)
@@ -62,7 +61,7 @@ return new class extends Migration
         // ── Enum de estados de equipo: estados formales de fin de vida ──
         DB::statement('ALTER TABLE equipos DROP CONSTRAINT IF EXISTS equipos_estado_check');
         DB::statement(
-            "ALTER TABLE equipos ADD CONSTRAINT equipos_estado_check CHECK (estado IN ("
+            'ALTER TABLE equipos ADD CONSTRAINT equipos_estado_check CHECK (estado IN ('
             ."'nuevo','usado','en_uso','disponible','en_reserva','en_reparacion',"
             ."'fuera_de_servicio','prestado','de_baja','perdido'))"
         );
@@ -84,21 +83,21 @@ return new class extends Migration
 
         // #4  Cédula única de empleado vigente (soft-delete aware).
         DB::statement(
-            "CREATE UNIQUE INDEX IF NOT EXISTS empleados_cedula_vigente_unique
+            'CREATE UNIQUE INDEX IF NOT EXISTS empleados_cedula_vigente_unique
              ON empleados (cedula)
-             WHERE cedula IS NOT NULL AND deleted_at IS NULL"
+             WHERE cedula IS NOT NULL AND deleted_at IS NULL'
         );
 
         // #28 Vínculo empleado↔usuario biunívoco, en ambas direcciones.
         DB::statement(
-            "CREATE UNIQUE INDEX IF NOT EXISTS empleados_usuario_vigente_unique
+            'CREATE UNIQUE INDEX IF NOT EXISTS empleados_usuario_vigente_unique
              ON empleados (usuario_id)
-             WHERE usuario_id IS NOT NULL AND deleted_at IS NULL"
+             WHERE usuario_id IS NOT NULL AND deleted_at IS NULL'
         );
         DB::statement(
-            "CREATE UNIQUE INDEX IF NOT EXISTS usuarios_empleado_unique
+            'CREATE UNIQUE INDEX IF NOT EXISTS usuarios_empleado_unique
              ON usuarios (empleado_id)
-             WHERE empleado_id IS NOT NULL"
+             WHERE empleado_id IS NOT NULL'
         );
     }
 
@@ -120,7 +119,7 @@ return new class extends Migration
 
         DB::statement('ALTER TABLE equipos DROP CONSTRAINT IF EXISTS equipos_estado_check');
         DB::statement(
-            "ALTER TABLE equipos ADD CONSTRAINT equipos_estado_check CHECK (estado IN ("
+            'ALTER TABLE equipos ADD CONSTRAINT equipos_estado_check CHECK (estado IN ('
             ."'nuevo','usado','en_uso','fuera_de_servicio','en_reparacion','disponible','en_reserva'))"
         );
     }

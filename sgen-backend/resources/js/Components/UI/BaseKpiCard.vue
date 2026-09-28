@@ -137,7 +137,7 @@ const computedTrendClass = computed(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     text-transform: none !important;
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
     line-height: 1.2;
     text-align: left;
     width: 100%;
@@ -145,7 +145,7 @@ const computedTrendClass = computed(() => {
 
 .kpi-value {
     font-size: 24px;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     line-height: 1.1;
     color: var(--text);
     letter-spacing: -0.02em;

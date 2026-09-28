@@ -7,8 +7,8 @@ namespace Modules\Audit\Application\Services;
 final class AuditCsvExporter
 {
     /**
-     * @param resource $handle
-     * @param array<int, array<string, mixed>> $sessions
+     * @param  resource  $handle
+     * @param  array<int, array<string, mixed>>  $sessions
      */
     public static function write($handle, array $sessions): void
     {

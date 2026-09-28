@@ -238,7 +238,7 @@ const deleteFile = (attachmentId: number) => {
 .panel-title {
     margin: 0;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text, #f0f2f5);
     letter-spacing: -0.01em;
 }
@@ -328,7 +328,7 @@ const deleteFile = (attachmentId: number) => {
 }
 
 .progress-val {
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--primary, #6366f1);
 }
 
@@ -391,7 +391,7 @@ const deleteFile = (attachmentId: number) => {
 
 .dropzone-title {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text, #f0f2f5);
     margin-bottom: 4px;
 }
@@ -470,7 +470,7 @@ const deleteFile = (attachmentId: number) => {
 
 .att-checksum {
     font-size: 10px;
-    font-family: monospace;
+    font-family: var(--font-mono);
     color: var(--text-muted, #6b7280);
     background: rgba(255, 255, 255, 0.05);
     padding: 1px 4px;

@@ -102,7 +102,7 @@ defineProps<{
 .panel-title {
     margin: 0;
     font-size: 15px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text);
     letter-spacing: -0.01em;
 }
@@ -152,9 +152,9 @@ defineProps<{
     gap: 4px;
 }
 .asset-serial-num {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 14px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--primary);
 }
 .asset-specs-grid {
@@ -169,9 +169,9 @@ defineProps<{
 }
 .data-kicker {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
-    text-transform: uppercase;
+
     display: flex;
     align-items: center;
     gap: 6px;

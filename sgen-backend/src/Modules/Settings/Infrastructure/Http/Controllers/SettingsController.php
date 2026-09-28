@@ -7,9 +7,10 @@ namespace Modules\Settings\Infrastructure\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use InvalidArgumentException;
 use Modules\Settings\Application\DTOs\UpdatePasswordDTO;
 use Modules\Settings\Application\DTOs\UpdateSettingsDTO;
 use Modules\Settings\Application\UseCases\GetSettingsUseCase;
@@ -42,7 +43,17 @@ final class SettingsController extends Controller
     public function updatePassword(UpdateUserPasswordRequest $request, UpdateUserPasswordUseCase $useCase): RedirectResponse
     {
         $userId = (int) $request->user()->id;
-        $useCase->execute($userId, UpdatePasswordDTO::fromArray($request->validated()));
+
+        try {
+            $useCase->execute($userId, UpdatePasswordDTO::fromArray($request->validated()));
+        } catch (InvalidArgumentException $e) {
+            // Contraseña actual incorrecta: es un error de validación del
+            // formulario (422 con mensaje en `current_password`), no un fallo
+            // del servidor (500).
+            throw ValidationException::withMessages([
+                'current_password' => $e->getMessage(),
+            ]);
+        }
 
         return back()->with('success', 'Contraseña actualizada con éxito.');
     }

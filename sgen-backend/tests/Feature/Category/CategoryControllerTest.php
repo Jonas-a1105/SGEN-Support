@@ -7,6 +7,7 @@ namespace Tests\Feature\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -23,7 +24,7 @@ final class CategoryControllerTest extends TestCase
         $user = User::firstOrCreate(
             ['username' => 'admin_category_test'],
             [
-                'password' => \Illuminate\Support\Facades\Hash::make('secret'),
+                'password' => Hash::make('secret'),
                 'rol' => 'admin',
                 'tema' => 'light',
             ]
@@ -45,7 +46,7 @@ final class CategoryControllerTest extends TestCase
         $response = $this->get('/categorias');
 
         $response->assertStatus(200);
-        $response->assertInertia(fn(Assert $page) => $page
+        $response->assertInertia(fn (Assert $page) => $page
             ->component('Category/Index')
             ->has('categories')
             ->has('kpis')

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Admin;
 
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -26,11 +26,11 @@ final class RolesAndConfigAdminTest extends TestCase
 
         $this->admin = User::firstOrCreate(
             ['username' => 'admin_roles_ui_'.uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => 'admin', 'tema' => 'light']
         );
     }
 
-    public function test_panel_roles_muestra_matriz( ): void
+    public function test_panel_roles_muestra_matriz(): void
     {
         $this->actingAs($this->admin)
             ->get('/roles')
@@ -49,7 +49,7 @@ final class RolesAndConfigAdminTest extends TestCase
         $this->assertDatabaseHas('model_has_roles', ['role_id' => $adminRoleId]);
     }
 
-    public function test_rol_operativo_sync_permiso_y_bitacora( ): void
+    public function test_rol_operativo_sync_permiso_y_bitacora(): void
     {
         $tecnicoId = (int) DB::table('roles')->where('name', 'tecnico')->value('id');
 
@@ -70,7 +70,7 @@ final class RolesAndConfigAdminTest extends TestCase
         $this->assertNotContains('reportes.view', collect($asignados)->where('like', 'no-existe')->all());
     }
 
-    public function test_config_global_editable_se_ve_y_persiste( ): void
+    public function test_config_global_editable_se_ve_y_persiste(): void
     {
         $this->actingAs($this->admin)
             ->get('/configuracion/sistema')

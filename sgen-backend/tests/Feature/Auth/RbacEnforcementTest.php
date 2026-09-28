@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -79,7 +80,7 @@ final class RbacEnforcementTest extends TestCase
     {
         return User::firstOrCreate(
             ['username' => "rbac_{$rol}_".uniqid()],
-            ['password' => \Illuminate\Support\Facades\Hash::make('secret'), 'rol' => $rol, 'tema' => 'light']
+            ['password' => Hash::make('secret'), 'rol' => $rol, 'tema' => 'light']
         );
     }
 

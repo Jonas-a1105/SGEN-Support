@@ -92,7 +92,7 @@ const emit = defineEmits<{
 
 .username-title {
     font-size: 16px !important;
-    font-weight: 700 !important;
+    font-weight: var(--weight-semibold) !important;
     color: var(--text, #f4f4f6);
     margin: 0 0 2px 0;
 }

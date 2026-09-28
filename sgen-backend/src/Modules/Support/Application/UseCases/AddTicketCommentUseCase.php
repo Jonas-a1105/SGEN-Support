@@ -10,8 +10,7 @@ final class AddTicketCommentUseCase
 {
     public function __construct(
         private readonly SupportRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $ticketId, int $userId, string $comment, bool $isInternal = false): bool
     {

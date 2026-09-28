@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Audit\Domain\Models;
 
+use Modules\Audit\Domain\Services\SensitiveDataMasker;
+
 final class AuditLogEntry
 {
     public function __construct(
@@ -40,23 +42,66 @@ final class AuditLogEntry
             entityId: $entityId,
             // #44: la máscara se aplica en el límite del dominio, antes de que
             // cualquier persistencia toque el payload.
-            oldData: $oldData !== null ? \Modules\Audit\Domain\Services\SensitiveDataMasker::maskArray($oldData) : null,
-            newData: $newData !== null ? \Modules\Audit\Domain\Services\SensitiveDataMasker::maskArray($newData) : null,
+            oldData: $oldData !== null ? SensitiveDataMasker::maskArray($oldData) : null,
+            newData: $newData !== null ? SensitiveDataMasker::maskArray($newData) : null,
             ipAddress: $ipAddress,
             machineName: $machineName,
-            createdAt: new \DateTimeImmutable()
+            createdAt: new \DateTimeImmutable
         );
     }
 
-    public function id(): ?int { return $this->id; }
-    public function userId(): int { return $this->userId; }
-    public function username(): string { return $this->username; }
-    public function action(): string { return $this->action; }
-    public function entityType(): string { return $this->entityType; }
-    public function entityId(): int { return $this->entityId; }
-    public function oldData(): ?array { return $this->oldData; }
-    public function newData(): ?array { return $this->newData; }
-    public function ipAddress(): string { return $this->ipAddress; }
-    public function machineName(): ?string { return $this->machineName; }
-    public function createdAt(): ?\DateTimeImmutable { return $this->createdAt; }
+    public function id(): ?int
+    {
+        return $this->id;
+    }
+
+    public function userId(): int
+    {
+        return $this->userId;
+    }
+
+    public function username(): string
+    {
+        return $this->username;
+    }
+
+    public function action(): string
+    {
+        return $this->action;
+    }
+
+    public function entityType(): string
+    {
+        return $this->entityType;
+    }
+
+    public function entityId(): int
+    {
+        return $this->entityId;
+    }
+
+    public function oldData(): ?array
+    {
+        return $this->oldData;
+    }
+
+    public function newData(): ?array
+    {
+        return $this->newData;
+    }
+
+    public function ipAddress(): string
+    {
+        return $this->ipAddress;
+    }
+
+    public function machineName(): ?string
+    {
+        return $this->machineName;
+    }
+
+    public function createdAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }
